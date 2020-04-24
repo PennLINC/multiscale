@@ -2,4 +2,5 @@ scripts/derive_parcels/Toolbox/ParcellationMethods/
 scripts/derive_parcels/Toolbox/PANDA_1.3.1_64/
 scripts/derive_parcels/Toolbox/spin_test/
 scripts/derive_parcels/Toolbox/rand_index/
-scripts/derive_parcels/Toolbox/__pycache__
+scripts/derive_parcels/Toolbox/__pycache__/
+scripts/derive_parcels/Toolbox/Code_mvNMF_l21_ard_v3_release/
