@@ -8,7 +8,7 @@
 % removed so K can penetrate
 %clear
 
-ReplicationFolder = '/cbica/projects/pinesParcels/scripts';
+ReplicationFolder = '/cbica/projects/pinesParcels/multiscale/scripts';
 ParcellationFolder = '/cbica/projects/pinesParcels/data/SingleParcellation';
 InitializationFolder = [ParcellationFolder '/Initialization'];
 mkdir(InitializationFolder);
