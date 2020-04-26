@@ -41,8 +41,8 @@ resId = 'Initialization';
 
 % calc penalty terms here for ResFile_path search
 
-% nM seems to be 88.8 for this SNR mask
-nM=88.8;
+% nM seems to be 12 for this SNR mask
+nM=12;
 numUsed=SubjectsQuantity;
 
 pL = round((beta*tNum*numUsed)/(K*nM));
