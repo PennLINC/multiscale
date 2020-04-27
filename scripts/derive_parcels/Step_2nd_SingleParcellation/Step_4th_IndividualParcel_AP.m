@@ -57,16 +57,16 @@ for i = 1:length(LeftCell)
         system(cmd);
 
         save([ResultantFolder_I '/Configuration.mat'], 'sbjListFile', 'surfML', 'surfMR', 'PrepDataFile', 'ResultantFolder_I', 'resId', 'initName', 'K', 'alphaS21', 'alphaL', 'vxI', 'spaR', 'ard', 'eta', 'iterNum', 'calcGrp', 'parforOn');
-        ScriptPath = [ResultantFolder_I '/tmp.sh'];
-        cmd = [ '"addpath(genpath(''/cbica/projects/pinesParcels/multiscale/scripts/derive_parcels/Toolbox'')),' ...
+        ScriptPath = [ResultantFolder_I '/tmp'];
+	logpath = [ResultantFolder_I '/ParcelFinal.log']
+        cmd = ['diary ' logpath ' ,addpath(genpath(''/cbica/projects/pinesParcels/multiscale/scripts/derive_parcels/Toolbox'')),' ...
           'load(''' ResultantFolder_I '/Configuration.mat''),' ...
           'deployFuncMvnmfL21p1_func_surf_fs(sbjListFile,surfML,surfMR,' ...
           'PrepDataFile,ResultantFolder_I,resId,initName,K,alphaS21,' ...
-          'alphaL,vxI,spaR,ard,eta,iterNum,calcGrp,parforOn),exit(1)">"' ...
-          ResultantFolder_I '/ParcelFinal.log" 2>&1']
-        fid = fopen(ScriptPath, 'w');
+          'alphaL,vxI,spaR,ard,eta,iterNum,calcGrp,parforOn),exit(1),'];
+        fid = fopen(strcat(ScriptPath, '.m'), 'w');
         fprintf(fid, cmd);
-        system(['qsub -l h_vmem=10G,s_vmem=9G /cbica/projects/pinesParcels/multiscale/scripts/derive_parcels/qsub_matlab.sh ' ScriptPath]);
+        system(['qsub -l h_vmem=10G /cbica/projects/pinesParcels/multiscale/scripts/derive_parcels/qsub_matlab.sh ' ScriptPath]);
         pause(3);
     end
 end
