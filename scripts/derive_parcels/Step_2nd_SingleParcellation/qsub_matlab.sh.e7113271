@@ -1,0 +1,5 @@
+{Error using run (line 68)
+RUN cannot execute the file
+'/cbica/projects/pinesParcels/data/SingleParcellation/SingleParcel_1by1_kequal_2/Sub_101299/tmp.sh'.
+RUN requires a valid MATLAB script
+} 
