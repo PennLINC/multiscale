@@ -5,3 +5,5 @@ scripts/derive_parcels/Toolbox/rand_index/
 scripts/derive_parcels/Toolbox/__pycache__/
 scripts/derive_parcels/Toolbox/Code_mvNMF_l21_ard_v3_release/
 scripts/derive_parcels/tmp*
+scripts/derive_parcels/Step_2nd_SingleParcellation/qsub_matlab.sh.o*
+scripts/derive_parcels/Step_2nd_SingleParcellation/qsub_matlab.sh.e*
