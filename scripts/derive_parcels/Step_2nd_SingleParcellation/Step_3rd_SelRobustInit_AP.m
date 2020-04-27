@@ -8,7 +8,7 @@
 %clear
 
 projectFolder = '/cbica/projects/pinesParcels/data/SingleParcellation';
-resultantFolder = [projectFolder '/RobustInitialization'];
+resultantFolder = [projectFolder '/RobustInitialization_' num2str(K)];
 mkdir(resultantFolder);
 % commenting this out for first iter because no previous script seems to create it, gets confused when it tries to rm nonexistant file
 inFile = [resultantFolder '/ParcelInit_List.txt'];

@@ -7,13 +7,13 @@
 % comment out clear so K can penetrate
 %clear
 
-ProjectFolder = '/cbica/home/pinesa/multiscale/data/SingleParcellation';
-ResultantFolder = [ProjectFolder '/SingleParcel_1by1_kequal'];
+ProjectFolder = '/cbica/projects/pinesParcels/data/SingleParcellation';
+ResultantFolder = [ProjectFolder '/SingleParcel_1by1_kequal_' numstr(K)];
 mkdir(ResultantFolder);
 
 PrepDataFile = [ProjectFolder '/CreatePrepData.mat'];
 resId = 'IndividualParcel_Final';
-initName = [ProjectFolder '/RobustInitialization/init.mat'];
+initName = [ProjectFolder '/RobustInitialization_' num2str(K) '/init.mat'];
 %K = 17;
 % Use parameter in Hongming's NeuroImage paper
 alphaS21 = 1;
@@ -28,10 +28,10 @@ parforOn = 0;
 
 SubjectsFolder = '/cbica/software/external/freesurfer/centos7/5.3.0/subjects/fsaverage5';
 % for surface data
-surfML = '/cbica/home/pinesa/multiscale/data/fsaverage5/lh.Mask_SNR.label'
-surfMR = '/cbica/home/pinesa/multiscale/data/fsaverage5/rh.Mask_SNR.label'
+surfML = '/cbica/projects/pinesParcels/data/H_SNR_masks/lh.Mask_SNR.label'
+surfMR = '/cbica/projects/pinesParcels/data/H_SNR_masks/rh.Mask_SNR.label'
 
-RawDataFolder = '/cbica/home/pinesa/multiscale/data/CombinedData';
+RawDataFolder = '/cbica/projects/pinesParcels/data/CombinedData';
 LeftCell = g_ls([RawDataFolder '/*/lh.fs5.sm6.residualised.mgh']);
 RightCell = g_ls([RawDataFolder '/*/rh.fs5.sm6.residualised.mgh']);
 
@@ -42,7 +42,7 @@ for i = 1:length(LeftCell)
     [~, ID_Str, ~] = fileparts(Fold);
     ID = str2num(ID_Str);
     ResultantFolder_I = [ResultantFolder '/Sub_' ID_Str];
-    ResultantFile = [ResultantFolder_I '/IndividualParcel_Final_sbj1_comp17_alphaS21_1_alphaL10_vxInfo1_ard0_eta0/final_UV.mat'];
+    ResultantFile = [ResultantFolder_I '/IndividualParcel_Final_sbj1_comp' num2str(K) '_alphaS21_1_alphaL10_vxInfo1_ard0_eta0/final_UV.mat'];
     if ~exist(ResultantFile, 'file');
         mkdir(ResultantFolder_I);
         IDMatFile = [ResultantFolder_I '/ID.mat'];
@@ -58,8 +58,8 @@ for i = 1:length(LeftCell)
 
         save([ResultantFolder_I '/Configuration.mat'], 'sbjListFile', 'surfML', 'surfMR', 'PrepDataFile', 'ResultantFolder_I', 'resId', 'initName', 'K', 'alphaS21', 'alphaL', 'vxI', 'spaR', 'ard', 'eta', 'iterNum', 'calcGrp', 'parforOn');
         ScriptPath = [ResultantFolder_I '/tmp.sh'];
-        cmd = ['qsub-run --sge "-l h_vmem=10G" matlab -nosplash -nodesktop -r ' ...
-          '"addpath(genpath(''/cbica/projects/pncSingleFuncParcel/Replication/Toolbox'')),' ...
+        cmd = ['qsub "-l h_vmem=10G" matlab -nodisplay -r ' ...
+          '"addpath(genpath(''/cbica/projects/pinesParcels/multiscale/scripts/derive_parcels/Toolbox'')),' ...
           'load(''' ResultantFolder_I '/Configuration.mat''),' ...
           'deployFuncMvnmfL21p1_func_surf_fs(sbjListFile,surfML,surfMR,' ...
           'PrepDataFile,ResultantFolder_I,resId,initName,K,alphaS21,' ...
