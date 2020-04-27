@@ -13,7 +13,8 @@ mkdir(resultantFolder);
 % commenting this out for first iter because no previous script seems to create it, gets confused when it tries to rm nonexistant file
 inFile = [resultantFolder '/ParcelInit_List.txt'];
 %system(['rm ' inFile]);
-AllFiles = g_ls([projectFolder '/Initialization/*/*/*.mat']);
+% changed to only detect init.mat at this particular K
+AllFiles = g_ls([projectFolder '/Initialization/*/*comp' num2str(K) '*/*.mat']);
 for i = 1:length(AllFiles)
   cmd = ['echo ' AllFiles{i} ' >> ' inFile];
   system(cmd);
