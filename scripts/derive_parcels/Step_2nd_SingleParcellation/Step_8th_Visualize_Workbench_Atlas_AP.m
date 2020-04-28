@@ -24,7 +24,7 @@ for i = 1:K
   V_rh_File = [VisualizeFolder '/Group_rh_kK' num2str(K) 'Kk_Network_' num2str(i) '.func.gii'];
   save(V_rh, V_rh_File);
   % convert into cifti file
-  cmd = ['wb_command -cifti-create-dense-scalar ' VisualizeFolder '/Group_AtlasLoading_kK' num2str(K) 'Kk_Network_' num2str(i) ...
+  cmd = ['/cbica/projects/pinesParcels/multiscale/scripts/derive_parcels/Toolbox/workbench-1.2.3/exe_rh_linux64/wb_command -cifti-create-dense-scalar ' VisualizeFolder '/Group_AtlasLoading_kK' num2str(K) 'Kk_Network_' num2str(i) ...
          '.dscalar.nii -left-metric ' V_lh_File ' -right-metric ' V_rh_File];
   system(cmd);
   pause(1);
@@ -39,7 +39,7 @@ system(['rm -rf ' ColorInfo_Atlas]);
 SystemName=num2cell(1:K);
 ColorPlate=SystemName;
 for C=1:K
-	ColorPlate(K)={num2str([round(rand(1)*256) round(rand(1)*256) round(rand(1)*256)])} 
+	ColorPlate(C)={num2str([round(rand(1)*256) round(rand(1)*256) round(rand(1)*256)])} 
 end
 %%SystemName = {'DM 1', 'Motor 1', 'FP 1', 'Motor 2', 'DA 1', ...
 %%              'Visual 1', 'VA 1', 'DM 2', 'VA 2', 'Visual 2', 'Motor 3', ...
@@ -74,7 +74,7 @@ V_rh_Label_File = [VisualizeFolder '/Group_rh_' num2str(K)  'KkAtlasLabel.label.
 cmd = ['wb_command -metric-label-import ' V_rh_File ' ' ColorInfo_Atlas ' ' V_rh_Label_File];
 system(cmd);
 % convert into cifti file
-cmd = ['wb_command -cifti-create-label ' VisualizeFolder '/Group_AtlasLabel' ...
+cmd = ['wb_command -cifti-create-label ' VisualizeFolder '/kK' num2str(K) 'KkGroup_AtlasLabel' ...
        '.dlabel.nii -left-label ' V_lh_Label_File ' -right-label ' V_rh_Label_File];
 system(cmd);
 pause(1);
