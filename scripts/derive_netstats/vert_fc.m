@@ -48,8 +48,14 @@ for s=1:length(subjs)
 		K_part_subj =[K_Folder '/IndividualParcel_Final_sbj1_comp' num2str(K) '_alphaS21_1_alphaL10_vxInfo1_ard0_eta0/final_UV.mat'];
 		subj_part=load(K_part_subj);
 		% do not see automated subject-level soft-parcel -> hard-parcel script... can double-check with zc
-		%%% convert to HP
-		
+		%%% convert to HP - V for vert x K
+		subj_V=subj_part.V{1};
+		% new column for HP label
+		subj_V(:,3)=zeros(1,length(subj_V));
+		for V=1:length(subj_V)
+			% Supplement vertex loadings with HP value (max K loading)
+			subj_V(V,3)=find(max(subj_v(V,:),subj_v(V,:)));
+		end 
 		group_part=(group_parts,K);	
 		% make empty vectors for connectivity values
 		winconvals=zeros(1,K);
@@ -57,7 +63,10 @@ for s=1:length(subjs)
 		bwconvals=zeros(1,((K*(K+1))/2));
 		% for each "network"
 		for N=1:K
+			% get index of which vertices are in this K
+			Kind=find(subj_V(V,3),N);	
 			% within connectivity, average correlation within 	
+			mean(mean(ba_conmat(
 			% for each external network (can I use negative iters to not be redundant here?)
 			for b=1:length(bwconvals)
 			% between connectivity
