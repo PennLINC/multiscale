@@ -21,5 +21,4 @@ for i = 1:length(AllFiles)
 end
 
 % Parcellate into K networks (K commented out because it is set in iterative loop prior to calling this)
-%K = 17;
 selRobustInit(inFile, K, resultantFolder);
