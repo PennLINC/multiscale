@@ -75,6 +75,7 @@ for i = 1:50
     fid = fopen([InitializationFolder '/tmp' num2str(i) '.sh'], 'w');
     fprintf(fid, cmd);
     system(['qsub -l h_vmem=30G ' InitializationFolder '/tmp' num2str(i) '.sh']);
+	pause(600)
   end
 end
 
