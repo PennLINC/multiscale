@@ -1,12 +1,6 @@
-scripts/derive_parcels/Toolbox/ParcellationMethods/
-scripts/derive_parcels/Toolbox/PANDA_1.3.1_64/
-scripts/derive_parcels/Toolbox/spin_test/
-scripts/derive_parcels/Toolbox/rand_index/
-scripts/derive_parcels/Toolbox/__pycache__/
-scripts/derive_parcels/Toolbox/Code_mvNMF_l21_ard_v3_release/
 scripts/derive_parcels/tmp*
 scripts/derive_parcels/Step_2nd_SingleParcellation/qsub_matlab.sh.o*
 scripts/derive_parcels/Step_2nd_SingleParcellation/qsub_matlab.sh.e*
 scripts/derive_parcels*.swp
-scripts/derive_parcels/Toolbox/workbench-1.2.3/
+scripts/derive_parcels/Toolbox/
 scripts/derive_parcels/qsub_matlab.sh.*
