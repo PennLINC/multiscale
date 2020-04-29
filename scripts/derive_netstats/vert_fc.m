@@ -10,18 +10,35 @@ ProjectFolder = '/cbica/projects/pinesParcels/data/SingleParcellation';
 Krange=2:30;
 % Read in subjects list
 subjs=load('/cbica/projects/pinesParcels/data/bblids.txt');
-% read in group partitions % TO DO - AUGMENT SCRIPT TO COMBINE ALL GROUP PARTS INTO A SINGLE .MAT
-group_parts=load;i
-% check to make sure dimensions match
-
+% read in group partitions
+group_parts=load([ProjectFolder '/SingleAtlas_Analysis/group_all_Ks.mat'])
+group_parts=group_parts.affils;
 % load in SNR masks
 l_l = read_label([],'/cbica/projects/pinesParcels/data/H_SNR_masks/lh.Mask_SNR.label');
 l_r = read_label([],'/cbica/projects/pinesParcels/data/H_SNR_masks/rh.Mask_SNR.label');
-
 % assuming +1 is because matlab starts on 1, not 0. can double-check with zc
 l_l_ind = l_l(:,1) + 1;
 l_r_ind = l_r(:,1) + 1;
-
+% check to make sure that mask indices match 0s in group consensus to ensure consistent masking throughout
+% NOTE THAT THIS MASK FILE INDICATES THE PRESENCE OF VERTICES TO BE MASKED, NOT IN 0 = BAD 1 = GOOD FORMAT
+if sum(group_parts(l_l_ind))~=0
+disp('you screwed up the left hemisphere mask numbnuts')
+exit(1);
+else
+end
+if sum(group_parts(10242+l_r_ind))~=0
+disp('you screwed up the right hemisphere mask numbnuts')
+exit(1);
+else
+end
+% change mask from 0s from 1 at shitty vertices to 0
+surfMask.l = ones(10242,1);
+surfMask.l(l_l_ind) = 0;
+surfMask.r = ones(10242,1);
+surfMask.r(l_r_ind) = 0;
+% same thing but with 
+% mask group partitions with dis
+group_parts_masked=group_parts(any(group_parts,2),:);
 % for each subject
 for s=1:length(subjs)
 	% load in vertex-wise time series
@@ -32,11 +49,11 @@ for s=1:length(subjs)
 	vw_ts_l=vw_ts_l.vol;
 	vw_ts_r=vw_ts_r.vol;
 	% apply SNR masks
-	vw_ts_l_masked=vw_ts_l(surfMask.l);
-	vw_ts_r_masked=vw_ts_r(surfMask.r);
+	vw_ts_l_masked=vw_ts_l(1,(logical(surfMask.l)),1,:);
+	vw_ts_r_masked=vw_ts_r(1,(logical(surfMask.r)),1,:);
 	% stacking matrices so vertex number is doubled (not timepoints obvi)
 	% but should left or right go first?
-	vw_ts_both=[vw_ts_l vw_ts_r];
+	vw_ts_both=[vw_ts_l_masked vw_ts_r_masked];
 	% get rid of odd extra 2 dimensions in .mgh file. Should be 17,734 high SNR vertices with this mask.
 	vw_ts_both=reshape(vw_ts_both(1,:,1,:), 555, 17734);
 	% bigass connectivity matrix, takes 5 seconds or so to calc
@@ -54,24 +71,58 @@ for s=1:length(subjs)
 		subj_V(:,3)=zeros(1,length(subj_V));
 		for V=1:length(subj_V)
 			% Supplement vertex loadings with HP value (max K loading)
-			subj_V(V,3)=find(max(subj_v(V,:),subj_v(V,:)));
+			subj_V(V,3)=find(subj_V(V,:)==(max(subj_V(V,:))));
 		end 
-		group_part=(group_parts,K);	
+		% evaluate group consensus in parallel, k-1 because partitions start at 2
+		group_part=group_parts_masked(:,K-1);	
 		% make empty vectors for connectivity values
 		winconvals=zeros(1,K);
-		% use triangular numbers to calc. number of b/w network values in this K
-		bwconvals=zeros(1,((K*(K+1))/2));
+		g_winconvals=zeros(1,K);
+		% use triangular numbers (altered to K-1) to calc. number of b/w network values in this K
+		bwconvals=zeros(1,(((K-1)*(K))/2));
+		g_bwconvals=zeros(1,(((K-1)*(K))/2));
 		% for each "network"
 		for N=1:K
 			% get index of which vertices are in this K
-			Kind=find(subj_V(V,3),N);	
-			% within connectivity, average correlation within 	
-			mean(mean(ba_conmat(
-			% for each external network (can I use negative iters to not be redundant here?)
-			for b=1:length(bwconvals)
-			% between connectivity
+			Kind=find(subj_V(:,3)==N);
+			% group
+			g_Kind=find(group_part==N);	
+			% extract matrix of just the current network
+			curNetMat=ba_conmat(Kind,Kind);
+			% group
+			g_curNetMat=ba_conmat(g_Kind,g_Kind);
+			% within connectivity, average correlation within, triu to avoid redundance in conmat 	
+			wincon=mean(mean(triu(curNetMat,1)));
+			g_wincon=mean(mean(triu(g_curNetMat,1)));
+			winconvals(N)=wincon;
+			g_winconvals(N)=g_wincon;
+
+			% values are reasonable relative to each other (wincon > g_wincon), but lower than expected. Double check to make sure mapping on correctly
+			% make vector for all values except for current K (N) to loop through
+			Kvec=1:K;
+			NotKvec=Kvec(Kvec~=N); 
+			% mean correlation with each other network
+			for b=1:(K-1)
+				curOtherNet=NotKvec(b);
+				NotKind=find(subj_V(:,3)==curOtherNet);
+				g_NotKind=find(group_part==curOtherNet);
+				bwMat=ba_conmat(Kind,NotKind);
+				g_bwMat=ba_conmat(g_Kind,g_NotKind);
+				bwcon=mean(mean(triu(bwMat,1)));
+				g_bwcon=mean(mean(triu(g_bwMat,1)));
+				bwconvals(b)=bwcon;
+				g_bwconvals(b)=g_bwcon;
 			end
 		end
+	% Make empty KxK matrix to summarize network connectivities
+	Kmat=diag(winconvals);
+	g_Kmat=diag(g_winconvals);
+	% insert b/w net con into non-diagonals	
+	IDmat=eye(Kmat);
+	nondiag=(1-IDmat);
+	nondiagind=find(nondiag,1);
+	Kmat(nondiagind)=[bwconvals bwconvals];
+	g_Kmat(nondiagind)=[g_bwconvals g_bwconvals];
 	end
 end
 % write out withins
