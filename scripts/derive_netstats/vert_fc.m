@@ -11,7 +11,7 @@ Krange=2:30;
 % Read in subjects list
 subjs=load('/cbica/projects/pinesParcels/data/bblids.txt');
 % read in group partitions
-group_parts=load([ProjectFolder '/SingleAtlas_Analysis/group_all_Ks.mat'])
+group_parts=load([ProjectFolder '/SingleAtlas_Analysis/group_all_Ks.mat']);
 group_parts=group_parts.affils;
 % load in SNR masks
 l_l = read_label([],'/cbica/projects/pinesParcels/data/H_SNR_masks/lh.Mask_SNR.label');
@@ -37,13 +37,13 @@ surfMask.l(l_l_ind) = 0;
 surfMask.r = ones(10242,1);
 surfMask.r(l_r_ind) = 0;
 % same thing but with 
-% mask group partitions with dis
+% mask group partitions by taking nonzeros (masked prior to NMF)
 group_parts_masked=group_parts(any(group_parts,2),:);
 % for each subject
 for s=1:length(subjs)
 	% load in vertex-wise time series
-	vw_ts_l_p=['/cbica/projects/pinesParcels/data/CombinedData/' num2str(subjs(s)) '/lh.fs5.sm6.residualised.mgh']
-	vw_ts_r_p=['/cbica/projects/pinesParcels/data/CombinedData/' num2str(subjs(s)) '/rh.fs5.sm6.residualised.mgh']
+	vw_ts_l_p=['/cbica/projects/pinesParcels/data/CombinedData/' num2str(subjs(s)) '/lh.fs5.sm6.residualised.mgh'];
+	vw_ts_r_p=['/cbica/projects/pinesParcels/data/CombinedData/' num2str(subjs(s)) '/rh.fs5.sm6.residualised.mgh'];
 	vw_ts_l=MRIread(vw_ts_l_p);
 	vw_ts_r=MRIread(vw_ts_r_p);
 	vw_ts_l=vw_ts_l.vol;
@@ -118,9 +118,9 @@ for s=1:length(subjs)
 	Kmat=diag(winconvals);
 	g_Kmat=diag(g_winconvals);
 	% insert b/w net con into non-diagonals	
-	IDmat=eye(Kmat);
+	IDmat=eye(K);
 	nondiag=(1-IDmat);
-	nondiagind=find(nondiag,1);
+	nondiagind=find(nondiag==1);
 	Kmat(nondiagind)=[bwconvals bwconvals];
 	g_Kmat(nondiagind)=[g_bwconvals g_bwconvals];
 	end
