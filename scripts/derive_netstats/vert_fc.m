@@ -39,6 +39,13 @@ surfMask.r(l_r_ind) = 0;
 % same thing but with 
 % mask group partitions by taking nonzeros (masked prior to NMF)
 group_parts_masked=group_parts(any(group_parts,2),:);
+% initialize 3d kmats and gkmats (summarized network to network connectivities and w/in connectivities, third dimension is subjs)
+Khouse=zeros(1,max(Krange));
+GKhouse=zeros(1,max(Krange));
+for i=Krange
+	Khouse{i}=zeros(i,i,length(subjs));
+	GKhouse{i}=zeros(i,i,length(subjs));
+end
 % for each subject
 for s=1:length(subjs)
 	% load in vertex-wise time series
@@ -123,11 +130,14 @@ for s=1:length(subjs)
 	nondiagind=find(nondiag==1);
 	Kmat(nondiagind)=[bwconvals bwconvals];
 	g_Kmat(nondiagind)=[g_bwconvals g_bwconvals];
+	Khouse(K,K,s)=Kmat;
+	GKhouse=(K,K,s)=g_Kmat;
 	end
 end
-% write out withins
-save('/cbica/projects/pinesParcels/results/connectivities/within_individ.mat')
-save('/cbica/projects/pinesParcels/results/connectivities/within_group.mat')
-% write out betweens
-save('/cbica/projects/pinesParcels/results/connectivities/between_individ.mat')
-save('/cbica/projects/pinesParcels/results/connectivities/between_group.mat')
+% write out summary matrices at each scale
+for K=2:max(Krange)
+	fn_ind=['/cbica/projects/pinesParcels/results/connectivities/ind_conmats_allscales_allsubjs.mat']
+	fn_gro=['/cbica/projects/pinesParcels/results/connectivities/gro_conmats_allscales_allsubjs.mat']	
+	save('Khouse',fn_ind)
+	save('GKhouse',fn_gro)
+end

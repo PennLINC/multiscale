@@ -1,15 +1,13 @@
 % add in all supporter functions
 addpath(genpath('/cbica/projects/pinesParcels/multiscale/scripts/derive_parcels/Toolbox'));
 addpath('/cbica/projects/pinesParcels/multiscale/scripts/derive_parcels/Step_2nd_SingleParcellation');
-for K=12:30
+for K=23:30
 %for K=2
 % %call in steps 1-4, filepath adapted versions
 Step_1st_CreatePrepData_AP
 K
 Step_2nd_ParcellationInitialize_AP
 K
-
-pause(300)
 
 % calc pS and pL for resFile_path localization
 %pS=round((alpha*tNum*SubjectsQuantity)/K);
