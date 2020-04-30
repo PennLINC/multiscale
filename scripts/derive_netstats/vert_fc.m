@@ -40,9 +40,8 @@ surfMask.r(l_r_ind) = 0;
 % mask group partitions by taking nonzeros (masked prior to NMF)
 group_parts_masked=group_parts(any(group_parts,2),:);
 % initialize 3d kmats and gkmats (summarized network to network connectivities and w/in connectivities, third dimension is subjs)
-Khouse=zeros(1,max(Krange));
-GKhouse=zeros(1,max(Krange));
-for i=Krange
+% -1 because we start at 2 (so the houses will go from 1-29 instead of 2-30)
+for i=1:(max(Krange)-1)
 	Khouse{i}=zeros(i,i,length(subjs));
 	GKhouse{i}=zeros(i,i,length(subjs));
 end
@@ -67,7 +66,10 @@ for s=1:length(subjs)
 	ba_conmat=corrcoef(vw_ts_both);
 	% for each scale
 	for K=2:max(Krange)
-	% load in partitions
+		% model the 3D matrix of interest (current K/scale) from the house of K's, to populate and shove back in later
+		curGK=GKhouse{K};
+		curK=Khouse{K};
+		% load in partitions
 		K_Folder = [ProjectFolder '/SingleParcel_1by1_kequal_' num2str(K) '/Sub_' num2str(subjs(s))];
 		K_part_subj =[K_Folder '/IndividualParcel_Final_sbj1_comp' num2str(K) '_alphaS21_1_alphaL10_vxInfo1_ard0_eta0/final_UV.mat'];
 		subj_part=load(K_part_subj);
@@ -121,23 +123,24 @@ for s=1:length(subjs)
 				g_bwconvals(b)=g_bwcon;
 			end
 		end
-	% Make empty KxK matrix to summarize network connectivities
-	Kmat=diag(winconvals);
-	g_Kmat=diag(g_winconvals);
-	% insert b/w net con into non-diagonals	
-	IDmat=eye(K);
-	nondiag=(1-IDmat);
-	nondiagind=find(nondiag==1);
-	Kmat(nondiagind)=[bwconvals bwconvals];
-	g_Kmat(nondiagind)=[g_bwconvals g_bwconvals];
-	Khouse(K,K,s)=Kmat;
-	GKhouse=(K,K,s)=g_Kmat;
+		% Make empty KxK matrix to summarize network connectivities
+		Kmat=diag(winconvals);
+		g_Kmat=diag(g_winconvals);
+		% insert b/w net con into non-diagonals	
+		IDmat=eye(K);
+		nondiag=(1-IDmat);
+		nondiagind=find(nondiag==1);
+		Kmat(nondiagind)=[bwconvals bwconvals];
+		g_Kmat(nondiagind)=[g_bwconvals g_bwconvals];
+		curK(:,:,s)=Kmat;
+		curGK(:,:,s)=g_Kmat;
+		% shove back in so one more subject is filled out at this K
+		Khouse{K}=curK;
+		GKhouse{K}=curGK;
 	end
 end
-% write out summary matrices at each scale
-for K=2:max(Krange)
-	fn_ind=['/cbica/projects/pinesParcels/results/connectivities/ind_conmats_allscales_allsubjs.mat']
-	fn_gro=['/cbica/projects/pinesParcels/results/connectivities/gro_conmats_allscales_allsubjs.mat']	
-	save('Khouse',fn_ind)
-	save('GKhouse',fn_gro)
-end
+% write out summary matrices
+fn_ind=['/cbica/projects/pinesParcels/results/connectivities/ind_conmats_allscales_allsubjs.mat']
+fn_gro=['/cbica/projects/pinesParcels/results/connectivities/gro_conmats_allscales_allsubjs.mat']	
+save('Khouse',fn_ind)
+save('GKhouse',fn_gro)
