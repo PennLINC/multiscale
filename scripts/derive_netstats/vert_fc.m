@@ -44,7 +44,7 @@ group_parts_masked=group_parts(any(group_parts,2),:);
 
 % bTS is basis time series - comparing correlation with K bases (U) to vertex-wise FC
 % group consensus U exlcuded because it uses a concatenated time series, will disprop. match the subjs used to create it, and it's not clear why we'd expect it to align throughout task/rest
-for i=1:(max(Krange)-1)
+for i=2:max(Krange)
 	Khouse{i}=zeros(i,i,length(subjs));
 	GKhouse{i}=zeros(i,i,length(subjs));
 	K_bTS_house{i}=zeros(i,i,length(subjs));
@@ -64,15 +64,24 @@ for s=1:length(subjs)
 	% stacking matrices so vertex number is doubled (not timepoints obvi)
 	vw_ts_both=[vw_ts_l_masked vw_ts_r_masked];
 	% get rid of odd extra 2 dimensions in .mgh file. Should be 17,734 high SNR vertices with this mask.
-	vw_ts_both=reshape(vw_ts_both(1,:,1,:), 555, 17734);
+	%vw_ts_both=reshape(vw_ts_both(1,:,1,:), 555, 17734);
+	% reworking to see if reshape is an issue
+	vw_ts_bothrw=zeros(555,17734);
+	for x=1:length(vw_ts_bothrw)
+		vw_ts_bothrw(:,x)=vw_ts_both(1,x,1,:);
+	end
 	% bigass connectivity matrix, takes 5 seconds or so to calc
-	ba_conmat=corrcoef(vw_ts_both);
+	ba_conmat=corrcoef(vw_ts_bothrw);
 	% for each scale
 	for K=2:max(Krange)
 		% model the 3D matrix of interest (current K/scale) from the house of K's, to populate and shove back in later
 		curGK=GKhouse{K};
 		curK=Khouse{K};
 		curbtsK=K_bTS_house{K};
+		% 2D matrices
+		Kmat=zeros(K);
+                g_Kmat=zeros(K);
+                bTS_Kmat=zeros(K);
 		% load in partitions
 		K_Folder = [ProjectFolder '/SingleParcel_1by1_kequal_' num2str(K) '/Sub_' num2str(subjs(s))];
 		K_part_subj =[K_Folder '/IndividualParcel_Final_sbj1_comp' num2str(K) '_alphaS21_1_alphaL10_vxInfo1_ard0_eta0/final_UV.mat'];
@@ -81,10 +90,10 @@ for s=1:length(subjs)
 		%%% convert to HP - V for vert x K
 		subj_V=subj_part.V{1};
 		% new column for HP label
-		subj_V(:,3)=zeros(1,length(subj_V));
+		subj_V(:,K+1)=zeros(1,length(subj_V));
 		for V=1:length(subj_V)
 			% Supplement vertex loadings with HP value (max K loading)
-			subj_V(V,3)=find(subj_V(V,:)==(max(subj_V(V,:))));
+			subj_V(V,K+1)=find(subj_V(V,:)==(max(subj_V(V,:))));
 		end 
 		% evaluate group consensus in parallel, k-1 because partitions start at 2
 		group_part=group_parts_masked(:,K-1);	
@@ -95,13 +104,13 @@ for s=1:length(subjs)
 		% use triangular numbers (altered to K-1) to calc. number of b/w network values in this K
 		bwconvals=zeros(1,(((K-1)*(K))/2));
 		g_bwconvals=zeros(1,(((K-1)*(K))/2));
-		bTS_bwconvals=zeros(1,((K-1)*(K))/2));
+		bTS_bwconvals=zeros(1,(((K-1)*(K))/2));
 		% get U at this scale to evaluate connectivities via correlation with K basis time series (U), but labeling as yu because it looks less like V
 		subj_yu=subj_part.U{1};
 		% for each "network"
 		for N=1:K
 			% get index of which vertices are in this K
-			Kind=find(subj_V(:,3)==N);
+			Kind=find(subj_V(:,K+1)==N);
 			% group
 			g_Kind=find(group_part==N);	
 			% extract matrix of just the current network
@@ -109,14 +118,14 @@ for s=1:length(subjs)
 			% group
 			g_curNetMat=ba_conmat(g_Kind,g_Kind);
 			% within connectivity, average correlation within, triu to avoid redundance in conmat 	
-			wincon=mean(mean(triu(curNetMat,1)));
-			g_wincon=mean(mean(triu(g_curNetMat,1)));
+			wincon=mean(curNetMat(find(~triu(ones(size(curNetMat))))));
+			g_wincon=mean(g_curNetMat(find(~triu(ones(size(g_curNetMat))))));
 			winconvals(N)=wincon;
 			g_winconvals(N)=g_wincon;
 			% and within connectivity assessed via cor. w/ U corresponding to same K
-			K_TimeSeries=vw_ts_both(:,Kind);	
-			wincon_bTS_cor=mean(corr(K_TimeSeries,subj_yu(:,N)));
-			bTS_winconvals(N)=wincon_bTS_cor;
+			K_TimeSeries=vw_ts_bothrw(:,Kind);	
+			bTS_wincon=mean(corr(K_TimeSeries,subj_yu(:,N)));
+			bTS_winconvals(N)=bTS_wincon;
 			% values are reasonable relative to each other (wincon > g_wincon), but lower than expected. Double check to make sure mapping on correctly
 			% make vector for all values except for current K (N) to loop through
 			Kvec=1:K;
@@ -124,31 +133,35 @@ for s=1:length(subjs)
 			% mean correlation with each other network
 			for b=1:(K-1)
 				curOtherNet=NotKvec(b);
-				NotKind=find(subj_V(:,3)==curOtherNet);
+				NotKind=find(subj_V(:,K+1)==curOtherNet);
 				g_NotKind=find(group_part==curOtherNet);
 				bwMat=ba_conmat(Kind,NotKind);
 				g_bwMat=ba_conmat(g_Kind,g_NotKind);
-				bwcon=mean(mean(triu(bwMat,1)));
-				g_bwcon=mean(mean(triu(g_bwMat,1)));
-				bwconvals(b)=bwcon;
-				g_bwconvals(b)=g_bwcon;
-				% calc basis time series correspondence with other nets
-				bwcon_bTS_cor=mean(corr(K_TimeSeries,subj_yu(:,b)));
-				bTS_bwconvals(b)=bwcon_bTS_cor;
+				bwcon=mean(mean(bwMat));
+				g_bwcon=mean(mean(g_bwMat));
+				bTScon=mean(corr(K_TimeSeries,subj_yu(:,curOtherNet)));
+				
+				Kmat(N,curOtherNet)=bwcon;
+				g_Kmat(N,curOtherNet)=g_bwcon;
+				bTS_Kmat(N,curOtherNet)=bTScon;
 			end
+			Kmat(N,N)=wincon;
+			g_Kmat(N,N)=g_wincon;
+			bTS_Kmat(N,N)=bTS_wincon;
 		end
 		% Make empty KxK matrix to summarize network connectivities
-		Kmat=diag(winconvals);
-		g_Kmat=diag(g_winconvals);
-		bTS_Kmat=diag(bTS_winconvals);
+		%Kmat=diag(winconvals);
+		%g_Kmat=diag(g_winconvals);
+		%bTS_Kmat=diag(bTS_winconvals);
 		% insert b/w net con into non-diagonals	
-		IDmat=eye(K);
-		nondiag=(1-IDmat);
-		nondiagind=find(nondiag==1);
+		%IDmat=eye(K);
+		%nondiag=(1-IDmat);
+		%nondiagind=find(nondiag==1);
 		% check to make sure this is populating b/w convals in right order (once I'm past k=2)
-		Kmat(nondiagind)=[bwconvals bwconvals];
-		g_Kmat(nondiagind)=[g_bwconvals g_bwconvals];
-		bTS_Kmat(nondiagind)=[bTS_bwconvals bTS_bwconvals];	
+		% spoiler: it's not
+		%Kmat(nondiagind)=[bwconvals bwconvals];
+		%g_Kmat(nondiagind)=[g_bwconvals g_bwconvals];
+		%bTS_Kmat(nondiagind)=[bTS_bwconvals bTS_bwconvals];	
 		curK(:,:,s)=Kmat;
 		curGK(:,:,s)=g_Kmat;
 		curbtsK(:,:,s)=bTS_Kmat;
