@@ -43,11 +43,11 @@ group_parts_masked=group_parts(any(group_parts,2),:);
 % -1 because we start at 2 (so the houses will go from 1-29 instead of 2-30)
 
 % bTS is basis time series - comparing correlation with K bases (U) to vertex-wise FC
+% group consensus U exlcuded because it uses a concatenated time series, will disprop. match the subjs used to create it, and it's not clear why we'd expect it to align throughout task/rest
 for i=1:(max(Krange)-1)
 	Khouse{i}=zeros(i,i,length(subjs));
 	GKhouse{i}=zeros(i,i,length(subjs));
 	K_bTS_house{i}=zeros(i,i,length(subjs));
-	GK_bTS_house{i}=zeros(i,i,length(subjs));
 end
 % for each subject
 for s=1:length(subjs)
@@ -62,7 +62,6 @@ for s=1:length(subjs)
 	vw_ts_l_masked=vw_ts_l(1,(logical(surfMask.l)),1,:);
 	vw_ts_r_masked=vw_ts_r(1,(logical(surfMask.r)),1,:);
 	% stacking matrices so vertex number is doubled (not timepoints obvi)
-	% but should left or right go first?
 	vw_ts_both=[vw_ts_l_masked vw_ts_r_masked];
 	% get rid of odd extra 2 dimensions in .mgh file. Should be 17,734 high SNR vertices with this mask.
 	vw_ts_both=reshape(vw_ts_both(1,:,1,:), 555, 17734);
@@ -73,6 +72,7 @@ for s=1:length(subjs)
 		% model the 3D matrix of interest (current K/scale) from the house of K's, to populate and shove back in later
 		curGK=GKhouse{K};
 		curK=Khouse{K};
+		curbtsK=K_bTS_house{K};
 		% load in partitions
 		K_Folder = [ProjectFolder '/SingleParcel_1by1_kequal_' num2str(K) '/Sub_' num2str(subjs(s))];
 		K_part_subj =[K_Folder '/IndividualParcel_Final_sbj1_comp' num2str(K) '_alphaS21_1_alphaL10_vxInfo1_ard0_eta0/final_UV.mat'];
@@ -91,13 +91,13 @@ for s=1:length(subjs)
 		% make empty vectors for connectivity values
 		winconvals=zeros(1,K);
 		g_winconvals=zeros(1,K);
+		bTS_winconvals=zeros(1,K);
 		% use triangular numbers (altered to K-1) to calc. number of b/w network values in this K
 		bwconvals=zeros(1,(((K-1)*(K))/2));
 		g_bwconvals=zeros(1,(((K-1)*(K))/2));
-		
-		% evaluate connectivities via correlation with K basis time series (U), but labeling as yu because it looks less like V
+		bTS_bwconvals=zeros(1,((K-1)*(K))/2));
+		% get U at this scale to evaluate connectivities via correlation with K basis time series (U), but labeling as yu because it looks less like V
 		subj_yu=subj_part.U{1};
-		group_yu=group_yu %%% realized about here I need to actually make group yu
 		% for each "network"
 		for N=1:K
 			% get index of which vertices are in this K
@@ -113,7 +113,10 @@ for s=1:length(subjs)
 			g_wincon=mean(mean(triu(g_curNetMat,1)));
 			winconvals(N)=wincon;
 			g_winconvals(N)=g_wincon;
-
+			% and within connectivity assessed via cor. w/ U corresponding to same K
+			K_TimeSeries=vw_ts_both(:,Kind);	
+			wincon_bTS_cor=mean(corr(K_TimeSeries,subj_yu(:,N)));
+			bTS_winconvals(N)=wincon_bTS_cor;
 			% values are reasonable relative to each other (wincon > g_wincon), but lower than expected. Double check to make sure mapping on correctly
 			% make vector for all values except for current K (N) to loop through
 			Kvec=1:K;
@@ -129,26 +132,36 @@ for s=1:length(subjs)
 				g_bwcon=mean(mean(triu(g_bwMat,1)));
 				bwconvals(b)=bwcon;
 				g_bwconvals(b)=g_bwcon;
+				% calc basis time series correspondence with other nets
+				bwcon_bTS_cor=mean(corr(K_TimeSeries,subj_yu(:,b)));
+				bTS_bwconvals(b)=bwcon_bTS_cor;
 			end
 		end
 		% Make empty KxK matrix to summarize network connectivities
 		Kmat=diag(winconvals);
 		g_Kmat=diag(g_winconvals);
+		bTS_Kmat=diag(bTS_winconvals);
 		% insert b/w net con into non-diagonals	
 		IDmat=eye(K);
 		nondiag=(1-IDmat);
 		nondiagind=find(nondiag==1);
+		% check to make sure this is populating b/w convals in right order (once I'm past k=2)
 		Kmat(nondiagind)=[bwconvals bwconvals];
 		g_Kmat(nondiagind)=[g_bwconvals g_bwconvals];
+		bTS_Kmat(nondiagind)=[bTS_bwconvals bTS_bwconvals];	
 		curK(:,:,s)=Kmat;
 		curGK(:,:,s)=g_Kmat;
+		curbtsK(:,:,s)=bTS_Kmat;
 		% shove back in so one more subject is filled out at this K
 		Khouse{K}=curK;
 		GKhouse{K}=curGK;
+		K_bTS_house{K}=curbtsK;
 	end
 end
 % write out summary matrices
 fn_ind=['/cbica/projects/pinesParcels/results/connectivities/ind_conmats_allscales_allsubjs.mat']
 fn_gro=['/cbica/projects/pinesParcels/results/connectivities/gro_conmats_allscales_allsubjs.mat']	
+fn_bts=['/cbica/projects/pinesParcels/results/connectivities/bts_conmats_allscales_allsubjs.mat'] 
 save('Khouse',fn_ind)
 save('GKhouse',fn_gro)
+save('K_bTS_house',fn_bts)
