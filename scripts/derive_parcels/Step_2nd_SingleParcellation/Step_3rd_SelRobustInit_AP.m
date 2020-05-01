@@ -14,7 +14,7 @@ mkdir(resultantFolder);
 inFile = [resultantFolder '/ParcelInit_List.txt'];
 %system(['rm ' inFile]);
 % changed to only detect init.mat at this particular K
-AllFiles = g_ls([projectFolder '/Initialization/*/*comp' num2str(K) '*/*.mat']);
+AllFiles = g_ls([projectFolder '/Initialization/*/*comp' num2str(K) '_S1*/*.mat']);
 for i = 1:length(AllFiles)
   cmd = ['echo ' AllFiles{i} ' >> ' inFile];
   system(cmd);

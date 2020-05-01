@@ -41,9 +41,13 @@ surfMask.r(l_r_ind) = 0;
 group_parts_masked=group_parts(any(group_parts,2),:);
 % initialize 3d kmats and gkmats (summarized network to network connectivities and w/in connectivities, third dimension is subjs)
 % -1 because we start at 2 (so the houses will go from 1-29 instead of 2-30)
+
+% bTS is basis time series - comparing correlation with K bases (U) to vertex-wise FC
 for i=1:(max(Krange)-1)
 	Khouse{i}=zeros(i,i,length(subjs));
 	GKhouse{i}=zeros(i,i,length(subjs));
+	K_bTS_house{i}=zeros(i,i,length(subjs));
+	GK_bTS_house{i}=zeros(i,i,length(subjs));
 end
 % for each subject
 for s=1:length(subjs)
@@ -90,6 +94,10 @@ for s=1:length(subjs)
 		% use triangular numbers (altered to K-1) to calc. number of b/w network values in this K
 		bwconvals=zeros(1,(((K-1)*(K))/2));
 		g_bwconvals=zeros(1,(((K-1)*(K))/2));
+		
+		% evaluate connectivities via correlation with K basis time series (U), but labeling as yu because it looks less like V
+		subj_yu=subj_part.U{1};
+		group_yu=group_yu %%% realized about here I need to actually make group yu
 		% for each "network"
 		for N=1:K
 			% get index of which vertices are in this K
