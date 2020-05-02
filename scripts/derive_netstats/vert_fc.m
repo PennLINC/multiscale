@@ -89,7 +89,7 @@ for s=1:length(subjs)
 		% do not see automated subject-level soft-parcel -> hard-parcel script... can double-check with zc
 		%%% convert to HP - V for vert x K
 		subj_V=subj_part.V{1};
-		% new column for HP label
+		% new column for HP label, K+1 because there should be K loading columns, so the last column becomes labels
 		subj_V(:,K+1)=zeros(1,length(subj_V));
 		for V=1:length(subj_V)
 			% Supplement vertex loadings with HP value (max K loading)
@@ -102,9 +102,9 @@ for s=1:length(subjs)
 		g_winconvals=zeros(1,K);
 		bTS_winconvals=zeros(1,K);
 		% use triangular numbers (altered to K-1) to calc. number of b/w network values in this K
-		bwconvals=zeros(1,(((K-1)*(K))/2));
-		g_bwconvals=zeros(1,(((K-1)*(K))/2));
-		bTS_bwconvals=zeros(1,(((K-1)*(K))/2));
+		%bwconvals=zeros(1,(((K-1)*(K))/2));
+		%g_bwconvals=zeros(1,(((K-1)*(K))/2));
+		%bTS_bwconvals=zeros(1,(((K-1)*(K))/2));
 		% get U at this scale to evaluate connectivities via correlation with K basis time series (U), but labeling as yu because it looks less like V
 		subj_yu=subj_part.U{1};
 		% for each "network"
@@ -120,12 +120,12 @@ for s=1:length(subjs)
 			% within connectivity, average correlation within, triu to avoid redundance in conmat 	
 			wincon=mean(curNetMat(find(~triu(ones(size(curNetMat))))));
 			g_wincon=mean(g_curNetMat(find(~triu(ones(size(g_curNetMat))))));
-			winconvals(N)=wincon;
-			g_winconvals(N)=g_wincon;
+			%winconvals(N)=wincon;
+			%g_winconvals(N)=g_wincon;
 			% and within connectivity assessed via cor. w/ U corresponding to same K
 			K_TimeSeries=vw_ts_bothrw(:,Kind);	
 			bTS_wincon=mean(corr(K_TimeSeries,subj_yu(:,N)));
-			bTS_winconvals(N)=bTS_wincon;
+			%bTS_winconvals(N)=bTS_wincon;
 			% values are reasonable relative to each other (wincon > g_wincon), but lower than expected. Double check to make sure mapping on correctly
 			% make vector for all values except for current K (N) to loop through
 			Kvec=1:K;
@@ -133,6 +133,7 @@ for s=1:length(subjs)
 			% mean correlation with each other network
 			for b=1:(K-1)
 				curOtherNet=NotKvec(b);
+				% index vertices not in up-one-level-network-N loop
 				NotKind=find(subj_V(:,K+1)==curOtherNet);
 				g_NotKind=find(group_part==curOtherNet);
 				bwMat=ba_conmat(Kind,NotKind);
@@ -157,8 +158,6 @@ for s=1:length(subjs)
 		%IDmat=eye(K);
 		%nondiag=(1-IDmat);
 		%nondiagind=find(nondiag==1);
-		% check to make sure this is populating b/w convals in right order (once I'm past k=2)
-		% spoiler: it's not
 		%Kmat(nondiagind)=[bwconvals bwconvals];
 		%g_Kmat(nondiagind)=[g_bwconvals g_bwconvals];
 		%bTS_Kmat(nondiagind)=[bTS_bwconvals bTS_bwconvals];	
