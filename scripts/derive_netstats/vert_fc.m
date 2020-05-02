@@ -91,10 +91,7 @@ for s=1:length(subjs)
 		subj_V=subj_part.V{1};
 		% new column for HP label, K+1 because there should be K loading columns, so the last column becomes labels
 		subj_V(:,K+1)=zeros(1,length(subj_V));
-		for V=1:length(subj_V)
-			% Supplement vertex loadings with HP value (max K loading)
-			subj_V(V,K+1)=find(subj_V(V,:)==(max(subj_V(V,:))));
-		end 
+		[ ~ , subj_V(:,K+1)]=max(subj_V,[],2); 
 		% evaluate group consensus in parallel, k-1 because partitions start at 2
 		group_part=group_parts_masked(:,K-1);	
 		% make empty vectors for connectivity values
