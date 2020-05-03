@@ -24,8 +24,10 @@ end
 % get length of each, multiply by 3 for the 3 operationalizations of FC, and make an empty array of those combined +1 for subj ids
 
 full_df_colnum=(3*(length(win_over_scales)+length(Networkwise_seg_over_scales)+length(glob_Seg_over_scales)+length(bw_over_scales)))+1;
-df=zeros(length(subjs),full_df_colnum);
-df(:,1)=subjs;
+% length(subjs) +1 so theres a row for colnames
+df=zeros((length(subjs)+1),full_df_colnum);
+rownames=['subjects' subjs];
+df(:,1)=rownames;
 
 % make a colnames row with the 4 column types generated
 colnames=strings(full_df_colnum+1);
@@ -44,7 +46,7 @@ for t=1:3;
 		for f=2:(length(win_over_scales)+1)
 			for K=Krange
 				for N=1:length(K)
-				win_strings(f)=strcat(thirdname, '_win_FC_scale' num2str(K), '_net' num2str(N));
+				win_strings(f)=strcat(thirdname, '_win_FC_scale' num2str(K), '_net' num2str(N));	
 				end
 			end
 		end
@@ -75,9 +77,11 @@ for t=1:3;
 % make sure to feed in data in this order - global seg, network seg, within, b/w
 colnames=[colnames, glob_segstrings, seg_strings, win_strings, bw_strings];
 end
+df(1,:)=colnames;
 
 % make 
 % maybe stack variable input in string creation? for s=1:length subjs in the deepest part of the 4 looping structures for each fc type
+% decided not to - alignment of values in both loops should be baked-in double check
 for K=Krange
 	ind_feats=ind_file.Khouse;
 	gro_feats=gro_file.GKhouse;
@@ -85,11 +89,36 @@ for K=Krange
 	ind=ind_feats{K};
 	gro=gro_feats{K};
 	bts=bts_feats{K};
-	
-	ind_fc_win=ind(
-	gro_fc_win=
-	bts_fc_win=
-	
 
+	% get index of df fields corresponding to this K
 	
-	df(
+	for s=1:length(subjs)
+		s_ind=ind(:,:,s);
+		s_gro=gro(:,:,s);
+		s_bts=bts(:,:,s);
+		
+		ind_win=diag(s_ind);
+		gro_win=diag(s_gro);
+		s_bts=diag(s_bts);
+		
+		% has to be in same order as super-nested loop upstairs
+		in_bw=
+		gro_bw=
+		bts_bw=
+
+		% zscore like gw lab for seg
+		ind_nw_seg=
+		gro_nw_seg=
+		bts_nw_seg=
+
+		% get average
+		ind_g_seg=
+		gro_g_seg=
+		bts_g_seg=
+	end
+	% some kind of index of fields corresponding to this scale (K)
+	df(Kind_ind)=
+	df(Kind_gro)=
+	df(Kind_bts)=
+end
+	
