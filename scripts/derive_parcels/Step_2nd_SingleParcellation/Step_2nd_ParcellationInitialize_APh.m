@@ -9,7 +9,7 @@
 %clear
 
 ReplicationFolder = '/cbica/projects/pinesParcels/multiscale/scripts';
-ParcellationFolder = '~/multiscale/results/sge/SingleParcellation';
+ParcellationFolder = '/cbica/home/pinesa/multiscale/results/sge/SingleParcellation';
 InitializationFolder = [ParcellationFolder '/Initialization'];
 Prev_init_fold = '/cbica/projects/pinesParcels/data/SingleParcellation/Initialization';
 mkdir(InitializationFolder);

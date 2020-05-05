@@ -40,7 +40,8 @@ colnames=strings(full_df_colnum+1);
 colnames(1)='bblid';
 % thirds names
 thirdsnames=["ind", "gro", "bts"];
-% lol quintiple nested for loops just to create an empty df
+% initialize an empty df for each of three fc eval methods
+third_df=zeros(length(subjs),((full_df_colnum-1)/3),3)
 % for each third
 for t=1:3;
 	thirdname=thirdsnames(t);
@@ -181,9 +182,19 @@ for t=1:3;
 			end
 			df(s+1,Kind)=subjbwvals;
 		end
+	% merge all fc features into dataframe of this third
+	%       |_GLOBAL_SEG_|____NETWORKWISE_SEG____|_____WITHIN_CONS_____|____________BW_CONS__________|
+	%COLNAMES|
+	% SUBJ_1|
+	% SUBJ_N|
+	third_df(:,:,t)=[df_gns df_ns df_win df_bw];
 	end
-% combine FC feature-type dfs for this third
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
+	% merge individualized, groupcon, and basis ts-derived series with same horzcat
+	% INDIVID. | GROUP | BASIS |
+	%G|NW|WC|BC|G|N|W|B|G|N|W|B|
 	
+% combine FC feature-type dfs for this third
+df=[third_df(:,:,1), third_df(:,:,2), third_df(:,:,3)];
+% save in R friendly format
+csvwrite(strcat(outdir,'/master_fcfeats.csv'),df);
+
