@@ -59,12 +59,12 @@ for i = 1:50
     sbjListFile = [InitializationFolder '/Input/sbjListFile_' num2str(i) '.txt'];
     %system(['rm ' sbjListFile]);
 	% uncommented because this sbjListFile seems to be needed, at least in first iteration
-    %for j = 1:length(SubjectsIDs)
-     % cmd = ['echo ' LeftCell{SubjectsIDs(j)} ' >> ' sbjListFile];
-      %system(cmd);
-      %icmd = ['echo ' RightCell{SubjectsIDs(j)} ' >> ' sbjListFile];
-      %system(cmd);
-   %end
+    for j = 1:length(SubjectsIDs)
+      cmd = ['echo ' LeftCell{SubjectsIDs(j)} ' >> ' sbjListFile];
+      system(cmd);
+      icmd = ['echo ' RightCell{SubjectsIDs(j)} ' >> ' sbjListFile];
+      system(cmd);
+   end
 
     outDir = [InitializationFolder '/InitializationRes_' num2str(i)];
     save([InitializationFolder '/Configuration_' num2str(i) '.mat'], 'sbjListFile', 'surfL', 'surfR', 'surfML', 'surfMR', 'prepDataFile', 'outDir', ...
