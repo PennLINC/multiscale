@@ -1,6 +1,6 @@
-scripts/derive_parcels/tmp*
-*.sw?
-scripts/derive_parcels/Toolbox/*
-qsub_matlab.sh.*
-._*
-tmp.sh.*
+scripts/derive_parcels/tmp
+.sw
+scripts/derive_parcels/Toolbox
+qsub_matlab.sh.
+._
+tmp.sh.

@@ -1,0 +1,8357 @@
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2018 The MathWorks, Inc.
+              R2018a Update 6 (9.4.0.949201) 64-bit (glnxa64)
+                             September 5, 2018
+
+ 
+To get started, type one of these: helpwin, helpdesk, or demo.
+For product information, visit www.mathworks.com.
+ 
+[Warning: Function assert has the same name as a MATLAB builtin. We suggest you
+rename the function to avoid a potential name conflict.] 
+[> In path (line 109)
+  In addpath (line 96)
+  In iterate_nmf_overscales (line 2)
+  In run (line 91)] 
+[Warning: Function assert has the same name as a MATLAB builtin. We suggest you
+rename the function to avoid a potential name conflict.] 
+[> In path (line 109)
+  In addpath (line 96)
+  In iterate_nmf_overscales (line 2)
+  In run (line 91)] 
+[Warning: Function assert has the same name as a MATLAB builtin. We suggest you
+rename the function to avoid a potential name conflict.] 
+[> In path (line 109)
+  In addpath (line 96)
+  In iterate_nmf_overscales (line 2)
+  In run (line 91)] 
+[Warning: Function assert has the same name as a MATLAB builtin. We suggest you
+rename the function to avoid a potential name conflict.] 
+[> In path (line 109)
+  In addpath (line 96)
+  In iterate_nmf_overscales (line 2)
+  In run (line 91)] 
+[Warning: Directory already exists.] 
+[> In Step_1st_CreatePrepData_AP (line 6)
+  In iterate_nmf_overscales (line 7)
+  In run (line 91)] 
+
+K =
+
+     2
+
+[Warning: Directory already exists.] 
+[> In Step_2nd_ParcellationInitialize_AP (line 14)
+  In iterate_nmf_overscales (line 9)
+  In run (line 91)] 
+[Warning: Directory already exists.] 
+[> In Step_2nd_ParcellationInitialize_AP (line 15)
+  In iterate_nmf_overscales (line 9)
+  In run (line 91)] 
+
+i =
+
+     1
+
+
+i =
+
+     2
+
+
+i =
+
+     3
+
+
+i =
+
+     4
+
+
+i =
+
+     5
+
+
+i =
+
+     6
+
+
+i =
+
+     7
+
+
+i =
+
+     8
+
+
+i =
+
+     9
+
+
+i =
+
+    10
+
+
+i =
+
+    11
+
+
+i =
+
+    12
+
+
+i =
+
+    13
+
+
+i =
+
+    14
+
+
+i =
+
+    15
+
+
+i =
+
+    16
+
+
+i =
+
+    17
+
+
+i =
+
+    18
+
+
+i =
+
+    19
+
+
+i =
+
+    20
+
+
+i =
+
+    21
+
+
+i =
+
+    22
+
+
+i =
+
+    23
+
+
+i =
+
+    24
+
+
+i =
+
+    25
+
+
+i =
+
+    26
+
+
+i =
+
+    27
+
+
+i =
+
+    28
+
+
+i =
+
+    29
+
+
+i =
+
+    30
+
+
+i =
+
+    31
+
+
+i =
+
+    32
+
+
+i =
+
+    33
+
+
+i =
+
+    34
+
+
+i =
+
+    35
+
+
+i =
+
+    36
+
+
+i =
+
+    37
+
+
+i =
+
+    38
+
+
+i =
+
+    39
+
+
+i =
+
+    40
+
+
+i =
+
+    41
+
+
+i =
+
+    42
+
+
+i =
+
+    43
+
+
+i =
+
+    44
+
+
+i =
+
+    45
+
+
+i =
+
+    46
+
+
+i =
+
+    47
+
+
+i =
+
+    48
+
+
+i =
+
+    49
+
+
+i =
+
+    50
+
+
+K =
+
+     2
+
+[Warning: Directory already exists.] 
+[> In Step_1st_CreatePrepData_AP (line 6)
+  In iterate_nmf_overscales (line 7)
+  In run (line 91)] 
+
+K =
+
+     3
+
+[Warning: Directory already exists.] 
+[> In Step_2nd_ParcellationInitialize_AP (line 14)
+  In iterate_nmf_overscales (line 9)
+  In run (line 91)] 
+[Warning: Directory already exists.] 
+[> In Step_2nd_ParcellationInitialize_AP (line 15)
+  In iterate_nmf_overscales (line 9)
+  In run (line 91)] 
+
+i =
+
+     1
+
+
+i =
+
+     2
+
+
+i =
+
+     3
+
+
+i =
+
+     4
+
+
+i =
+
+     5
+
+
+i =
+
+     6
+
+
+i =
+
+     7
+
+
+i =
+
+     8
+
+
+i =
+
+     9
+
+
+i =
+
+    10
+
+
+i =
+
+    11
+
+
+i =
+
+    12
+
+
+i =
+
+    13
+
+
+i =
+
+    14
+
+
+i =
+
+    15
+
+
+i =
+
+    16
+
+
+i =
+
+    17
+
+
+i =
+
+    18
+
+
+i =
+
+    19
+
+
+i =
+
+    20
+
+
+i =
+
+    21
+
+
+i =
+
+    22
+
+
+i =
+
+    23
+
+
+i =
+
+    24
+
+
+i =
+
+    25
+
+
+i =
+
+    26
+
+
+i =
+
+    27
+
+
+i =
+
+    28
+
+
+i =
+
+    29
+
+
+i =
+
+    30
+
+
+i =
+
+    31
+
+
+i =
+
+    32
+
+
+i =
+
+    33
+
+
+i =
+
+    34
+
+
+i =
+
+    35
+
+
+i =
+
+    36
+
+
+i =
+
+    37
+
+
+i =
+
+    38
+
+
+i =
+
+    39
+
+
+i =
+
+    40
+
+
+i =
+
+    41
+
+
+i =
+
+    42
+
+
+i =
+
+    43
+
+
+i =
+
+    44
+
+
+i =
+
+    45
+
+
+i =
+
+    46
+
+
+i =
+
+    47
+
+
+i =
+
+    48
+
+
+i =
+
+    49
+
+
+i =
+
+    50
+
+
+K =
+
+     3
+
+[Warning: Directory already exists.] 
+[> In Step_1st_CreatePrepData_AP (line 6)
+  In iterate_nmf_overscales (line 7)
+  In run (line 91)] 
+
+K =
+
+     4
+
+[Warning: Directory already exists.] 
+[> In Step_2nd_ParcellationInitialize_AP (line 14)
+  In iterate_nmf_overscales (line 9)
+  In run (line 91)] 
+[Warning: Directory already exists.] 
+[> In Step_2nd_ParcellationInitialize_AP (line 15)
+  In iterate_nmf_overscales (line 9)
+  In run (line 91)] 
+
+i =
+
+     1
+
+
+i =
+
+     2
+
+
+i =
+
+     3
+
+
+i =
+
+     4
+
+
+i =
+
+     5
+
+
+i =
+
+     6
+
+
+i =
+
+     7
+
+
+i =
+
+     8
+
+
+i =
+
+     9
+
+
+i =
+
+    10
+
+
+i =
+
+    11
+
+
+i =
+
+    12
+
+
+i =
+
+    13
+
+
+i =
+
+    14
+
+
+i =
+
+    15
+
+
+i =
+
+    16
+
+
+i =
+
+    17
+
+
+i =
+
+    18
+
+
+i =
+
+    19
+
+
+i =
+
+    20
+
+
+i =
+
+    21
+
+
+i =
+
+    22
+
+
+i =
+
+    23
+
+
+i =
+
+    24
+
+
+i =
+
+    25
+
+
+i =
+
+    26
+
+
+i =
+
+    27
+
+
+i =
+
+    28
+
+
+i =
+
+    29
+
+
+i =
+
+    30
+
+
+i =
+
+    31
+
+
+i =
+
+    32
+
+
+i =
+
+    33
+
+
+i =
+
+    34
+
+
+i =
+
+    35
+
+
+i =
+
+    36
+
+
+i =
+
+    37
+
+
+i =
+
+    38
+
+
+i =
+
+    39
+
+
+i =
+
+    40
+
+
+i =
+
+    41
+
+
+i =
+
+    42
+
+
+i =
+
+    43
+
+
+i =
+
+    44
+
+
+i =
+
+    45
+
+
+i =
+
+    46
+
+
+i =
+
+    47
+
+
+i =
+
+    48
+
+
+i =
+
+    49
+
+
+i =
+
+    50
+
+
+K =
+
+     4
+
+[Warning: Directory already exists.] 
+[> In Step_1st_CreatePrepData_AP (line 6)
+  In iterate_nmf_overscales (line 7)
+  In run (line 91)] 
+
+K =
+
+     5
+
+[Warning: Directory already exists.] 
+[> In Step_2nd_ParcellationInitialize_AP (line 14)
+  In iterate_nmf_overscales (line 9)
+  In run (line 91)] 
+[Warning: Directory already exists.] 
+[> In Step_2nd_ParcellationInitialize_AP (line 15)
+  In iterate_nmf_overscales (line 9)
+  In run (line 91)] 
+
+i =
+
+     1
+
+
+i =
+
+     2
+
+
+i =
+
+     3
+
+
+i =
+
+     4
+
+
+i =
+
+     5
+
+
+i =
+
+     6
+
+
+i =
+
+     7
+
+
+i =
+
+     8
+
+
+i =
+
+     9
+
+
+i =
+
+    10
+
+
+i =
+
+    11
+
+
+i =
+
+    12
+
+
+i =
+
+    13
+
+
+i =
+
+    14
+
+
+i =
+
+    15
+
+
+i =
+
+    16
+
+
+i =
+
+    17
+
+
+i =
+
+    18
+
+
+i =
+
+    19
+
+
+i =
+
+    20
+
+
+i =
+
+    21
+
+
+i =
+
+    22
+
+
+i =
+
+    23
+
+
+i =
+
+    24
+
+
+i =
+
+    25
+
+
+i =
+
+    26
+
+
+i =
+
+    27
+
+
+i =
+
+    28
+
+
+i =
+
+    29
+
+
+i =
+
+    30
+
+
+i =
+
+    31
+
+
+i =
+
+    32
+
+
+i =
+
+    33
+
+
+i =
+
+    34
+
+
+i =
+
+    35
+
+
+i =
+
+    36
+
+
+i =
+
+    37
+
+
+i =
+
+    38
+
+
+i =
+
+    39
+
+
+i =
+
+    40
+
+
+i =
+
+    41
+
+
+i =
+
+    42
+
+
+i =
+
+    43
+
+
+i =
+
+    44
+
+
+i =
+
+    45
+
+
+i =
+
+    46
+
+
+i =
+
+    47
+
+
+i =
+
+    48
+
+
+i =
+
+    49
+
+
+i =
+
+    50
+
+
+K =
+
+     5
+
+[Warning: Directory already exists.] 
+[> In Step_1st_CreatePrepData_AP (line 6)
+  In iterate_nmf_overscales (line 7)
+  In run (line 91)] 
+
+K =
+
+     6
+
+[Warning: Directory already exists.] 
+[> In Step_2nd_ParcellationInitialize_AP (line 14)
+  In iterate_nmf_overscales (line 9)
+  In run (line 91)] 
+[Warning: Directory already exists.] 
+[> In Step_2nd_ParcellationInitialize_AP (line 15)
+  In iterate_nmf_overscales (line 9)
+  In run (line 91)] 
+
+i =
+
+     1
+
+
+i =
+
+     2
+
+
+i =
+
+     3
+
+
+i =
+
+     4
+
+
+i =
+
+     5
+
+
+i =
+
+     6
+
+
+i =
+
+     7
+
+
+i =
+
+     8
+
+
+i =
+
+     9
+
+
+i =
+
+    10
+
+
+i =
+
+    11
+
+
+i =
+
+    12
+
+
+i =
+
+    13
+
+
+i =
+
+    14
+
+
+i =
+
+    15
+
+
+i =
+
+    16
+
+
+i =
+
+    17
+
+
+i =
+
+    18
+
+
+i =
+
+    19
+
+
+i =
+
+    20
+
+
+i =
+
+    21
+
+
+i =
+
+    22
+
+
+i =
+
+    23
+
+
+i =
+
+    24
+
+
+i =
+
+    25
+
+
+i =
+
+    26
+
+
+i =
+
+    27
+
+
+i =
+
+    28
+
+
+i =
+
+    29
+
+
+i =
+
+    30
+
+
+i =
+
+    31
+
+
+i =
+
+    32
+
+
+i =
+
+    33
+
+
+i =
+
+    34
+
+
+i =
+
+    35
+
+
+i =
+
+    36
+
+
+i =
+
+    37
+
+
+i =
+
+    38
+
+
+i =
+
+    39
+
+
+i =
+
+    40
+
+
+i =
+
+    41
+
+
+i =
+
+    42
+
+
+i =
+
+    43
+
+
+i =
+
+    44
+
+
+i =
+
+    45
+
+
+i =
+
+    46
+
+
+i =
+
+    47
+
+
+i =
+
+    48
+
+
+i =
+
+    49
+
+
+i =
+
+    50
+
+
+K =
+
+     6
+
+[Warning: Directory already exists.] 
+[> In Step_1st_CreatePrepData_AP (line 6)
+  In iterate_nmf_overscales (line 7)
+  In run (line 91)] 
+
+K =
+
+     7
+
+[Warning: Directory already exists.] 
+[> In Step_2nd_ParcellationInitialize_AP (line 14)
+  In iterate_nmf_overscales (line 9)
+  In run (line 91)] 
+[Warning: Directory already exists.] 
+[> In Step_2nd_ParcellationInitialize_AP (line 15)
+  In iterate_nmf_overscales (line 9)
+  In run (line 91)] 
+
+i =
+
+     1
+
+
+i =
+
+     2
+
+
+i =
+
+     3
+
+
+i =
+
+     4
+
+
+i =
+
+     5
+
+
+i =
+
+     6
+
+
+i =
+
+     7
+
+
+i =
+
+     8
+
+
+i =
+
+     9
+
+
+i =
+
+    10
+
+
+i =
+
+    11
+
+
+i =
+
+    12
+
+
+i =
+
+    13
+
+
+i =
+
+    14
+
+
+i =
+
+    15
+
+
+i =
+
+    16
+
+
+i =
+
+    17
+
+
+i =
+
+    18
+
+
+i =
+
+    19
+
+
+i =
+
+    20
+
+
+i =
+
+    21
+
+
+i =
+
+    22
+
+
+i =
+
+    23
+
+
+i =
+
+    24
+
+
+i =
+
+    25
+
+
+i =
+
+    26
+
+
+i =
+
+    27
+
+
+i =
+
+    28
+
+
+i =
+
+    29
+
+
+i =
+
+    30
+
+
+i =
+
+    31
+
+
+i =
+
+    32
+
+
+i =
+
+    33
+
+
+i =
+
+    34
+
+
+i =
+
+    35
+
+
+i =
+
+    36
+
+
+i =
+
+    37
+
+
+i =
+
+    38
+
+
+i =
+
+    39
+
+
+i =
+
+    40
+
+
+i =
+
+    41
+
+
+i =
+
+    42
+
+
+i =
+
+    43
+
+
+i =
+
+    44
+
+
+i =
+
+    45
+
+
+i =
+
+    46
+
+
+i =
+
+    47
+
+
+i =
+
+    48
+
+
+i =
+
+    49
+
+
+i =
+
+    50
+
+
+K =
+
+     7
+
+[Warning: Directory already exists.] 
+[> In Step_1st_CreatePrepData_AP (line 6)
+  In iterate_nmf_overscales (line 7)
+  In run (line 91)] 
+
+K =
+
+     8
+
+[Warning: Directory already exists.] 
+[> In Step_2nd_ParcellationInitialize_AP (line 14)
+  In iterate_nmf_overscales (line 9)
+  In run (line 91)] 
+[Warning: Directory already exists.] 
+[> In Step_2nd_ParcellationInitialize_AP (line 15)
+  In iterate_nmf_overscales (line 9)
+  In run (line 91)] 
+
+i =
+
+     1
+
+
+i =
+
+     2
+
+
+i =
+
+     3
+
+
+i =
+
+     4
+
+Your job 7163366 ("tmp4.sh") has been submitted
+
+i =
+
+     5
+
+Your job 7163367 ("tmp5.sh") has been submitted
+
+i =
+
+     6
+
+
+i =
+
+     7
+
+
+i =
+
+     8
+
+
+i =
+
+     9
+
+Your job 7163368 ("tmp9.sh") has been submitted
+
+i =
+
+    10
+
+Your job 7163369 ("tmp10.sh") has been submitted
+
+i =
+
+    11
+
+
+i =
+
+    12
+
+
+i =
+
+    13
+
+
+i =
+
+    14
+
+
+i =
+
+    15
+
+Your job 7163370 ("tmp15.sh") has been submitted
+
+i =
+
+    16
+
+Your job 7163371 ("tmp16.sh") has been submitted
+
+i =
+
+    17
+
+
+i =
+
+    18
+
+
+i =
+
+    19
+
+
+i =
+
+    20
+
+
+i =
+
+    21
+
+Your job 7163372 ("tmp21.sh") has been submitted
+
+i =
+
+    22
+
+Your job 7163373 ("tmp22.sh") has been submitted
+
+i =
+
+    23
+
+
+i =
+
+    24
+
+
+i =
+
+    25
+
+
+i =
+
+    26
+
+
+i =
+
+    27
+
+
+i =
+
+    28
+
+
+i =
+
+    29
+
+
+i =
+
+    30
+
+Your job 7163374 ("tmp30.sh") has been submitted
+
+i =
+
+    31
+
+Your job 7163375 ("tmp31.sh") has been submitted
+
+i =
+
+    32
+
+Your job 7163376 ("tmp32.sh") has been submitted
+
+i =
+
+    33
+
+
+i =
+
+    34
+
+Your job 7163377 ("tmp34.sh") has been submitted
+
+i =
+
+    35
+
+
+i =
+
+    36
+
+
+i =
+
+    37
+
+Your job 7163378 ("tmp37.sh") has been submitted
+
+i =
+
+    38
+
+
+i =
+
+    39
+
+Your job 7163379 ("tmp39.sh") has been submitted
+
+i =
+
+    40
+
+Your job 7163380 ("tmp40.sh") has been submitted
+
+i =
+
+    41
+
+Your job 7163381 ("tmp41.sh") has been submitted
+
+i =
+
+    42
+
+
+i =
+
+    43
+
+Your job 7163382 ("tmp43.sh") has been submitted
+
+i =
+
+    44
+
+
+i =
+
+    45
+
+Your job 7163383 ("tmp45.sh") has been submitted
+
+i =
+
+    46
+
+
+i =
+
+    47
+
+
+i =
+
+    48
+
+
+i =
+
+    49
+
+
+i =
+
+    50
+
+
+K =
+
+     8
+
+[Warning: Directory already exists.] 
+[> In Step_1st_CreatePrepData_AP (line 6)
+  In iterate_nmf_overscales (line 7)
+  In run (line 91)] 
+
+K =
+
+     9
+
+[Warning: Directory already exists.] 
+[> In Step_2nd_ParcellationInitialize_AP (line 14)
+  In iterate_nmf_overscales (line 9)
+  In run (line 91)] 
+[Warning: Directory already exists.] 
+[> In Step_2nd_ParcellationInitialize_AP (line 15)
+  In iterate_nmf_overscales (line 9)
+  In run (line 91)] 
+
+i =
+
+     1
+
+
+i =
+
+     2
+
+
+i =
+
+     3
+
+
+i =
+
+     4
+
+
+i =
+
+     5
+
+Your job 7163384 ("tmp5.sh") has been submitted
+
+i =
+
+     6
+
+
+i =
+
+     7
+
+
+i =
+
+     8
+
+
+i =
+
+     9
+
+Your job 7163385 ("tmp9.sh") has been submitted
+
+i =
+
+    10
+
+
+i =
+
+    11
+
+
+i =
+
+    12
+
+Your job 7163386 ("tmp12.sh") has been submitted
+
+i =
+
+    13
+
+Your job 7163387 ("tmp13.sh") has been submitted
+
+i =
+
+    14
+
+
+i =
+
+    15
+
+
+i =
+
+    16
+
+
+i =
+
+    17
+
+Your job 7163388 ("tmp17.sh") has been submitted
+
+i =
+
+    18
+
+
+i =
+
+    19
+
+Your job 7163389 ("tmp19.sh") has been submitted
+
+i =
+
+    20
+
+
+i =
+
+    21
+
+
+i =
+
+    22
+
+
+i =
+
+    23
+
+Your job 7163390 ("tmp23.sh") has been submitted
+
+i =
+
+    24
+
+
+i =
+
+    25
+
+
+i =
+
+    26
+
+
+i =
+
+    27
+
+Your job 7163391 ("tmp27.sh") has been submitted
+
+i =
+
+    28
+
+
+i =
+
+    29
+
+
+i =
+
+    30
+
+
+i =
+
+    31
+
+
+i =
+
+    32
+
+
+i =
+
+    33
+
+
+i =
+
+    34
+
+
+i =
+
+    35
+
+
+i =
+
+    36
+
+
+i =
+
+    37
+
+
+i =
+
+    38
+
+
+i =
+
+    39
+
+
+i =
+
+    40
+
+
+i =
+
+    41
+
+Your job 7163392 ("tmp41.sh") has been submitted
+
+i =
+
+    42
+
+
+i =
+
+    43
+
+
+i =
+
+    44
+
+
+i =
+
+    45
+
+
+i =
+
+    46
+
+Your job 7163393 ("tmp46.sh") has been submitted
+
+i =
+
+    47
+
+
+i =
+
+    48
+
+
+i =
+
+    49
+
+
+i =
+
+    50
+
+
+K =
+
+     9
+
+[Warning: Directory already exists.] 
+[> In Step_1st_CreatePrepData_AP (line 6)
+  In iterate_nmf_overscales (line 7)
+  In run (line 91)] 
+
+K =
+
+    10
+
+[Warning: Directory already exists.] 
+[> In Step_2nd_ParcellationInitialize_AP (line 14)
+  In iterate_nmf_overscales (line 9)
+  In run (line 91)] 
+[Warning: Directory already exists.] 
+[> In Step_2nd_ParcellationInitialize_AP (line 15)
+  In iterate_nmf_overscales (line 9)
+  In run (line 91)] 
+
+i =
+
+     1
+
+
+i =
+
+     2
+
+Your job 7163394 ("tmp2.sh") has been submitted
+
+i =
+
+     3
+
+
+i =
+
+     4
+
+
+i =
+
+     5
+
+
+i =
+
+     6
+
+
+i =
+
+     7
+
+Your job 7163395 ("tmp7.sh") has been submitted
+
+i =
+
+     8
+
+
+i =
+
+     9
+
+
+i =
+
+    10
+
+Your job 7163396 ("tmp10.sh") has been submitted
+
+i =
+
+    11
+
+
+i =
+
+    12
+
+Your job 7163397 ("tmp12.sh") has been submitted
+
+i =
+
+    13
+
+Your job 7163398 ("tmp13.sh") has been submitted
+
+i =
+
+    14
+
+
+i =
+
+    15
+
+Your job 7163399 ("tmp15.sh") has been submitted
+
+i =
+
+    16
+
+
+i =
+
+    17
+
+
+i =
+
+    18
+
+Your job 7163400 ("tmp18.sh") has been submitted
+
+i =
+
+    19
+
+
+i =
+
+    20
+
+Your job 7163401 ("tmp20.sh") has been submitted
+
+i =
+
+    21
+
+Your job 7163402 ("tmp21.sh") has been submitted
+
+i =
+
+    22
+
+Your job 7163403 ("tmp22.sh") has been submitted
+
+i =
+
+    23
+
+
+i =
+
+    24
+
+
+i =
+
+    25
+
+Your job 7163404 ("tmp25.sh") has been submitted
+
+i =
+
+    26
+
+
+i =
+
+    27
+
+Your job 7163405 ("tmp27.sh") has been submitted
+
+i =
+
+    28
+
+
+i =
+
+    29
+
+
+i =
+
+    30
+
+Your job 7163406 ("tmp30.sh") has been submitted
+
+i =
+
+    31
+
+Your job 7163407 ("tmp31.sh") has been submitted
+
+i =
+
+    32
+
+
+i =
+
+    33
+
+Your job 7163408 ("tmp33.sh") has been submitted
+
+i =
+
+    34
+
+Your job 7163409 ("tmp34.sh") has been submitted
+
+i =
+
+    35
+
+Your job 7163410 ("tmp35.sh") has been submitted
+
+i =
+
+    36
+
+
+i =
+
+    37
+
+
+i =
+
+    38
+
+Your job 7163411 ("tmp38.sh") has been submitted
+
+i =
+
+    39
+
+
+i =
+
+    40
+
+
+i =
+
+    41
+
+Your job 7163412 ("tmp41.sh") has been submitted
+
+i =
+
+    42
+
+
+i =
+
+    43
+
+Your job 7163413 ("tmp43.sh") has been submitted
+
+i =
+
+    44
+
+Your job 7163414 ("tmp44.sh") has been submitted
+
+i =
+
+    45
+
+Your job 7163415 ("tmp45.sh") has been submitted
+
+i =
+
+    46
+
+
+i =
+
+    47
+
+
+i =
+
+    48
+
+Your job 7163416 ("tmp48.sh") has been submitted
+
+i =
+
+    49
+
+
+i =
+
+    50
+
+
+K =
+
+    10
+
+[Warning: Directory already exists.] 
+[> In Step_1st_CreatePrepData_AP (line 6)
+  In iterate_nmf_overscales (line 7)
+  In run (line 91)] 
+
+K =
+
+    11
+
+[Warning: Directory already exists.] 
+[> In Step_2nd_ParcellationInitialize_AP (line 14)
+  In iterate_nmf_overscales (line 9)
+  In run (line 91)] 
+[Warning: Directory already exists.] 
+[> In Step_2nd_ParcellationInitialize_AP (line 15)
+  In iterate_nmf_overscales (line 9)
+  In run (line 91)] 
+
+i =
+
+     1
+
+Your job 7163417 ("tmp1.sh") has been submitted
+
+i =
+
+     2
+
+Your job 7163418 ("tmp2.sh") has been submitted
+
+i =
+
+     3
+
+
+i =
+
+     4
+
+
+i =
+
+     5
+
+
+i =
+
+     6
+
+
+i =
+
+     7
+
+
+i =
+
+     8
+
+
+i =
+
+     9
+
+
+i =
+
+    10
+
+
+i =
+
+    11
+
+
+i =
+
+    12
+
+
+i =
+
+    13
+
+Your job 7163419 ("tmp13.sh") has been submitted
+
+i =
+
+    14
+
+
+i =
+
+    15
+
+
+i =
+
+    16
+
+Your job 7163420 ("tmp16.sh") has been submitted
+
+i =
+
+    17
+
+
+i =
+
+    18
+
+Your job 7163421 ("tmp18.sh") has been submitted
+
+i =
+
+    19
+
+
+i =
+
+    20
+
+
+i =
+
+    21
+
+
+i =
+
+    22
+
+Your job 7163422 ("tmp22.sh") has been submitted
+
+i =
+
+    23
+
+Your job 7163423 ("tmp23.sh") has been submitted
+
+i =
+
+    24
+
+
+i =
+
+    25
+
+
+i =
+
+    26
+
+
+i =
+
+    27
+
+
+i =
+
+    28
+
+
+i =
+
+    29
+
+
+i =
+
+    30
+
+
+i =
+
+    31
+
+
+i =
+
+    32
+
+Your job 7163424 ("tmp32.sh") has been submitted
+
+i =
+
+    33
+
+
+i =
+
+    34
+
+
+i =
+
+    35
+
+
+i =
+
+    36
+
+
+i =
+
+    37
+
+
+i =
+
+    38
+
+
+i =
+
+    39
+
+
+i =
+
+    40
+
+
+i =
+
+    41
+
+Your job 7163425 ("tmp41.sh") has been submitted
+
+i =
+
+    42
+
+Your job 7163426 ("tmp42.sh") has been submitted
+
+i =
+
+    43
+
+Your job 7163427 ("tmp43.sh") has been submitted
+
+i =
+
+    44
+
+
+i =
+
+    45
+
+
+i =
+
+    46
+
+
+i =
+
+    47
+
+
+i =
+
+    48
+
+
+i =
+
+    49
+
+
+i =
+
+    50
+
+
+K =
+
+    11
+
+[Warning: Directory already exists.] 
+[> In Step_1st_CreatePrepData_AP (line 6)
+  In iterate_nmf_overscales (line 7)
+  In run (line 91)] 
+
+K =
+
+    12
+
+[Warning: Directory already exists.] 
+[> In Step_2nd_ParcellationInitialize_AP (line 14)
+  In iterate_nmf_overscales (line 9)
+  In run (line 91)] 
+[Warning: Directory already exists.] 
+[> In Step_2nd_ParcellationInitialize_AP (line 15)
+  In iterate_nmf_overscales (line 9)
+  In run (line 91)] 
+
+i =
+
+     1
+
+Your job 7163428 ("tmp1.sh") has been submitted
+
+i =
+
+     2
+
+
+i =
+
+     3
+
+
+i =
+
+     4
+
+Your job 7163429 ("tmp4.sh") has been submitted
+
+i =
+
+     5
+
+
+i =
+
+     6
+
+Your job 7163430 ("tmp6.sh") has been submitted
+
+i =
+
+     7
+
+
+i =
+
+     8
+
+
+i =
+
+     9
+
+
+i =
+
+    10
+
+Your job 7163431 ("tmp10.sh") has been submitted
+
+i =
+
+    11
+
+
+i =
+
+    12
+
+
+i =
+
+    13
+
+Your job 7163432 ("tmp13.sh") has been submitted
+
+i =
+
+    14
+
+
+i =
+
+    15
+
+
+i =
+
+    16
+
+Your job 7163433 ("tmp16.sh") has been submitted
+
+i =
+
+    17
+
+
+i =
+
+    18
+
+
+i =
+
+    19
+
+
+i =
+
+    20
+
+
+i =
+
+    21
+
+
+i =
+
+    22
+
+
+i =
+
+    23
+
+
+i =
+
+    24
+
+
+i =
+
+    25
+
+
+i =
+
+    26
+
+
+i =
+
+    27
+
+
+i =
+
+    28
+
+
+i =
+
+    29
+
+
+i =
+
+    30
+
+
+i =
+
+    31
+
+
+i =
+
+    32
+
+Your job 7163434 ("tmp32.sh") has been submitted
+
+i =
+
+    33
+
+
+i =
+
+    34
+
+
+i =
+
+    35
+
+Your job 7163435 ("tmp35.sh") has been submitted
+
+i =
+
+    36
+
+
+i =
+
+    37
+
+
+i =
+
+    38
+
+
+i =
+
+    39
+
+
+i =
+
+    40
+
+
+i =
+
+    41
+
+Your job 7163436 ("tmp41.sh") has been submitted
+
+i =
+
+    42
+
+
+i =
+
+    43
+
+
+i =
+
+    44
+
+
+i =
+
+    45
+
+
+i =
+
+    46
+
+
+i =
+
+    47
+
+
+i =
+
+    48
+
+
+i =
+
+    49
+
+
+i =
+
+    50
+
+
+K =
+
+    12
+
+[Warning: Directory already exists.] 
+[> In Step_1st_CreatePrepData_AP (line 6)
+  In iterate_nmf_overscales (line 7)
+  In run (line 91)] 
+
+K =
+
+    13
+
+[Warning: Directory already exists.] 
+[> In Step_2nd_ParcellationInitialize_AP (line 14)
+  In iterate_nmf_overscales (line 9)
+  In run (line 91)] 
+[Warning: Directory already exists.] 
+[> In Step_2nd_ParcellationInitialize_AP (line 15)
+  In iterate_nmf_overscales (line 9)
+  In run (line 91)] 
+
+i =
+
+     1
+
+Your job 7163437 ("tmp1.sh") has been submitted
+
+i =
+
+     2
+
+
+i =
+
+     3
+
+Your job 7163438 ("tmp3.sh") has been submitted
+
+i =
+
+     4
+
+Your job 7163439 ("tmp4.sh") has been submitted
+
+i =
+
+     5
+
+
+i =
+
+     6
+
+
+i =
+
+     7
+
+
+i =
+
+     8
+
+
+i =
+
+     9
+
+Your job 7163440 ("tmp9.sh") has been submitted
+
+i =
+
+    10
+
+Your job 7163441 ("tmp10.sh") has been submitted
+
+i =
+
+    11
+
+
+i =
+
+    12
+
+
+i =
+
+    13
+
+
+i =
+
+    14
+
+
+i =
+
+    15
+
+
+i =
+
+    16
+
+
+i =
+
+    17
+
+
+i =
+
+    18
+
+
+i =
+
+    19
+
+
+i =
+
+    20
+
+
+i =
+
+    21
+
+
+i =
+
+    22
+
+
+i =
+
+    23
+
+
+i =
+
+    24
+
+
+i =
+
+    25
+
+Your job 7163442 ("tmp25.sh") has been submitted
+
+i =
+
+    26
+
+
+i =
+
+    27
+
+
+i =
+
+    28
+
+
+i =
+
+    29
+
+
+i =
+
+    30
+
+
+i =
+
+    31
+
+
+i =
+
+    32
+
+Your job 7163443 ("tmp32.sh") has been submitted
+
+i =
+
+    33
+
+
+i =
+
+    34
+
+
+i =
+
+    35
+
+
+i =
+
+    36
+
+
+i =
+
+    37
+
+
+i =
+
+    38
+
+
+i =
+
+    39
+
+
+i =
+
+    40
+
+
+i =
+
+    41
+
+
+i =
+
+    42
+
+
+i =
+
+    43
+
+
+i =
+
+    44
+
+
+i =
+
+    45
+
+
+i =
+
+    46
+
+
+i =
+
+    47
+
+
+i =
+
+    48
+
+
+i =
+
+    49
+
+
+i =
+
+    50
+
+
+K =
+
+    13
+
+[Warning: Directory already exists.] 
+[> In Step_1st_CreatePrepData_AP (line 6)
+  In iterate_nmf_overscales (line 7)
+  In run (line 91)] 
+
+K =
+
+    14
+
+[Warning: Directory already exists.] 
+[> In Step_2nd_ParcellationInitialize_AP (line 14)
+  In iterate_nmf_overscales (line 9)
+  In run (line 91)] 
+[Warning: Directory already exists.] 
+[> In Step_2nd_ParcellationInitialize_AP (line 15)
+  In iterate_nmf_overscales (line 9)
+  In run (line 91)] 
+
+i =
+
+     1
+
+
+i =
+
+     2
+
+
+i =
+
+     3
+
+Your job 7163444 ("tmp3.sh") has been submitted
+
+i =
+
+     4
+
+
+i =
+
+     5
+
+
+i =
+
+     6
+
+Your job 7163445 ("tmp6.sh") has been submitted
+
+i =
+
+     7
+
+Your job 7163446 ("tmp7.sh") has been submitted
+
+i =
+
+     8
+
+Your job 7163447 ("tmp8.sh") has been submitted
+
+i =
+
+     9
+
+Your job 7163448 ("tmp9.sh") has been submitted
+
+i =
+
+    10
+
+
+i =
+
+    11
+
+
+i =
+
+    12
+
+
+i =
+
+    13
+
+
+i =
+
+    14
+
+
+i =
+
+    15
+
+
+i =
+
+    16
+
+
+i =
+
+    17
+
+
+i =
+
+    18
+
+
+i =
+
+    19
+
+
+i =
+
+    20
+
+
+i =
+
+    21
+
+
+i =
+
+    22
+
+
+i =
+
+    23
+
+
+i =
+
+    24
+
+
+i =
+
+    25
+
+
+i =
+
+    26
+
+
+i =
+
+    27
+
+
+i =
+
+    28
+
+
+i =
+
+    29
+
+
+i =
+
+    30
+
+
+i =
+
+    31
+
+
+i =
+
+    32
+
+
+i =
+
+    33
+
+
+i =
+
+    34
+
+
+i =
+
+    35
+
+
+i =
+
+    36
+
+
+i =
+
+    37
+
+
+i =
+
+    38
+
+
+i =
+
+    39
+
+
+i =
+
+    40
+
+
+i =
+
+    41
+
+
+i =
+
+    42
+
+
+i =
+
+    43
+
+
+i =
+
+    44
+
+
+i =
+
+    45
+
+
+i =
+
+    46
+
+
+i =
+
+    47
+
+
+i =
+
+    48
+
+
+i =
+
+    49
+
+
+i =
+
+    50
+
+
+K =
+
+    14
+
+[Warning: Directory already exists.] 
+[> In Step_1st_CreatePrepData_AP (line 6)
+  In iterate_nmf_overscales (line 7)
+  In run (line 91)] 
+
+K =
+
+    15
+
+[Warning: Directory already exists.] 
+[> In Step_2nd_ParcellationInitialize_AP (line 14)
+  In iterate_nmf_overscales (line 9)
+  In run (line 91)] 
+[Warning: Directory already exists.] 
+[> In Step_2nd_ParcellationInitialize_AP (line 15)
+  In iterate_nmf_overscales (line 9)
+  In run (line 91)] 
+
+i =
+
+     1
+
+
+i =
+
+     2
+
+
+i =
+
+     3
+
+
+i =
+
+     4
+
+
+i =
+
+     5
+
+
+i =
+
+     6
+
+
+i =
+
+     7
+
+
+i =
+
+     8
+
+
+i =
+
+     9
+
+
+i =
+
+    10
+
+
+i =
+
+    11
+
+
+i =
+
+    12
+
+
+i =
+
+    13
+
+
+i =
+
+    14
+
+
+i =
+
+    15
+
+
+i =
+
+    16
+
+
+i =
+
+    17
+
+
+i =
+
+    18
+
+
+i =
+
+    19
+
+
+i =
+
+    20
+
+
+i =
+
+    21
+
+
+i =
+
+    22
+
+Your job 7163449 ("tmp22.sh") has been submitted
+
+i =
+
+    23
+
+
+i =
+
+    24
+
+Your job 7163450 ("tmp24.sh") has been submitted
+
+i =
+
+    25
+
+
+i =
+
+    26
+
+Your job 7163451 ("tmp26.sh") has been submitted
+
+i =
+
+    27
+
+
+i =
+
+    28
+
+
+i =
+
+    29
+
+
+i =
+
+    30
+
+
+i =
+
+    31
+
+Your job 7163452 ("tmp31.sh") has been submitted
+
+i =
+
+    32
+
+
+i =
+
+    33
+
+
+i =
+
+    34
+
+Your job 7163453 ("tmp34.sh") has been submitted
+
+i =
+
+    35
+
+
+i =
+
+    36
+
+
+i =
+
+    37
+
+
+i =
+
+    38
+
+
+i =
+
+    39
+
+
+i =
+
+    40
+
+
+i =
+
+    41
+
+
+i =
+
+    42
+
+
+i =
+
+    43
+
+
+i =
+
+    44
+
+
+i =
+
+    45
+
+
+i =
+
+    46
+
+
+i =
+
+    47
+
+Your job 7163454 ("tmp47.sh") has been submitted
+
+i =
+
+    48
+
+
+i =
+
+    49
+
+
+i =
+
+    50
+
+
+K =
+
+    15
+
+[Warning: Directory already exists.] 
+[> In Step_1st_CreatePrepData_AP (line 6)
+  In iterate_nmf_overscales (line 7)
+  In run (line 91)] 
+
+K =
+
+    16
+
+[Warning: Directory already exists.] 
+[> In Step_2nd_ParcellationInitialize_AP (line 14)
+  In iterate_nmf_overscales (line 9)
+  In run (line 91)] 
+[Warning: Directory already exists.] 
+[> In Step_2nd_ParcellationInitialize_AP (line 15)
+  In iterate_nmf_overscales (line 9)
+  In run (line 91)] 
+
+i =
+
+     1
+
+
+i =
+
+     2
+
+
+i =
+
+     3
+
+
+i =
+
+     4
+
+
+i =
+
+     5
+
+
+i =
+
+     6
+
+
+i =
+
+     7
+
+
+i =
+
+     8
+
+
+i =
+
+     9
+
+
+i =
+
+    10
+
+
+i =
+
+    11
+
+
+i =
+
+    12
+
+
+i =
+
+    13
+
+
+i =
+
+    14
+
+
+i =
+
+    15
+
+
+i =
+
+    16
+
+
+i =
+
+    17
+
+
+i =
+
+    18
+
+
+i =
+
+    19
+
+
+i =
+
+    20
+
+
+i =
+
+    21
+
+
+i =
+
+    22
+
+
+i =
+
+    23
+
+
+i =
+
+    24
+
+
+i =
+
+    25
+
+
+i =
+
+    26
+
+
+i =
+
+    27
+
+
+i =
+
+    28
+
+
+i =
+
+    29
+
+
+i =
+
+    30
+
+
+i =
+
+    31
+
+
+i =
+
+    32
+
+
+i =
+
+    33
+
+
+i =
+
+    34
+
+
+i =
+
+    35
+
+
+i =
+
+    36
+
+
+i =
+
+    37
+
+
+i =
+
+    38
+
+
+i =
+
+    39
+
+
+i =
+
+    40
+
+
+i =
+
+    41
+
+
+i =
+
+    42
+
+
+i =
+
+    43
+
+
+i =
+
+    44
+
+
+i =
+
+    45
+
+
+i =
+
+    46
+
+
+i =
+
+    47
+
+
+i =
+
+    48
+
+
+i =
+
+    49
+
+Your job 7163455 ("tmp49.sh") has been submitted
+
+i =
+
+    50
+
+
+K =
+
+    16
+
+[Warning: Directory already exists.] 
+[> In Step_1st_CreatePrepData_AP (line 6)
+  In iterate_nmf_overscales (line 7)
+  In run (line 91)] 
+
+K =
+
+    17
+
+[Warning: Directory already exists.] 
+[> In Step_2nd_ParcellationInitialize_AP (line 14)
+  In iterate_nmf_overscales (line 9)
+  In run (line 91)] 
+[Warning: Directory already exists.] 
+[> In Step_2nd_ParcellationInitialize_AP (line 15)
+  In iterate_nmf_overscales (line 9)
+  In run (line 91)] 
+
+i =
+
+     1
+
+Your job 7163456 ("tmp1.sh") has been submitted
+
+i =
+
+     2
+
+
+i =
+
+     3
+
+
+i =
+
+     4
+
+Your job 7163457 ("tmp4.sh") has been submitted
+
+i =
+
+     5
+
+
+i =
+
+     6
+
+
+i =
+
+     7
+
+
+i =
+
+     8
+
+
+i =
+
+     9
+
+Your job 7163458 ("tmp9.sh") has been submitted
+
+i =
+
+    10
+
+
+i =
+
+    11
+
+Your job 7163459 ("tmp11.sh") has been submitted
+
+i =
+
+    12
+
+
+i =
+
+    13
+
+
+i =
+
+    14
+
+
+i =
+
+    15
+
+Your job 7163460 ("tmp15.sh") has been submitted
+
+i =
+
+    16
+
+Your job 7163461 ("tmp16.sh") has been submitted
+
+i =
+
+    17
+
+Your job 7163462 ("tmp17.sh") has been submitted
+
+i =
+
+    18
+
+Your job 7163463 ("tmp18.sh") has been submitted
+
+i =
+
+    19
+
+Your job 7163464 ("tmp19.sh") has been submitted
+
+i =
+
+    20
+
+Your job 7163465 ("tmp20.sh") has been submitted
+
+i =
+
+    21
+
+
+i =
+
+    22
+
+
+i =
+
+    23
+
+
+i =
+
+    24
+
+
+i =
+
+    25
+
+
+i =
+
+    26
+
+
+i =
+
+    27
+
+
+i =
+
+    28
+
+Your job 7163466 ("tmp28.sh") has been submitted
+
+i =
+
+    29
+
+
+i =
+
+    30
+
+Your job 7163467 ("tmp30.sh") has been submitted
+
+i =
+
+    31
+
+
+i =
+
+    32
+
+Your job 7163468 ("tmp32.sh") has been submitted
+
+i =
+
+    33
+
+
+i =
+
+    34
+
+
+i =
+
+    35
+
+
+i =
+
+    36
+
+
+i =
+
+    37
+
+Your job 7163469 ("tmp37.sh") has been submitted
+
+i =
+
+    38
+
+Your job 7163470 ("tmp38.sh") has been submitted
+
+i =
+
+    39
+
+Your job 7163471 ("tmp39.sh") has been submitted
+
+i =
+
+    40
+
+Your job 7163472 ("tmp40.sh") has been submitted
+
+i =
+
+    41
+
+
+i =
+
+    42
+
+Your job 7163473 ("tmp42.sh") has been submitted
+
+i =
+
+    43
+
+
+i =
+
+    44
+
+Your job 7163474 ("tmp44.sh") has been submitted
+
+i =
+
+    45
+
+
+i =
+
+    46
+
+Your job 7163475 ("tmp46.sh") has been submitted
+
+i =
+
+    47
+
+
+i =
+
+    48
+
+Your job 7163476 ("tmp48.sh") has been submitted
+
+i =
+
+    49
+
+
+i =
+
+    50
+
+
+K =
+
+    17
+
+[Warning: Directory already exists.] 
+[> In Step_1st_CreatePrepData_AP (line 6)
+  In iterate_nmf_overscales (line 7)
+  In run (line 91)] 
+
+K =
+
+    18
+
+[Warning: Directory already exists.] 
+[> In Step_2nd_ParcellationInitialize_AP (line 14)
+  In iterate_nmf_overscales (line 9)
+  In run (line 91)] 
+[Warning: Directory already exists.] 
+[> In Step_2nd_ParcellationInitialize_AP (line 15)
+  In iterate_nmf_overscales (line 9)
+  In run (line 91)] 
+
+i =
+
+     1
+
+
+i =
+
+     2
+
+
+i =
+
+     3
+
+
+i =
+
+     4
+
+Your job 7163477 ("tmp4.sh") has been submitted
+
+i =
+
+     5
+
+
+i =
+
+     6
+
+Your job 7163478 ("tmp6.sh") has been submitted
+
+i =
+
+     7
+
+
+i =
+
+     8
+
+Your job 7163479 ("tmp8.sh") has been submitted
+
+i =
+
+     9
+
+
+i =
+
+    10
+
+
+i =
+
+    11
+
+Your job 7163480 ("tmp11.sh") has been submitted
+
+i =
+
+    12
+
+
+i =
+
+    13
+
+
+i =
+
+    14
+
+Your job 7163481 ("tmp14.sh") has been submitted
+
+i =
+
+    15
+
+
+i =
+
+    16
+
+
+i =
+
+    17
+
+Your job 7163482 ("tmp17.sh") has been submitted
+
+i =
+
+    18
+
+
+i =
+
+    19
+
+
+i =
+
+    20
+
+
+i =
+
+    21
+
+
+i =
+
+    22
+
+
+i =
+
+    23
+
+
+i =
+
+    24
+
+
+i =
+
+    25
+
+Your job 7163483 ("tmp25.sh") has been submitted
+
+i =
+
+    26
+
+Your job 7163484 ("tmp26.sh") has been submitted
+
+i =
+
+    27
+
+
+i =
+
+    28
+
+
+i =
+
+    29
+
+
+i =
+
+    30
+
+Your job 7163485 ("tmp30.sh") has been submitted
+
+i =
+
+    31
+
+Your job 7163486 ("tmp31.sh") has been submitted
+
+i =
+
+    32
+
+
+i =
+
+    33
+
+Your job 7163487 ("tmp33.sh") has been submitted
+
+i =
+
+    34
+
+
+i =
+
+    35
+
+
+i =
+
+    36
+
+Your job 7163488 ("tmp36.sh") has been submitted
+
+i =
+
+    37
+
+
+i =
+
+    38
+
+
+i =
+
+    39
+
+Your job 7163489 ("tmp39.sh") has been submitted
+
+i =
+
+    40
+
+
+i =
+
+    41
+
+Your job 7163490 ("tmp41.sh") has been submitted
+
+i =
+
+    42
+
+Your job 7163491 ("tmp42.sh") has been submitted
+
+i =
+
+    43
+
+
+i =
+
+    44
+
+
+i =
+
+    45
+
+Your job 7163492 ("tmp45.sh") has been submitted
+
+i =
+
+    46
+
+
+i =
+
+    47
+
+
+i =
+
+    48
+
+
+i =
+
+    49
+
+
+i =
+
+    50
+
+
+K =
+
+    18
+
+[Warning: Directory already exists.] 
+[> In Step_1st_CreatePrepData_AP (line 6)
+  In iterate_nmf_overscales (line 7)
+  In run (line 91)] 
+
+K =
+
+    19
+
+[Warning: Directory already exists.] 
+[> In Step_2nd_ParcellationInitialize_AP (line 14)
+  In iterate_nmf_overscales (line 9)
+  In run (line 91)] 
+[Warning: Directory already exists.] 
+[> In Step_2nd_ParcellationInitialize_AP (line 15)
+  In iterate_nmf_overscales (line 9)
+  In run (line 91)] 
+
+i =
+
+     1
+
+Your job 7163493 ("tmp1.sh") has been submitted
+
+i =
+
+     2
+
+
+i =
+
+     3
+
+
+i =
+
+     4
+
+
+i =
+
+     5
+
+Your job 7163494 ("tmp5.sh") has been submitted
+
+i =
+
+     6
+
+Your job 7163495 ("tmp6.sh") has been submitted
+
+i =
+
+     7
+
+Your job 7163496 ("tmp7.sh") has been submitted
+
+i =
+
+     8
+
+Your job 7163497 ("tmp8.sh") has been submitted
+
+i =
+
+     9
+
+Your job 7163498 ("tmp9.sh") has been submitted
+
+i =
+
+    10
+
+Your job 7163499 ("tmp10.sh") has been submitted
+
+i =
+
+    11
+
+Your job 7163500 ("tmp11.sh") has been submitted
+
+i =
+
+    12
+
+Your job 7163501 ("tmp12.sh") has been submitted
+
+i =
+
+    13
+
+
+i =
+
+    14
+
+Your job 7163502 ("tmp14.sh") has been submitted
+
+i =
+
+    15
+
+Your job 7163503 ("tmp15.sh") has been submitted
+
+i =
+
+    16
+
+Your job 7163504 ("tmp16.sh") has been submitted
+
+i =
+
+    17
+
+Your job 7163505 ("tmp17.sh") has been submitted
+
+i =
+
+    18
+
+
+i =
+
+    19
+
+Your job 7163506 ("tmp19.sh") has been submitted
+
+i =
+
+    20
+
+Your job 7163507 ("tmp20.sh") has been submitted
+
+i =
+
+    21
+
+
+i =
+
+    22
+
+Your job 7163508 ("tmp22.sh") has been submitted
+
+i =
+
+    23
+
+
+i =
+
+    24
+
+Your job 7163509 ("tmp24.sh") has been submitted
+
+i =
+
+    25
+
+
+i =
+
+    26
+
+
+i =
+
+    27
+
+
+i =
+
+    28
+
+Your job 7163510 ("tmp28.sh") has been submitted
+
+i =
+
+    29
+
+
+i =
+
+    30
+
+
+i =
+
+    31
+
+Your job 7163511 ("tmp31.sh") has been submitted
+
+i =
+
+    32
+
+
+i =
+
+    33
+
+Your job 7163512 ("tmp33.sh") has been submitted
+
+i =
+
+    34
+
+Your job 7163513 ("tmp34.sh") has been submitted
+
+i =
+
+    35
+
+
+i =
+
+    36
+
+
+i =
+
+    37
+
+Your job 7163514 ("tmp37.sh") has been submitted
+
+i =
+
+    38
+
+
+i =
+
+    39
+
+
+i =
+
+    40
+
+
+i =
+
+    41
+
+Your job 7163515 ("tmp41.sh") has been submitted
+
+i =
+
+    42
+
+Your job 7163516 ("tmp42.sh") has been submitted
+
+i =
+
+    43
+
+
+i =
+
+    44
+
+Your job 7163517 ("tmp44.sh") has been submitted
+
+i =
+
+    45
+
+
+i =
+
+    46
+
+
+i =
+
+    47
+
+
+i =
+
+    48
+
+
+i =
+
+    49
+
+Your job 7163518 ("tmp49.sh") has been submitted
+
+i =
+
+    50
+
+
+K =
+
+    19
+
+[Warning: Directory already exists.] 
+[> In Step_1st_CreatePrepData_AP (line 6)
+  In iterate_nmf_overscales (line 7)
+  In run (line 91)] 
+
+K =
+
+    20
+
+[Warning: Directory already exists.] 
+[> In Step_2nd_ParcellationInitialize_AP (line 14)
+  In iterate_nmf_overscales (line 9)
+  In run (line 91)] 
+[Warning: Directory already exists.] 
+[> In Step_2nd_ParcellationInitialize_AP (line 15)
+  In iterate_nmf_overscales (line 9)
+  In run (line 91)] 
+
+i =
+
+     1
+
+Your job 7163519 ("tmp1.sh") has been submitted
+
+i =
+
+     2
+
+Your job 7163520 ("tmp2.sh") has been submitted
+
+i =
+
+     3
+
+
+i =
+
+     4
+
+Your job 7163521 ("tmp4.sh") has been submitted
+
+i =
+
+     5
+
+Your job 7163522 ("tmp5.sh") has been submitted
+
+i =
+
+     6
+
+
+i =
+
+     7
+
+
+i =
+
+     8
+
+Your job 7163523 ("tmp8.sh") has been submitted
+
+i =
+
+     9
+
+Your job 7163524 ("tmp9.sh") has been submitted
+
+i =
+
+    10
+
+
+i =
+
+    11
+
+Your job 7163525 ("tmp11.sh") has been submitted
+
+i =
+
+    12
+
+
+i =
+
+    13
+
+
+i =
+
+    14
+
+
+i =
+
+    15
+
+
+i =
+
+    16
+
+Your job 7163526 ("tmp16.sh") has been submitted
+
+i =
+
+    17
+
+Your job 7163527 ("tmp17.sh") has been submitted
+
+i =
+
+    18
+
+Your job 7163528 ("tmp18.sh") has been submitted
+
+i =
+
+    19
+
+
+i =
+
+    20
+
+
+i =
+
+    21
+
+
+i =
+
+    22
+
+
+i =
+
+    23
+
+
+i =
+
+    24
+
+
+i =
+
+    25
+
+
+i =
+
+    26
+
+
+i =
+
+    27
+
+
+i =
+
+    28
+
+
+i =
+
+    29
+
+
+i =
+
+    30
+
+
+i =
+
+    31
+
+
+i =
+
+    32
+
+
+i =
+
+    33
+
+
+i =
+
+    34
+
+
+i =
+
+    35
+
+
+i =
+
+    36
+
+
+i =
+
+    37
+
+
+i =
+
+    38
+
+Your job 7163529 ("tmp38.sh") has been submitted
+
+i =
+
+    39
+
+Your job 7163530 ("tmp39.sh") has been submitted
+
+i =
+
+    40
+
+
+i =
+
+    41
+
+Your job 7163531 ("tmp41.sh") has been submitted
+
+i =
+
+    42
+
+
+i =
+
+    43
+
+Your job 7163532 ("tmp43.sh") has been submitted
+
+i =
+
+    44
+
+Your job 7163533 ("tmp44.sh") has been submitted
+
+i =
+
+    45
+
+Your job 7163534 ("tmp45.sh") has been submitted
+
+i =
+
+    46
+
+
+i =
+
+    47
+
+
+i =
+
+    48
+
+
+i =
+
+    49
+
+
+i =
+
+    50
+
+
+K =
+
+    20
+
+[Warning: Directory already exists.] 
+[> In Step_1st_CreatePrepData_AP (line 6)
+  In iterate_nmf_overscales (line 7)
+  In run (line 91)] 
+
+K =
+
+    21
+
+[Warning: Directory already exists.] 
+[> In Step_2nd_ParcellationInitialize_AP (line 14)
+  In iterate_nmf_overscales (line 9)
+  In run (line 91)] 
+[Warning: Directory already exists.] 
+[> In Step_2nd_ParcellationInitialize_AP (line 15)
+  In iterate_nmf_overscales (line 9)
+  In run (line 91)] 
+
+i =
+
+     1
+
+
+i =
+
+     2
+
+
+i =
+
+     3
+
+
+i =
+
+     4
+
+Your job 7163535 ("tmp4.sh") has been submitted
+
+i =
+
+     5
+
+
+i =
+
+     6
+
+
+i =
+
+     7
+
+
+i =
+
+     8
+
+
+i =
+
+     9
+
+
+i =
+
+    10
+
+Your job 7163536 ("tmp10.sh") has been submitted
+
+i =
+
+    11
+
+
+i =
+
+    12
+
+
+i =
+
+    13
+
+
+i =
+
+    14
+
+
+i =
+
+    15
+
+Your job 7163537 ("tmp15.sh") has been submitted
+
+i =
+
+    16
+
+Your job 7163538 ("tmp16.sh") has been submitted
+
+i =
+
+    17
+
+Your job 7163539 ("tmp17.sh") has been submitted
+
+i =
+
+    18
+
+
+i =
+
+    19
+
+
+i =
+
+    20
+
+
+i =
+
+    21
+
+
+i =
+
+    22
+
+Your job 7163540 ("tmp22.sh") has been submitted
+
+i =
+
+    23
+
+Your job 7163541 ("tmp23.sh") has been submitted
+
+i =
+
+    24
+
+Your job 7163542 ("tmp24.sh") has been submitted
+
+i =
+
+    25
+
+
+i =
+
+    26
+
+
+i =
+
+    27
+
+
+i =
+
+    28
+
+
+i =
+
+    29
+
+
+i =
+
+    30
+
+
+i =
+
+    31
+
+
+i =
+
+    32
+
+Your job 7163543 ("tmp32.sh") has been submitted
+
+i =
+
+    33
+
+Your job 7163544 ("tmp33.sh") has been submitted
+
+i =
+
+    34
+
+Your job 7163545 ("tmp34.sh") has been submitted
+
+i =
+
+    35
+
+
+i =
+
+    36
+
+
+i =
+
+    37
+
+Your job 7163546 ("tmp37.sh") has been submitted
+
+i =
+
+    38
+
+
+i =
+
+    39
+
+
+i =
+
+    40
+
+
+i =
+
+    41
+
+
+i =
+
+    42
+
+Your job 7163547 ("tmp42.sh") has been submitted
+
+i =
+
+    43
+
+Your job 7163548 ("tmp43.sh") has been submitted
+
+i =
+
+    44
+
+
+i =
+
+    45
+
+
+i =
+
+    46
+
+
+i =
+
+    47
+
+
+i =
+
+    48
+
+Your job 7163549 ("tmp48.sh") has been submitted
+
+i =
+
+    49
+
+
+i =
+
+    50
+
+
+K =
+
+    21
+
+[Warning: Directory already exists.] 
+[> In Step_1st_CreatePrepData_AP (line 6)
+  In iterate_nmf_overscales (line 7)
+  In run (line 91)] 
+
+K =
+
+    22
+
+[Warning: Directory already exists.] 
+[> In Step_2nd_ParcellationInitialize_AP (line 14)
+  In iterate_nmf_overscales (line 9)
+  In run (line 91)] 
+[Warning: Directory already exists.] 
+[> In Step_2nd_ParcellationInitialize_AP (line 15)
+  In iterate_nmf_overscales (line 9)
+  In run (line 91)] 
+
+i =
+
+     1
+
+Your job 7163550 ("tmp1.sh") has been submitted
+
+i =
+
+     2
+
+
+i =
+
+     3
+
+Your job 7163551 ("tmp3.sh") has been submitted
+
+i =
+
+     4
+
+Your job 7163552 ("tmp4.sh") has been submitted
+
+i =
+
+     5
+
+
+i =
+
+     6
+
+
+i =
+
+     7
+
+
+i =
+
+     8
+
+
+i =
+
+     9
+
+
+i =
+
+    10
+
+
+i =
+
+    11
+
+Your job 7163553 ("tmp11.sh") has been submitted
+
+i =
+
+    12
+
+
+i =
+
+    13
+
+Your job 7163554 ("tmp13.sh") has been submitted
+
+i =
+
+    14
+
+Your job 7163555 ("tmp14.sh") has been submitted
+
+i =
+
+    15
+
+Your job 7163556 ("tmp15.sh") has been submitted
+
+i =
+
+    16
+
+
+i =
+
+    17
+
+Your job 7163557 ("tmp17.sh") has been submitted
+
+i =
+
+    18
+
+Your job 7163558 ("tmp18.sh") has been submitted
+
+i =
+
+    19
+
+Your job 7163559 ("tmp19.sh") has been submitted
+
+i =
+
+    20
+
+Your job 7163560 ("tmp20.sh") has been submitted
+
+i =
+
+    21
+
+Your job 7163561 ("tmp21.sh") has been submitted
+
+i =
+
+    22
+
+
+i =
+
+    23
+
+Your job 7163562 ("tmp23.sh") has been submitted
+
+i =
+
+    24
+
+Your job 7163563 ("tmp24.sh") has been submitted
+
+i =
+
+    25
+
+
+i =
+
+    26
+
+Your job 7163564 ("tmp26.sh") has been submitted
+
+i =
+
+    27
+
+Your job 7163565 ("tmp27.sh") has been submitted
+
+i =
+
+    28
+
+Your job 7163566 ("tmp28.sh") has been submitted
+
+i =
+
+    29
+
+Your job 7163567 ("tmp29.sh") has been submitted
+
+i =
+
+    30
+
+Your job 7163568 ("tmp30.sh") has been submitted
+
+i =
+
+    31
+
+
+i =
+
+    32
+
+Your job 7163569 ("tmp32.sh") has been submitted
+
+i =
+
+    33
+
+
+i =
+
+    34
+
+Your job 7163570 ("tmp34.sh") has been submitted
+
+i =
+
+    35
+
+Your job 7163571 ("tmp35.sh") has been submitted
+
+i =
+
+    36
+
+
+i =
+
+    37
+
+Your job 7163572 ("tmp37.sh") has been submitted
+
+i =
+
+    38
+
+
+i =
+
+    39
+
+
+i =
+
+    40
+
+
+i =
+
+    41
+
+
+i =
+
+    42
+
+
+i =
+
+    43
+
+
+i =
+
+    44
+
+
+i =
+
+    45
+
+
+i =
+
+    46
+
+
+i =
+
+    47
+
+
+i =
+
+    48
+
+
+i =
+
+    49
+
+
+i =
+
+    50
+
+
+K =
+
+    22
+
+[Warning: Directory already exists.] 
+[> In Step_1st_CreatePrepData_AP (line 6)
+  In iterate_nmf_overscales (line 7)
+  In run (line 91)] 
+
+K =
+
+    23
+
+[Warning: Directory already exists.] 
+[> In Step_2nd_ParcellationInitialize_AP (line 14)
+  In iterate_nmf_overscales (line 9)
+  In run (line 91)] 
+[Warning: Directory already exists.] 
+[> In Step_2nd_ParcellationInitialize_AP (line 15)
+  In iterate_nmf_overscales (line 9)
+  In run (line 91)] 
+
+i =
+
+     1
+
+
+i =
+
+     2
+
+
+i =
+
+     3
+
+
+i =
+
+     4
+
+
+i =
+
+     5
+
+
+i =
+
+     6
+
+
+i =
+
+     7
+
+
+i =
+
+     8
+
+Your job 7163573 ("tmp8.sh") has been submitted
+
+i =
+
+     9
+
+Your job 7163574 ("tmp9.sh") has been submitted
+
+i =
+
+    10
+
+Your job 7163575 ("tmp10.sh") has been submitted
+
+i =
+
+    11
+
+
+i =
+
+    12
+
+
+i =
+
+    13
+
+
+i =
+
+    14
+
+
+i =
+
+    15
+
+
+i =
+
+    16
+
+
+i =
+
+    17
+
+Your job 7163576 ("tmp17.sh") has been submitted
+
+i =
+
+    18
+
+
+i =
+
+    19
+
+Your job 7163577 ("tmp19.sh") has been submitted
+
+i =
+
+    20
+
+
+i =
+
+    21
+
+Your job 7163578 ("tmp21.sh") has been submitted
+
+i =
+
+    22
+
+
+i =
+
+    23
+
+Your job 7163579 ("tmp23.sh") has been submitted
+
+i =
+
+    24
+
+Your job 7163580 ("tmp24.sh") has been submitted
+
+i =
+
+    25
+
+Your job 7163581 ("tmp25.sh") has been submitted
+
+i =
+
+    26
+
+
+i =
+
+    27
+
+
+i =
+
+    28
+
+Your job 7163582 ("tmp28.sh") has been submitted
+
+i =
+
+    29
+
+
+i =
+
+    30
+
+Your job 7163583 ("tmp30.sh") has been submitted
+
+i =
+
+    31
+
+Your job 7163584 ("tmp31.sh") has been submitted
+
+i =
+
+    32
+
+
+i =
+
+    33
+
+Your job 7163585 ("tmp33.sh") has been submitted
+
+i =
+
+    34
+
+Your job 7163586 ("tmp34.sh") has been submitted
+
+i =
+
+    35
+
+
+i =
+
+    36
+
+Your job 7163587 ("tmp36.sh") has been submitted
+
+i =
+
+    37
+
+Your job 7163588 ("tmp37.sh") has been submitted
+
+i =
+
+    38
+
+Your job 7163589 ("tmp38.sh") has been submitted
+
+i =
+
+    39
+
+
+i =
+
+    40
+
+
+i =
+
+    41
+
+
+i =
+
+    42
+
+
+i =
+
+    43
+
+
+i =
+
+    44
+
+
+i =
+
+    45
+
+
+i =
+
+    46
+
+
+i =
+
+    47
+
+
+i =
+
+    48
+
+
+i =
+
+    49
+
+
+i =
+
+    50
+
+
+K =
+
+    23
+
+[Warning: Directory already exists.] 
+[> In Step_1st_CreatePrepData_AP (line 6)
+  In iterate_nmf_overscales (line 7)
+  In run (line 91)] 
+
+K =
+
+    24
+
+[Warning: Directory already exists.] 
+[> In Step_2nd_ParcellationInitialize_AP (line 14)
+  In iterate_nmf_overscales (line 9)
+  In run (line 91)] 
+[Warning: Directory already exists.] 
+[> In Step_2nd_ParcellationInitialize_AP (line 15)
+  In iterate_nmf_overscales (line 9)
+  In run (line 91)] 
+
+i =
+
+     1
+
+Your job 7163590 ("tmp1.sh") has been submitted
+
+i =
+
+     2
+
+Your job 7163591 ("tmp2.sh") has been submitted
+
+i =
+
+     3
+
+Your job 7163592 ("tmp3.sh") has been submitted
+
+i =
+
+     4
+
+
+i =
+
+     5
+
+Your job 7163593 ("tmp5.sh") has been submitted
+
+i =
+
+     6
+
+Your job 7163594 ("tmp6.sh") has been submitted
+
+i =
+
+     7
+
+Your job 7163595 ("tmp7.sh") has been submitted
+
+i =
+
+     8
+
+Your job 7163596 ("tmp8.sh") has been submitted
+
+i =
+
+     9
+
+
+i =
+
+    10
+
+Your job 7163597 ("tmp10.sh") has been submitted
+
+i =
+
+    11
+
+Your job 7163598 ("tmp11.sh") has been submitted
+
+i =
+
+    12
+
+Your job 7163599 ("tmp12.sh") has been submitted
+
+i =
+
+    13
+
+Your job 7163600 ("tmp13.sh") has been submitted
+
+i =
+
+    14
+
+Your job 7163601 ("tmp14.sh") has been submitted
+
+i =
+
+    15
+
+Your job 7163602 ("tmp15.sh") has been submitted
+
+i =
+
+    16
+
+Your job 7163603 ("tmp16.sh") has been submitted
+
+i =
+
+    17
+
+
+i =
+
+    18
+
+
+i =
+
+    19
+
+Your job 7163604 ("tmp19.sh") has been submitted
+
+i =
+
+    20
+
+Your job 7163605 ("tmp20.sh") has been submitted
+
+i =
+
+    21
+
+Your job 7163606 ("tmp21.sh") has been submitted
+
+i =
+
+    22
+
+Your job 7163607 ("tmp22.sh") has been submitted
+
+i =
+
+    23
+
+Your job 7163608 ("tmp23.sh") has been submitted
+
+i =
+
+    24
+
+Your job 7163609 ("tmp24.sh") has been submitted
+
+i =
+
+    25
+
+Your job 7163610 ("tmp25.sh") has been submitted
+
+i =
+
+    26
+
+Your job 7163611 ("tmp26.sh") has been submitted
+
+i =
+
+    27
+
+Your job 7163612 ("tmp27.sh") has been submitted
+
+i =
+
+    28
+
+Your job 7163613 ("tmp28.sh") has been submitted
+
+i =
+
+    29
+
+
+i =
+
+    30
+
+
+i =
+
+    31
+
+
+i =
+
+    32
+
+Your job 7163614 ("tmp32.sh") has been submitted
+
+i =
+
+    33
+
+
+i =
+
+    34
+
+Your job 7163615 ("tmp34.sh") has been submitted
+
+i =
+
+    35
+
+
+i =
+
+    36
+
+Your job 7163616 ("tmp36.sh") has been submitted
+
+i =
+
+    37
+
+Your job 7163617 ("tmp37.sh") has been submitted
+
+i =
+
+    38
+
+
+i =
+
+    39
+
+Your job 7163618 ("tmp39.sh") has been submitted
+
+i =
+
+    40
+
+Your job 7163619 ("tmp40.sh") has been submitted
+
+i =
+
+    41
+
+
+i =
+
+    42
+
+Your job 7163620 ("tmp42.sh") has been submitted
+
+i =
+
+    43
+
+Your job 7163621 ("tmp43.sh") has been submitted
+
+i =
+
+    44
+
+
+i =
+
+    45
+
+
+i =
+
+    46
+
+
+i =
+
+    47
+
+Your job 7163622 ("tmp47.sh") has been submitted
+
+i =
+
+    48
+
+
+i =
+
+    49
+
+
+i =
+
+    50
+
+
+K =
+
+    24
+
+[Warning: Directory already exists.] 
+[> In Step_1st_CreatePrepData_AP (line 6)
+  In iterate_nmf_overscales (line 7)
+  In run (line 91)] 
+
+K =
+
+    25
+
+[Warning: Directory already exists.] 
+[> In Step_2nd_ParcellationInitialize_AP (line 14)
+  In iterate_nmf_overscales (line 9)
+  In run (line 91)] 
+[Warning: Directory already exists.] 
+[> In Step_2nd_ParcellationInitialize_AP (line 15)
+  In iterate_nmf_overscales (line 9)
+  In run (line 91)] 
+
+i =
+
+     1
+
+Your job 7163623 ("tmp1.sh") has been submitted
+
+i =
+
+     2
+
+
+i =
+
+     3
+
+Your job 7163624 ("tmp3.sh") has been submitted
+
+i =
+
+     4
+
+
+i =
+
+     5
+
+Your job 7163625 ("tmp5.sh") has been submitted
+
+i =
+
+     6
+
+Your job 7163626 ("tmp6.sh") has been submitted
+
+i =
+
+     7
+
+Your job 7163627 ("tmp7.sh") has been submitted
+
+i =
+
+     8
+
+Your job 7163628 ("tmp8.sh") has been submitted
+
+i =
+
+     9
+
+Your job 7163629 ("tmp9.sh") has been submitted
+
+i =
+
+    10
+
+Your job 7163630 ("tmp10.sh") has been submitted
+
+i =
+
+    11
+
+
+i =
+
+    12
+
+Your job 7163631 ("tmp12.sh") has been submitted
+
+i =
+
+    13
+
+
+i =
+
+    14
+
+
+i =
+
+    15
+
+Your job 7163632 ("tmp15.sh") has been submitted
+
+i =
+
+    16
+
+
+i =
+
+    17
+
+
+i =
+
+    18
+
+Your job 7163633 ("tmp18.sh") has been submitted
+
+i =
+
+    19
+
+Your job 7163634 ("tmp19.sh") has been submitted
+
+i =
+
+    20
+
+
+i =
+
+    21
+
+
+i =
+
+    22
+
+Your job 7163635 ("tmp22.sh") has been submitted
+
+i =
+
+    23
+
+Your job 7163636 ("tmp23.sh") has been submitted
+
+i =
+
+    24
+
+
+i =
+
+    25
+
+Your job 7163637 ("tmp25.sh") has been submitted
+
+i =
+
+    26
+
+
+i =
+
+    27
+
+
+i =
+
+    28
+
+
+i =
+
+    29
+
+
+i =
+
+    30
+
+
+i =
+
+    31
+
+
+i =
+
+    32
+
+
+i =
+
+    33
+
+
+i =
+
+    34
+
+
+i =
+
+    35
+
+Your job 7163638 ("tmp35.sh") has been submitted
+
+i =
+
+    36
+
+Your job 7163639 ("tmp36.sh") has been submitted
+
+i =
+
+    37
+
+
+i =
+
+    38
+
+Your job 7163640 ("tmp38.sh") has been submitted
+
+i =
+
+    39
+
+
+i =
+
+    40
+
+Your job 7163641 ("tmp40.sh") has been submitted
+
+i =
+
+    41
+
+Your job 7163642 ("tmp41.sh") has been submitted
+
+i =
+
+    42
+
+Your job 7163643 ("tmp42.sh") has been submitted
+
+i =
+
+    43
+
+
+i =
+
+    44
+
+Your job 7163644 ("tmp44.sh") has been submitted
+
+i =
+
+    45
+
+Your job 7163645 ("tmp45.sh") has been submitted
+
+i =
+
+    46
+
+Your job 7163646 ("tmp46.sh") has been submitted
+
+i =
+
+    47
+
+
+i =
+
+    48
+
+
+i =
+
+    49
+
+Your job 7163647 ("tmp49.sh") has been submitted
+
+i =
+
+    50
+
+
+K =
+
+    25
+
+[Warning: Directory already exists.] 
+[> In Step_1st_CreatePrepData_AP (line 6)
+  In iterate_nmf_overscales (line 7)
+  In run (line 91)] 
+
+K =
+
+    26
+
+[Warning: Directory already exists.] 
+[> In Step_2nd_ParcellationInitialize_AP (line 14)
+  In iterate_nmf_overscales (line 9)
+  In run (line 91)] 
+[Warning: Directory already exists.] 
+[> In Step_2nd_ParcellationInitialize_AP (line 15)
+  In iterate_nmf_overscales (line 9)
+  In run (line 91)] 
+
+i =
+
+     1
+
+
+i =
+
+     2
+
+Your job 7163648 ("tmp2.sh") has been submitted
+
+i =
+
+     3
+
+Your job 7163649 ("tmp3.sh") has been submitted
+
+i =
+
+     4
+
+Your job 7163650 ("tmp4.sh") has been submitted
+
+i =
+
+     5
+
+Your job 7163651 ("tmp5.sh") has been submitted
+
+i =
+
+     6
+
+Your job 7163652 ("tmp6.sh") has been submitted
+
+i =
+
+     7
+
+Your job 7163653 ("tmp7.sh") has been submitted
+
+i =
+
+     8
+
+Your job 7163654 ("tmp8.sh") has been submitted
+
+i =
+
+     9
+
+Your job 7163655 ("tmp9.sh") has been submitted
+
+i =
+
+    10
+
+Your job 7163656 ("tmp10.sh") has been submitted
+
+i =
+
+    11
+
+Your job 7163657 ("tmp11.sh") has been submitted
+
+i =
+
+    12
+
+Your job 7163658 ("tmp12.sh") has been submitted
+
+i =
+
+    13
+
+Your job 7163659 ("tmp13.sh") has been submitted
+
+i =
+
+    14
+
+Your job 7163660 ("tmp14.sh") has been submitted
+
+i =
+
+    15
+
+Your job 7163661 ("tmp15.sh") has been submitted
+
+i =
+
+    16
+
+Your job 7163662 ("tmp16.sh") has been submitted
+
+i =
+
+    17
+
+Your job 7163663 ("tmp17.sh") has been submitted
+
+i =
+
+    18
+
+
+i =
+
+    19
+
+
+i =
+
+    20
+
+Your job 7163664 ("tmp20.sh") has been submitted
+
+i =
+
+    21
+
+Your job 7163665 ("tmp21.sh") has been submitted
+
+i =
+
+    22
+
+
+i =
+
+    23
+
+
+i =
+
+    24
+
+
+i =
+
+    25
+
+
+i =
+
+    26
+
+
+i =
+
+    27
+
+Your job 7163666 ("tmp27.sh") has been submitted
+
+i =
+
+    28
+
+Your job 7163667 ("tmp28.sh") has been submitted
+
+i =
+
+    29
+
+Your job 7163668 ("tmp29.sh") has been submitted
+
+i =
+
+    30
+
+Your job 7163669 ("tmp30.sh") has been submitted
+
+i =
+
+    31
+
+
+i =
+
+    32
+
+
+i =
+
+    33
+
+
+i =
+
+    34
+
+Your job 7163670 ("tmp34.sh") has been submitted
+
+i =
+
+    35
+
+
+i =
+
+    36
+
+
+i =
+
+    37
+
+
+i =
+
+    38
+
+
+i =
+
+    39
+
+
+i =
+
+    40
+
+
+i =
+
+    41
+
+Your job 7163671 ("tmp41.sh") has been submitted
+
+i =
+
+    42
+
+Your job 7163672 ("tmp42.sh") has been submitted
+
+i =
+
+    43
+
+Your job 7163673 ("tmp43.sh") has been submitted
+
+i =
+
+    44
+
+
+i =
+
+    45
+
+Your job 7163674 ("tmp45.sh") has been submitted
+
+i =
+
+    46
+
+Your job 7163675 ("tmp46.sh") has been submitted
+
+i =
+
+    47
+
+Your job 7163676 ("tmp47.sh") has been submitted
+
+i =
+
+    48
+
+
+i =
+
+    49
+
+Your job 7163677 ("tmp49.sh") has been submitted
+
+i =
+
+    50
+
+Your job 7163678 ("tmp50.sh") has been submitted
+
+K =
+
+    26
+
+[Warning: Directory already exists.] 
+[> In Step_1st_CreatePrepData_AP (line 6)
+  In iterate_nmf_overscales (line 7)
+  In run (line 91)] 
+
+K =
+
+    27
+
+[Warning: Directory already exists.] 
+[> In Step_2nd_ParcellationInitialize_AP (line 14)
+  In iterate_nmf_overscales (line 9)
+  In run (line 91)] 
+[Warning: Directory already exists.] 
+[> In Step_2nd_ParcellationInitialize_AP (line 15)
+  In iterate_nmf_overscales (line 9)
+  In run (line 91)] 
+
+i =
+
+     1
+
+Your job 7163679 ("tmp1.sh") has been submitted
+
+i =
+
+     2
+
+Your job 7163680 ("tmp2.sh") has been submitted
+
+i =
+
+     3
+
+Your job 7163681 ("tmp3.sh") has been submitted
+
+i =
+
+     4
+
+Your job 7163682 ("tmp4.sh") has been submitted
+
+i =
+
+     5
+
+
+i =
+
+     6
+
+Your job 7163683 ("tmp6.sh") has been submitted
+
+i =
+
+     7
+
+
+i =
+
+     8
+
+Your job 7163684 ("tmp8.sh") has been submitted
+
+i =
+
+     9
+
+Your job 7163685 ("tmp9.sh") has been submitted
+
+i =
+
+    10
+
+
+i =
+
+    11
+
+Your job 7163686 ("tmp11.sh") has been submitted
+
+i =
+
+    12
+
+Your job 7163687 ("tmp12.sh") has been submitted
+
+i =
+
+    13
+
+Your job 7163688 ("tmp13.sh") has been submitted
+
+i =
+
+    14
+
+Your job 7163689 ("tmp14.sh") has been submitted
+
+i =
+
+    15
+
+Your job 7163690 ("tmp15.sh") has been submitted
+
+i =
+
+    16
+
+Your job 7163691 ("tmp16.sh") has been submitted
+
+i =
+
+    17
+
+Your job 7163692 ("tmp17.sh") has been submitted
+
+i =
+
+    18
+
+Your job 7163693 ("tmp18.sh") has been submitted
+
+i =
+
+    19
+
+Your job 7163694 ("tmp19.sh") has been submitted
+
+i =
+
+    20
+
+Your job 7163695 ("tmp20.sh") has been submitted
+
+i =
+
+    21
+
+
+i =
+
+    22
+
+Your job 7163696 ("tmp22.sh") has been submitted
+
+i =
+
+    23
+
+Your job 7163697 ("tmp23.sh") has been submitted
+
+i =
+
+    24
+
+Your job 7163698 ("tmp24.sh") has been submitted
+
+i =
+
+    25
+
+
+i =
+
+    26
+
+
+i =
+
+    27
+
+Your job 7163699 ("tmp27.sh") has been submitted
+
+i =
+
+    28
+
+Your job 7163700 ("tmp28.sh") has been submitted
+
+i =
+
+    29
+
+Your job 7163701 ("tmp29.sh") has been submitted
+
+i =
+
+    30
+
+Your job 7163702 ("tmp30.sh") has been submitted
+
+i =
+
+    31
+
+
+i =
+
+    32
+
+
+i =
+
+    33
+
+Your job 7163703 ("tmp33.sh") has been submitted
+
+i =
+
+    34
+
+Your job 7163704 ("tmp34.sh") has been submitted
+
+i =
+
+    35
+
+Your job 7163705 ("tmp35.sh") has been submitted
+
+i =
+
+    36
+
+Your job 7163706 ("tmp36.sh") has been submitted
+
+i =
+
+    37
+
+Your job 7163707 ("tmp37.sh") has been submitted
+
+i =
+
+    38
+
+Your job 7163708 ("tmp38.sh") has been submitted
+
+i =
+
+    39
+
+
+i =
+
+    40
+
+Your job 7163709 ("tmp40.sh") has been submitted
+
+i =
+
+    41
+
+
+i =
+
+    42
+
+
+i =
+
+    43
+
+
+i =
+
+    44
+
+
+i =
+
+    45
+
+
+i =
+
+    46
+
+Your job 7163710 ("tmp46.sh") has been submitted
+
+i =
+
+    47
+
+Your job 7163711 ("tmp47.sh") has been submitted
+
+i =
+
+    48
+
+
+i =
+
+    49
+
+
+i =
+
+    50
+
+
+K =
+
+    27
+
+[Warning: Directory already exists.] 
+[> In Step_1st_CreatePrepData_AP (line 6)
+  In iterate_nmf_overscales (line 7)
+  In run (line 91)] 
+
+K =
+
+    28
+
+[Warning: Directory already exists.] 
+[> In Step_2nd_ParcellationInitialize_AP (line 14)
+  In iterate_nmf_overscales (line 9)
+  In run (line 91)] 
+[Warning: Directory already exists.] 
+[> In Step_2nd_ParcellationInitialize_AP (line 15)
+  In iterate_nmf_overscales (line 9)
+  In run (line 91)] 
+
+i =
+
+     1
+
+Your job 7163712 ("tmp1.sh") has been submitted
+
+i =
+
+     2
+
+Your job 7163713 ("tmp2.sh") has been submitted
+
+i =
+
+     3
+
+Your job 7163714 ("tmp3.sh") has been submitted
+
+i =
+
+     4
+
+Your job 7163715 ("tmp4.sh") has been submitted
+
+i =
+
+     5
+
+
+i =
+
+     6
+
+Your job 7163716 ("tmp6.sh") has been submitted
+
+i =
+
+     7
+
+Your job 7163717 ("tmp7.sh") has been submitted
+
+i =
+
+     8
+
+Your job 7163718 ("tmp8.sh") has been submitted
+
+i =
+
+     9
+
+Your job 7163719 ("tmp9.sh") has been submitted
+
+i =
+
+    10
+
+Your job 7163720 ("tmp10.sh") has been submitted
+
+i =
+
+    11
+
+Your job 7163721 ("tmp11.sh") has been submitted
+
+i =
+
+    12
+
+Your job 7163722 ("tmp12.sh") has been submitted
+
+i =
+
+    13
+
+Your job 7163723 ("tmp13.sh") has been submitted
+
+i =
+
+    14
+
+Your job 7163724 ("tmp14.sh") has been submitted
+
+i =
+
+    15
+
+Your job 7163725 ("tmp15.sh") has been submitted
+
+i =
+
+    16
+
+
+i =
+
+    17
+
+
+i =
+
+    18
+
+Your job 7163726 ("tmp18.sh") has been submitted
+
+i =
+
+    19
+
+Your job 7163727 ("tmp19.sh") has been submitted
+
+i =
+
+    20
+
+Your job 7163728 ("tmp20.sh") has been submitted
+
+i =
+
+    21
+
+Your job 7163729 ("tmp21.sh") has been submitted
+
+i =
+
+    22
+
+Your job 7163730 ("tmp22.sh") has been submitted
+
+i =
+
+    23
+
+Your job 7163731 ("tmp23.sh") has been submitted
+
+i =
+
+    24
+
+Your job 7163732 ("tmp24.sh") has been submitted
+
+i =
+
+    25
+
+
+i =
+
+    26
+
+Your job 7163733 ("tmp26.sh") has been submitted
+
+i =
+
+    27
+
+
+i =
+
+    28
+
+Your job 7163734 ("tmp28.sh") has been submitted
+
+i =
+
+    29
+
+Your job 7163735 ("tmp29.sh") has been submitted
+
+i =
+
+    30
+
+Your job 7163736 ("tmp30.sh") has been submitted
+
+i =
+
+    31
+
+
+i =
+
+    32
+
+
+i =
+
+    33
+
+Your job 7163737 ("tmp33.sh") has been submitted
+
+i =
+
+    34
+
+
+i =
+
+    35
+
+
+i =
+
+    36
+
+Your job 7163738 ("tmp36.sh") has been submitted
+
+i =
+
+    37
+
+Your job 7163739 ("tmp37.sh") has been submitted
+
+i =
+
+    38
+
+Your job 7163740 ("tmp38.sh") has been submitted
+
+i =
+
+    39
+
+Your job 7163741 ("tmp39.sh") has been submitted
+
+i =
+
+    40
+
+Your job 7163742 ("tmp40.sh") has been submitted
+
+i =
+
+    41
+
+
+i =
+
+    42
+
+Your job 7163743 ("tmp42.sh") has been submitted
+
+i =
+
+    43
+
+
+i =
+
+    44
+
+
+i =
+
+    45
+
+
+i =
+
+    46
+
+
+i =
+
+    47
+
+
+i =
+
+    48
+
+
+i =
+
+    49
+
+Your job 7163744 ("tmp49.sh") has been submitted
+
+i =
+
+    50
+
+
+K =
+
+    28
+
+[Warning: Directory already exists.] 
+[> In Step_1st_CreatePrepData_AP (line 6)
+  In iterate_nmf_overscales (line 7)
+  In run (line 91)] 
+
+K =
+
+    29
+
+[Warning: Directory already exists.] 
+[> In Step_2nd_ParcellationInitialize_AP (line 14)
+  In iterate_nmf_overscales (line 9)
+  In run (line 91)] 
+[Warning: Directory already exists.] 
+[> In Step_2nd_ParcellationInitialize_AP (line 15)
+  In iterate_nmf_overscales (line 9)
+  In run (line 91)] 
+
+i =
+
+     1
+
+
+i =
+
+     2
+
+Your job 7163745 ("tmp2.sh") has been submitted
+
+i =
+
+     3
+
+
+i =
+
+     4
+
+
+i =
+
+     5
+
+Your job 7163746 ("tmp5.sh") has been submitted
+
+i =
+
+     6
+
+Your job 7163747 ("tmp6.sh") has been submitted
+
+i =
+
+     7
+
+Your job 7163748 ("tmp7.sh") has been submitted
+
+i =
+
+     8
+
+Your job 7163749 ("tmp8.sh") has been submitted
+
+i =
+
+     9
+
+Your job 7163750 ("tmp9.sh") has been submitted
+
+i =
+
+    10
+
+Your job 7163751 ("tmp10.sh") has been submitted
+
+i =
+
+    11
+
+Your job 7163752 ("tmp11.sh") has been submitted
+
+i =
+
+    12
+
+Your job 7163753 ("tmp12.sh") has been submitted
+
+i =
+
+    13
+
+Your job 7163754 ("tmp13.sh") has been submitted
+
+i =
+
+    14
+
+Your job 7163755 ("tmp14.sh") has been submitted
+
+i =
+
+    15
+
+Your job 7163756 ("tmp15.sh") has been submitted
+
+i =
+
+    16
+
+Your job 7163757 ("tmp16.sh") has been submitted
+
+i =
+
+    17
+
+Your job 7163758 ("tmp17.sh") has been submitted
+
+i =
+
+    18
+
+Your job 7163759 ("tmp18.sh") has been submitted
+
+i =
+
+    19
+
+Your job 7163760 ("tmp19.sh") has been submitted
+
+i =
+
+    20
+
+
+i =
+
+    21
+
+Your job 7163761 ("tmp21.sh") has been submitted
+
+i =
+
+    22
+
+Your job 7163762 ("tmp22.sh") has been submitted
+
+i =
+
+    23
+
+Your job 7163763 ("tmp23.sh") has been submitted
+
+i =
+
+    24
+
+
+i =
+
+    25
+
+Your job 7163764 ("tmp25.sh") has been submitted
+
+i =
+
+    26
+
+Your job 7163765 ("tmp26.sh") has been submitted
+
+i =
+
+    27
+
+
+i =
+
+    28
+
+
+i =
+
+    29
+
+
+i =
+
+    30
+
+
+i =
+
+    31
+
+Your job 7163766 ("tmp31.sh") has been submitted
+
+i =
+
+    32
+
+
+i =
+
+    33
+
+
+i =
+
+    34
+
+
+i =
+
+    35
+
+Your job 7163767 ("tmp35.sh") has been submitted
+
+i =
+
+    36
+
+
+i =
+
+    37
+
+Your job 7163768 ("tmp37.sh") has been submitted
+
+i =
+
+    38
+
+Your job 7163769 ("tmp38.sh") has been submitted
+
+i =
+
+    39
+
+Your job 7163770 ("tmp39.sh") has been submitted
+
+i =
+
+    40
+
+Your job 7163771 ("tmp40.sh") has been submitted
+
+i =
+
+    41
+
+
+i =
+
+    42
+
+
+i =
+
+    43
+
+Your job 7163772 ("tmp43.sh") has been submitted
+
+i =
+
+    44
+
+Your job 7163773 ("tmp44.sh") has been submitted
+
+i =
+
+    45
+
+Your job 7163774 ("tmp45.sh") has been submitted
+
+i =
+
+    46
+
+Your job 7163775 ("tmp46.sh") has been submitted
+
+i =
+
+    47
+
+Your job 7163776 ("tmp47.sh") has been submitted
+
+i =
+
+    48
+
+Your job 7163777 ("tmp48.sh") has been submitted
+
+i =
+
+    49
+
+Your job 7163778 ("tmp49.sh") has been submitted
+
+i =
+
+    50
+
+Your job 7163779 ("tmp50.sh") has been submitted
+
+K =
+
+    29
+
+[Warning: Directory already exists.] 
+[> In Step_1st_CreatePrepData_AP (line 6)
+  In iterate_nmf_overscales (line 7)
+  In run (line 91)] 
+
+K =
+
+    30
+
+[Warning: Directory already exists.] 
+[> In Step_2nd_ParcellationInitialize_AP (line 14)
+  In iterate_nmf_overscales (line 9)
+  In run (line 91)] 
+[Warning: Directory already exists.] 
+[> In Step_2nd_ParcellationInitialize_AP (line 15)
+  In iterate_nmf_overscales (line 9)
+  In run (line 91)] 
+
+i =
+
+     1
+
+
+i =
+
+     2
+
+
+i =
+
+     3
+
+
+i =
+
+     4
+
+
+i =
+
+     5
+
+
+i =
+
+     6
+
+
+i =
+
+     7
+
+
+i =
+
+     8
+
+
+i =
+
+     9
+
+
+i =
+
+    10
+
+
+i =
+
+    11
+
+
+i =
+
+    12
+
+
+i =
+
+    13
+
+Your job 7163780 ("tmp13.sh") has been submitted
+
+i =
+
+    14
+
+
+i =
+
+    15
+
+Your job 7163781 ("tmp15.sh") has been submitted
+
+i =
+
+    16
+
+
+i =
+
+    17
+
+Your job 7163782 ("tmp17.sh") has been submitted
+
+i =
+
+    18
+
+Your job 7163783 ("tmp18.sh") has been submitted
+
+i =
+
+    19
+
+Your job 7163784 ("tmp19.sh") has been submitted
+
+i =
+
+    20
+
+
+i =
+
+    21
+
+
+i =
+
+    22
+
+Your job 7163785 ("tmp22.sh") has been submitted
+
+i =
+
+    23
+
+
+i =
+
+    24
+
+Your job 7163786 ("tmp24.sh") has been submitted
+
+i =
+
+    25
+
+Your job 7163787 ("tmp25.sh") has been submitted
+
+i =
+
+    26
+
+Your job 7163788 ("tmp26.sh") has been submitted
+
+i =
+
+    27
+
+Your job 7163789 ("tmp27.sh") has been submitted
+
+i =
+
+    28
+
+Your job 7163790 ("tmp28.sh") has been submitted
+
+i =
+
+    29
+
+
+i =
+
+    30
+
+
+i =
+
+    31
+
+
+i =
+
+    32
+
+
+i =
+
+    33
+
+
+i =
+
+    34
+
+
+i =
+
+    35
+
+
+i =
+
+    36
+
+Your job 7163791 ("tmp36.sh") has been submitted
+
+i =
+
+    37
+
+
+i =
+
+    38
+
+
+i =
+
+    39
+
+
+i =
+
+    40
+
+Your job 7163792 ("tmp40.sh") has been submitted
+
+i =
+
+    41
+
+Your job 7163793 ("tmp41.sh") has been submitted
+
+i =
+
+    42
+
+Your job 7163794 ("tmp42.sh") has been submitted
+
+i =
+
+    43
+
+Your job 7163795 ("tmp43.sh") has been submitted
+
+i =
+
+    44
+
+
+i =
+
+    45
+
+Your job 7163796 ("tmp45.sh") has been submitted
+
+i =
+
+    46
+
+Your job 7163797 ("tmp46.sh") has been submitted
+
+i =
+
+    47
+
+Your job 7163798 ("tmp47.sh") has been submitted
+
+i =
+
+    48
+
+Your job 7163799 ("tmp48.sh") has been submitted
+
+i =
+
+    49
+
+Your job 7163800 ("tmp49.sh") has been submitted
+
+i =
+
+    50
+
+
+K =
+
+    30
+

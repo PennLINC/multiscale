@@ -1,0 +1,12 @@
+{Error using mkdir
+Permission denied
+
+Error in Step_2nd_ParcellationInitialize_APh (line 15)
+mkdir(InitializationFolder);
+
+Error in iterate_nmf_overscalesh (line 9)
+Step_2nd_ParcellationInitialize_APh
+
+Error in run (line 91)
+evalin('caller', strcat(script, ';'));
+} 

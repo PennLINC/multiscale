@@ -1,0 +1,200 @@
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2018 The MathWorks, Inc.
+              R2018a Update 6 (9.4.0.949201) 64-bit (glnxa64)
+                             September 5, 2018
+
+ 
+To get started, type one of these: helpwin, helpdesk, or demo.
+For product information, visit www.mathworks.com.
+ 
+[Warning: Function assert has the same name as a MATLAB builtin. We suggest you
+rename the function to avoid a potential name conflict.] 
+[> In path (line 109)
+  In addpath (line 96)
+  In iterate_nmf_overscales (line 2)
+  In run (line 91)] 
+[Warning: Function assert has the same name as a MATLAB builtin. We suggest you
+rename the function to avoid a potential name conflict.] 
+[> In path (line 109)
+  In addpath (line 96)
+  In iterate_nmf_overscales (line 2)
+  In run (line 91)] 
+[Warning: Function assert has the same name as a MATLAB builtin. We suggest you
+rename the function to avoid a potential name conflict.] 
+[> In path (line 109)
+  In addpath (line 96)
+  In iterate_nmf_overscales (line 2)
+  In run (line 91)] 
+[Warning: Function assert has the same name as a MATLAB builtin. We suggest you
+rename the function to avoid a potential name conflict.] 
+[> In path (line 109)
+  In addpath (line 96)
+  In iterate_nmf_overscales (line 2)
+  In run (line 91)] 
+[Warning: Directory already exists.] 
+[> In Step_1st_CreatePrepData_AP (line 6)
+  In iterate_nmf_overscales (line 7)
+  In run (line 91)] 
+
+K =
+
+    23
+
+[Warning: Directory already exists.] 
+[> In Step_2nd_ParcellationInitialize_AP (line 14)
+  In iterate_nmf_overscales (line 9)
+  In run (line 91)] 
+[Warning: Directory already exists.] 
+[> In Step_2nd_ParcellationInitialize_AP (line 15)
+  In iterate_nmf_overscales (line 9)
+  In run (line 91)] 
+
+i =
+
+     1
+
+Your job 7146923 ("tmp1.sh") has been submitted
+
+i =
+
+     2
+
+
+i =
+
+     3
+
+
+i =
+
+     4
+
+
+i =
+
+     5
+
+
+i =
+
+     6
+
+Your job 7147545 ("tmp6.sh") has been submitted
+
+i =
+
+     7
+
+
+i =
+
+     8
+
+Your job 7148205 ("tmp8.sh") has been submitted
+
+i =
+
+     9
+
+Your job 7148425 ("tmp9.sh") has been submitted
+
+i =
+
+    10
+
+Your job 7148656 ("tmp10.sh") has been submitted
+Your MATLAB session has timed out.  All license keys have been returned.
+
+i =
+
+    11
+
+
+i =
+
+    12
+
+
+i =
+
+    13
+
+
+i =
+
+    14
+
+
+i =
+
+    15
+
+
+i =
+
+    16
+
+
+i =
+
+    17
+
+Your job 7148815 ("tmp17.sh") has been submitted
+
+i =
+
+    18
+
+
+i =
+
+    19
+
+Your job 7150151 ("tmp19.sh") has been submitted
+
+i =
+
+    20
+
+
+i =
+
+    21
+
+Your job 7150715 ("tmp21.sh") has been submitted
+
+i =
+
+    22
+
+
+i =
+
+    23
+
+Your job 7151640 ("tmp23.sh") has been submitted
+
+i =
+
+    24
+
+Your job 7151854 ("tmp24.sh") has been submitted
+
+i =
+
+    25
+
+Your job 7153256 ("tmp25.sh") has been submitted
+
+i =
+
+    26
+
+Your job 7153275 ("tmp26.sh") has been submitted
+
+i =
+
+    27
+
+Your job 7153321 ("tmp27.sh") has been submitted

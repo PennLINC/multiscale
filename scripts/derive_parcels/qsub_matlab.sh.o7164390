@@ -1,0 +1,59 @@
+-------- freesurfer-Linux-centos4_x86_64-stable-pub-v5.3.0 --------
+Setting up environment for FreeSurfer/FS-FAST (and FSL)
+FREESURFER_HOME   /cbica/software/external/freesurfer/centos7/5.3.0
+FSFAST_HOME       /cbica/software/external/freesurfer/centos7/5.3.0/fsfast
+FSF_OUTPUT_FORMAT nii.gz
+SUBJECTS_DIR      /cbica/software/external/freesurfer/centos7/5.3.0/subjects
+MNI_DIR           /cbica/software/external/freesurfer/centos7/5.3.0/mni
+FSL_DIR           /cbica/software/external/fsl/centos7/5.0.11
+-------- freesurfer-Linux-centos4_x86_64-stable-pub-v5.3.0 --------
+Setting up environment for FreeSurfer/FS-FAST (and FSL)
+FREESURFER_HOME   /cbica/software/external/freesurfer/centos7/5.3.0
+FSFAST_HOME       /cbica/software/external/freesurfer/centos7/5.3.0/fsfast
+FSF_OUTPUT_FORMAT nii.gz
+SUBJECTS_DIR      /cbica/software/external/freesurfer/centos7/5.3.0/subjects
+MNI_DIR           /cbica/software/external/freesurfer/centos7/5.3.0/mni
+FSL_DIR           /cbica/software/external/fsl/centos7/5.0.11
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2018 The MathWorks, Inc.
+              R2018a Update 6 (9.4.0.949201) 64-bit (glnxa64)
+                             September 5, 2018
+
+ 
+To get started, type one of these: helpwin, helpdesk, or demo.
+For product information, visit www.mathworks.com.
+ 
+[Warning: Function assert has the same name as a MATLAB builtin. We suggest you
+rename the function to avoid a potential name conflict.] 
+[> In path (line 109)
+  In addpath (line 96)
+  In iterate_nmf_overscalesh (line 2)
+  In run (line 91)] 
+[Warning: Function assert has the same name as a MATLAB builtin. We suggest you
+rename the function to avoid a potential name conflict.] 
+[> In path (line 109)
+  In addpath (line 96)
+  In iterate_nmf_overscalesh (line 2)
+  In run (line 91)] 
+[Warning: Function assert has the same name as a MATLAB builtin. We suggest you
+rename the function to avoid a potential name conflict.] 
+[> In path (line 109)
+  In addpath (line 96)
+  In iterate_nmf_overscalesh (line 2)
+  In run (line 91)] 
+[Warning: Function assert has the same name as a MATLAB builtin. We suggest you
+rename the function to avoid a potential name conflict.] 
+[> In path (line 109)
+  In addpath (line 96)
+  In iterate_nmf_overscalesh (line 2)
+  In run (line 91)] 
+[Warning: Directory already exists.] 
+[> In Step_1st_CreatePrepData_APh (line 6)
+  In iterate_nmf_overscalesh (line 7)
+  In run (line 91)] 
+
+K =
+
+    22
+

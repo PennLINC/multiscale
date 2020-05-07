@@ -1,0 +1,550 @@
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2018 The MathWorks, Inc.
+              R2018a Update 6 (9.4.0.949201) 64-bit (glnxa64)
+                             September 5, 2018
+
+ 
+To get started, type one of these: helpwin, helpdesk, or demo.
+For product information, visit www.mathworks.com.
+ 
+[Warning: Function assert has the same name as a MATLAB builtin. We suggest you
+rename the function to avoid a potential name conflict.] 
+[> In path (line 109)
+  In addpath (line 96)
+  In iterate_nmf_overscales (line 2)
+  In run (line 91)] 
+[Warning: Function assert has the same name as a MATLAB builtin. We suggest you
+rename the function to avoid a potential name conflict.] 
+[> In path (line 109)
+  In addpath (line 96)
+  In iterate_nmf_overscales (line 2)
+  In run (line 91)] 
+[Warning: Function assert has the same name as a MATLAB builtin. We suggest you
+rename the function to avoid a potential name conflict.] 
+[> In path (line 109)
+  In addpath (line 96)
+  In iterate_nmf_overscales (line 2)
+  In run (line 91)] 
+[Warning: Function assert has the same name as a MATLAB builtin. We suggest you
+rename the function to avoid a potential name conflict.] 
+[> In path (line 109)
+  In addpath (line 96)
+  In iterate_nmf_overscales (line 2)
+  In run (line 91)] 
+[Warning: Directory already exists.] 
+[> In Step_1st_CreatePrepData_AP (line 6)
+  In iterate_nmf_overscales (line 7)
+  In run (line 91)] 
+
+K =
+
+    16
+
+[Warning: Directory already exists.] 
+[> In Step_2nd_ParcellationInitialize_AP (line 14)
+  In iterate_nmf_overscales (line 9)
+  In run (line 91)] 
+[Warning: Directory already exists.] 
+[> In Step_2nd_ParcellationInitialize_AP (line 15)
+  In iterate_nmf_overscales (line 9)
+  In run (line 91)] 
+
+i =
+
+     1
+
+Your job 7146863 ("tmp1.sh") has been submitted
+
+i =
+
+     2
+
+
+i =
+
+     3
+
+
+i =
+
+     4
+
+Your job 7146939 ("tmp4.sh") has been submitted
+
+i =
+
+     5
+
+Your job 7147654 ("tmp5.sh") has been submitted
+
+i =
+
+     6
+
+Your job 7148415 ("tmp6.sh") has been submitted
+
+i =
+
+     7
+
+Your job 7148531 ("tmp7.sh") has been submitted
+Your MATLAB session has timed out.  All license keys have been returned.
+
+i =
+
+     8
+
+
+i =
+
+     9
+
+
+i =
+
+    10
+
+Your job 7148664 ("tmp10.sh") has been submitted
+
+i =
+
+    11
+
+Your job 7149112 ("tmp11.sh") has been submitted
+
+i =
+
+    12
+
+Your job 7150157 ("tmp12.sh") has been submitted
+
+i =
+
+    13
+
+Your job 7151022 ("tmp13.sh") has been submitted
+
+i =
+
+    14
+
+
+i =
+
+    15
+
+Your job 7151646 ("tmp15.sh") has been submitted
+
+i =
+
+    16
+
+Your job 7151861 ("tmp16.sh") has been submitted
+
+i =
+
+    17
+
+
+i =
+
+    18
+
+
+i =
+
+    19
+
+
+i =
+
+    20
+
+
+i =
+
+    21
+
+Your job 7153263 ("tmp21.sh") has been submitted
+
+i =
+
+    22
+
+Your job 7153281 ("tmp22.sh") has been submitted
+
+i =
+
+    23
+
+Your job 7153331 ("tmp23.sh") has been submitted
+
+i =
+
+    24
+
+Your job 7153345 ("tmp24.sh") has been submitted
+
+i =
+
+    25
+
+Your job 7153360 ("tmp25.sh") has been submitted
+
+i =
+
+    26
+
+
+i =
+
+    27
+
+
+i =
+
+    28
+
+
+i =
+
+    29
+
+Your job 7153372 ("tmp29.sh") has been submitted
+
+i =
+
+    30
+
+Your job 7153428 ("tmp30.sh") has been submitted
+
+i =
+
+    31
+
+Your job 7153431 ("tmp31.sh") has been submitted
+
+i =
+
+    32
+
+
+i =
+
+    33
+
+
+i =
+
+    34
+
+Your job 7153445 ("tmp34.sh") has been submitted
+
+i =
+
+    35
+
+Your job 7153448 ("tmp35.sh") has been submitted
+
+i =
+
+    36
+
+
+i =
+
+    37
+
+
+i =
+
+    38
+
+
+i =
+
+    39
+
+Your job 7153451 ("tmp39.sh") has been submitted
+
+i =
+
+    40
+
+Your job 7153452 ("tmp40.sh") has been submitted
+
+i =
+
+    41
+
+
+i =
+
+    42
+
+
+i =
+
+    43
+
+
+i =
+
+    44
+
+Your job 7153454 ("tmp44.sh") has been submitted
+
+i =
+
+    45
+
+
+i =
+
+    46
+
+Your job 7153495 ("tmp46.sh") has been submitted
+
+i =
+
+    47
+
+
+i =
+
+    48
+
+Your job 7154108 ("tmp48.sh") has been submitted
+
+i =
+
+    49
+
+Your job 7154775 ("tmp49.sh") has been submitted
+
+i =
+
+    50
+
+
+K =
+
+    16
+
+[Warning: Directory already exists.] 
+[> In Step_1st_CreatePrepData_AP (line 6)
+  In iterate_nmf_overscales (line 7)
+  In run (line 91)] 
+
+K =
+
+    17
+
+[Warning: Directory already exists.] 
+[> In Step_2nd_ParcellationInitialize_AP (line 14)
+  In iterate_nmf_overscales (line 9)
+  In run (line 91)] 
+[Warning: Directory already exists.] 
+[> In Step_2nd_ParcellationInitialize_AP (line 15)
+  In iterate_nmf_overscales (line 9)
+  In run (line 91)] 
+
+i =
+
+     1
+
+Your job 7155126 ("tmp1.sh") has been submitted
+
+i =
+
+     2
+
+
+i =
+
+     3
+
+
+i =
+
+     4
+
+Your job 7155345 ("tmp4.sh") has been submitted
+
+i =
+
+     5
+
+
+i =
+
+     6
+
+
+i =
+
+     7
+
+
+i =
+
+     8
+
+
+i =
+
+     9
+
+Your job 7155549 ("tmp9.sh") has been submitted
+
+i =
+
+    10
+
+
+i =
+
+    11
+
+Your job 7155588 ("tmp11.sh") has been submitted
+
+i =
+
+    12
+
+
+i =
+
+    13
+
+
+i =
+
+    14
+
+
+i =
+
+    15
+
+Your job 7156272 ("tmp15.sh") has been submitted
+
+i =
+
+    16
+
+Your job 7156285 ("tmp16.sh") has been submitted
+
+i =
+
+    17
+
+Your job 7157533 ("tmp17.sh") has been submitted
+
+i =
+
+    18
+
+Your job 7157536 ("tmp18.sh") has been submitted
+
+i =
+
+    19
+
+Your job 7158769 ("tmp19.sh") has been submitted
+
+i =
+
+    20
+
+Your job 7158777 ("tmp20.sh") has been submitted
+
+i =
+
+    21
+
+
+i =
+
+    22
+
+
+i =
+
+    23
+
+
+i =
+
+    24
+
+
+i =
+
+    25
+
+
+i =
+
+    26
+
+
+i =
+
+    27
+
+
+i =
+
+    28
+
+Your job 7158782 ("tmp28.sh") has been submitted
+
+i =
+
+    29
+
+
+i =
+
+    30
+
+Your job 7158787 ("tmp30.sh") has been submitted
+
+i =
+
+    31
+
+
+i =
+
+    32
+
+Your job 7158789 ("tmp32.sh") has been submitted
+
+i =
+
+    33
+
+
+i =
+
+    34
+
+
+i =
+
+    35
+
+
+i =
+
+    36
+
+
+i =
+
+    37
+
+Your job 7158790 ("tmp37.sh") has been submitted
