@@ -29,11 +29,15 @@ end
 full_df_colnum=(3*(length(win_over_scales)+length(Networkwise_seg_over_scales)+length(glob_seg_over_scales)+length(bw_over_scales)))+1;
 % length(subjs) +1 so theres a row for colnames
 % looks like we can expect 16,357 columns for this dataframe if Krange=2:30
-df=zeros((length(subjs)+1),full_df_colnum);
+
+%%df=zeros((length(subjs)+1),full_df_colnum);
+%% will have to change all of these to cells to accom. mixed strings and numeric
+df=cell(length(subjs)+1,full_df_colnum);
+
 rownames=strings(length(subjs)+1,1);
 rownames(1)='subjects' ;
 rownames(2:(length(subjs)+1))=num2str(subjs);
-df(:,1)=rownames;
+df(:,1)=cellstr(rownames);
 
 % make a colnames row with the 4 column types generated
 colnames=strings(full_df_colnum+1);
@@ -41,7 +45,7 @@ colnames(1)='bblid';
 % thirds names
 thirdsnames=["ind", "gro", "bts"];
 % initialize an empty df for each of three fc eval methods
-third_df=zeros(length(subjs),((full_df_colnum-1)/3),3)
+third_df=zeros(length(subjs),((full_df_colnum-1)/3),3);
 % for each third
 for t=1:3;
 	thirdname=thirdsnames(t);
@@ -56,7 +60,7 @@ for t=1:3;
 	% make index of where features for each scale belong in string
 	Kind_w={};
 	% make a df just for within network connectivities: creating different DFs for each type of FC feature to make this whole script more modular in order to help with troubleshooting
-	df_win=zeros(length(subjs)+1,length(win_over_scales));
+	df_win=cell(length(subjs)+1,length(win_over_scales));
 	% make an index of which places in feature vec align with which scale
 	for K=Krange
 		K_start=((K-1)*(K))/2;
@@ -69,14 +73,14 @@ for t=1:3;
 			curindex=Kind(N);
 			win_strings(curindex)=strcat(thirdname, '_win_FC_scale', num2str(K), '_net', num2str(N));
 		end
-		df_win(1,Kind)=win_strings;
+		df_win(1,Kind)=cellstr(win_strings(Kind));
 		% extract matrices from this scale
 		featurematrix=feats{K};
 		for s=1:length(subjs);
 			subjmat=featurematrix(:,:,s)
 			subjwin=diag(subjmat);
 			% s+1 because 1st row is colnames
-			df_win(s+1,Kind)=subjwin;
+			df_win(s+1,Kind)=num2cell(subjwin);
 		end
 	end
 		
@@ -84,8 +88,8 @@ for t=1:3;
 	glob_seg_strings=strings(length(glob_seg_over_scales),1);
 	seg_strings=strings(length(Networkwise_seg_over_scales),1);
 	% can recycle indices here, netseg indices should be the same as within network (1 per network per scale)
-	df_ns=zeros(length(subjs)+1,length(Networkwise_seg_over_scales));
-	df_gns=zeros(length(subjs)+1,length(glob_seg_over_scales);	
+	df_ns=cell(length(subjs)+1,length(Networkwise_seg_over_scales));
+	df_gns=cell(length(subjs)+1,length(glob_seg_over_scales);	
 	for K=Krange
 		% recycled indices
 		Kind=Kind_w{K};
@@ -93,8 +97,8 @@ for t=1:3;
 			curindex=Kind(N);
 			seg_strings(curindex)=strcat(thirdname,'_seg_scale', num2str(K), '_net', num2str(N));
 		end
-		df_ns(1,Kind)=seg_strings;
-		df_gns(1,K)=strcat(thirdname, '_globseg_scale', num2str(K));
+		df_ns(1,Kind)=cellstr(seg_strings);
+		df_gns(1,K)=cellstr(strcat(thirdname, '_globseg_scale', num2str(K)));
 		%extract matrices from this scale
 		featurematrix=feats{K};
 		for s=1:length(subjs);
@@ -111,16 +115,16 @@ for t=1:3;
 				seg=(winz-bwz)/winz;
 				segvec(N)=seg;
 			end
-			df_ns(s+1,Kind)=segvec;
+			df_ns(s+1,Kind)=num2cell(segvec);
 			% note that this measure of global seg averages over networks, not vertices
-			df_gns(s+1,K)=mean(segvec);
+			df_gns(s+1,K)=num2cell(mean(segvec));
 		end
 	end
 
 	%% BETWEEN Net FC %%
 	bw_strings=strings(length(bw_over_scales),1);
 	% between-FC dataframe for modular org of this df
-	df_bw=zeros(lenth(subjs)+1,length(bw_over_scales));
+	df_bw=cell(length(subjs)+1,length(bw_over_scales));
 	% make index of which places in feature vec align with which scale
 	Kind_bw={};
 	% instead of st8 triangular numbers (almost str8, n-1 instead of n) for within, between needs summed num of triang nums from all prev. scales
@@ -157,7 +161,7 @@ for t=1:3;
 			% update ending point of previous network indices
 			prevnetind=max(curnetind)
 		end
-		df_bw(1,Kind)=bw_strings;
+		df_bw(1,Kind)=cellstr(bw_strings);
 		% on to actual values
 		featurematrix=feats{K};
 		% now add in subject values to the df using same indices but for subj row
@@ -180,7 +184,7 @@ for t=1:3;
 				prevnetind=max(curnetind);
 				subjbwvals(curnetind)=bwval_forloop;
 			end
-			df(s+1,Kind)=subjbwvals;
+			df(s+1,Kind)=num2cell(subjbwvals);
 		end
 	% merge all fc features into dataframe of this third
 	%       |_GLOBAL_SEG_|____NETWORKWISE_SEG____|_____WITHIN_CONS_____|____________BW_CONS__________|
