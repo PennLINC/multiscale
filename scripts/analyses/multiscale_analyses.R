@@ -42,4 +42,38 @@ wincols=grep(wini,colnames(df))
 nsegcols=grep(nsegi,colnames(df))
 gsegcols=grep(gsegi,colnames(df))
 
-#
+# Make motion-regressed version of everything
+
+
+# Plot error over scales
+## error x scale color-coded age
+## mean error x scale with SDs
+
+# Plot gseg over scales
+## gseg x scale color-coded age
+## mean gseg x scale with SDs
+
+# Plot correlations with age over scales (bw, win, seg)
+# format into correlations_over_scalesplot format
+gseg<-data.frame(gsegcols)
+
+segdf<-merge(gseg,df,by="scanid")
+
+seg_cors<-matrix(0,length(community_vec),2)
+seg_cors[,1]<-community_vec
+
+for (i in 1:length(community_vec)){
+  # i+1 because first column is scanid
+  seg_cors[i,2]<-cor.test(segdf[,i+1],segdf$Age)$estimate
+}
+
+correlations_over_scalesplot(correlations=seg_cors,title="Segregation-Age correlations over Scales")
+
+# multi-scale patterning
+## riemmanian COM alignment
+## shape PCA
+## shape PC1 cor w/ age
+## plot demonstrative subjs (highest and lowest PC loading)
+### is shape capture by slope of line (gradual descent with younger folks?)
+
+### explore regional subtrates of revealed effects
