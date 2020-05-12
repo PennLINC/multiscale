@@ -1,7 +1,7 @@
 %iterate over subjects to get within and between network connectivities for each scale (K)
 
 % add needed paths
-addpath(genpath('/cbica/projects/pinesParcels/scripts/derive_parcels/Toolbox'));
+addpath(genpath('/cbica/projects/pinesParcels/multiscale/scripts/derive_parcels/Toolbox'));
 
 ProjectFolder = '/cbica/projects/pinesParcels/data/SingleParcellation';
 
@@ -49,6 +49,10 @@ for i=2:max(Krange)
 	GKhouse{i}=zeros(i,i,length(subjs));
 	K_bTS_house{i}=zeros(i,i,length(subjs));
 end
+% participation coef. will be same vector length regardless of scale
+partcoefpos=zeros(10242,length(subjs),length(Krange));
+partcoefneg=zeros(10242,length(subjs),length(Krange));
+
 % for each subject
 for s=1:length(subjs)
 	% load in vertex-wise time series
@@ -147,6 +151,11 @@ for s=1:length(subjs)
 			g_Kmat(N,N)=g_wincon;
 			bTS_Kmat(N,N)=bTS_wincon;
 		end
+		% small section to get vertex-wise participation coefficients for this this subject at this scale
+		[pospc, negpc] = participation_coef_sign(ba_conmat,subj_V(:,K+1));
+		% K-1 because K starts at 2, 3d array starts at 1
+		partcoefpos(:,s,K-1)=pospc;
+		partcoefneg(:,s,K-1)=negpc;
 		% Make empty KxK matrix to summarize network connectivities
 		%Kmat=diag(winconvals);
 		%g_Kmat=diag(g_winconvals);
@@ -168,9 +177,13 @@ for s=1:length(subjs)
 	end
 end
 % write out summary matrices
-fn_ind=['/cbica/projects/pinesParcels/results/connectivities/ind_conmats_allscales_allsubjs.mat']
-fn_gro=['/cbica/projects/pinesParcels/results/connectivities/gro_conmats_allscales_allsubjs.mat']	
-fn_bts=['/cbica/projects/pinesParcels/results/connectivities/bts_conmats_allscales_allsubjs.mat'] 
+fn_ind=['/cbica/projects/pinesParcels/results/connectivities/ind_conmats_allscales_allsubjs.mat'];
+fn_gro=['/cbica/projects/pinesParcels/results/connectivities/gro_conmats_allscales_allsubjs.mat'];	
+fn_bts=['/cbica/projects/pinesParcels/results/connectivities/bts_conmats_allscales_allsubjs.mat']; 
+fn_pospcs=['/cbica/projects/pinesParcels/results/connectivities/pospcs_allscales_allsubjs.mat'];
+fn_negpcs=['/cbica/projects/pinesParcels/results/connectivities/negpcs_allscales_allsubjs.mat'];
 save('Khouse',fn_ind)
 save('GKhouse',fn_gro)
 save('K_bTS_house',fn_bts)
+save('partcoefpos',fn_pospcs)
+save('partcoefneg',fn_negpcs)
