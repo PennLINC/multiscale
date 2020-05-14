@@ -41,9 +41,21 @@ do
 		pfileminusminus=${projectdir}/${fileminusminus}
 		pfileminusplus=${projectdir}/${fileminusplus}
 		hfile=${homedir}/${file}
-		if [[ ! -f "$pfile" && ! -f "$pfileplus_" && ! -f "$pfileminus_" && ! -f "$pfile_plus" && ! -f "$pfile_minus" && ! -f "$pfileplusplus" && ! -f "$pfileplusminus" && ! -f "$pfileminusminus" && ! -f "$pfileminusplus" ]]; then
-			echo "project dir is missing scale $s iteration $i"
-			echo "$pfileplus"
-		fi
+		hfileplus_=${homedir}/${fileplus_}
+                hfileminus_=${homedir}/${fileminus_}
+                hfile_plus=${homedir}/${file_plus}
+                hfile_minus=${homedir}/${file_minus}
+                hfileplusplus=${homedir}/${fileplusplus}
+                hfileplusminus=${homedir}/${fileplusminus}
+                hfileminusminus=${homedir}/${fileminusminus}
+                hfileminusplus=${homedir}/${fileminusplus}
+                if [[ ! -f "$pfile" && ! -f "$pfileplus_" && ! -f "$pfileminus_" && ! -f "$pfile_plus" && ! -f "$pfile_minus" && ! -f "$pfileplusplus" && ! -f "$pfileplusminus" && ! -f "$pfileminusminus" && ! -f "$pfileminusplus" ]]; then
+                        if [ -f "$hfile" ] || [ -f "$hfileplus_" ] || [ -f "$hfileminus_" ] || [ -f "$hfile_plus" ] || [ -f "$hfile_minus" ] || [ -f "$hfileplusplus" ] || [ -f "$hfileplusminus" ] || [ -f "$hfileminusminus" ] || [ -f "$hfileminusplus" ]; then
+				echo "project dir is missing scale $s iteration $i, but homedir has it"
+			else
+				echo "project dir is missing scale $s iteration $i"
+				#echo $hfile
+			fi
+                fi
 	done
 done
