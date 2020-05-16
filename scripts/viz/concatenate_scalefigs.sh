@@ -33,38 +33,39 @@ echo "enter singleplot x-size"
 read x
 echo "enter singleplot y-size"
 read y
-xsize=(expr x*10)
-ysize=(expr y*3)
+xsize=$(( ${x} * 10 ))
+ysize=$(( ${y} * 3 ))
+dims="${xsize}x${ysize}"
+echo "$dims"
 
- convert -size $xsize x $ysize xc:Khaki composite.gif
-  composite -geometry +0+0 $2 composite.gif composite.gif
-  composite -geometry +$xsize+0 $3 composite.gif composite.gif
-  composite -geometry +(expr(2*$xsize))+0 $4 composite.gif composite.gif
-  composite -geometry +(expr(3*$xsize))+0 $5 composite.gif composite.gif
-  composite -geometry +(expr(4*$xsize))+0 $6 composite.gif composite.gif
-  composite -geometry +(expr(5*$xsize))+0 $7 composite.gif composite.gif
-  composite -geometry +(expr(6*$xsize))+0 $8 composite.gif composite.gif
-  composite -geometry +(expr(7*$xsize))+0 $9 composite.gif composite.gif
-  composite -geometry +(expr(8*$xsize))+0 $10 composite.gif composite.gif   
-  composite -geometry +(expr(9*$xsize))+0 $11 composite.gif composite.gif
-  composite -geometry +0+(expr(1*$ysize))+(expr(1*$ysize)) $12 composite.gif composite.gif
-  composite -geometry +$xsize+(expr(1*$ysize)) $13 composite.gif composite.gif
-  composite -geometry +(expr(2*$xsize))+(expr(1*$ysize)) $14 composite.gif composite.gif
-  composite -geometry +(expr(3*$xsize))+(expr(1*$ysize)) $15 composite.gif composite.gif
-  composite -geometry +(expr(4*$xsize))+(expr(1*$ysize)) $16 composite.gif composite.gif
-  composite -geometry +(expr(5*$xsize))+(expr(1*$ysize)) $17 composite.gif composite.gif
-  composite -geometry +(expr(6*$xsize))+(expr(1*$ysize)) $18 composite.gif composite.gif
-  composite -geometry +(expr(7*$xsize))+(expr(1*$ysize)) $19 composite.gif composite.gif
-  composite -geometry +(expr(8*$xsize))+(expr(1*$ysize)) $20 composite.gif composite.gif    
-  composite -geometry +(expr(9*$xsize))+(expr(1*$ysize)) $21 composite.gif composite.gif
-  composite -geometry +0+(expr(2*$ysize))+(expr(2*$ysize)) $22 composite.gif composite.gif
-  composite -geometry +$xsize+(expr(2*$ysize)) $13 composite.gif composite.gif
-  composite -geometry +(expr(2*$xsize))+(expr(2*$ysize)) $23 composite.gif composite.gif
-  composite -geometry +(expr(3*$xsize))+(expr(2*$ysize)) $24 composite.gif composite.gif
-  composite -geometry +(expr(4*$xsize))+(expr(2*$ysize)) $25 composite.gif composite.gif
-  composite -geometry +(expr(5*$xsize))+(expr(2*$ysize)) $26 composite.gif composite.gif
-  composite -geometry +(expr(6*$xsize))+(expr(2*$ysize)) $27 composite.gif composite.gif
-  composite -geometry +(expr(7*$xsize))+(expr(2*$ysize)) $28 composite.gif composite.gif
-  composite -geometry +(expr(8*$xsize))+(expr(2*$ysize)) $29 composite.gif composite.gif
-  composite -geometry +(expr(9*$xsize))+(expr(2*$ysize)) $30 composite.gif composite.gif
-
+ convert -size $dims xc:Khaki composite.gif
+ composite -geometry +0+0 $i2 composite.gif composite.gif
+ composite -geometry +$xsize+0 $3 composite.gif composite.gif
+ composite -geometry +$(( 2 * ${xsize} ))+0 $i4 composite.gif composite.gif
+ composite -geometry +$(( 3 * ${xsize} ))+0 $i5 composite.gif composite.gif
+ composite -geometry +$(( 4 * ${xsize} ))+0 $i6 composite.gif composite.gif
+ composite -geometry +$(( 5 * ${xsize} ))+0 $i7 composite.gif composite.gif
+ composite -geometry +$(( 6 * ${xsize} ))+0 $i8 composite.gif composite.gif
+ composite -geometry +$(( 7 * ${xsize} ))+0 $i9 composite.gif composite.gif
+ composite -geometry +$(( 8 * ${xsize} ))+0 $i10 composite.gif composite.gif
+ composite -geometry +$(( 9 * ${xsize} ))+0 $i11 composite.gif composite.gif
+ composite -geometry +0+$(( 1 * ${ysize} ))+$(( 1 * ${ysize} )) $i12 composite.gif composite.gif
+ composite -geometry +${xsize}+$(( 1 * ${ysize} )) $i13 composite.gif composite.gif
+ composite -geometry +$(( 2 * ${xsize} ))+$(( 1 * ${ysize} )) $i14 composite.gif composite.gif
+ composite -geometry +$(( 3 * ${xsize} ))+$(( 1 * ${ysize} )) $i15 composite.gif composite.gif
+ composite -geometry +$(( 4 * ${xsize} ))+$(( 1 * ${ysize} )) $i16 composite.gif composite.gif
+ composite -geometry +$(( 5 * ${xsize} ))+$(( 1 * ${ysize} )) $i17 composite.gif composite.gif
+ composite -geometry +$(( 6 * ${xsize} ))+$(( 1 * ${ysize} )) $i18 composite.gif composite.gif
+ composite -geometry +$(( 7 * ${xsize} ))+$(( 1 * ${ysize} )) $i19 composite.gif composite.gif
+ composite -geometry +$(( 8 * ${xsize} ))+$(( 1 * ${ysize} )) $i20 composite.gif composite.gif
+ composite -geometry +$(( 9 * ${xsize} ))+$(( 1 * ${ysize} )) $i21 composite.gif composite.gif
+ composite -geometry +0+$(( 2 * ${ysize} ))+$(( 2 * ${ysize} )) $i22 composite.gif composite.gif
+ composite -geometry +${xsize}+(( 2 * ${ysize} )) $13 composite.gif composite.gif
+ composite -geometry +$(( 2 * ${xsize} ))+$(( 2 * ${ysize} )) $i23 composite.gif composite.gif
+ composite -geometry +$(( 3 * ${xsize} ))+$(( 2 * ${ysize} )) $i24 composite.gif composite.gif
+ composite -geometry +$(( 4 * ${xsize} ))+$(( 2 * ${ysize} )) $i25 composite.gif composite.gif
+ composite -geometry +$(( 5 * ${xsize} ))+$(( 2 * ${ysize} )) $i26 composite.gif composite.gif
+ composite -geometry +$(( 6 * ${xsize} ))+$(( 2 * ${ysize} )) $i27 composite.gif composite.gif
+ composite -geometry +$(( 7 * ${xsize} ))+$(( 2 * ${ysize} )) $i28 composite.gif composite.gif
+ composite -geometry +$(( 8 * ${xsize} ))+$(( 2 * ${ysize} )) $i29 composite.gif composite.gif
+ composite -geometry +$(( 9 * ${xsize} ))+$(( 2 * ${ysize} )) $i30 composite.gif composite.gifi

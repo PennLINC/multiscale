@@ -5,3 +5,4 @@ qsub_matlab.sh.*
 scripts/analyses/._*
 tmp.sh.*
 scripts/derive_parcels/Toolbox/
+.gif
