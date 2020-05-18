@@ -14,7 +14,6 @@ mkdir(ResultantFolder);
 PrepDataFile = [ProjectFolder '/CreatePrepData.mat'];
 resId = 'IndividualParcel_Final';
 initName = [ProjectFolder '/RobustInitialization_' num2str(K) '/init.mat'];
-%K = 17;
 % Use parameter in Hongming's NeuroImage paper
 alphaS21 = 1;
 alphaL = 10;
@@ -36,7 +35,8 @@ LeftCell = g_ls([RawDataFolder '/*/lh.fs5.sm6.residualised.mgh']);
 RightCell = g_ls([RawDataFolder '/*/rh.fs5.sm6.residualised.mgh']);
 
 % Parcellate for each subject separately
-for i = 1:length(LeftCell)
+for i = 5:100
+%for i = 1:length(LeftCell)
     i
     [Fold, ~, ~] = fileparts(LeftCell{i});
     [~, ID_Str, ~] = fileparts(Fold);
@@ -67,7 +67,7 @@ for i = 1:length(LeftCell)
         fid = fopen(strcat(ScriptPath, '.m'), 'w');
         fprintf(fid, cmd);
         system(['qsub -l h_vmem=10G /cbica/projects/pinesParcels/multiscale/scripts/derive_parcels/qsub_matlab.sh ' ScriptPath]);
-        pause(30);
+        pause(10);
     end
 end
 
