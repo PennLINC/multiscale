@@ -35,8 +35,7 @@ LeftCell = g_ls([RawDataFolder '/*/lh.fs5.sm6.residualised.mgh']);
 RightCell = g_ls([RawDataFolder '/*/rh.fs5.sm6.residualised.mgh']);
 
 % Parcellate for each subject separately
-for i = 5:100
-%for i = 1:length(LeftCell)
+for i = 1:length(LeftCell)
     i
     [Fold, ~, ~] = fileparts(LeftCell{i});
     [~, ID_Str, ~] = fileparts(Fold);
@@ -67,7 +66,7 @@ for i = 5:100
         fid = fopen(strcat(ScriptPath, '.m'), 'w');
         fprintf(fid, cmd);
         system(['qsub -l h_vmem=10G /cbica/projects/pinesParcels/multiscale/scripts/derive_parcels/qsub_matlab.sh ' ScriptPath]);
-        pause(10);
+        pause(20);
     end
 end
 
