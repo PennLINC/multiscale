@@ -5,9 +5,12 @@ Krange=2:30;
 iter_errormat=zeros(length(bblids),length(Krange)+1);
 iter_nmat=zeros(length(bblids),length(Krange)+1);
 recon_errormat=zeros(length(bblids),length(Krange)+1);
-for s=1:length(bblids);
+% for s=1:length(bblids);
+for s=1:5;
+s
 	iter_errormat(s,1)=bblids(s);
 	iter_nmat(s,1)=bblids(s);
+	recon_errormat(s,1)=bblids(s);
 	for K=2:max(Krange);
 		iterlog=load(strcat(singparc_dir, 'SingleParcel_1by1_kequal_', num2str(K), '/Sub_', num2str(bblids(s)), '/Iteration_error.mat'));
 		iterlog_err=iterlog.iterLog;

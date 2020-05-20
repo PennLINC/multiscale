@@ -15,8 +15,20 @@ df<-merge(subjects,age,by="scanid")
 community_vec<-seq(2,30)
 
 # load in error over scales
-numiter=read.csv('/cbica/projects/pinesParcels/data/aggregated_data/iter_n.csv')
-iter_err=read.csv('/cbica/projects/pinesParcels/data/aggregated_data/iter_error.csv')
+numiter=read.csv('/cbica/projects/pinesParcels/data/aggregated_data/iter_n',header = F)
+iter_err=read.csv('/cbica/projects/pinesParcels/data/aggregated_data/iter_error',header = F)
+recon_err=read.csv('/cbica/projects/pinesParcels/data/aggregated_data/recon_error',header=F)
+# plot first five subjects' itererr
+df=iter_err[1:5,]
+dfni=numiter[1:5,]
+dfrc=recon_err[1:5,]
+mdata<-melt(df,id=c(1))
+mdatani<-melt(dfni,id=c(1))
+mdatarc<-melt(dfrc,id=c(1))
+tc<-ggplot(data=mdata,aes(x=variable,y=value,group=V1)) +geom_line()+labs(title="Total cost over scales")
+ni<-ggplot(data=mdatani,aes(x=variable,y=value,group=V1)) +geom_line()+labs(title="Number of iterations over scales")
+rc<-ggplot(data=mdatarc,aes(x=variable,y=value,group=V1)) +geom_line()+labs(title="Reconstruction error over scales")
+ggarrange(tc,ni,rc)
 # load in FC features
 fc<-read.csv('/cbica/projects/pinesParcels/results/aggregated_data/fc/master_fcfeats.csv')
 
