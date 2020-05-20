@@ -55,6 +55,8 @@ partcoefneg=zeros(10242,length(subjs),length(Krange));
 
 % for each subject
 for s=1:length(subjs)
+	s
+	tic
 	% load in vertex-wise time series
 	vw_ts_l_p=['/cbica/projects/pinesParcels/data/CombinedData/' num2str(subjs(s)) '/lh.fs5.sm6.residualised.mgh'];
 	vw_ts_r_p=['/cbica/projects/pinesParcels/data/CombinedData/' num2str(subjs(s)) '/rh.fs5.sm6.residualised.mgh'];
@@ -78,6 +80,7 @@ for s=1:length(subjs)
 	ba_conmat=corrcoef(vw_ts_bothrw);
 	% for each scale
 	for K=2:max(Krange)
+		K
 		% model the 3D matrix of interest (current K/scale) from the house of K's, to populate and shove back in later
 		curGK=GKhouse{K};
 		curK=Khouse{K};
@@ -174,6 +177,7 @@ for s=1:length(subjs)
 		Khouse{K}=curK;
 		GKhouse{K}=curGK;
 		K_bTS_house{K}=curbtsK;
+		toc
 	end
 end
 % write out summary matrices
