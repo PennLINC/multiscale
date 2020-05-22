@@ -19,41 +19,66 @@ numiter=read.csv('/cbica/projects/pinesParcels/data/aggregated_data/iter_n',head
 iter_err=read.csv('/cbica/projects/pinesParcels/data/aggregated_data/iter_error',header = F)
 recon_err=read.csv('/cbica/projects/pinesParcels/data/aggregated_data/recon_error',header=F)
 # plot first five subjects' itererr
-df=iter_err[1:5,]
-dfni=numiter[1:5,]
-dfrc=recon_err[1:5,]
-mdata<-melt(df,id=c(1))
-mdatani<-melt(dfni,id=c(1))
-mdatarc<-melt(dfrc,id=c(1))
-tc<-ggplot(data=mdata,aes(x=variable,y=value,group=V1)) +geom_line()+labs(title="Total cost over scales")
-ni<-ggplot(data=mdatani,aes(x=variable,y=value,group=V1)) +geom_line()+labs(title="Number of iterations over scales")
-rc<-ggplot(data=mdatarc,aes(x=variable,y=value,group=V1)) +geom_line()+labs(title="Reconstruction error over scales")
-ggarrange(tc,ni,rc)
+df=iter_err[,1:30]
+dfni=numiter[,1:30]
+dfrc=recon_err[,1:30]
+
+# calculate difference
+dfdif=df
+dfdif[,2:30]=dfdif[,2:30]-dfrc[2:30]
+
+# get ages in there
+ages<-data.frame(demo$ageAtScan1,demo$bblid)
+colnames(ages)<-c("Age","scanid")
+
+colnames(df)[1]<-"scanid"
+colnames(dfni)[1]<-"scanid"
+colnames(dfrc)[1]<-"scanid"
+colnames(dfdif)[1]<-"scanid"
+
+df_tc<-merge(ages,df,by="scanid")
+df_ni<-merge(ages,dfni,by="scanid")
+df_rc<-merge(ages,dfrc,by="scanid")
+df_dif<-merge(ages,dfdif,by="scanid")
+
+mdata<-melt(df_tc,id=c(1,2))
+mdatani<-melt(df_ni,id=c(1,2))
+mdatarc<-melt(df_rc,id=c(1,2))
+mdatadif<-melt(df_dif,id=c(1,2))
+
+tc<-ggplot(data=mdata,aes(x=variable,y=value,group=scanid,color=Age)) +geom_line(alpha = 0.4)+scale_color_gradientn(colors=c("yellow","purple")) + theme_dark()+labs(title="Total cost over scales")
+ni<-ggplot(data=mdatani,aes(x=variable,y=value,group=scanid,color=Age)) +geom_line(alpha = 0.4)+scale_color_gradientn(colors=c("yellow","purple")) + theme_dark()+labs(title="Number of iterations over scales")
+rc<-ggplot(data=mdatarc,aes(x=variable,y=value,group=scanid,color=Age)) +geom_line(alpha = 0.4)+scale_color_gradientn(colors=c("yellow","purple")) + theme_dark()+labs(title="Reconstruction error over scales")
+dif<-ggplot(data=mdatadif,aes(x=variable,y=value,group=scanid,color=Age)) +geom_line(alpha = 0.4)+scale_color_gradientn(colors=c("yellow","purple")) + theme_dark()+labs(title="Non-recon error over scales")
+
+
+ggarrange(tc,ni,dif,rc)
+
 # load in FC features
-fc<-read.csv('/cbica/projects/pinesParcels/results/aggregated_data/fc/master_fcfeats.csv')
+###fc<-read.csv('/cbica/projects/pinesParcels/results/aggregated_data/fc/master_fcfeats.csv')
 
 # merge FC with subj info
 
 # indicators of processing stream
-ind='ind'
-gro='gro'
-bts='bts'
-
-# indicators of fc feature type
-bwi='_bw_FC_'
-wini='_win_FC_'
-nsegi='_seg_scale'
-gsegi='_globseg_scale'
-
-# indices of said indicators
-indiv=grep(ind,colnames(df))
-group=grep(gro,colnames(df))
-basists=grep(bts,colnames(df))
-bwcol=grep(bwi,colnames(df))
-wincols=grep(wini,colnames(df))
-nsegcols=grep(nsegi,colnames(df))
-gsegcols=grep(gsegi,colnames(df))
-
+###ind='ind'
+###gro='gro'
+###bts='bts'
+###
+#### indicators of fc feature type
+###bwi='_bw_FC_'
+###wini='_win_FC_'
+###nsegi='_seg_scale'
+###gsegi='_globseg_scale'
+###
+#### indices of said indicators
+###indiv=grep(ind,colnames(df))
+###group=grep(gro,colnames(df))
+###basists=grep(bts,colnames(df))
+###bwcol=grep(bwi,colnames(df))
+###wincols=grep(wini,colnames(df))
+###nsegcols=grep(nsegi,colnames(df))
+###gsegcols=grep(gsegi,colnames(df))
+###
 # Make motion-regressed version of everything
 
 
@@ -82,7 +107,7 @@ for (i in 1:length(community_vec)){
 correlations_over_scalesplot(correlations=seg_cors,title="Segregation-Age correlations over Scales")
 
 # multi-scale patterning
-## riemmanian COM alignment
+## riemmanian COM alignment (set scaling to false)
 ## shape PCA
 ## shape PC1 cor w/ age
 ## plot demonstrative subjs (highest and lowest PC loading)
