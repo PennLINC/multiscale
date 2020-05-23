@@ -1,4 +1,4 @@
-function subj_vert_fc(s, surfMask, Krange, subjs, group_parts_masked, outdir)
+function subj_vert_fc(s, surfMask.l, surfMask.r, Krange, subjs, group_parts_masked, outdir)
 	% s is subject-specific iteration being parallelized
 	% surfMask should be in format of 0=remove this vertex, low snr. 1 = keep this vertex, high snr
 	% Krange is range of scales to calculate fc metrics over. in format of Kmin:Kmax
