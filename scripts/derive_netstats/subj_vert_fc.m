@@ -1,4 +1,4 @@
-function subj_vert_fc(s, surfMask.l, surfMask.r, Krange, subjs, group_parts_masked, outdir)
+function subj_vert_fc(s, surfMaskl, surfMaskr, Krange, subjs, group_parts_masked, outdir)
 	% s is subject-specific iteration being parallelized
 	% surfMask should be in format of 0=remove this vertex, low snr. 1 = keep this vertex, high snr
 	% Krange is range of scales to calculate fc metrics over. in format of Kmin:Kmax
@@ -11,9 +11,9 @@ function subj_vert_fc(s, surfMask.l, surfMask.r, Krange, subjs, group_parts_mask
         	K_bTS_house{i}=zeros(i);
 	end
 	
-	% Make empty vertex-level participation coefficient vector
-	partcoefpos=zeros(10242,length(Krange);
-	partcoefneg=zeros(10242,length(Krange);
+	% Make empty vertex-level participation coefficient vector (# vert in mask, ~=fsaverage5)
+	partcoefpos=zeros(17734,length(Krange));
+	partcoefneg=zeros(17734,length(Krange));
 		
         vw_ts_l_p=['/cbica/projects/pinesParcels/data/CombinedData/' num2str(subjs(s)) '/lh.fs5.sm6.residualised.mgh'];
 	vw_ts_r_p=['/cbica/projects/pinesParcels/data/CombinedData/' num2str(subjs(s)) '/rh.fs5.sm6.residualised.mgh'];
@@ -22,8 +22,8 @@ function subj_vert_fc(s, surfMask.l, surfMask.r, Krange, subjs, group_parts_mask
 	vw_ts_l=vw_ts_l.vol;
 	vw_ts_r=vw_ts_r.vol;
 	% apply SNR masks
-	vw_ts_l_masked=vw_ts_l(1,(logical(surfMask.l)),1,:);
-	vw_ts_r_masked=vw_ts_r(1,(logical(surfMask.r)),1,:);
+	vw_ts_l_masked=vw_ts_l(1,(logical(surfMaskl)),1,:);
+	vw_ts_r_masked=vw_ts_r(1,(logical(surfMaskr)),1,:);
 	% stacking matrices so vertex number is doubled (not timepoints obvi)
 	vw_ts_both=[vw_ts_l_masked vw_ts_r_masked];
 	% get rid of odd extra 2 dimensions in .mgh file. Should be 17,734 high SNR vertices with this mask.
@@ -44,7 +44,7 @@ function subj_vert_fc(s, surfMask.l, surfMask.r, Krange, subjs, group_parts_mask
                 g_Kmat=zeros(K);
                 bTS_Kmat=zeros(K);
 		% load in partitions
-		K_Folder = [ProjectFolder '/SingleParcel_1by1_kequal_' num2str(K) '/Sub_' num2str(subjs(s))];
+		K_Folder = ['/cbica/projects/pinesParcels/data/SingleParcellation/SingleParcel_1by1_kequal_' num2str(K) '/Sub_' num2str(subjs(s))];
 		K_part_subj =[K_Folder '/IndividualParcel_Final_sbj1_comp' num2str(K) '_alphaS21_1_alphaL10_vxInfo1_ard0_eta0/final_UV.mat'];
 		subj_part=load(K_part_subj);
 		% do not see automated subject-level soft-parcel -> hard-parcel script... can double-check with zc
