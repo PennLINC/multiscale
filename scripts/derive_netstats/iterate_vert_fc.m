@@ -42,8 +42,7 @@ group_parts=load([ProjectFolder '/SingleAtlas_Analysis/group_all_Ks.mat']);
 group_parts=group_parts.affils;
 group_parts_masked=group_parts(any(group_parts,2),:);
 
-for s=1
-%for s=1:length(subjs)
+for s=1:length(subjs)
 	% check if lic available
 	avail_lic=license('checkout','Statistics_toolbox')
 	while avail_lic < 1
