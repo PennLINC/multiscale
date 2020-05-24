@@ -1,6 +1,8 @@
 library(shapes)
 library(ggplot2)
 library(reshape2)
+library(dplyr)
+library(ggpubr)
 # load in demo
 demo<-read.csv('/cbica/projects/pinesParcels/data/pnc_demo.csv')
 age<-data.frame(demo$ageAtScan1,demo$scanid)
@@ -107,9 +109,41 @@ for (i in 1:length(community_vec)){
 correlations_over_scalesplot(correlations=seg_cors,title="Segregation-Age correlations over Scales")
 
 # multi-scale patterning
-## riemmanian COM alignment (set scaling to false)
-## shape PCA
-## shape PC1 cor w/ age
+# shape analyses
+
+### 29 scales, 2 coordinates (x,y), and 693 subjs
+totalcost<-array(0,dim=c(29,2,693))
+recon<-array(0,dim=c(29,2,693))
+
+# for each subject, fill in x and y coords. (x is constant, is scale)
+for (i in 1:693){
+  # 2-29 as x-axis (scales of obs.)
+  totalcost[,1,i]<-seq(2,30)
+  recon[,1,i]<-seq(2,30)
+  # y values as error/cost
+  # seems more matlabby than characteristic of R that I have to as.x(as.x(df)) for it to work, but here we are
+  totalcost[,2,i]<-as.array(as.matrix(df[i,2:30]))
+  recon[,2,i]<-as.array(as.matrix(dfrc[i,2:30]))
+  
+  # scale SDs to be equiv in x and y dimensions (to enforce principled shape)
+  sd1<-(sd(totalcost[,1,i]))
+  sd2<-(sd(recon[,2,i]))
+  totalcost[,1,i]<- totalcost[,1,i] * sd2
+  totalcost[,2,i]<- totalcost[,2,i] * sd1
+  sd1<-(sd(recon[,1,i]))
+  sd2<-(sd(recon[,2,i]))
+  recon[,1,i]<- recon[,1,i] * sd2
+  recon[,2,i]<- recon[,2,i] * sd1
+  
+}
+tc_procrust<-procGPA(totalcost,scale = F)
+rc_procrust<-procGPA(recon,scale = F)
+
+shapepca(tc_procrust, pcno=1, type = "v", mag=3)
+shapepca(rc_procrust, pcno=1, type = "v", mag=3)
+
+
+
 ## plot demonstrative subjs (highest and lowest PC loading)
 ### is shape capture by slope of line (gradual descent with younger folks?)
 

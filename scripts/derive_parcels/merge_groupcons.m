@@ -2,7 +2,7 @@
 atlasdir='/cbica/projects/pinesParcels/data/SingleParcellation/SingleAtlas_Analysis'
 
 % insert desired K range here
-Krange=2:3
+Krange=2:30
 
 % empty matrix to house all affils
 affils=zeros(20484,length(Krange));

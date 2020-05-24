@@ -1,4 +1,4 @@
-function subj_vert_fc(s, surfMaskl, surfMaskr, Krange, subjs, group_parts_masked, outdir)
+function subj_vert_fc(s, surfMaskl, surfMaskr, Krange, subjs, group_parts_masked, outdir, outdirp)
 	% s is subject-specific iteration being parallelized
 	% surfMask should be in format of 0=remove this vertex, low snr. 1 = keep this vertex, high snr
 	% Krange is range of scales to calculate fc metrics over. in format of Kmin:Kmax
@@ -37,8 +37,8 @@ function subj_vert_fc(s, surfMaskl, surfMaskr, Krange, subjs, group_parts_masked
 	ba_conmat=corrcoef(vw_ts_bothrw);
 	% for each scale
 	for K=2:max(Krange)
-		K
-		
+		tic
+		K	
 		% 2D matrices
 		Kmat=zeros(K);
                 g_Kmat=zeros(K);
@@ -131,6 +131,8 @@ function subj_vert_fc(s, surfMaskl, surfMaskr, Krange, subjs, group_parts_masked
 		toc
 	end
 	% save files to subjdir
-	subjdata=struct('Khouse',Khouse,'GKhouse',GKhouse,'K_bTS_house',K_bTS_house,'partcoefpos',num2cell(partcoefpos),'partcoefneg',num2cell(partcoefneg));
-	save('subjdata',outdir)
+	subjmats=struct('Khouse',Khouse,'GKhouse',GKhouse,'K_bTS_house',K_bTS_house);
+	subjpcs=struct('partcoefpos',num2cell(partcoefpos),'partcoefneg',num2scell(partcoefneg));
+	save('subjmats',outdir)
+	save('subjpcs',outdirp)
 	 

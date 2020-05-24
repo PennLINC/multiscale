@@ -44,14 +44,15 @@ group_parts_masked=group_parts(any(group_parts,2),:);
 
 for s=1:length(subjs)
 	outdir = ['/cbica/projects/pinesParcels/data/CombinedData/' num2str(subjs(s)) '/fc_metrics.mat']; 
+	outdirp = ['/cbica/projects/pinesParcels/data/CombinedData/' num2str(subjs(s)) '/pc_metrics.mat'];
 	if ~exist(outdir, 'file')
 		% save needed arguments
-		save(['/cbica/projects/pinesParcels/data/CombinedData/' num2str(subjs(s)) '/fc_config.mat'], 's', 'surfMask', 'Krange', 'subjs', 'group_parts_masked', 'outdir');
+		save(['/cbica/projects/pinesParcels/data/CombinedData/' num2str(subjs(s)) '/fc_config.mat'], 's', 'surfMask', 'Krange', 'subjs', 'group_parts_masked', 'outdir', 'outdirp');
 		% turn this into a qsub command
 		cmd = ['matlab -nodisplay -r '...
 		'"addpath(genpath(''/cbica/projects/pinesParcels/multiscale/scripts/derive_parcels/Toolbox'')),addpath(''/cbica/projects/pinesParcels/multiscale/scripts/derive_netstats/''),load(''' ...
         	  '/cbica/projects/pinesParcels/data/CombinedData/' num2str(subjs(s)) '/fc_config.mat''),subj_vert_fc(s, ' ...
-		'surfMask.l, surfMask.r, Krange, subjs, group_parts_masked, outdir),exit(1)">"' ...
+		'surfMask.l, surfMask.r, Krange, subjs, group_parts_masked, outdir, outdirp),exit(1)">"' ...
 		 '/cbica/projects/pinesParcels/data/CombinedData/' num2str(subjs(s)) '/fc_init.log" 2>&1'];
 	
 		fid=fopen(['/cbica/projects/pinesParcels/data/CombinedData/' num2str(subjs(s)) '/tmp.sh'], 'w');

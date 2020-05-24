@@ -16,6 +16,7 @@ K
 
 %Step_3rd_SelRobustInit_AP
 %K
-Step_4th_IndividualParcel_AP
+%Step_4th_IndividualParcel_AP
+Step_6th_GroupAtlas_Extract_AP
 end
 
