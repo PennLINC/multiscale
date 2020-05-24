@@ -132,7 +132,7 @@ function subj_vert_fc(s, surfMaskl, surfMaskr, Krange, subjs, group_parts_masked
 	end
 	% save files to subjdir
 	subjmats=struct('Khouse',Khouse,'GKhouse',GKhouse,'K_bTS_house',K_bTS_house);
-	subjpcs=struct('partcoefpos',num2cell(partcoefpos),'partcoefneg',num2scell(partcoefneg));
+	subjpcs=struct('partcoefpos',num2cell(partcoefpos),'partcoefneg',num2cell(partcoefneg));
 	save('subjmats',outdir)
 	save('subjpcs',outdirp)
 	 

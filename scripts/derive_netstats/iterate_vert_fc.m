@@ -42,7 +42,15 @@ group_parts=load([ProjectFolder '/SingleAtlas_Analysis/group_all_Ks.mat']);
 group_parts=group_parts.affils;
 group_parts_masked=group_parts(any(group_parts,2),:);
 
-for s=1:length(subjs)
+for s=1
+%for s=1:length(subjs)
+	% check if lic available
+	avail_lic=license('checkout','Statistics_toolbox')
+	while avail_lic < 1
+		disp('waiting for license availability')
+		pause(30)
+		avail_lic=license('checkout','Statistics_toolbox') 
+	end
 	outdir = ['/cbica/projects/pinesParcels/data/CombinedData/' num2str(subjs(s)) '/fc_metrics.mat']; 
 	outdirp = ['/cbica/projects/pinesParcels/data/CombinedData/' num2str(subjs(s)) '/pc_metrics.mat'];
 	if ~exist(outdir, 'file')

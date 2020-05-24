@@ -40,6 +40,6 @@ for K=2:max(Krange);
 		end
 	end
 end
-csvwrite('/cbica/projects/pinesParcels/data/aggregated_data/iter_n',iter_nmat);	
-csvwrite('/cbica/projects/pinesParcels/data/aggregated_data/iter_error',iter_errormat);
-csvwrite('/cbica/projects/pinesParcels/data/aggregated_data/recon_error',recon_errormat);
+dlmwrite('/cbica/projects/pinesParcels/data/aggregated_data/iter_n',iter_nmat,'precision','%i');	
+dlmwrite('/cbica/projects/pinesParcels/data/aggregated_data/iter_error',iter_errormat,'precision','%i');
+dlmwrite('/cbica/projects/pinesParcels/data/aggregated_data/recon_error',recon_errormat,'precision','%i');
