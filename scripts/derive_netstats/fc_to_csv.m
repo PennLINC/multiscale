@@ -1,7 +1,7 @@
 outdir='/cbica/projects/pinesParcels/results/aggregated_data/fc/'
 
 % to become 2 to 30 when stuff finishes running someday
-Krange=2:3
+Krange=2:30
 
 subjs=load('/cbica/projects/pinesParcels/data/bblids.txt');
 
@@ -46,8 +46,12 @@ colnames(1)='bblid';
 thirdsnames=["ind", "gro", "bts"];
 % initialize an empty df for each of three fc eval methods, +1 for colnames and subjnames
 third_df=cell(length(subjs)+1,((full_df_colnum-1)/3)+1,3);
+
 % for each third
 for t=1:3;
+	% just a lil heads up when we're 1 and 2/3rds done
+	t
+
 	thirdname=thirdsnames(t);
 	pertinent_feat_name=strjoin([thirdname '_feats'],'');
 	feats=eval([pertinent_feat_name]);
@@ -166,10 +170,11 @@ for t=1:3;
 		featurematrix=feats{K};
 		% now add in subject values to the df using same indices but for subj row
 		for s=1:length(subjs);
-			subjbwvals_array=zeros(length(Kind),1);
 			subjmat=featurematrix(:,:,s);
 			% extract vals for each network, parallel to above
 			prevnetind=0;
+			% reset to null
+			subjbwvals=[];
 			for N=netlist;
 				unrecordednets=netlist(netlist>N);
 				curnetind=((prevnetind+1):(prevnetind+length(unrecordednets)));
@@ -178,7 +183,7 @@ for t=1:3;
 				for b=unrecordednets;
                         		subjbwval=subjmat(N,b);
 					bwval_forloop=[bwval_forloop,subjbwval];
-					end	
+				end	
 				prevnetind=max(curnetind);
 				subjbwvals(curnetind)=bwval_forloop;
 			end
@@ -189,7 +194,11 @@ for t=1:3;
 	%COLNAMES|
 	% SUBJ_1|
 	% SUBJ_N|
+	% Merge all the fc metrics	
 	third_df(:,:,t)=[df_gns df_ns df_win df_bw];
+	% Make subjs col for all 1/3rd dfs
+	third_df(2:694,1,t)=num2cell(subjs);	
+	third_df(1,1,t)=cellstr('Subjects');
 	end
 	% merge individualized, groupcon, and basis ts-derived series with same horzcat
 	% INDIVID. | GROUP | BASIS |
@@ -198,5 +207,6 @@ end
 % combine FC feature-type dfs for this third
 df=[third_df(:,:,1), third_df(:,:,2), third_df(:,:,3)];
 % save in R friendly format
-%%csvwrite(strcat(outdir,'/master_fcfeats.csv'),df);
+writetable(cell2table(df),strcat(outdir,'/master_fcfeats.csv'));
+
 
