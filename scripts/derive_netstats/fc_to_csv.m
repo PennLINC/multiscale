@@ -6,12 +6,12 @@ Krange=2:3
 subjs=load('/cbica/projects/pinesParcels/data/bblids.txt');
 
 % load in the cell struct array frakenmatrices
-ind_file=load('/cbica/projects/pinesParcels/results/connectivities/ind_conmats_allscales_allsubjs.mat');
-gro_file=load('/cbica/projects/pinesParcels/results/connectivities/gro_conmats_allscales_allsubjs.mat');	
-bts_file=load('/cbica/projects/pinesParcels/results/connectivities/bts_conmats_allscales_allsubjs.mat');
-ind_feats=ind_file.Khouse;
-gro_feats=gro_file.GKhouse;
-bts_feats=bts_file.K_bTS_house;
+ind_file=load('/cbica/projects/pinesParcels/results/aggregated_data/ind_conmats_allscales_allsubjs.mat');
+gro_file=load('/cbica/projects/pinesParcels/results/aggregated_data/gro_conmats_allscales_allsubjs.mat');	
+bts_file=load('/cbica/projects/pinesParcels/results/aggregated_data/bts_conmats_allscales_allsubjs.mat');
+ind_feats=ind_file.ind_mats;
+gro_feats=gro_file.gro_mats;
+bts_feats=bts_file.bTS_indmats;
 
 % calculate dataframe size
 win_over_scales=zeros((length(Krange)*((min(Krange)+max(Krange))/2)),1);
@@ -44,8 +44,8 @@ colnames=strings(full_df_colnum+1);
 colnames(1)='bblid';
 % thirds names
 thirdsnames=["ind", "gro", "bts"];
-% initialize an empty df for each of three fc eval methods
-third_df=zeros(length(subjs),((full_df_colnum-1)/3),3);
+% initialize an empty df for each of three fc eval methods, +1 for colnames and subjnames
+third_df=cell(length(subjs)+1,((full_df_colnum-1)/3)+1,3);
 % for each third
 for t=1:3;
 	thirdname=thirdsnames(t);
@@ -77,7 +77,7 @@ for t=1:3;
 		% extract matrices from this scale
 		featurematrix=feats{K};
 		for s=1:length(subjs);
-			subjmat=featurematrix(:,:,s)
+			subjmat=featurematrix(:,:,s);
 			subjwin=diag(subjmat);
 			% s+1 because 1st row is colnames
 			df_win(s+1,Kind)=num2cell(subjwin);
@@ -89,7 +89,7 @@ for t=1:3;
 	seg_strings=strings(length(Networkwise_seg_over_scales),1);
 	% can recycle indices here, netseg indices should be the same as within network (1 per network per scale)
 	df_ns=cell(length(subjs)+1,length(Networkwise_seg_over_scales));
-	df_gns=cell(length(subjs)+1,length(glob_seg_over_scales);	
+	df_gns=cell(length(subjs)+1,length(glob_seg_over_scales));	
 	for K=Krange
 		% recycled indices
 		Kind=Kind_w{K};
@@ -97,16 +97,16 @@ for t=1:3;
 			curindex=Kind(N);
 			seg_strings(curindex)=strcat(thirdname,'_seg_scale', num2str(K), '_net', num2str(N));
 		end
-		df_ns(1,Kind)=cellstr(seg_strings);
+		df_ns(1,Kind)=cellstr(seg_strings(Kind));
 		df_gns(1,K)=cellstr(strcat(thirdname, '_globseg_scale', num2str(K)));
 		%extract matrices from this scale
 		featurematrix=feats{K};
 		for s=1:length(subjs);
 			subjmat=featurematrix(:,:,s);
-			segvec=zeros(length(K);
+			segvec=zeros(length(K));
 			% calc segreg for each network
 			for N=1:K
-				Nrow=submat(N,:);
+				Nrow=subjmat(N,:);
 				winval=Nrow(N);
 				NotcurNet=setdiff(1:K,N);
 				bwvals=Nrow(NotcurNet);
@@ -149,23 +149,23 @@ for t=1:3;
 			% get networks from netlist that have not bee iterated over 
 			unrecordednets=netlist(netlist>N);
 			% This N's indices (FC with all unrecorded nets), +1 because indices are inclusive
-			curnetind=((prevnetind+1):(prevnetind+length(unrecordednets)))
+			curnetind=((prevnetind+1):(prevnetind+length(unrecordednets)));
 			% and where it corresponds to in greater K indices
 			wheretofill=Kind(curnetind);
 			% record b/w FC from curnet and unrecorded nets
 			bwstringsN=[];
 			for b=unrecordednets;
-				bwstringsN=[bwstringsN, strcat(thirdname,'_bw_FC_scale',num2str(K),'_nets',num2str(N),'_and_',num2str(b))]
+				bwstringsN=[bwstringsN, strcat(thirdname,'_bw_FC_scale',num2str(K),'_nets',num2str(N),'_and_',num2str(b))];
 			end
 			bw_strings(wheretofill)=bwstringsN;
 			% update ending point of previous network indices
-			prevnetind=max(curnetind)
+			prevnetind=max(curnetind);
 		end
-		df_bw(1,Kind)=cellstr(bw_strings);
+		df_bw(1,Kind)=cellstr(bw_strings(Kind));
 		% on to actual values
 		featurematrix=feats{K};
 		% now add in subject values to the df using same indices but for subj row
-		for s=1:length(subjs;
+		for s=1:length(subjs);
 			subjbwvals_array=zeros(length(Kind),1);
 			subjmat=featurematrix(:,:,s);
 			% extract vals for each network, parallel to above
@@ -176,15 +176,13 @@ for t=1:3;
 				% without wheretofill beccause we are not populating a global vector here
 				bwval_forloop=[];
 				for b=unrecordednets;
-					N
-					b
                         		subjbwval=subjmat(N,b);
 					bwval_forloop=[bwval_forloop,subjbwval];
 					end	
 				prevnetind=max(curnetind);
 				subjbwvals(curnetind)=bwval_forloop;
 			end
-			df(s+1,Kind)=num2cell(subjbwvals);
+			df_bw(s+1,Kind)=num2cell(subjbwvals);
 		end
 	% merge all fc features into dataframe of this third
 	%       |_GLOBAL_SEG_|____NETWORKWISE_SEG____|_____WITHIN_CONS_____|____________BW_CONS__________|
@@ -196,9 +194,9 @@ for t=1:3;
 	% merge individualized, groupcon, and basis ts-derived series with same horzcat
 	% INDIVID. | GROUP | BASIS |
 	%G|NW|WC|BC|G|N|W|B|G|N|W|B|
-	
+end	
 % combine FC feature-type dfs for this third
 df=[third_df(:,:,1), third_df(:,:,2), third_df(:,:,3)];
 % save in R friendly format
-csvwrite(strcat(outdir,'/master_fcfeats.csv'),df);
+%%csvwrite(strcat(outdir,'/master_fcfeats.csv'),df);
 
