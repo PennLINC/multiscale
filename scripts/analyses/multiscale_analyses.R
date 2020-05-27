@@ -3,6 +3,7 @@ library(ggplot2)
 library(reshape2)
 library(dplyr)
 library(ggpubr)
+library(vroom)
 # load in demo
 demo<-read.csv('/cbica/projects/pinesParcels/data/pnc_demo.csv')
 age<-data.frame(demo$ageAtScan1,demo$scanid)
@@ -61,10 +62,16 @@ dif<-ggplot(data=mdatadif,aes(x=variable,y=value,group=bblid,color=Age)) +geom_l
 
 ggarrange(tc,ni,dif,rc)
 
-# load in FC features
-###fc<-read.csv('/cbica/projects/pinesParcels/results/aggregated_data/fc/master_fcfeats.csv')
+# load in FC features (takes about 3 minutes)
+fc<-vroom('/cbica/projects/pinesParcels/results/aggregated_data/fc/master_fcfeats.csv')
+# set colnames to matlab-printed colnames
+colnames(fc)<-fc[1,]
+# aaaand remove it
+fc<-fc[-c(1),]
 
-# merge FC with subj info
+### merge FC with subj info
+# AGE
+# MOTION METRIC
 
 # indicators of processing stream
 ###ind='ind'
