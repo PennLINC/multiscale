@@ -30,8 +30,8 @@ for s=1:length(subjs)
 		bTS_indmats{k}(:,:,s)=fcmets.subjmats(k).K_bTS_house;
 
 		% k-1 because these were saved as 1:29	
-		pcoefpos(:,k,s)=pcmets.subjpcs(:,k-1).partcoefpos;
-		pcoefneg(:,k,s)=pcmets.subjpcs(:,k-1).partcoefneg;
+		pcoefpos(:,k,s)=[pcmets.subjpcs(:,k-1).partcoefpos];
+		pcoefneg(:,k,s)=[pcmets.subjpcs(:,k-1).partcoefneg];
 	end
 end
 
