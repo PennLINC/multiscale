@@ -70,8 +70,18 @@ colnames(fc)<-fc[1,]
 fc<-fc[-c(1),]
 
 ### merge FC with subj info
+colnames(fc)[1]<-'bblid'
 # AGE
+masterdf<-merge(fc,demo,by='bblid')
+
 # MOTION METRIC
+# courtesty of ZC
+# port over ##
+Rest_Motion_Data <- read.csv("/cbica/projects/pinesParcels/data/n1601_RestQAData_20170714.csv")
+NBack_Motion_Data <- read.csv("/cbica/projects/pinesParcels/data/n1601_NBACKQAData_20181001.csv")
+Idemo_Motion_Data <- read.csv("/cbica/projects/pinesParcels/data/n1601_idemo_FinalQA_092817.csv")
+
+Motion <- (Behavior$restRelMeanRMSMotion + Behavior$nbackRelMeanRMSMotion + Behavior$idemoRelMeanRMSMotion)/3;
 
 # indicators of processing stream
 ###ind='ind'
