@@ -13,6 +13,21 @@ ind_feats=ind_file.ind_mats;
 gro_feats=gro_file.gro_mats;
 bts_feats=bts_file.bTS_indmats;
 
+%%% load in sham data
+sham_file=load('/cbica/projects/pinesParcels/data/sim_data/shamdata.mat');
+sham_feats=sham_file.Shamhouse;
+
+% append subjects to include both sham subjects
+% 99999 is random, 10000 is segeg
+subjs=[subjs; 99999; 10000];
+% append sham data to each struct of feature matrices (redundant)
+for k=Krange
+	ind_feats{k}(:,:,694:695)=sham_feats{k}(:,:,1:2);
+	gro_feats{k}(:,:,694:695)=sham_feats{k}(:,:,1:2);
+	bts_feats{k}(:,:,694:695)=sham_feats{k}(:,:,1:2);
+end
+
+disp("Don't forget you have two sham subjects in your output dataframe, dingus"); 
 % calculate dataframe size
 win_over_scales=zeros((length(Krange)*((min(Krange)+max(Krange))/2)),1);
 % same number of within FC features as network-wise segreg, one per each network per each K per each subject
@@ -197,7 +212,7 @@ for t=1:3;
 	% Merge all the fc metrics	
 	third_df(:,:,t)=[df_gns df_ns df_win df_bw];
 	% Make subjs col for all 1/3rd dfs
-	third_df(2:694,1,t)=num2cell(subjs);	
+	third_df(2:(length(subjs)+1),1,t)=num2cell(subjs);	
 	third_df(1,1,t)=cellstr('Subjects');
 	end
 	% merge individualized, groupcon, and basis ts-derived series with same horzcat
