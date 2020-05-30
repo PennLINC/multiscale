@@ -64,15 +64,70 @@ ggarrange(tc,ni,dif,rc)
 
 # load in FC features (takes about 3 minutes)
 fc<-vroom('/cbica/projects/pinesParcels/results/aggregated_data/fc/master_fcfeats.csv')
+# save as an rds in case that loads faster in the future
+saveRDS(fc,'/cbica/projects/pinesParcels/results/aggregated_data/fc/master_fcfeats.rds')
 # set colnames to matlab-printed colnames
 colnames(fc)<-fc[1,]
 # aaaand remove it
 fc<-fc[-c(1),]
 
+# round ridiculous number of decimal points
+fc[] <- lapply(fc, function(x) {
+  if(is.character(x)) round(as.numeric(as.character(x)),digits=3) else x
+})
+
+# isolate shams (although merge should take them out later)
+shams<-fc[694:695,]
+
 ### merge FC with subj info
 colnames(fc)[1]<-'bblid'
 # AGE
 masterdf<-merge(fc,demo,by='bblid')
+masterdf[] <- lapply(masterdf, function(x) {
+  round((x),digits=3)
+})
+### isolate global segreg columns
+gsegcols<-grep("globseg",colnames(masterdf))
+
+### plot mean global seg over scales by age
+# 2:30 is ind, 5455:5483 is group
+indglobseg<-cbind(masterdf$bblid,masterdf$ageAtScan1/12,masterdf[,2:30])
+groglobseg<-cbind(masterdf$bblid,masterdf$ageAtScan1/12,masterdf[,5455:5483])
+
+# set colnames
+colnames(indglobseg)[1:2]<-c("bblid", "Age")
+colnames(groglobseg)[1:2]<-c("bblid", "Age")
+colnames(indglobseg)[3:31]<-as.character(2:30)
+colnames(groglobseg)[3:31]<-as.character(2:30)
+
+# melt it
+mindglobseg<-melt(indglobseg, id=c(1,2))
+mgroglobseg<-melt(groglobseg, id=c(1,2))
+
+indseg<-ggplot(data=mindglobseg,aes(x=variable,y=value,group=bblid,color=Age)) +geom_line(alpha = 0.2)+scale_color_gradientn(colors=c("yellow","purple")) + theme_dark()+labs(title="Global Segregation - Individ. Partitions") +xlab("# of Communities")
+groseg<-ggplot(data=mgroglobseg,aes(x=variable,y=value,group=bblid,color=Age)) +geom_line(alpha = 0.2)+scale_color_gradientn(colors=c("yellow","purple")) + theme_dark()+labs(title="Global Segregation - Group Partitions") +xlab("# of Communities")
+ggarrange(indseg,groseg,ncol=1)
+
+### get global seg cors
+# 29 for scales studied
+ind_segcors<-matrix(0,29,2)
+ind_segcors[,1]<-2:30
+for (i in 1:29){
+  # i+2 because first column is scanid, second is age
+  ind_segcors[i,2]<-cor.test(indglobseg[,i+2],indglobseg$Age)$estimate
+}
+## now group level
+# 29 for scales studied
+gro_segcors<-matrix(0,29,2)
+gro_segcors[,1]<-2:30
+for (i in 1:29){
+  # i+2 because first column is scanid, second is age
+  gro_segcors[i,2]<-cor.test(groglobseg[,i+2],groglobseg$Age)$estimate
+}
+
+indagecor<-correlations_over_scales(ind_segcors,"Individualized Partition Global Segregation Age Correlations")
+groagecor<-correlations_over_scales(gro_segcors,"Group Partition Global Segregation Age Correlations")
+ggarrange(indagecor,groagecor,ncol = 1)
 
 # MOTION METRIC
 # courtesty of ZC
