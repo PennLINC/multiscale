@@ -24,13 +24,14 @@ group_parts=load([ProjectFolder '/SingleAtlas_Analysis/group_all_Ks.mat']);
 group_parts=group_parts.affils;
 group_parts_masked=group_parts(any(group_parts,2),:);
 
+% Make empty vertex-level participation coefficient vector (# vert in mask, ~=fsaverage5)
+partcoefpos=zeros(17734,length(Krange),length(subjs));
+partcoefneg=zeros(17734,length(Krange),length(subjs));
+gpartcoefneg=zeros(17734,length(Krange),length(subjs));	
+gpartcoefpos=zeros(17734,length(Krange),length(subjs));
+
 for s=1:length(subjs);
 	s
-	% Make empty vertex-level participation coefficient vector (# vert in mask, ~=fsaverage5)
-	partcoefpos=zeros(17734,length(Krange),length(subjs));
-	partcoefneg=zeros(17734,length(Krange),length(subjs));
-	gpartcoefpos=zeros(17734,length(Krange),length(subjs));
-	gpartcoefneg=zeros(17734,length(Krange),length(subjs));	
 	
         vw_ts_l_p=['/cbica/projects/pinesParcels/data/CombinedData/' num2str(subjs(s)) '/lh.fs5.sm6.residualised.mgh'];
 	vw_ts_r_p=['/cbica/projects/pinesParcels/data/CombinedData/' num2str(subjs(s)) '/rh.fs5.sm6.residualised.mgh'];

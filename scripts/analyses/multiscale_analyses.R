@@ -62,10 +62,12 @@ dif<-ggplot(data=mdatadif,aes(x=variable,y=value,group=bblid,color=Age)) +geom_l
 
 ggarrange(tc,ni,dif,rc)
 
+# plot mean recon error
+plot(colMeans(recon_err)[2:30])
+lines(colMeans(recon_err)[2:30])
+
 # load in FC features (takes about 3 minutes)
 fc<-vroom('/cbica/projects/pinesParcels/results/aggregated_data/fc/master_fcfeats.csv')
-# save as an rds in case that loads faster in the future
-saveRDS(fc,'/cbica/projects/pinesParcels/results/aggregated_data/fc/master_fcfeats.rds')
 # set colnames to matlab-printed colnames
 colnames(fc)<-fc[1,]
 # aaaand remove it
@@ -75,6 +77,10 @@ fc<-fc[-c(1),]
 fc[] <- lapply(fc, function(x) {
   if(is.character(x)) round(as.numeric(as.character(x)),digits=3) else x
 })
+write.cs
+
+# save rounded version in hopes that it takes less than 15 minutes to load
+write.csv(fc,'/cbica/projects/pinesParcels/results/aggregated_data/fc/master_fcfeats_rounded.csv')
 
 # isolate shams (although merge should take them out later)
 shams<-fc[694:695,]
@@ -86,8 +92,20 @@ masterdf<-merge(fc,demo,by='bblid')
 masterdf[] <- lapply(masterdf, function(x) {
   round((x),digits=3)
 })
-### isolate global segreg columns
+
+### index columns
+# global segregation
 gsegcols<-grep("globseg",colnames(masterdf))
+# net segs
+segcols<-grep("_seg_",colnames(masterdf))
+# within
+wincols<-grep("_win_",colnames(masterdf))
+# between
+bwcols<-grep("_bw_",colnames(masterdf))
+# individual
+indcols<-grep("ind_",colnames(masterdf))
+# group
+grocols<-grep("gro_",colnames(masterdf))
 
 ### plot mean global seg over scales by age
 # 2:30 is ind, 5455:5483 is group
@@ -160,18 +178,11 @@ Motion <- (Behavior$restRelMeanRMSMotion + Behavior$nbackRelMeanRMSMotion + Beha
 ###
 # Make motion-regressed version of everything
 
-
-# Plot error over scales
-## error x scale color-coded age
 ## mean error x scale with SDs
 
 # Plot gseg over scales
 ## gseg x scale color-coded age
 ## mean gseg x scale with SDs
-
-# Plot correlations with age over scales (bw, win, seg)
-# format into correlations_over_scalesplot format
-###gseg<-data.frame(gsegcols)
 
 ###segdf<-merge(gseg,df,by="scanid")
 ###
