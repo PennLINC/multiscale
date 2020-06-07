@@ -68,6 +68,7 @@ lines(colMeans(recon_err)[2:30])
 
 # load in FC features (takes about 3 minutes)
 fc<-vroom('/cbica/projects/pinesParcels/results/aggregated_data/fc/master_fcfeats.csv')
+#fc<-vroom('/cbica/projects/pinesParcels/results/aggregated_data/fc/master_fcfeats_rounded.csv')
 # set colnames to matlab-printed colnames
 colnames(fc)<-fc[1,]
 # aaaand remove it
@@ -77,7 +78,7 @@ fc<-fc[-c(1),]
 fc[] <- lapply(fc, function(x) {
   if(is.character(x)) round(as.numeric(as.character(x)),digits=3) else x
 })
-write.cs
+
 
 # save rounded version in hopes that it takes less than 15 minutes to load
 write.csv(fc,'/cbica/projects/pinesParcels/results/aggregated_data/fc/master_fcfeats_rounded.csv')
@@ -225,7 +226,31 @@ shapepca(seg_procrust, pcno=1, type = "v", mag=5)
 # get individ. level pc scores into df
 df_tc$pc1<-seg_procrust$scores[,1]
 
+#### Get transmodality scores in here
+tm<-read.csv('/cbica/projects/pinesParcels/results/aggregated_data/fc/network_transmodality_overscales.csv',stringsAsFactors = F)
+# set colnames to matlab-printed colnames
+colnames(tm)<-tm[1,]
+# aaaand remove it
+tm<-tm[-c(1),]
+
+# time to plot age segreg cor by transmodality at each scale
+
 ## plot demonstrative subjs (highest and lowest PC loading)
 ### is shape capture by slope of line (gradual descent with younger folks?)
 
-### explore regional subtrates of revealed effects
+
+# transmodality
+tm<-read.csv('/cbica/projects/pinesParcels/results/aggregated_data/fc/network_transmodality_overscales.csv',stringsAsFactors = F)
+colnames(tm)<-tm[1,]
+# aaaand remove it
+tm<-tm[-c(1),]
+
+# comparison with ind_segregation by network by scale
+segcols_ind_index<-segcols[1:464]
+segagecorvec<-array(1:464)
+for (x in 1:464){
+  segagecorvec[x]<-cor.test(masterdf[,segcols_ind_index[x]],masterdf$ageAtScan1)$estimate
+}
+
+# remove first 5 for now
+plot(as.vector(tm[1,6:464]),segagecorvec[6:464])
