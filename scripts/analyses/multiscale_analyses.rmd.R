@@ -65,7 +65,9 @@ ggarrange(tc,ni,dif,rc)
 # plot average recon error over scales
 plot(colMeans(recon_err)[2:30])
 lines(colMeans(recon_err)[2:30])
+```
 
+```{r}`
 # load in FC features (takes about 3 minutes)
 #fc<-vroom('/cbica/projects/pinesParcels/results/aggregated_data/fc/master_fcfeats.csv')
 # save as an rds in case that loads faster in the future
@@ -237,4 +239,9 @@ tm<-tm[-c(1),]
 
 ### Get in Consensus-reference atlas correspondence
 rac<-read.csv('/cbica/projects/pinesParcels/results/aggregated_data/fc/network_yCorrespondence_overscales.csv',stringsAsFactors = F)
+
+# plot transmodality by segregation age effect - color scale
+# plot transmodality by segregation age effect - color network prop
+
+
 

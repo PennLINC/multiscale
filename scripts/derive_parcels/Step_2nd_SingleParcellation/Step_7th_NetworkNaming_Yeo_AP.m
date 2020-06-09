@@ -39,7 +39,7 @@ end
 % make strings vector for colnames
 corres_strings=strings(length(correspondence_over_scales),1);
 % make a cell dataframe (unfortunately) to keep colnames and values together (rows for colnames, scales, maj net name, and maj net prop)
-%%% GET BOOLEAN TRANSMODAL VS UNIMODAL VAL FOR ROW 5 IN NEXT ITER
+%%% transmodality binning to be done in R to reduce matlab usage
 df_corres=cell(4,length(correspondence_over_scales));
 %%%%%%%%%%%%%%%%%
 
@@ -56,7 +56,7 @@ for K=Krange
 
 	% its like boom
 	df_corres(2,Kind)=deal(num2cell(K));	
-	% put it in the hoop like slam
+	% put it in the df like slam
 	df_corres(1,Kind)=cellstr(corres_strings(Kind));
 	K
 	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
