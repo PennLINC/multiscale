@@ -65,9 +65,10 @@ ggarrange(tc,ni,dif,rc)
 # plot average recon error over scales
 plot(colMeans(recon_err)[2:30])
 lines(colMeans(recon_err)[2:30])
-```
+``1
 
-```{r}`
+
+```{r}
 # load in FC features (takes about 3 minutes)
 #fc<-vroom('/cbica/projects/pinesParcels/results/aggregated_data/fc/master_fcfeats.csv')
 # save as an rds in case that loads faster in the future

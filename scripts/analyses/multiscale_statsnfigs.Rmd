@@ -22,8 +22,6 @@ colnames(subjects)<-c("scanid")
 colnames(age)<-c("Age","scanid")
 df<-merge(subjects,age,by="scanid")
 
-behav<-read.csv('/cbica/projects/pinesParcels/dropbox/n693_Behavior_20181219.csv')
-
 # community solutions guaged in this iteration
 community_vec<-seq(2,30)
 
@@ -163,7 +161,7 @@ Rest_Motion_Data <- read.csv("/cbica/projects/pinesParcels/data/n1601_RestQAData
 NBack_Motion_Data <- read.csv("/cbica/projects/pinesParcels/data/n1601_NBACKQAData_20181001.csv")
 Idemo_Motion_Data <- read.csv("/cbica/projects/pinesParcels/data/n1601_idemo_FinalQA_092817.csv")
 
-Motion <- (Behavior$restRelMeanRMSMotion + Behavior$nbackRelMeanRMSMotion + Behavior$idemoRelMeanRMSMotion)/3;
+##Motion <- (Behavior$restRelMeanRMSMotion + Behavior$nbackRelMeanRMSMotion + Behavior$idemoRelMeanRMSMotion)/3;
 
 # indicators of processing stream
 ind='ind'
@@ -232,7 +230,7 @@ indglobseg$pc1<-seg_procrust$scores[,1]
 
 # find dif b/w scale 2 and 30 for simpler description of shape pc
 indglobseg$dif<-indglobseg$`2` - indglobseg$`30`
-plot(indglobseg$dif,indglobseg$Age)
+plot(indglobseg$Age,indglobseg$dif)
 ## plot demonstrative subjs (highest and lowest PC loading)
 
 ### note, shape is captured by dif b/w seg at scale 2 and 30
@@ -272,7 +270,7 @@ for (i in 1:length(tmclass)){
 indiv_wincols_ind<-intersect(wincols,indiv)
 individ_scalebywin_df<-masterdf[,indiv_wincols_ind]
 # ensure 464 length (number of scale by net withincon features)
-length(indiv_scalebynet_df)
+length(individ_scalebywin_df)
 
 # will needs these functions throughout
 corconfinfvecupper<-function(x){
@@ -303,16 +301,16 @@ confvecupper_d[,7]<-CIgroupingInd
 #corVecEst_d[,6]<-CIgroupingInd
 colnames(confveclower_d)[2]<-"CIbounds"
 colnames(confvecupper_d)[2]<-"CIbounds"
-CIplotdf<-data.frame(rbind(confveclower_d,confvecupper_d))
+win_CIplotdf<-data.frame(rbind(confveclower_d,confvecupper_d))
 # range of interest until we work out K=2 and K=3
 indofint<-6:464
 indofint<-append(indofint,(470:928))
 
 # plot it
-Win_age_tm<-ggplot(CIplotdf[indofint,],aes(tmvec,CIbounds,color=domnetvec,alpha=netpropvec^2,group=V7)) + geom_line(size=1) + scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068')) + xlab("Transmodality") + ylab("AgeWithinCor") +theme_classic() + geom_point(size=4,aes(tmvec,corVecEst)) + ggtitle('Correlation of Within Network Connectivity and Age over All Networks')
+Win_age_tm<-ggplot(win_CIplotdf[indofint,],aes(tmvec,CIbounds,color=domnetvec,alpha=netpropvec^2,group=V7)) + geom_line(size=1) + scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068')) + xlab("Transmodality") + ylab("AgeWithinCor") +theme_classic(base_size = 28) + geom_point(size=4,aes(tmvec,corVecEst)) + ggtitle('Correlation of Within Network Connectivity and Age over All Networks')+ ylim(-.5,.5)
 
 # check for scale-specific effects
-Win_age_scale<-ggplot(CIplotdf[indofint,],aes(tmvec,corVecEst,color=scalesvec)) + geom_point() + xlab("Transmodality") + ylab("AgeSegregCor")
+Win_age_scale<-ggplot(win_CIplotdf[indofint,],aes(tmvec,corVecEst,color=scalesvec)) + geom_point(size=4) + xlab("Transmodality") + ylab("AgeWinCor")+theme_classic(base_size = 28)+ ylim(-.5,.5)+ ggtitle('Correlation of Within Network Connectivity and Age over All Networks')
 ```
 
 ```{r}
@@ -339,15 +337,15 @@ confvecupper_d[,7]<-CIgroupingInd
 #corVecEst_d[,6]<-CIgroupingInd
 colnames(confveclower_d)[2]<-"CIbounds"
 colnames(confvecupper_d)[2]<-"CIbounds"
-CIplotdf<-data.frame(rbind(confveclower_d,confvecupper_d))
+Seg_CIplotdf<-data.frame(rbind(confveclower_d,confvecupper_d))
 # range of interest until we work out K=2 and K=3
 indofint<-6:464
 indofint<-append(indofint,(470:928))
 
 
-Segreg_age_tm<-ggplot(CIplotdf[indofint,],aes(tmvec,CIbounds,color=domnetvec,alpha=netpropvec^2,group=V7)) + geom_line(size=1) + scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068')) + xlab("Transmodality") + ylab("AgeSegregCor") +theme_classic() + geom_point(size=4,aes(tmvec,corVecEst)) + ggtitle('Correlation of Network Segregation and Age over All Networks')
+Segreg_age_tm<-ggplot(Seg_CIplotdf[indofint,],aes(tmvec,CIbounds,color=domnetvec,alpha=netpropvec^2,group=V7)) + geom_line(size=1) + scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068')) + xlab("Transmodality") + ylab("AgeSegregCor") +theme_classic(base_size = 28) + geom_point(size=4,aes(tmvec,corVecEst)) + ggtitle('Correlation of Network Segregation and Age over All Networks')+ ylim(-.5,.5)
 
-Segreg_age_scale<-ggplot(CIplotdf[indofint,],aes(tmvec,corVecEst,color=scalesvec)) + geom_point() + xlab("Transmodality") + ylab("AgeSegregCor")
+Segreg_age_scale<-ggplot(Seg_CIplotdf[indofint,],aes(tmvec,corVecEst,color=scalesvec)) + geom_point(size=4) + xlab("Transmodality") + ylab("AgeSegregCor")+theme_classic(base_size = 28)+ ylim(-.5,.5)+ ggtitle('Correlation of Network Segregation and Age over All Networks')
 
 
 ggarrange(Segreg_age_tm,Segreg_age_scale,Win_age_tm,Win_age_scale)
@@ -362,23 +360,24 @@ individ_scalebybw_df<-masterdf[,indiv_bwcols_ind]
 wincolnames<-colnames(individ_scalebywin_df)
 bwcolnames<-colnames(individ_scalebybw_df)
 
-# empty array to populate with b/w connectivity age cors (b/w to unimodal, b/w to transmodal, b/w to aggregate, and K and N just to confirm we are matching)
-bwAgeCorVecs<-matrix(0,464,5)
+# empty array to populate with b/w connectivity age cors (b/w to unimodal, b/w to transmodal, b/w to aggregate, and K and N and Modality just to confirm we are matching)
+bwAgeCorVecs<-matrix(0,464,6)
 
 # loop over connectivities to unimodal then to transmodal
 modalloopvar=c('unimodal','transmodal')
 for (i in 1:2){
+  print(modalloopvar[i])
   # get "the other"
   modalloopvar_other=modalloopvar[modalloopvar!=(modalloopvar[i])]
   # extract which of 1:464 network mappings match the modalitity of this loop
   modalindices=which(tmclass %in% modalloopvar[i])
   # loop over each scale
-  for (K in 2:30){
+    for (K in 2:30){
     # Make index of where values from this K should go
-    K_start=((K-1)*(K))/2
-    K_end=(((K-1)*(K))/2)+K-1
-    Kind<-K_start:K_end
-    bwAgeCorVecs[Kind,4]=K
+      K_start=((K-1)*(K))/2
+      K_end=(((K-1)*(K))/2)+K-1
+      Kind<-K_start:K_end
+      bwAgeCorVecs[Kind,4]=K
     
     # index which values are at this scale
     scaleStr=paste('scale',K,'_',sep='')
@@ -389,7 +388,8 @@ for (i in 1:2){
     wincolnames_thisScale=wincolnames[wincolnames_thisScale_inds]
     bwcolnames_thisScale_inds<-grep((paste('scale',K,'_',sep='')),bwcolnames)
     bwcolnames_thisScale=bwcolnames[bwcolnames_thisScale_inds]
-    # one weird trick to get binarized transmodality class vector for same scale (Doctors hate him!)
+    
+  # one weird trick to get binarized transmodality class vector for same scale (Doctors hate him!)
     # tm naming aligns with wincon naming
     tmclasses_thisScale<-tmclass[wincolnames_thisScale_inds]
     # extract the network number of each network at this scale in same order as tmclasses_thisScale
@@ -400,6 +400,10 @@ for (i in 1:2){
     # remove scale number from strings so we're not picking up on those
     bwcolnames_thisScale_split<-strsplit(bwcolnames_thisScale,"nets")
     bwnetnames_thisScale<-wincolNames_net<-sapply(bwcolnames_thisScale_split, "[[" , 2)
+    # add another fucking set of underscores to all of these colnames so 1's dont pick up 10s
+    bwnetnames_thisScale_extended<-paste('ind_bw_FC_scale',K,'_nets_',bwnetnames_thisScale,'_',sep='')
+    # extra goddamn undercores have to go here and be removed later
+    bwcolnames_thisScale_split<-strsplit(bwcolnames_thisScale,"nets")
     # to be matched in all-networks-at-this-scale loop
     # now as we descend into the third circle of for-loop hell, we find the guy from man vs.food being eaten alive by cerberus
     for (N in 1:K){
@@ -408,11 +412,11 @@ for (i in 1:2){
       Nind<-Kind[N]
       bwAgeCorVecs[Nind,5]=N
       # get index for this N in terms of masterdf (collapse | to match multiple patterns)
-      Ncolname<-grep(as.character(N),bwnetnames_thisScale,value=T)
+      Ncolname<-grep(as.character(paste('_',N,'_',sep='')),bwnetnames_thisScale_extended,value=T)
       # need to add "_" before and after each number so I can select for '_N_' and not pick up teens digits with 1, 20s with 3, 15 and 25 with 5, etc.
-      Ncolname<-paste('_',Ncolname,'_',sep='')
       # determine if this network is transmodal or unimodal
       NModality<-tmMatchingVecs[,2][[N]]
+      ########bwAgeCorVecs[Nind,6]<-NModality
       NotNModality<-modalloopvar[modalloopvar!=NModality]
       matchvec<-grep(NModality,tmclasses_thisScale)
       # remove self
@@ -420,58 +424,87 @@ for (i in 1:2){
       # build index of matching modalities to reference masterdf (collapse | to match multiple patterns)
       matchTruncColName<-grep(as.character(paste('_',matchvec,'_',sep='',collapse="|")),Ncolname,value=T)
       # remove first and last characters now that we are specific
-      matchTruncColName<-sub('.$','',matchTruncColName)
-      matchTruncColName<-sub('.','',matchTruncColName)
-      match_NetN_scaleK_bw_indivi_cols_names<-grep(as.character(paste(matchTruncColName,collapse="|")),bwcolnames_thisScale,value=T)
+      #matchTruncColName<-sub('.$','',matchTruncColName)
+      #matchTruncColName<-sub('.','',matchTruncColName)
+      # deal with weird thing where empty space was being grepped because of its aspecificity at coarse scales
+      if(length(matchTruncColName)==0){
+        matchTruncColName[1]='CANTSEEME'
+      }
+      match_NetN_scaleK_bw_indivi_cols_ind_within_other_ind<-grep(as.character(paste(matchTruncColName,collapse="|")),bwnetnames_thisScale_extended)
+      match_NetN_scaleK_bw_indivi_cols_names<-bwcolnames_thisScale[match_NetN_scaleK_bw_indivi_cols_ind_within_other_ind]
       # deep-sea grepping the whole paste and pipe thing is just to deal with character vectors instead of single patterns
-      match_NetN_scaleK_bw_indivi_cols_ind<-grep(as.character(paste(match_NetN_scaleK_bw_indivi_cols_names,collapse="|")),colnames(masterdf))
       
+      # deal with weird thing where empty space was being grepped because of its aspecificity
+      if(length(match_NetN_scaleK_bw_indivi_cols_names)==0){
+        match_NetN_scaleK_bw_indivi_cols_names[1]='CANTSEEME'
+      }
+      #################
+      #### NEED TO ADD UNDERSCORE TO AFTERPORTION SO IT DOESNT PICK UP 1_20 when looking for 1_2 #########
+      ##########
+      #bwcolnames_thisScale<-paste(bwcolnames_thisScale,'_',sep='')
+      #match_NetN_scaleK_bw_indivi_cols_names<-paste(match_NetN_scaleK_bw_indivi_cols_names,'_',sep='')
       
-      # find opposite modality in this scale
+      # added a faux '_' to end of column to col names can more selectively match numbers (not picking up on 20 when looking for 2, 2_ and 20_ more distinct)
+      match_NetN_scaleK_bw_indivi_cols_ind<-grep(as.character(paste(match_NetN_scaleK_bw_indivi_cols_names,'_',sep='',collapse="|")),paste(colnames(masterdf),'_',sep=''))
+    
+      ###############
+      ######## find opposite modality in this scale ################
+      ###############
+      
       oppositevec<-grep(NotNModality,tmclasses_thisScale)
       
       # build index of NON-matching modalities to reference masterdf (collapse | to match multiple patterns)
       unmatchTruncColName<-grep(as.character(paste('_',oppositevec,'_',sep='',collapse="|")),Ncolname,value=T)
       # search for string in limited bwcolnames at this scale so as not to invite other scales into this grep party
       # remove first and last characters now that we are specific
-      unmatchTruncColName<-sub('.$','',unmatchTruncColName)
-      unmatchTruncColName<-sub('.','',unmatchTruncColName)
-      unmatch_NetN_scaleK_bw_indivi_cols_names<-grep(as.character(paste(unmatchTruncColName,collapse="|")),bwcolnames_thisScale,value=T)
-      # deep-sea grepping the whole paste and pipe thing is just to deal with character vectors instead of single patterns
-      unmatch_NetN_scaleK_bw_indivi_cols_ind<-grep(as.character(paste(unmatch_NetN_scaleK_bw_indivi_cols_names,collapse="|")),colnames(masterdf))
+      #unmatchTruncColName<-sub('.$','',unmatchTruncColName)
+      #unmatchTruncColName<-sub('.','',unmatchTruncColName)
+      unmatch_NetN_scaleK_bw_indivi_cols_names<-grep(as.character(paste(unmatchTruncColName,collapse="|")),bwnetnames_thisScale_extended,value=T)
       
+      # deep-sea grepping the whole paste and pipe thing is just to deal with character vectors instead of single patterns
+      unmatch_NetN_scaleK_bw_indivi_cols_ind_within_other_ind<-grep(as.character(paste(unmatch_NetN_scaleK_bw_indivi_cols_names,collapse="|")),bwnetnames_thisScale_extended)
+      unmatch_NetN_scaleK_bw_indivi_cols_names<-bwcolnames_thisScale[unmatch_NetN_scaleK_bw_indivi_cols_ind_within_other_ind]
+      unmatch_NetN_scaleK_bw_indivi_cols_ind<-grep(as.character(paste(unmatch_NetN_scaleK_bw_indivi_cols_names,'_',sep='',collapse="|")),paste(colnames(masterdf),'_',sep=''))
       
       
       # doublecheck that they are mutually exclusive (+1 because self-reference gets removed)
-      if(length(tmclasses_thisScale)!=length(matchvec)+length(oppositevec)+1){
-        print('You done goofed, internet police are on their way')
+    #  if(length(tmclasses_thisScale)!=length(matchvec)+length(oppositevec)+1){
+   #     print('You done goofed, internet police are on their way')
+     # }
+      if(length(tmclasses_thisScale)!=length(match_NetN_scaleK_bw_indivi_cols_ind)+length(unmatch_NetN_scaleK_bw_indivi_cols_ind)+1){
+        print('Names dont add up chief')
+        paste('match numbas', length(match_NetN_scaleK_bw_indivi_cols_ind), length(match_NetN_scaleK_bw_indivi_cols_names))
+        paste('unmatch numbas', length(unmatch_NetN_scaleK_bw_indivi_cols_ind), length(unmatch_NetN_scaleK_bw_indivi_cols_names))
+        stopifnot(length(tmclasses_thisScale)==length(match_NetN_scaleK_bw_indivi_cols_ind)+length(unmatch_NetN_scaleK_bw_indivi_cols_ind)+1)
       }
-      
+      unmatch_NetN_scaleK_bw_indivi_cols_ind
       # Reset these to NULL for each loop over N for equivalent looping
-      confvecupper=NULL
-      confveclower=NULL
-      corVecEst=NULL
+      
       
       # if it matches the modality being aggregated in the grandparent loop, we wish to only assay its connections to same-modality networks
-      if (NModality==modalloopvar[i]){
+      if (NModality==modalloopvar[i] && length(matchvec>0)){
+        avg_bw_agecor<-NULL
         # get average value of b/w but same modality connectivity
         avg_bw_same<-rowMeans(masterdf[,match_NetN_scaleK_bw_indivi_cols_ind,drop=F])
         # get mean agecor with matching networks
         avg_bw_agecor<-unlist(cor.test(avg_bw_same,masterdf$ageAtScan1)[4])
-      }else{  
+      } else if (NModality!=modalloopvar[i]) {  
+        avg_bw_agecor<-NULL
         # get average value of b/w but same modality connectivity
         avg_bw_dif<-rowMeans(masterdf[,unmatch_NetN_scaleK_bw_indivi_cols_ind, drop=F])
         # get mean agecor with non-matching networks
         avg_bw_agecor<-unlist(cor.test(avg_bw_dif,masterdf$ageAtScan1)[4])
-        
-      # if it does not match the modality of the grandparent loop, we wish go assay its connections to opposite-modality networks
+      } else if (NModality==modalloopvar[i] && (exists("matchvec[1]"))=='FALSE') {
+        # easily findable index for cells which should not be filled (i.e., there is no "to unimodal connectivity" for the only unimodal networks at any scale)
+        avg_bw_agecor<-999
       }
+      # if it does not match the modality of the grandparent loop, we wish go assay its connections to opposite-modality networks
       bwAgeCorVecs[Nind,i]=avg_bw_agecor
     # get average bw network connectivty age correlation for this network at this scale
       both=cbind(masterdf[,match_NetN_scaleK_bw_indivi_cols_ind],masterdf[,unmatch_NetN_scaleK_bw_indivi_cols_ind, drop=F])
       avg_bw=rowMeans(both)
       avg_bw_coarse_agecor<-cor.test(avg_bw,masterdf$ageAtScan1)[4]
-      bwAgeCorVecs[Nind,3]=unlist(avg_bw_agecor)
+      bwAgeCorVecs[Nind,3]=unlist(avg_bw_coarse_agecor)
     }
     # Print out ratio of transmodal to unimodal at this scale
     unilength=length(tmclasses_thisScale[tmclasses_thisScale=='unimodal'])
@@ -492,7 +525,6 @@ colnames(bwAgeCorVecs)<-c('bw_to_unimodal','bw_to_transmodal','avg_bw','K','N')
 
 # ensure 464 length (number of scale by net features)
 length(indiv_scalebynet_df)
-avgbwdf<-data.frame(tmvec,scalesvec,domnetvec,netpropvec,bwAgeCorVecs$avg_bw)
 bwdf<-data.frame(tmvec,scalesvec,domnetvec,netpropvec,bwAgeCorVecs$avg_bw,bwAgeCorVecs$bw_to_unimodal,bwAgeCorVecs$bw_to_transmodal)
 
 # range of interest until we work out K=2 and K=3
@@ -500,20 +532,89 @@ indofint<-6:464
 
 
 # avg b/w
-avgbw_age_tm<-ggplot(bwdf[indofint,],aes(tmvec,bwAgeCorVecs.avg_bw,color=domnetvec,alpha=netpropvec^2)) + geom_point()+ scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068')) + xlab("Transmodality") + ylab("AgeBWCor") +theme_classic() + ggtitle('Correlation of Network B/w con avg and Age over All Networks')
+avgbw_age_tm<-ggplot(bwdf[indofint,],aes(tmvec,bwAgeCorVecs.avg_bw,color=domnetvec,alpha=netpropvec^2)) + geom_point(size=6)+ scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068')) + xlab("Transmodality") + ylab("AgeBWCor") +theme_classic(base_size = 28) + ggtitle('Correlation of B/w con avg and Age over All Networks') + ylim(-.5,.5)
 
-avgbw_age_scale<-ggplot(avgbwdf[indofint,],aes(tmvec,bwAgeCorVecs.avg_bw,color=scalesvec)) + geom_point() + xlab("Transmodality") + ylab("AgeBWCor")
+avgbw_age_scale<-ggplot(bwdf[indofint,],aes(tmvec,bwAgeCorVecs.avg_bw,color=scalesvec)) + geom_point(size=6) + xlab("Transmodality") + ylab("AgeBWCor")+theme_classic(base_size = 28)+ ylim(-.5,.5)
 
 # b/w to unimodal
-unibw_age_tm<-ggplot(bwdf[indofint,],aes(tmvec,bwAgeCorVecs.bw_to_unimodal,color=domnetvec,alpha=netpropvec^2)) + geom_point(size=3)+ scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068')) + xlab("Transmodality") + ylab("AgeBWUCor") +theme_classic() + ggtitle('Correlation of Network B/w unimodal con and Age over All Networks')
+unibw_age_tm<-ggplot(bwdf[indofint,],aes(tmvec,bwAgeCorVecs.bw_to_unimodal,color=domnetvec,alpha=netpropvec^2)) + geom_point(size=6)+ scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068')) + xlab("Transmodality") + ylab("AgeBWUCor") +theme_classic(base_size = 28) + ggtitle('Correlation of B/w unimodal con and Age over All Networks')+ ylim(-.5,.5)
 
-unibw_age_scale<-ggplot(bwdf[indofint,],aes(tmvec,bwAgeCorVecs.bw_to_unimodal,color=scalesvec)) + geom_point() + xlab("Transmodality") + ylab("AgeBWUCor")
+unibw_age_scale<-ggplot(bwdf[indofint,],aes(tmvec,bwAgeCorVecs.bw_to_unimodal,color=scalesvec)) + geom_point(size=6) + xlab("Transmodality") + ylab("AgeBWUCor")+theme_classic(base_size = 28)+ ylim(-.5,.5)
 
 # b/w to transmodal
-transbw_age_tm<-ggplot(bwdf[indofint,],aes(tmvec,bwAgeCorVecs.bw_to_transmodal,color=domnetvec,alpha=netpropvec^2)) + geom_point()+ scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068')) + xlab("Transmodality") + ylab("AgeBWTCor") +theme_classic() + ggtitle('Correlation of Network B/w transmodal con and Age over All Networks')
+transbw_age_tm<-ggplot(bwdf[indofint,],aes(tmvec,bwAgeCorVecs.bw_to_transmodal,color=domnetvec,alpha=netpropvec^2)) + geom_point(size=6)+ scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068')) + xlab("Transmodality") + ylab("AgeBWTCor") +theme_classic(base_size = 28) + ggtitle('Correlation of B/w transmodal con and Age over All Networks')+ ylim(-.5,.5)
 
-transbw_age_scale<-ggplot(bwdf[indofint,],aes(tmvec,bwAgeCorVecs.bw_to_transmodal,color=scalesvec)) + geom_point() + xlab("Transmodality") + ylab("AgeBWTCor")
+transbw_age_scale<-ggplot(bwdf[indofint,],aes(tmvec,bwAgeCorVecs.bw_to_transmodal,color=scalesvec)) + geom_point(size=6) + xlab("Transmodality") + ylab("AgeBWTCor")+theme_classic(base_size = 28)+ ylim(-.5,.5)
 
-ggarrange(avgbw_age_tm,avgbw_age_scale,unibw_age_tm,unibw_age_scale,)
+ggarrange(avgbw_age_tm,unibw_age_tm,transbw_age_tm,avgbw_age_scale,unibw_age_scale,transbw_age_scale)
+```
+
+```{r}
+#### now make it for group template-measured FC vaues, starting with within and segreg
+############ analyze contribution of W/IN network connectivities' age couplings by scale and transmodality #############
+gro_wincols_ind<-intersect(wincols,group)
+group_scalebynet_df<-masterdf[,gro_wincols_ind]
+# ensure 464 length (number of scale by net withincon features)
+length(group_scalebynet_df)
+
+
+confvecupper<-as.numeric(lapply(masterdf[,gro_wincols_ind],corconfinfvecupper))
+confveclower<-as.numeric(lapply(masterdf[,gro_wincols_ind],corconfinfveclower))
+corVecEst<-as.numeric(lapply(masterdf[,gro_wincols_ind],corEstVec))
+confveclower_d<-data.frame(tmvec,confveclower,scalesvec,domnetvec,netpropvec,corVecEst)
+confvecupper_d<-data.frame(tmvec,confvecupper,scalesvec,domnetvec,netpropvec,corVecEst)
+confvecdf<-data.frame(confveclower_d = confveclower_d, confvecupper_d  = confvecupper_d)
+
+# augment dataframe for CI range plot
+CIgroupingInd<-as.factor(1:464)
+confveclower_d[,7]<-CIgroupingInd
+confvecupper_d[,7]<-CIgroupingInd
+#corVecEst_d[,6]<-CIgroupingInd
+colnames(confveclower_d)[2]<-"CIbounds"
+colnames(confvecupper_d)[2]<-"CIbounds"
+gro_win_CIplotdf<-data.frame(rbind(confveclower_d,confvecupper_d))
+# range of interest until we work out K=2 and K=3
+indofint<-6:464
+indofint<-append(indofint,(470:928))
+
+# plot it
+Win_age_tm_gro<-ggplot(gro_win_CIplotdf[indofint,],aes(tmvec,CIbounds,color=domnetvec,alpha=netpropvec^2,group=V7)) + geom_line(size=1) + scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068')) + xlab("Transmodality") + ylab("AgeWithinCor") +theme_classic(base_size = 28) + geom_point(size=4,aes(tmvec,corVecEst)) + ggtitle('Correlation of Within Connectivity and Age over All Networks (GRO)')+ ylim(-.5,.5)
+
+# check for scale-specific effects
+Win_age_scale_gro<-ggplot(gro_win_CIplotdf[indofint,],aes(tmvec,corVecEst,color=scalesvec)) + geom_point(size=4) + xlab("Transmodality") + ylab("AgeSegregCor")+theme_classic(base_size = 28)+ ylim(-.5,.5)
+
+# pull out scale x network segregation for individualized maps
+gro_nsegcols_ind<-intersect(nsegcols,group)
+gro_scalebynet_df<-masterdf[,gro_nsegcols_ind]
+# ensure 464 length (number of scale by net features)
+length(gro_scalebynet_df)
+
+confvecupper<-as.numeric(lapply(masterdf[,gro_nsegcols_ind],corconfinfvecupper))
+confveclower<-as.numeric(lapply(masterdf[,gro_nsegcols_ind],corconfinfveclower))
+corVecEst<-as.numeric(lapply(masterdf[,gro_nsegcols_ind],corEstVec))
+
+confveclower_d<-data.frame(tmvec,confveclower,scalesvec,domnetvec,netpropvec,corVecEst)
+confvecupper_d<-data.frame(tmvec,confvecupper,scalesvec,domnetvec,netpropvec,corVecEst)
+confvecdf<-data.frame(confveclower_d = confveclower_d, confvecupper_d  = confvecupper_d)
+
+# augment dataframe for CI range plot
+CIgroupingInd<-as.factor(1:464)
+confveclower_d[,7]<-CIgroupingInd
+confvecupper_d[,7]<-CIgroupingInd
+#corVecEst_d[,6]<-CIgroupingInd
+colnames(confveclower_d)[2]<-"CIbounds"
+colnames(confvecupper_d)[2]<-"CIbounds"
+gro_seg_CIplotdf<-data.frame(rbind(confveclower_d,confvecupper_d))
+# range of interest until we work out K=2 and K=3
+indofint<-6:464
+indofint<-append(indofint,(470:928))
+
+
+Segreg_age_tm_gro<-ggplot(gro_seg_CIplotdf[indofint,],aes(tmvec,CIbounds,color=domnetvec,alpha=netpropvec^2,group=V7)) + geom_line(size=1) + scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068')) + xlab("Transmodality") + ylab("AgeSegregCor") +theme_classic(base_size = 28) + geom_point(size=4,aes(tmvec,corVecEst)) + ggtitle('Correlation of Segregation and Age over All Networks (GRO)')+ ylim(-.5,.5)
+
+Segreg_age_scale_gro<-ggplot(gro_seg_CIplotdf[indofint,],aes(tmvec,corVecEst,color=scalesvec)) + geom_point(size=4) + xlab("Transmodality") + ylab("AgeSegregCor")+theme_classic(base_size = 28)+ ylim(-.5,.5)
+
+
+ggarrange(Segreg_age_tm_gro,Segreg_age_scale_gro,Win_age_tm_gro,Win_age_scale_gro)
 ```
 ```
