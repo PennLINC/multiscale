@@ -36,6 +36,9 @@ trans_strings=strings(length(transmodality_over_scales),1);
 % make a cell dataframe (unfortunately) to keep colnames and values together
 df_trans=cell(2,length(transmodality_over_scales));
 
+% df solely for visualization (includes K and N for matching according to groupcons)
+df_viz=zeros(464,3);
+
 % iterate over scales
 for K=Krange
 
@@ -50,6 +53,9 @@ for K=Krange
 	
 	% get to tha choppa	
 	df_trans(1,Kind)=cellstr(trans_strings(Kind));
+
+	% add K to viz df in second column
+	df_viz(Kind,2)=K;
 
 	% load in group consensus at this scale
 	K_lab=load([atlasdir '/Group_AtlasLabel_' num2str(K) '.mat']);
@@ -67,6 +73,10 @@ for K=Krange
 		% weighted average, if one hemi has more that is reflected	
 		meanpc1val=(sumpc1val_l+sumpc1val_r)/(length(groupconverts_l)+length(groupconverts_r));
 		df_trans(2,curindex)=num2cell(meanpc1val);
+		% add in visualization df
+		df_viz(curindex,3)=N;
+		df_viz(curindex,1)=meanpc1val;
 	end	
 end
 writetable(cell2table(df_trans),'/cbica/projects/pinesParcels/results/aggregated_data/fc/network_transmodality_overscales.csv');
+csvwrite('/cbica/projects/pinesParcels/results/aggregated_data/fc/network_transmodality_overscales_forviz.csv',df_viz);
