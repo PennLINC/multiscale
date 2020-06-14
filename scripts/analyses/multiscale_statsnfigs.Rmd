@@ -128,6 +128,13 @@ mgroglobseg<-melt(groglobseg, id=c(1,2))
 indseg<-ggplot(data=mindglobseg,aes(x=as.numeric(as.character(variable)),y=value,group=bblid,color=Age)) +geom_line(alpha = 0.12)+scale_color_gradientn(colors=c("yellow","purple")) + theme_dark(base_size = 28)+labs(title="Global Segregation - Individ. Partitions") + scale_x_continuous(name ="# of Communitites",  breaks=seq(2, 30, 4))+ylab("Global Segregation")
 groseg<-ggplot(data=mgroglobseg,aes(x=as.numeric(as.character(variable)),y=value,group=bblid,color=Age)) +geom_line(alpha = 0.12)+scale_color_gradientn(colors=c("yellow","purple")) + theme_dark(base_size = 28)+labs(title="Global Segregation - Group Partitions") + scale_x_continuous(name ="# of Communitites", breaks=seq(2, 30, 4))+ylab("Global Segregation")
 ggarrange(indseg,groseg,ncol=1)
+
+
+
+# formal t.test for gro seg vs ind seg
+indsegvec<-as.vector(unlist(indglobseg[,3:31]))
+grosegvec<-as.vector(unlist(groglobseg[,3:31]))
+t.test(indsegvec,grosegvec,paired=T)
 ```
 
 ```{r}
@@ -150,8 +157,23 @@ for (i in 1:29){
 
 indagecor<-correlations_over_scales(ind_segcors,"Global Segregation Age Correlation - Individ. Partitions")
 groagecor<-correlations_over_scales(gro_segcors,"Global Segregation Age Correlation - Group Partitions")
-ggarrange(XXXX,groagecor,ncol = 1)
+ggarrange(indagecor,groagecor,ncol = 1)
 
+# merged
+ind_segcors_df<-data.frame(ind_segcors)
+gro_segcors_df<-data.frame(gro_segcors)
+mergeddf<-merge(ind_segcors_df,gro_segcors_df,by="X1")
+colnames(mergeddf)<-c("X1","Individualized","Consensus")
+x<-melt(mergeddf,id="X1")
+colnames(x)<-c("X1","Partitioning","value")
+ggplot(x,aes(X1,value,group=Partitioning,color=Partitioning)) + geom_step(size=3)+ylab('Segregation-Age Correlation')+
+    theme_dark(base_size = 28)+
+    theme(axis.text=element_text(), axis.title = element_text(),panel.grid.minor = element_blank(), plot.title = element_text())+
+    xlab("# of Communities") + scale_x_continuous(breaks=seq(2, 30, 4)) +
+    geom_hline(aes(yintercept=.098), linetype="dashed", col='#55185D',size=2.5) +
+    geom_hline(aes(yintercept=-.098), linetype="dashed", col='#55185D',size=2.5) +
+    geom_hline(aes(yintercept=.125), linetype="dashed", col='#ECB602',size=2.5) +
+    geom_hline(aes(yintercept=-.125), linetype="dashed", col='#ECB602',size=2.5) + scale_color_manual(values = c("black", "grey"))+ggtitle("Global Segregation and Age Correlation Over Scales")
 ```
 
 
@@ -348,9 +370,16 @@ indofint<-append(indofint,(470:928))
 #Segreg_age_tm<-ggplot(Seg_CIplotdf[indofint,],aes(tmvec,CIbounds,color=domnetvec,alpha=netpropvec^2,group=V7)) + geom_line(size=1) + scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068')) + xlab("Transmodality") + ylab("AgeSegregCor") +theme_classic(base_size = 28) + geom_point(size=4,aes(tmvec,corVecEst)) + ggtitle('Correlation of Network Segregation and Age over All Networks')+ ylim(-.5,.5)
 
 # without proportion
-Segreg_age_tm<-ggplot(Seg_CIplotdf[indofint,],aes(tmvec,CIbounds,color=domnetvec,group=V7)) + geom_line(size=1) + scale_color_manual(name="Predominant \nOverlapping \nYeo7 Network",values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068')) + xlab("Transmodality") + ylab("AgeSegregCor") +theme_classic(base_size = 28) + geom_point(size=4,aes(tmvec,corVecEst)) + ggtitle('Correlation of Network Segregation and Age over All Networks')+ ylim(-.5,.5) +theme(legend.text=element_text(size=20))
+Segreg_age_tm<-ggplot(Seg_CIplotdf[indofint,],aes(tmvec,CIbounds,color=domnetvec,group=V7)) + geom_line(size=1,alpha=.5) + scale_color_manual(name="Predominant \nOverlapping \nYeo7 Network",values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068')) + xlab("Transmodality") + ylab("AgeSegregCor") +theme_classic(base_size = 28) + geom_point(size=4,aes(tmvec,corVecEst),alpha=.5) + ggtitle('Correlation of Network Segregation and Age over All Networks')+ ylim(-.5,.5) +theme(legend.text=element_text(size=20))
 
-Segreg_age_scale<-ggplot(Seg_CIplotdf[indofint,],aes(tmvec,corVecEst,color=scalesvec)) +labs(title='Correlation of Network Segregation and Age over All Communities', x = 'Transmodality', y = expression(rho), color="Topological \nScale")+ geom_point(size=4) +theme_classic(base_size = 28)+ ylim(-.5,.5)+ scale_colour_gradient(low="#55185D", high="#ECB602")
+Segreg_age_tm_point<-ggplot(Seg_CIplotdf[indofint,],aes(tmvec,corVecEst,color=domnetvec,group=V7))+ scale_color_manual(name="Predominant \nOverlapping \nYeo7 Network",values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068')) + xlab("Transmodality") + ylab('Segregation-Age Correlation') +theme_classic(base_size = 28) + geom_point(size=4,aes(tmvec,corVecEst),alpha=.7) + ggtitle('Correlation of Network Segregation and Age over All Communities')+ ylim(-.5,.5) +theme(legend.text=element_text(size=20))
+
+Segreg_age_tm_line<-ggplot(Seg_CIplotdf[indofint,],aes(tmvec,CIbounds,color=domnetvec,group=V7)) + geom_line(size=1,alpha=.5) + scale_color_manual(name="Predominant \nOverlapping \nYeo7 Network",values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068')) + xlab("Transmodality") + ylab(expression(rho)) +theme_classic(base_size = 28) + ggtitle('Correlation of Network Segregation and Age over All Communities')+ ylim(-.5,.5) +theme(legend.text=element_text(size=20))
+
+Segreg_age_scale<-ggplot(Seg_CIplotdf[indofint,],aes(tmvec,corVecEst,color=scalesvec,alpha=.5)) +labs(title='Correlation of Network Segregation and Age over All Communities', x = 'Transmodality', y = expression(rho), color="Topological \nScale")+ geom_point(size=4,alpha=.5) +theme_classic(base_size = 28)+ ylim(-.5,.5)+ scale_colour_gradient(low="#55185D", high="#ECB602")
+
+Segreg_age_scale_x<-ggplot(Seg_CIplotdf,aes(scalesvec,corVecEst,color=tmvec,alpha=.5)) +labs(title='Correlation of Network Segregation and Age over All Communities', x = '# of Communities', y = 'Segregation-Age Correlation', color="Transmodality")+ geom_point(size=4,alpha=.5) +theme_classic(base_size = 28)+ ylim(-.5,.5)+ scale_colour_gradient(low="#55185D", high="#ECB602")
+
 
 
 ggarrange(Segreg_age_tm,Segreg_age_scale,Win_age_tm,Win_age_scale)
