@@ -1,15 +1,11 @@
-function subj_vert_fc_vertexwise_output(s, surfMaskl, surfMaskr, Krange, subjs, group_parts_masked, outdir, outdirp)
+function subj_vert_fc_vertexwise_output(s, surfMaskl, surfMaskr, Krange, subjs, group_parts_masked, outdir_i, outdir_g)
+	% version adapted to print out vertex-wise values for each subject for each scale (for within and b/w values)
+
 	% s is subject-specific iteration being parallelized
 	% surfMask should be in format of 0=remove this vertex, low snr. 1 = keep this vertex, high snr
 	% Krange is range of scales to calculate fc metrics over. in format of Kmin:Kmax
 	% subjs needs to be accessed via subjs(s) later on
 	% outdir should be for each subject across scales, as outfile will contain subj info across scales
-	%%% Make empty cell arrays with a spot for each metric at each scale
-	for i=2:max(Krange)
-        	Khouse{i}=zeros(i);
-        	GKhouse{i}=zeros(i);
-        	K_bTS_house{i}=zeros(i);
-	end
 	
 	% Make empty vertex-level segregation metric coefficient vector (# vert in mask, ~=fsaverage5)
 	% will make segregation vectors from output of this script
@@ -85,64 +81,26 @@ function subj_vert_fc_vertexwise_output(s, surfMaskl, surfMaskr, Krange, subjs, 
 			wincon_avg=((winconsum_min)/(length(Kind)-1));
 			g_wincon_avg=((g_winconsum_min)/(length(g_Kind)-1));
 			% put it in df according to current K index (K-1 because K starts at 2, df starts at 1)
-			ind_wincon_verts(:,K-1)=wincon_avg;
-			gro_wincon_verts(:,K-1)=g_wincon_avg;
-			
-			%winconvals(N)=wincon;
-			%g_winconvals(N)=g_wincon;
-			% and within connectivity assessed via cor. w/ U corresponding to same K
-			K_TimeSeries=vw_ts_bothrw(:,Kind);	
-			bTS_wincon=mean(corr(K_TimeSeries,subj_yu(:,N)));
-			%bTS_winconvals(N)=bTS_wincon;
-			% values are reasonable relative to each other (wincon > g_wincon), but lower than expected. Double check to make sure mapping on correctly
-			% make vector for all values except for current K (N) to loop through
-			Kvec=1:K;
-			NotKvec=Kvec(Kvec~=N); 
-			% mean correlation with each other network, other networks denoted by "b"
-			for b=1:(K-1)
-				curOtherNet=NotKvec(b);
-				% index vertices not in up-one-level-network-N loop
-				NotKind=find(subj_V(:,K+1)==curOtherNet);
-				g_NotKind=find(group_part==curOtherNet);
-				bwMat=ba_conmat(Kind,NotKind);
-				g_bwMat=ba_conmat(g_Kind,g_NotKind);
-				bwcon=mean(mean(bwMat));
-				g_bwcon=mean(mean(g_bwMat));
-				bTScon=mean(corr(K_TimeSeries,subj_yu(:,curOtherNet)));
-				
-				Kmat(N,curOtherNet)=bwcon;
-				g_Kmat(N,curOtherNet)=g_bwcon;
-				bTS_Kmat(N,curOtherNet)=bTScon;
-			end
-			Kmat(N,N)=wincon;
-			g_Kmat(N,N)=g_wincon;
-			bTS_Kmat(N,N)=bTS_wincon;
+			ind_wincon_verts(Kind,K-1)=wincon_avg';
+			gro_wincon_verts(g_Kind,K-1)=g_wincon_avg';
+			% index vertices not in up-one-level-network-N loop
+			NotKind=find(subj_V(:,K+1)~=N);
+			g_NotKind=find(group_part~=N);
+			% make matrix of this networks vertices correlations with non-member vertices
+			bwMat=ba_conmat(Kind,NotKind);
+			g_bwMat=ba_conmat(g_Kind,g_NotKind);
+			% use "2" so it averages across current network's vertices
+			bwcon=mean(bwMat,2);
+			g_bwcon=mean(g_bwMat,2);
+		
+			ind_bwcon_verts(Kind,K-1)=bwcon';
+			gro_bwcon_verts(g_Kind,K-1)=g_bwcon';
 		end
-		% small section to get vertex-wise participation coefficients for this this subject at this scale
-		[pospc, negpc] = participation_coef_sign(ba_conmat,subj_V(:,K+1));
-		% K-1 because K starts at 2, pcoef arrays starts at 1
-		partcoefpos(:,K-1)=pospc;
-		partcoefneg(:,K-1)=negpc;
-		% Make empty KxK matrix to summarize network connectivities
-		%Kmat=diag(winconvals);
-		%g_Kmat=diag(g_winconvals);
-		%bTS_Kmat=diag(bTS_winconvals);
-		% insert b/w net con into non-diagonals	
-		%IDmat=eye(K);
-		%nondiag=(1-IDmat);
-		%nondiagind=find(nondiag==1);
-		%Kmat(nondiagind)=[bwconvals bwconvals];
-		%g_Kmat(nondiagind)=[g_bwconvals g_bwconvals];
-		%bTS_Kmat(nondiagind)=[bTS_bwconvals bTS_bwconvals];	
-		%%% save all FC, PC coef files in subj dir to be aggregated later
-		Khouse{K}=Kmat;
-                GKhouse{K}=g_Kmat;
-                K_bTS_house{K}=bTS_Kmat;
 		toc
 	end
 	% save files to subjdir
-	subj_ind_segmetrics=struct('partcoefpos',num2cell(ind_win),'partcoefneg',num2cell(ind_bw));
-	subj_ind_segmetrics=struct('partcoefpos',num2cell(gro_win),'partcoefneg',num2cell(gro_bw))
-	save(outdir,'subjmats')
-	save(outdirp,'subjpcs')
+	subj_ind_segmetrics=struct('i_win',num2cell(ind_wincon_verts),'i_bw',num2cell(ind_bwcon_verts));
+	subj_gro_segmetrics=struct('g_win',num2cell(gro_wincon_verts),'g_bw',num2cell(gro_bwcon_verts))
+	save(outdir_i,'subj_ind_segmetrics')
+	save(outdir_g,'subj_gro_segmetrics')
 	 
