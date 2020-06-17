@@ -55,6 +55,7 @@ for s=1:length(subjs)
 	end
 	outdir_i = ['/cbica/projects/pinesParcels/data/CombinedData/' num2str(subjs(s)) '/vertexwise_ind_fc_metrics.mat']; 
 	outdir_g = ['/cbica/projects/pinesParcels/data/CombinedData/' num2str(subjs(s)) '/vertexwise_gro_fc_metrics.mat'];
+	outdir_b = ['/cbica/projects/pinesParcels/data/CombinedData/' num2str(subjs(s)) '/vertexwise_fc_mat.mat'];
 	if ~exist(outdir, 'file')
 		% save needed arguments
 		save(['/cbica/projects/pinesParcels/data/CombinedData/' num2str(subjs(s)) '/fc_config_vertexwise.mat'], 's', 'surfMask', 'Krange', 'subjs', 'group_parts_masked', 'outdir_i', 'outdir_g');
@@ -62,7 +63,7 @@ for s=1:length(subjs)
 		cmd = ['matlab -nodisplay -r '...
 		'"addpath(genpath(''/cbica/projects/pinesParcels/multiscale/scripts/derive_parcels/Toolbox'')),addpath(''/cbica/projects/pinesParcels/multiscale/scripts/derive_netstats/''),load(''' ...
         	  '/cbica/projects/pinesParcels/data/CombinedData/' num2str(subjs(s)) '/fc_config_vertexwise.mat''),subj_vert_fc_vertexwise_output(s, ' ...
-		'surfMask.l, surfMask.r, Krange, subjs, group_parts_masked, outdir_i, outdir_g),exit(1)">"' ...
+		'surfMask.l, surfMask.r, Krange, subjs, group_parts_masked, outdir_i, outdir_g, outdir_b),exit(1)">"' ...
 		 '/cbica/projects/pinesParcels/data/CombinedData/' num2str(subjs(s)) '/fc_vertexwise_init.log" 2>&1'];
 	
 		fid=fopen(['/cbica/projects/pinesParcels/data/CombinedData/' num2str(subjs(s)) '/tmp.sh'], 'w');

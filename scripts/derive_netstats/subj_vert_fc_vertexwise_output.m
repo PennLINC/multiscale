@@ -1,4 +1,4 @@
-function subj_vert_fc_vertexwise_output(s, surfMaskl, surfMaskr, Krange, subjs, group_parts_masked, outdir_i, outdir_g)
+function subj_vert_fc_vertexwise_output(s, surfMaskl, surfMaskr, Krange, subjs, group_parts_masked, outdir_i, outdir_g, outdir_b)
 	% version adapted to print out vertex-wise values for each subject for each scale (for within and b/w values)
 
 	% s is subject-specific iteration being parallelized
@@ -103,4 +103,4 @@ function subj_vert_fc_vertexwise_output(s, surfMaskl, surfMaskr, Krange, subjs, 
 	subj_gro_segmetrics=struct('g_win',num2cell(gro_wincon_verts),'g_bw',num2cell(gro_bwcon_verts))
 	save(outdir_i,'subj_ind_segmetrics')
 	save(outdir_g,'subj_gro_segmetrics')
-	 
+	save(outdir_b,'ba_conmat') 
