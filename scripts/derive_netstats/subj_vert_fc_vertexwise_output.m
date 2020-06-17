@@ -103,4 +103,5 @@ function subj_vert_fc_vertexwise_output(s, surfMaskl, surfMaskr, Krange, subjs, 
 	subj_gro_segmetrics=struct('g_win',num2cell(gro_wincon_verts),'g_bw',num2cell(gro_bwcon_verts))
 	save(outdir_i,'subj_ind_segmetrics')
 	save(outdir_g,'subj_gro_segmetrics')
-	save(outdir_b,'ba_conmat') 
+	% 2GB + file
+	save(outdir_b,'ba_conmat', '-v7.3') 
