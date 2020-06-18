@@ -35,14 +35,15 @@ LeftCell = g_ls([RawDataFolder '/*/lh.fs5.sm6.residualised.mgh']);
 RightCell = g_ls([RawDataFolder '/*/rh.fs5.sm6.residualised.mgh']);
 
 % Parcellate for each subject separately
-for i = 1:length(LeftCell)
+for i = 1:35
+%for i = 1:length(LeftCell)
     i
     [Fold, ~, ~] = fileparts(LeftCell{i});
     [~, ID_Str, ~] = fileparts(Fold);
     ID = str2num(ID_Str);
     ResultantFolder_I = [ResultantFolder '/Sub_' ID_Str];
     ResultantFile = [ResultantFolder_I '/IndividualParcel_Final_sbj1_comp' num2str(K) '_alphaS21_1_alphaL10_vxInfo1_ard0_eta0/final_UV.mat'];
-    if ~exist(ResultantFile, 'file');
+    %if ~exist(ResultantFile, 'file');
         mkdir(ResultantFolder_I);
         IDMatFile = [ResultantFolder_I '/ID.mat'];
         save(IDMatFile, 'ID');
@@ -66,8 +67,8 @@ for i = 1:length(LeftCell)
         fid = fopen(strcat(ScriptPath, '.m'), 'w');
         fprintf(fid, cmd);
         system(['qsub -l h_vmem=10G /cbica/projects/pinesParcels/multiscale/scripts/derive_parcels/qsub_matlab.sh ' ScriptPath]);
-    	pause(10)
-	end
+    	pause(40)
+	%end
 end
 
 

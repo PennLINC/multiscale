@@ -1,5 +1,18 @@
-function subj_vert_fc_vertexwise_output(s, surfMaskl, surfMaskr, Krange, subjs, group_parts_masked, outdir_i, outdir_g, outdir_b)
-
+	
+	% version adopted to be compiled into non-license using executable
+	fc_configfp=varagin{1}
+	passed_ml_args=load(fc_configfp);
+	s=passed_ml_args.s;
+	surfMask=passed_ml_args.surfMask;
+	surfMaskl=surfMask.l;
+	surfMaskr=surfMask.r;
+	Krange=passed_ml_args.Krange;
+	subjs=passed_ml_args.subjs;
+	group_parts_masked=passed_ml_args.group_parts_masked;
+	outdir_i=passed_ml_args.outdir_i;
+	outdir_g=passed_ml_args.outdir_g;
+	outdir_b=passed_ml_args.outdir_b;
+	
 	% version adapted to print out vertex-wise values for each subject for each scale (for within and b/w values)
 
 	addpath(genpath('/cbica/projects/pinesParcels/multiscale/scripts/derive_parcels/Toolbox'));
@@ -109,3 +122,4 @@ function subj_vert_fc_vertexwise_output(s, surfMaskl, surfMaskr, Krange, subjs, 
 	save(outdir_g,'subj_gro_segmetrics')
 	% 2GB + file
 	save(outdir_b,'ba_conmat', '-v7.3') 
+	exit(1)

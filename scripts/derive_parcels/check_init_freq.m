@@ -5,7 +5,7 @@ Krange=2:30;
 projectFolder = '/cbica/projects/pinesParcels/data/SingleParcellation';  
 for K=Krange
 initName = [projectFolder '/RobustInitialization_' num2str(K) '/init.mat']; 
-ResultantFolder = [ProjectFolder '/SingleParcel_1by1_kequal_' num2str(K)];
+ResultantFolder = [projectFolder '/SingleParcel_1by1_kequal_' num2str(K)];
 gro=load(initName);
 gro_initv=gro.initV;
 % load in subjects
