@@ -1,5 +1,5 @@
 # lotta code taken from https://github.com/NeuroanatomyAndConnectivity/gradient_analysis
-
+import sys
 import numpy as np
 import nibabel as nib
 import csv
@@ -9,7 +9,7 @@ from sklearn.metrics import pairwise_distances
 
 # call with "s number" as only argument
 
-snum = sys.argv[1]
+snum = int(sys.argv[1])
 
 # Load in subjects for filepaths
 s_file = open("/cbica/projects/pinesParcels/data/bblids.txt")
@@ -55,7 +55,7 @@ np.save(savepath, aff)
 
 # save checkpoint reached, now compute dmap
 from mapalign import embed
-emb, res = embed.compute_diffusion_map(aff, alpha = 0.5)
+emb, res = embed.compute_diffusion_map(aff, alpha = 0.5, return_result=True)
 
 savepathe= "/cbica/projects/pinesParcels/data/CombinedData/" + str(sid) + "/vertexwise_emb.npy"
 savepathr= "/cbica/projects/pinesParcels/data/CombinedData/" + str(sid) + "/vertexwise_res.npy"

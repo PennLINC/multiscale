@@ -43,8 +43,8 @@ group_parts=group_parts.affils;
 group_parts_masked=group_parts(any(group_parts,2),:);
 
 %for s=1:length(subjs)
+for s=3
 % test on 2 subjs
-for s=1:2
 	% check if lic available
 	% give license report a moment (not enough in one iter) to catch up with real license status
 	%pause(30)
@@ -62,11 +62,12 @@ for s=1:2
 	%if ~exist(outdir, 'file')
 		% save needed arguments
 		configfp=['/cbica/projects/pinesParcels/data/CombinedData/' num2str(subjs(s)) '/fc_config_vertexwise.mat'];
-		save([configfp, 's', 'surfMask', 'Krange', 'subjs', 'group_parts_masked', 'outdir_i', 'outdir_g');
+		save(configfp, 's', 'surfMask', 'Krange', 'subjs', 'group_parts_masked', 'outdir_i', 'outdir_g', 'outdir_b');
 		% turn this into a qsub command	
-		cmd = ['/cbica/projects/pinesParcels/multiscale/scripts/derive_netstats/run_subj_vert_fc_vertexwise_output_matlab_compile.sh $MATLAB_DIR ' configfp ' ">"''/cbica/projects/pinesParcels/data/CombinedData/' num2str(subjs(s)) '/fc_vertexwise_init.log" 2>&1'];
+		cmd = ['/cbica/projects/pinesParcels/multiscale/scripts/derive_netstats/run_subj_vert_fc_vertexwise_output_matlab_compile.sh $MATLAB_DIR ' configfp ];
 		fid=fopen(['/cbica/projects/pinesParcels/data/CombinedData/' num2str(subjs(s)) '/tmp.sh'], 'w');
 		fprintf(fid,cmd);
-		system(['qsub ' '/cbica/projects/pinesParcels/data/CombinedData/' num2str(subjs(s)) '/tmp.sh']);
-	end
+		system(['qsub -l h_vmem=8G ' '/cbica/projects/pinesParcels/data/CombinedData/' num2str(subjs(s)) '/tmp.sh']);
+	% commented out  if ~exists for now so it runs over every subj
+	%end
 end

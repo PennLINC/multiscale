@@ -1,6 +1,5 @@
-	
+function subj_vert_fc_vertexwise_output_matlab_compile(fc_configfp)	
 	% version adopted to be compiled into non-license using executable
-	fc_configfp=varagin{1}
 	passed_ml_args=load(fc_configfp);
 	s=passed_ml_args.s;
 	surfMask=passed_ml_args.surfMask;
@@ -14,10 +13,10 @@
 	outdir_b=passed_ml_args.outdir_b;
 	
 	% version adapted to print out vertex-wise values for each subject for each scale (for within and b/w values)
-
-	addpath(genpath('/cbica/projects/pinesParcels/multiscale/scripts/derive_parcels/Toolbox'));
-	addpath('/cbica/projects/pinesParcels/multiscale/scripts/derive_netstats/')
-
+	if ~isdeployed
+		addpath(genpath('/cbica/projects/pinesParcels/multiscale/scripts/derive_parcels/Toolbox'));
+		addpath('/cbica/projects/pinesParcels/multiscale/scripts/derive_netstats/')
+	end
 	% s is subject-specific iteration being parallelized
 	% surfMask should be in format of 0=remove this vertex, low snr. 1 = keep this vertex, high snr
 	% Krange is range of scales to calculate fc metrics over. in format of Kmin:Kmax
@@ -34,7 +33,8 @@
 	
         vw_ts_l_p=['/cbica/projects/pinesParcels/data/CombinedData/' num2str(subjs(s)) '/lh.fs5.sm6.residualised.mgh'];
 	vw_ts_r_p=['/cbica/projects/pinesParcels/data/CombinedData/' num2str(subjs(s)) '/rh.fs5.sm6.residualised.mgh'];
-	vw_ts_l=MRIread(vw_ts_l_p);
+	
+	vw_ts_l = MRIread(vw_ts_l_p);
 	vw_ts_r=MRIread(vw_ts_r_p);
 	vw_ts_l=vw_ts_l.vol;
 	vw_ts_r=vw_ts_r.vol;
@@ -117,7 +117,7 @@
 	end
 	% save files to subjdir
 	subj_ind_segmetrics=struct('i_win',num2cell(ind_wincon_verts),'i_bw',num2cell(ind_bwcon_verts));
-	subj_gro_segmetrics=struct('g_win',num2cell(gro_wincon_verts),'g_bw',num2cell(gro_bwcon_verts))
+	subj_gro_segmetrics=struct('g_win',num2cell(gro_wincon_verts),'g_bw',num2cell(gro_bwcon_verts));
 	save(outdir_i,'subj_ind_segmetrics')
 	save(outdir_g,'subj_gro_segmetrics')
 	% 2GB + file
