@@ -42,8 +42,7 @@ group_parts=load([ProjectFolder '/SingleAtlas_Analysis/group_all_Ks.mat']);
 group_parts=group_parts.affils;
 group_parts_masked=group_parts(any(group_parts,2),:);
 
-%for s=1:length(subjs)
-for s=3
+for s=1:length(subjs)
 % test on 2 subjs
 	% check if lic available
 	% give license report a moment (not enough in one iter) to catch up with real license status
