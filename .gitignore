@@ -6,3 +6,8 @@ scripts/analyses/._*
 tmp.sh.*
 scripts/derive_parcels/Toolbox/
 .gif
+mccExcludedFiles.log
+readme.txt
+requiredMCRProducts.txt
+subj_vert_fc_vertexwise_output_matlab_compile
+
