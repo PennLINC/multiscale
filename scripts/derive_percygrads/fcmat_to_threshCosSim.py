@@ -1,4 +1,5 @@
-#!/cbica/software/external/python/anaconda/3
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 # lotta code taken from https://github.com/NeuroanatomyAndConnectivity/gradient_analysis
 import sys
 import numpy as np
