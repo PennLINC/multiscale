@@ -42,31 +42,21 @@ group_parts=load([ProjectFolder '/SingleAtlas_Analysis/group_all_Ks.mat']);
 group_parts=group_parts.affils;
 group_parts_masked=group_parts(any(group_parts,2),:);
 
-for s=300:length(subjs)
-	% check if lic available
-	% give license report a moment (not enough in one iter) to catch up with real license status
-	%pause(30)
-	subjs(s)
-	avail_lic=license('checkout','Statistics_toolbox');
-	while avail_lic < 1
-		disp('waiting for license availability')
-		pause(30)
-		avail_lic=license('checkout','Statistics_toolbox') 
-	end
+% only 35 subjects need redoing for K=3
+for s=2:35
 	outdir = ['/cbica/projects/pinesParcels/data/CombinedData/' num2str(subjs(s)) '/fc_metrics.mat']; 
 	outdirp = ['/cbica/projects/pinesParcels/data/CombinedData/' num2str(subjs(s)) '/pc_metrics.mat'];
-	if ~exist(outdir, 'file')
+	% commented out for overwriting
+	%if ~exist(outdir, 'file')
+		configfp=['/cbica/projects/pinesParcels/data/CombinedData/' num2str(subjs(s)) '/fc_config.mat'];
 		% save needed arguments
-		save(['/cbica/projects/pinesParcels/data/CombinedData/' num2str(subjs(s)) '/fc_config.mat'], 's', 'surfMask', 'Krange', 'subjs', 'group_parts_masked', 'outdir', 'outdirp');
+		save(configfp, 's', 'surfMask', 'Krange', 'subjs', 'group_parts_masked', 'outdir', 'outdirp');
 		% turn this into a qsub command
-		cmd = ['matlab -nodisplay -r '...
-		'"addpath(genpath(''/cbica/projects/pinesParcels/multiscale/scripts/derive_parcels/Toolbox'')),addpath(''/cbica/projects/pinesParcels/multiscale/scripts/derive_netstats/''),load(''' ...
-        	  '/cbica/projects/pinesParcels/data/CombinedData/' num2str(subjs(s)) '/fc_config.mat''),subj_vert_fc(s, ' ...
-		'surfMask.l, surfMask.r, Krange, subjs, group_parts_masked, outdir, outdirp),exit(1)">"' ...
-		 '/cbica/projects/pinesParcels/data/CombinedData/' num2str(subjs(s)) '/fc_init.log" 2>&1'];
+		cmd = ['/cbica/projects/pinesParcels/multiscale/scripts/derive_netstats/run_subj_vert_fc_matlab_compile.sh $MATLAB_DIR ' configfp ];
 	
 		fid=fopen(['/cbica/projects/pinesParcels/data/CombinedData/' num2str(subjs(s)) '/tmp.sh'], 'w');
 		fprintf(fid,cmd);
 		system(['qsub -l h_vmem=20G ' '/cbica/projects/pinesParcels/data/CombinedData/' num2str(subjs(s)) '/tmp.sh']);
-	end
+	% commented out for overwriting
+	%end
 end

@@ -35,13 +35,19 @@ dfwin_avg=mean(dfwin,3);
 dfbw_avg=mean(dfbw,3);
 dfseg_avg=mean(dfseg,3);
 % save mean for viz format
-save([outdir '/ind_vertices_mwin_allscales.mat'], dfwin_avg);
-save([outdir '/ind_vertices_mbw_allscales.mat'], dfbw_avg);
-save([outdir '/ind_vertices_mseg_allscales.mat'], dfseg_avg);
+fn=[outdir '/ind_vertices_mwin_allscales.mat'];
+save(fn, 'dfwin_avg');
+fn=[outdir '/ind_vertices_mbw_allscales.mat'];
+save(fn, 'dfbw_avg');
+fn=[outdir '/ind_vertices_mseg_allscales.mat'];
+save(fn,'dfseg_avg');
 % save for age relations eval
-save([outdir '/ind_vertices_win_allscales.mat'], dfwin);
-save([outdir '/ind_vertices_bw_allscales.mat'], dfbw);
-save([outdir '/ind_vertices_seg_allscales.mat'], dfseg);
+fn=[outdir '/ind_vertices_win_allscales.mat'];
+save(fn,'dfwin');
+fn=[outdir '/ind_vertices_bw_allscales.mat'];
+save(fn, 'dfbw');
+fn=[outdir '/ind_vertices_seg_allscales.mat'];
+save(fn, 'dfseg');
 % save for r friendly format (not needed atm, commented out)
 %writetable(cell2table(dfwin),strcat(outdir,'/vertices_win_allscales.csv'));
 %writetable(cell2table(dfbw),strcat(outdir,'/vertices_bw_allscales.csv'));
@@ -72,11 +78,17 @@ end
 dfwin_avg=mean(dfwin,3);
 dfbw_avg=mean(dfbw,3);
 dfseg_avg=mean(dfseg,3);
-% save for viz format
-save([outdir '/gro_vertices_mwin_allscales.mat'], dfwin_avg);
-save([outdir '/gro_vertices_mbw_allscales.mat'], dfbw_avg);
-save([outdir '/gro_vertices_mseg_allscales.mat'], dfseg_avg);
+% save mean for viz format
+fn=[outdir '/gro_vertices_mwin_allscales.mat'];
+save(fn, 'dfwin_avg');
+fn=[outdir '/gro_vertices_mbw_allscales.mat'];
+save(fn, 'dfbw_avg');
+fn=[outdir '/gro_vertices_mseg_allscales.mat'];
+save(fn, 'dfseg_avg');
 % save for age relations eval
-save([outdir '/gro_vertices_win_allscales.mat'], dfwin);
-save([outdir '/gro_vertices_bw_allscales.mat'], dfbw);
-save([outdir '/gro_vertices_seg_allscales.mat'], dfseg);
+fn=[outdir '/gro_vertices_win_allscales.mat'];
+save(fn, 'dfwin');
+fn=[outdir '/gro_vertices_bw_allscales.mat'];
+save(fn, 'dfbw');
+fn=[outdir '/gro_vertices_seg_allscales.mat'];
+save(fn, 'dfseg');
