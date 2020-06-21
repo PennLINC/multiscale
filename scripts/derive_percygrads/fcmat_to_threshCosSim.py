@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/cbica/projects/pinesParcels/miniconda3/envs/difembs/bin/python
 # -*- coding: utf-8 -*-
 # lotta code taken from https://github.com/NeuroanatomyAndConnectivity/gradient_analysis
 import sys
@@ -20,7 +20,7 @@ scontents_split = sfile_contents. splitlines()
 # get this specific subject
 sid=scontents_split[snum]
 # filepath of fcmat is
-fcfp = "/cbica/projects/pinesParcels/data/CombinedData/" + str(sid) + "/vertexwise_fc_mat.mat"
+fcfp = "/cbica/projects/pinesParcels/data/CombinedData/" + str(sid) + "/vertexwise_fc_mat.csv"
 # load in the mat file
 fcmatrix= np.genfromtxt(fcfp,delimiter=',')
 
