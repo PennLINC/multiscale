@@ -50,10 +50,12 @@ fcmatrix[fcmatrix < 0] = 0
 # Now we are dealing with sparse vectors. Cosine similarity is used as affinity metric
 aff = 1 - pairwise_distances(fcmatrix, metric = 'cosine')
 
-# Save affinity matrix
-savepath= "/cbica/projects/pinesParcels/data/CombinedData/" + str(sid) + "/vertexwise_cos_affinmat.npy"
 
-np.save(savepath, aff)
+### Commented out saving this: cubic can't hang with multiple 17734x17734 matrices saved per subject (few GB each)
+# Save affinity matrix
+# savepath= "/cbica/projects/pinesParcels/data/CombinedData/" + str(sid) + "/vertexwise_cos_affinmat.npy"
+
+# np.save(savepath, aff)
 
 # save checkpoint reached, now compute dmap
 from mapalign import embed
