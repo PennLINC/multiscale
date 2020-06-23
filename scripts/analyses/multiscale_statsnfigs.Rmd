@@ -670,3 +670,14 @@ corVecEst_16<-as.numeric(lapply(masterdf[,intersect(indiv_nsegcols_ind,scale16in
 corVecEst_25<-as.numeric(lapply(masterdf[,intersect(indiv_nsegcols_ind,scale25ind)],corEstVec))
 
 ```
+
+```{r}
+# load gradstats
+grad_sum_df<-read.csv('/cbica/projects/pinesParcels/lambdas_pg1.csv',header=F)
+age<-data.frame(demo$ageAtScan1,demo$bblid)
+colnames(grad_sum_df)<-c("bblid","grad1lambda")
+colnames(age)<-c("age","bblid")
+grad_sum_df$bblid<-as.integer(grad_sum_df$bblid)
+merged_df<-merge(grad_sum_df,age,by="bblid")
+
+```
