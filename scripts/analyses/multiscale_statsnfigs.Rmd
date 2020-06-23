@@ -78,15 +78,20 @@ ggplot(data=mcrecnerrdf,aes(y=mreconerr,x=community_vec))+geom_line(col='white',
 # load in FC features (takes about 3 minutes) - original file - not loaded in anymore because it tooks forever and new version is just rounded digits to a few decimal places
 
 fc<-vroom('/cbica/projects/pinesParcels/results/aggregated_data/fc/master_fcfeats.csv')
-
+oldfc<-vroom('/cbica/projects/pinesParcels/results/aggregated_data/fc/master_fcfeats_old.csv')
 
 # set colnames to matlab-printed colnames
 colnames(fc)<-fc[1,]
+colnames(oldfc)<-oldfc[1,]
 # aaaand remove it
 fc<-fc[-c(1),]
+oldfc<-oldfc[-c(1),]
 
 # round ridiculous number of decimal points
 fc[] <- lapply(fc, function(x) {
+  if(is.character(x)) round(as.numeric(as.character(x)),digits=3) else x
+})
+oldfc[] <- lapply(oldfc, function(x) {
   if(is.character(x)) round(as.numeric(as.character(x)),digits=3) else x
 })
 
@@ -680,4 +685,16 @@ colnames(age)<-c("age","bblid")
 grad_sum_df$bblid<-as.integer(grad_sum_df$bblid)
 merged_df<-merge(grad_sum_df,age,by="bblid")
 
+# load grad-dm-cors
+graddmcor<-read.csv('/cbica/projects/pinesParcels/results/aggregated_data/SpatialCorIndK3DMPG1.csv',header=F);
+# temp exlcusion of misreads
+tmpexcl<-graddmcor[graddmcor[,2]<0.35,1]
+#100869 106154 107929 109577 110166 110354 118807 120922 121017 122352 122669 127305 130121 130332 131747  80537  83207
+#86690  88190  88859  89063  89534  96201  98879
+tempexclind<-which(tmpexcl %in% merged_df$bblid)
+merged_df_tmpexcl=merged_df[-c(tempexclind),]
+testfordmseg<-merge(merged_df_tmpexcl, f , by="Subjects")
+masterdf$Subjects<-as.factor(masterdf$Subjects)
+merged_df_tmpexcl$Subjects<-as.factor(merged_df_tmpexcl$Subjects)
+```
 ```
