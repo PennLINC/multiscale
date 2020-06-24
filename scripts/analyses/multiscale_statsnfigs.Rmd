@@ -12,6 +12,7 @@ library(reshape2)
 library(dplyr)
 library(ggpubr)
 library(vroom)
+library(mgcv)
 # load in demo
 demo<-read.csv('/cbica/projects/pinesParcels/data/pnc_demo.csv')
 age<-data.frame(demo$ageAtScan1,demo$scanid)
@@ -106,6 +107,27 @@ colnames(fc)[1]<-'bblid'
 # AGE
 masterdf<-merge(fc,demo,by='bblid')
 
+# EF
+subjbehav<-read.csv("/cbica/projects/pinesParcels/data/n713_Behavior_20181219.csv")
+ef<-data.frame(subjbehav$F1_Exec_Comp_Cog_Accuracy,subjbehav$bblid)
+colnames(ef)<-c('F1_Exec_Comp_Cog_Accuracy','bblid')
+# merge in
+masterdf<-merge(masterdf,ef,by='bblid')
+# MOTION METRIC
+# courtesty of ZC
+# port over ##
+Rest_Motion_Data <- read.csv("/cbica/projects/pinesParcels/data/n1601_RestQAData_20170714.csv")
+NBack_Motion_Data <- read.csv("/cbica/projects/pinesParcels/data/n1601_NBACKQAData_20181001.csv")
+Idemo_Motion_Data <- read.csv("/cbica/projects/pinesParcels/data/n1601_idemo_FinalQA_092817.csv")
+
+motmerge<-merge(Rest_Motion_Data,NBack_Motion_Data,by='bblid')
+motmerge<-merge(motmerge,Idemo_Motion_Data,by='bblid')
+motmerge$Motion <- (motmerge$restRelMeanRMSMotion + motmerge$nbackRelMeanRMSMotion + motmerge$idemoRelMeanRMSMotion)/3;
+motiondf<-data.frame(motmerge$bblid,motmerge$Motion)
+colnames(motiondf)<-c('bblid','Motion')
+masterdf<-merge(masterdf,motiondf,by='bblid')
+
+
 # potentially obsolete
 ####masterdf[] <- lapply(masterdf, function(x) {
 ####  round((x),digits=3)
@@ -116,14 +138,16 @@ gsegcols<-grep("globseg",colnames(masterdf))
 
 ### plot mean global seg over scales by age
 # 2:30 is ind, 5455:5483 is group
-indglobseg<-cbind(masterdf$bblid,masterdf$ageAtScan1/12,masterdf[,2:30])
-groglobseg<-cbind(masterdf$bblid,masterdf$ageAtScan1/12,masterdf[,5455:5483])
+indglobseg<-cbind(masterdf$bblid,masterdf$ageAtScan1/12,masterdf$sex,masterdf$Motion,masterdf$F1_Exec_Comp_Cog_Accuracy.x,masterdf[,2:30])
+groglobseg<-cbind(masterdf$bblid,masterdf$ageAtScan1/12,masterdf$sex,masterdf$Motion,masterdf$F1_Exec_Comp_Cog_Accuracy.x,masterdf[,5455:5483])
 
 # set colnames
-colnames(indglobseg)[1:2]<-c("bblid", "Age")
-colnames(groglobseg)[1:2]<-c("bblid", "Age")
-colnames(indglobseg)[3:31]<-as.character(2:30)
-colnames(groglobseg)[3:31]<-as.character(2:30)
+colnames(indglobseg)[1:5]<-c("bblid", "Age","Sex","Motion","EF")
+colnames(groglobseg)[1:5]<-c("bblid", "Age","Sex","Motion","EF")
+colnames(indglobseg)[6:34]<-as.character(2:30)
+colnames(groglobseg)[6:34]<-as.character(2:30)
+indglobseg$Sex<-as.factor(indglobseg$Sex)
+groglobseg$Sex<-as.factor(groglobseg$Sex)
 
 # melt it
 mindglobseg<-melt(indglobseg, id=c(1,2))
@@ -144,20 +168,25 @@ t.test(indsegvec,grosegvec,paired=T)
 
 ```{r}
 ### get global seg cors
+### Now with motion + sex control
 # 29 for scales studied
 ind_segcors<-matrix(0,29,2)
 ind_segcors[,1]<-2:30
 for (i in 1:29){
-  # i+2 because first column is scanid, second is age
-  ind_segcors[i,2]<-cor.test(indglobseg[,i+2],indglobseg$Age)$estimate
+  # i+5 because first column is scanid, second is age, third is sex, 4th is motion, 5th is EF
+  linmod=lm(indglobseg[,i+5]~Sex+Motion,data=indglobseg)
+  agecor=(cor.test(linmod$residuals,indglobseg$Age))$estimate
+  ind_segcors[i,2]<-agecor
 }
 ## now group level
 # 29 for scales studied
 gro_segcors<-matrix(0,29,2)
 gro_segcors[,1]<-2:30
 for (i in 1:29){
-  # i+2 because first column is scanid, second is age
-  gro_segcors[i,2]<-cor.test(groglobseg[,i+2],groglobseg$Age)$estimate
+  # i+5 because first column is scanid, second is age, third is sex, 4th is motion, 5th is EF
+  linmod=lm(groglobseg[,i+5]~Sex+Motion,data=groglobseg)
+  agecor=(cor.test(linmod$residuals,groglobseg$Age))$estimate
+  gro_segcors[i,2]<-agecor
 }
 
 indagecor<-correlations_over_scales(ind_segcors,"Global Segregation Age Correlation - Individ. Partitions")
@@ -180,17 +209,90 @@ ggplot(x,aes(X1,value,group=Partitioning,color=Partitioning)) + geom_step(size=3
     geom_hline(aes(yintercept=.125), linetype="dashed", col='#ECB602',size=2.5) +
     geom_hline(aes(yintercept=-.125), linetype="dashed", col='#ECB602',size=2.5) + scale_color_manual(values = c("black", "grey"))+ggtitle("Global Segregation and Age Correlation Over Scales")
 ```
+```{r}
+### get global seg cors FOR EF
+### Now with motion + sex control
+# 29 for scales studied
+ind_segcors<-matrix(0,29,2)
+ind_segcors[,1]<-2:30
+for (i in 1:29){
+  # i+5 because first column is scanid, second is age, third is sex, 4th is motion, 5th is EF
+  linmod=lm(indglobseg[,i+5]~Sex+Motion+Age,data=indglobseg)
+  EFcor=(cor.test(linmod$residuals,indglobseg$EF))$estimate
+  ind_segcors[i,2]<-EFcor
+}
+## now group level
+# 29 for scales studied
+gro_segcors<-matrix(0,29,2)
+gro_segcors[,1]<-2:30
+for (i in 1:29){
+  # i+5 because first column is scanid, second is age, third is sex, 4th is motion, 5th is EF
+  linmod=lm(groglobseg[,i+5]~Sex+Motion+Age,data=groglobseg)
+  EFcor=(cor.test(linmod$residuals,groglobseg$EF))$estimate
+  gro_segcors[i,2]<-EFcor
+}
+
+indagecor<-correlations_over_scales(ind_segcors,"Global Segregation Age Correlation - Individ. Partitions")
+groagecor<-correlations_over_scales(gro_segcors,"Global Segregation Age Correlation - Group Partitions")
+ggarrange(indagecor,groagecor,ncol = 1)
+
+# merged
+ind_segcors_df<-data.frame(ind_segcors)
+gro_segcors_df<-data.frame(gro_segcors)
+mergeddf<-merge(ind_segcors_df,gro_segcors_df,by="X1")
+colnames(mergeddf)<-c("X1","Individualized","Consensus")
+x<-melt(mergeddf,id="X1")
+colnames(x)<-c("X1","Partitioning","value")
+ggplot(x,aes(X1,value,group=Partitioning,color=Partitioning)) + geom_step(size=3)+ylab('Segregation-EF Correlation')+
+    theme_dark(base_size = 28)+
+    theme(axis.text=element_text(), axis.title = element_text(),panel.grid.minor = element_blank(), plot.title = element_text())+
+    xlab("# of Communities") + scale_x_continuous(breaks=seq(2, 30, 4)) +
+    geom_hline(aes(yintercept=.098), linetype="dashed", col='#55185D',size=2.5) +
+    geom_hline(aes(yintercept=-.098), linetype="dashed", col='#55185D',size=2.5) +
+    geom_hline(aes(yintercept=.125), linetype="dashed", col='#ECB602',size=2.5) +
+    geom_hline(aes(yintercept=-.125), linetype="dashed", col='#ECB602',size=2.5) + scale_color_manual(values = c("black", "grey"))+ggtitle("Global Segregation and EF Correlation Over Scales")
+```
+```{r}
+### get global seg -motion cors
+# 29 for scales studied
+ind_segcors<-matrix(0,29,2)
+ind_segcors[,1]<-2:30
+for (i in 1:29){
+  # i+5 because first column is scanid, second is age, third is sex, 4th is motion, 5th is EF
+  linmod=lm(indglobseg[,i+5]~Age+Sex,data=indglobseg)
+  motcor=(cor.test(linmod$residuals,indglobseg$Motion))$estimate
+  ind_segcors[i,2]<-motcor
+}
+## now group level
+# 29 for scales studied
+gro_segcors<-matrix(0,29,2)
+gro_segcors[,1]<-2:30
+for (i in 1:29){
+  # i+5 because first column is scanid, second is age, third is sex, 4th is motion, 5th is EF
+  linmod=lm(groglobseg[,i+5]~Age+Sex,data=groglobseg)
+  motcor=(cor.test(linmod$residuals,groglobseg$Motion))$estimate
+  gro_segcors[i,2]<-motcor
+}
+
+# merged
+ind_segcors_df<-data.frame(ind_segcors)
+gro_segcors_df<-data.frame(gro_segcors)
+mergeddf<-merge(ind_segcors_df,gro_segcors_df,by="X1")
+colnames(mergeddf)<-c("X1","Individualized","Consensus")
+x<-melt(mergeddf,id="X1")
+colnames(x)<-c("X1","Partitioning","value")
+ggplot(x,aes(X1,value,group=Partitioning,color=Partitioning)) + geom_step(size=3)+ylab('Segregation-Motion Correlation')+
+    theme_dark(base_size = 28)+
+    theme(axis.text=element_text(), axis.title = element_text(),panel.grid.minor = element_blank(), plot.title = element_text())+
+    xlab("# of Communities") + scale_x_continuous(breaks=seq(2, 30, 4)) +
+    geom_hline(aes(yintercept=.098), linetype="dashed", col='#55185D',size=2.5) +
+    geom_hline(aes(yintercept=-.098), linetype="dashed", col='#55185D',size=2.5) +
+    geom_hline(aes(yintercept=.125), linetype="dashed", col='#ECB602',size=2.5) +
+    geom_hline(aes(yintercept=-.125), linetype="dashed", col='#ECB602',size=2.5) + scale_color_manual(values = c("black", "grey"))+ggtitle("Global Segregation and Motion Correlation Over Scales")
+```
 
 
 ```{r}
-# MOTION METRIC
-# courtesty of ZC
-# port over ##
-Rest_Motion_Data <- read.csv("/cbica/projects/pinesParcels/data/n1601_RestQAData_20170714.csv")
-NBack_Motion_Data <- read.csv("/cbica/projects/pinesParcels/data/n1601_NBACKQAData_20181001.csv")
-Idemo_Motion_Data <- read.csv("/cbica/projects/pinesParcels/data/n1601_idemo_FinalQA_092817.csv")
-
-##Motion <- (Behavior$restRelMeanRMSMotion + Behavior$nbackRelMeanRMSMotion + Behavior$idemoRelMeanRMSMotion)/3;
 
 # indicators of processing stream
 ind='ind'
