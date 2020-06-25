@@ -1,7 +1,20 @@
-% set K
-K=16;
-% set effect size vector (corrected if needed)
-effvec=[ -0.363 -0.160 0.307 -0.337 -0.246 -0.226 -0.382 0.254 0 -0.190 0 0 -0.262 0.232 -0.352 -0.184 ];
+
 
 addpath('/cbica/projects/pinesParcels/multiscale/scripts/derive_parcels/Toolbox');
-PBP_effect(K,effvec);
+vecsfp='/cbica/projects/pinesParcels/results/EffectVecs';
+vecs=dir([vecsfp '/*Age.csv']);
+%uncomment to switch to EF
+%vecs=dir([vecsfp '/*_EF.csv']);
+% first two are . and ..
+sizevecs=size(vecs);
+for i=1:sizevecs(1)
+	% Set to AGE for this version. Change lines 3 and 5 if you switch this one. and the _Age.csv fn a few lines down
+	effectname='Age'
+	%effectname='EF'
+	% i + 1 because 1:29 files but 2:30 scales
+	scale=i+1;
+	% have to manually reconstruct the name bc bash stores as 10 first
+	fn=[num2str(scale) '_' effectname '.csv'];
+	effvec=load([vecsfp '/' fn]);
+	PBP_effect(scale,effvec,effectname);
+end

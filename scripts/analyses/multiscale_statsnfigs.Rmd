@@ -138,8 +138,8 @@ gsegcols<-grep("globseg",colnames(masterdf))
 
 ### plot mean global seg over scales by age
 # 2:30 is ind, 5455:5483 is group
-indglobseg<-cbind(masterdf$bblid,masterdf$ageAtScan1/12,masterdf$sex,masterdf$Motion,masterdf$F1_Exec_Comp_Cog_Accuracy.x,masterdf[,2:30])
-groglobseg<-cbind(masterdf$bblid,masterdf$ageAtScan1/12,masterdf$sex,masterdf$Motion,masterdf$F1_Exec_Comp_Cog_Accuracy.x,masterdf[,5455:5483])
+indglobseg<-cbind(masterdf$bblid,masterdf$ageAtScan1/12,masterdf$sex,masterdf$Motion,masterdf$F1_Exec_Comp_Cog_Accuracy,masterdf[,2:30])
+groglobseg<-cbind(masterdf$bblid,masterdf$ageAtScan1/12,masterdf$sex,masterdf$Motion,masterdf$F1_Exec_Comp_Cog_Accuracy,masterdf[,5455:5483])
 
 # set colnames
 colnames(indglobseg)[1:5]<-c("bblid", "Age","Sex","Motion","EF")
@@ -414,6 +414,10 @@ corconfinfveclower<-function(x){
 }
 corEstVec<-function(x){
   corest<-cor.test(x,masterdf$ageAtScan1)[4]
+  return(unlist(corest))
+}
+corEstVec_EF<-function(x){
+  corest<-cor.test(x,masterdf$EF)[4]
   return(unlist(corest))
 }
 
@@ -763,8 +767,41 @@ ggarrange(Segreg_age_tm_gro,Segreg_age_scale_gro,Win_age_tm_gro,Win_age_scale_gr
 ```
 
 ```{r}
+# get the gang together
 indiv_nsegcols_ind<-intersect(nsegcols,indiv)
 gro_nsegcols_ind<-intersect(nsegcols,group)
+
+# functions to write out the corvec estimates for matlab-based viz
+corEstVecNsave<-function(x,K,vecIn){
+  corest<-cor.test(x,masterdf$ageAtScan1)[4]
+  val<-unlist(corest)
+  append(vecIn,val)
+}
+corEstVec_EFNsave<-function(x,K,vecIn){
+  corest<-cor.test(x,masterdf$F1_Exec_Comp_Cog_Accuracy)[4]
+  val<-unlist(corest)
+  append(vecIn,val)
+}
+
+
+# loop over scales
+for (i in 2:30){
+  print(i)
+  keyphrase<-paste('seg_scale',as.character(i),'_net',sep='')
+  scaleind=grep(keyphrase,colnames(masterdf))
+  # just individualized for now
+  # reads in vector of segreg vals aligned with age vals and scale 
+  vec_age<-NULL
+  vec_age<-lapply(masterdf[,intersect(indiv_nsegcols_ind,scaleind)],corEstVecNsave,K=i,vecIn=vec_age)
+  vecfp_Age<-paste('/cbica/projects/pinesParcels/results/EffectVecs/',as.character(i),'_Age.csv',sep='')
+  write.table(as.numeric(vec_age),vecfp_Age,row.names = F,col.names = F,sep = ',')
+  vec_ef<-NULL
+  vec_ef<-lapply(masterdf[,intersect(indiv_nsegcols_ind,scaleind)],corEstVec_EFNsave,K=i,vecIn=vec_ef)
+  vecfp_EF<-paste('/cbica/projects/pinesParcels/results/EffectVecs/',as.character(i),'_EF.csv',sep='')
+  write.table(as.numeric(vec_ef),vecfp_EF,row.names = F,col.names = F,sep = ',')
+}
+
+
 indiv_scalebynet_df<-masterdf[,indiv_nsegcols_ind]
 # isolate scales
 scale2ind=grep('seg_scale2_net',colnames(masterdf))
@@ -775,6 +812,13 @@ scale25ind=grep('seg_scale25_net',colnames(masterdf))
 corVecEst_2<-as.numeric(lapply(masterdf[,intersect(gro_nsegcols_ind,scale2ind)],corEstVec))
 corVecEst_16<-as.numeric(lapply(masterdf[,intersect(indiv_nsegcols_ind,scale16ind)],corEstVec))
 corVecEst_25<-as.numeric(lapply(masterdf[,intersect(indiv_nsegcols_ind,scale25ind)],corEstVec))
+corVecEst_2_EF<-as.numeric(lapply(masterdf[,intersect(gro_nsegcols_ind,scale2ind)],corEstVec_EF))
+corVecEst_16_EF<-as.numeric(lapply(masterdf[,intersect(indiv_nsegcols_ind,scale16ind)],corEstVec_EF))
+corVecEst_25_EF<-as.numeric(lapply(masterdf[,intersect(indiv_nsegcols_ind,scale25ind)],corEstVec_EF))
+
+
+
+# Write em out as matlab readable vectors (K: N1est N2est ... Nnest)
 
 ```
 
