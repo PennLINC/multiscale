@@ -79,22 +79,22 @@ ggplot(data=mcrecnerrdf,aes(y=mreconerr,x=community_vec))+geom_line(col='white',
 # load in FC features (takes about 3 minutes) - original file - not loaded in anymore because it tooks forever and new version is just rounded digits to a few decimal places
 
 fc<-vroom('/cbica/projects/pinesParcels/results/aggregated_data/fc/master_fcfeats.csv')
-oldfc<-vroom('/cbica/projects/pinesParcels/results/aggregated_data/fc/master_fcfeats_old.csv')
+###oldfc<-vroom('/cbica/projects/pinesParcels/results/aggregated_data/fc/master_fcfeats_old.csv')
 
 # set colnames to matlab-printed colnames
 colnames(fc)<-fc[1,]
-colnames(oldfc)<-oldfc[1,]
+###colnames(oldfc)<-oldfc[1,]
 # aaaand remove it
 fc<-fc[-c(1),]
-oldfc<-oldfc[-c(1),]
+###oldfc<-oldfc[-c(1),]
 
 # round ridiculous number of decimal points
 fc[] <- lapply(fc, function(x) {
   if(is.character(x)) round(as.numeric(as.character(x)),digits=3) else x
 })
-oldfc[] <- lapply(oldfc, function(x) {
-  if(is.character(x)) round(as.numeric(as.character(x)),digits=3) else x
-})
+###oldfc[] <- lapply(oldfc, function(x) {
+###  if(is.character(x)) round(as.numeric(as.character(x)),digits=3) else x
+###})
 
 # Baal knows why vroom needs more size for the rounded version
 #Sys.setenv("VROOM_CONNECTION_SIZE" = 2000000)
@@ -172,10 +172,13 @@ t.test(indsegvec,grosegvec,paired=T)
 # 29 for scales studied
 ind_segcors<-matrix(0,29,2)
 ind_segcors[,1]<-2:30
+
+#### USES RESIDUALS, NOT SIMULTANEOUSLY FITTED AGE COEFFICIENT AT THE MOMENT ### APPLIES TO LINES 178-300
 for (i in 1:29){
   # i+5 because first column is scanid, second is age, third is sex, 4th is motion, 5th is EF
+  print(ggplot(indglobseg,aes(Age,indglobseg[,i+5])) + geom_point() + geom_smooth() +ylab(paste("Ind Global Segreg at Scale", i+1)))
   linmod=lm(indglobseg[,i+5]~Sex+Motion,data=indglobseg)
-  agecor=(cor.test(linmod$residuals,indglobseg$Age))$estimate
+  agecor=(cor.test(linmod$residuals,groglobseg$Age,method = 'spearman'))$estimate
   ind_segcors[i,2]<-agecor
 }
 ## now group level
@@ -183,9 +186,10 @@ for (i in 1:29){
 gro_segcors<-matrix(0,29,2)
 gro_segcors[,1]<-2:30
 for (i in 1:29){
+  print(ggplot(groglobseg,aes(Age,groglobseg[,i+5])) + geom_point() + geom_smooth() +ylab(paste("Gro Global Segreg at Scale", i+1)))
   # i+5 because first column is scanid, second is age, third is sex, 4th is motion, 5th is EF
   linmod=lm(groglobseg[,i+5]~Sex+Motion,data=groglobseg)
-  agecor=(cor.test(linmod$residuals,groglobseg$Age))$estimate
+  agecor=(cor.test(linmod$residuals,groglobseg$Age,method = 'spearman'))$estimate
   gro_segcors[i,2]<-agecor
 }
 
@@ -209,6 +213,7 @@ ggplot(x,aes(X1,value,group=Partitioning,color=Partitioning)) + geom_step(size=3
     geom_hline(aes(yintercept=.125), linetype="dashed", col='#ECB602',size=2.5) +
     geom_hline(aes(yintercept=-.125), linetype="dashed", col='#ECB602',size=2.5) + scale_color_manual(values = c("black", "grey"))+ggtitle("Global Segregation and Age Correlation Over Scales")
 ```
+
 ```{r}
 ### get global seg cors FOR EF
 ### Now with motion + sex control
@@ -217,8 +222,9 @@ ind_segcors<-matrix(0,29,2)
 ind_segcors[,1]<-2:30
 for (i in 1:29){
   # i+5 because first column is scanid, second is age, third is sex, 4th is motion, 5th is EF
+   print(ggplot(indglobseg,aes(EF,indglobseg[,i+5])) + geom_point() + geom_smooth() +ylab(paste("Ind Global Segreg at Scale", i+1)))
   linmod=lm(indglobseg[,i+5]~Sex+Motion+Age,data=indglobseg)
-  EFcor=(cor.test(linmod$residuals,indglobseg$EF))$estimate
+  EFcor=(cor.test(linmod$residuals,indglobseg$EF,method='spearman'))$estimate
   ind_segcors[i,2]<-EFcor
 }
 ## now group level
@@ -227,7 +233,7 @@ gro_segcors<-matrix(0,29,2)
 gro_segcors[,1]<-2:30
 for (i in 1:29){
   # i+5 because first column is scanid, second is age, third is sex, 4th is motion, 5th is EF
-  linmod=lm(groglobseg[,i+5]~Sex+Motion+Age,data=groglobseg)
+  linmod=lm(groglobseg[,i+5]~Sex+Motion+Age+EF,data=groglobseg)
   EFcor=(cor.test(linmod$residuals,groglobseg$EF))$estimate
   gro_segcors[i,2]<-EFcor
 }
@@ -252,6 +258,7 @@ ggplot(x,aes(X1,value,group=Partitioning,color=Partitioning)) + geom_step(size=3
     geom_hline(aes(yintercept=.125), linetype="dashed", col='#ECB602',size=2.5) +
     geom_hline(aes(yintercept=-.125), linetype="dashed", col='#ECB602',size=2.5) + scale_color_manual(values = c("black", "grey"))+ggtitle("Global Segregation and EF Correlation Over Scales")
 ```
+
 ```{r}
 ### get global seg -motion cors
 # 29 for scales studied
@@ -783,7 +790,7 @@ corEstVec_EFNsave<-function(x,K,vecIn){
   append(vecIn,val)
 }
 
-
+# get residuals (constant over loops)
 # loop over scales
 for (i in 2:30){
   print(i)
