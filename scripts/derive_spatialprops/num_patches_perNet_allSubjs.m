@@ -1,6 +1,8 @@
 %add needed paths
 addpath(genpath('/cbica/projects/pinesParcels/multiscale/scripts/derive_parcels/Toolbox'));
 
+ProjectFolder = '/cbica/projects/pinesParcels/data/SingleParcellation';
+
 % load surface (sphere for well-behaved neighbor distances)
 surfL=read_surf('/cbica/software/external/freesurfer/centos7/6.0.0/subjects/fsaverage5/surf/lh.sphere');
 surfR=read_surf('/cbica/software/external/freesurfer/centos7/6.0.0/subjects/fsaverage5/surf/rh.sphere');
@@ -11,9 +13,19 @@ surfNLabels(1:10242,1:3)=surfL;
 surfNLabels(10243:20484,1:3)=surfR;
 
 % load group partitions (labels) to start, can run this over individs to get a distribution of patches per subj
-gro_partfp=['/cbica/projects/pinesParcels/data/SingleParcellation/SingleAtlas_Analysis/group_all_Ks.mat'];
-gro_part=load(gro_partfp);
+%gro_partfp=['/cbica/projects/pinesParcels/data/SingleParcellation/SingleAtlas_Analysis/group_all_Ks.mat'];
+%gro_part=load(gro_partfp);
 
+
+% load medial wall info to fill in the blanks
+surfML = '/cbica/projects/pinesParcels/data/H_SNR_masks/lh.Mask_SNR.label';
+mwIndVec_l = read_medial_wall_label(surfML);
+Index_l = setdiff([1:10242], mwIndVec_l);
+surfMR = '/cbica/projects/pinesParcels/data/H_SNR_masks/rh.Mask_SNR.label';
+mwIndVec_r = read_medial_wall_label(surfMR);
+Index_r = setdiff([1:10242], mwIndVec_r);
+
+% classic variables
 Krange=2:30;
 subjs=load('/cbica/projects/pinesParcels/data/bblids.txt');
 
@@ -24,7 +36,7 @@ patchnum_over_scalesL=zeros((length(Krange)*((min(Krange)+max(Krange))/2)),1);
 patchnum_over_scalesR=zeros((length(Krange)*((min(Krange)+max(Krange))/2)),1);
 
 % 694 because one slot will be group average, 3 so we can drop L and R right in thur along with a string-guide dimension (like the rope of theseus)
-BigPatchMat=zeros((length(Krange)*((min(Krange)+max(Krange))/2)),693,3);
+BigPatchMat=cell((length(Krange)*((min(Krange)+max(Krange))/2)),693,3);
 % BIG PATTY DIM 3: 1=L 2=R 3=COLNAME
 
 % corresponding column label string vector to be our inside man
@@ -39,17 +51,40 @@ for K=Krange
 end
 
 for s=1:length(subjs);
+s
 % for each scale
 for K=Krange;
 
         % These are the master dataframe indices that apply to this scale
 	% Same index applies to string buddy
 	Kind=Kind_pn{K};
+
 	
+
+	%%%%%%%%% Subject-level update
 	% corresponding group_partition (K-1 because array starts at 1, K starts at 2)
-	gro_partK_affils=gro_part.affils(:,K-1);
+	%%gro_partK_affils=gro_part.affils(:,K-1);
+	% load in partitions
+	K_Folder = [ProjectFolder '/SingleParcel_1by1_kequal_' num2str(K) '/Sub_' num2str(subjs(s))];
+	K_part_subj =[K_Folder '/IndividualParcel_Final_sbj1_comp' num2str(K) '_alphaS21_1_alphaL10_vxInfo1_ard0_eta0/final_UV.mat'];
+	subj_part=load(K_part_subj);
+	% do not see automated subject-level soft-parcel -> hard-parcel script... can double-check with zc
+	%%% convert to HP - V for vert x K
+	subj_V=subj_part.V{1};
+	% new column for HP label, K+1 because there should be K loading columns, so the last column becomes labels
+	subj_V(:,K+1)=zeros(1,length(subj_V));
+	[ ~ , subj_affils]=max(subj_V,[],2); 
+
+
+	sbj_AtlasLabel_lh = zeros(1, 10242);
+	sbj_AtlasLabel_lh(Index_l) = subj_affils(1:length(Index_l));
+	sbj_AtlasLabel_rh = zeros(1, 10242);
+	sbj_AtlasLabel_rh(Index_r) = subj_affils(length(Index_l) + 1:end);	
+
+	subj_affils_merged=[sbj_AtlasLabel_lh sbj_AtlasLabel_rh];
+
 	% get it into the x y z df
-	surfNLabels(:,4)=gro_partK_affils;
+	surfNLabels(:,4)=subj_affils_merged;
 	% split into L and R because XYZ coords only work w/r/t those in same hemisphere
 	surfNlabsL=surfNLabels(1:10242,:);
 	surfNlabsR=surfNLabels(10243:20484,:);	
@@ -146,7 +181,11 @@ for K=Krange;
 		patchnum_over_scalesL(Kind(N))=length(unique(Ndf(:,5)));
 		['For Network ' num2str(N) ' at scale ' num2str(K) ',there are ' num2str(length(unique(Ndf(:,5)))) ' unique patches in the left hemisphere']
 		% corresponding string companion
-		colNameVector(Kind(N))=['scale' num2str(K) '_net' num2str(N) '_numPatches']
+		colNameVector(Kind(N))=['scale' num2str(K) '_net' num2str(N) '_numPatches'];
+
+		% and two for the big daddy df
+		BigPatchMat(Kind(N),s,1)=num2cell(length(unique(Ndf(:,5))));
+		BigPatchMat(Kind(N),s,3)=cellstr(colNameVector(Kind(N)));
 	end
 
 	%%%%%%%%%%%%
@@ -240,17 +279,13 @@ for K=Krange;
                 Ndf=surfNlabsR(surfNlabsR(:,4)==N,:);
                 patchnum_over_scalesR(Kind(N))=length(unique(Ndf(:,5)));
 		['For Network ' num2str(N) ' at scale ' num2str(K) ',there are ' num2str(length(unique(Ndf(:,5)))) ' unique patches in the right hemisphere']
+		% and one for the big daddy df
+                BigPatchMat(Kind(N),s,2)=num2cell(length(unique(Ndf(:,5))));
         end
 
 end
-
-% save 'em
-save('/cbica/projects/pinesParcels/data/aggregated_data/surfNlabsR.mat','surfNlabsR')
-save('/cbica/projects/pinesParcels/data/aggregated_data/surfNlabsL.mat','surfNlabsL')
-
-% save other language-friendly tables
-tabeL=table(patchnum_over_scalesL,colNameVector);
-tabeR=table(patchnum_over_scalesR,colNameVector);
-
+end
+bigtabuuu=cell2table(BigPatchMat);
 writetable(tabeR,'/cbica/projects/pinesParcels/results/aggregated_data/numPatches_RH_allscales.csv');
 writetable(tabeL,'/cbica/projects/pinesParcels/results/aggregated_data/numPatches_LH_allscales.csv');
+writetable(bigtabuuu,'/cbica/projects/pinesParcels/results/aggregated_data/numPatches_AllSubjs_AllScales_bothHemis.csv');
