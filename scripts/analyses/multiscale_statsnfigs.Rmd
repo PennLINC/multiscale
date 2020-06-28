@@ -13,6 +13,7 @@ library(dplyr)
 library(ggpubr)
 library(vroom)
 library(mgcv)
+library(ggpointdensity)
 # load in demo
 demo<-read.csv('/cbica/projects/pinesParcels/data/pnc_demo.csv')
 age<-data.frame(demo$ageAtScan1,demo$scanid)
@@ -79,22 +80,24 @@ ggplot(data=mcrecnerrdf,aes(y=mreconerr,x=community_vec))+geom_line(col='white',
 # load in FC features (takes about 3 minutes) - original file - not loaded in anymore because it tooks forever and new version is just rounded digits to a few decimal places
 
 fc<-vroom('/cbica/projects/pinesParcels/results/aggregated_data/fc/master_fcfeats.csv')
-###oldfc<-vroom('/cbica/projects/pinesParcels/results/aggregated_data/fc/master_fcfeats_old.csv')
+oldfc<-vroom('/cbica/projects/pinesParcels/results/aggregated_data/fc/master_fcfeats_old.csv')
 
 # set colnames to matlab-printed colnames
 colnames(fc)<-fc[1,]
-###colnames(oldfc)<-oldfc[1,]
+colnames(oldfc)<-oldfc[1,]
 # aaaand remove it
 fc<-fc[-c(1),]
-###oldfc<-oldfc[-c(1),]
+oldfc<-oldfc[-c(1),]
 
 # round ridiculous number of decimal points
 fc[] <- lapply(fc, function(x) {
   if(is.character(x)) round(as.numeric(as.character(x)),digits=3) else x
 })
-###oldfc[] <- lapply(oldfc, function(x) {
-###  if(is.character(x)) round(as.numeric(as.character(x)),digits=3) else x
-###})
+oldfc[] <- lapply(oldfc, function(x) {
+  if(is.character(x)) round(as.numeric(as.character(x)),digits=3) else x
+})
+
+# check if new fc selectively replaced K=3
 
 # Baal knows why vroom needs more size for the rounded version
 #Sys.setenv("VROOM_CONNECTION_SIZE" = 2000000)
@@ -126,12 +129,6 @@ motmerge$Motion <- (motmerge$restRelMeanRMSMotion + motmerge$nbackRelMeanRMSMoti
 motiondf<-data.frame(motmerge$bblid,motmerge$Motion)
 colnames(motiondf)<-c('bblid','Motion')
 masterdf<-merge(masterdf,motiondf,by='bblid')
-
-
-# potentially obsolete
-####masterdf[] <- lapply(masterdf, function(x) {
-####  round((x),digits=3)
-#####})
 
 ### isolate global segreg columns
 gsegcols<-grep("globseg",colnames(masterdf))
@@ -485,7 +482,7 @@ indofint<-6:464
 indofint<-append(indofint,(470:928))
 
 
-#Segreg_age_tm<-ggplot(Seg_CIplotdf[indofint,],aes(tmvec,CIbounds,color=domnetvec,alpha=netpropvec^2,group=V7)) + geom_line(size=1) + scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068')) + xlab("Transmodality") + ylab("AgeSegregCor") +theme_classic(base_size = 28) + geom_point(size=4,aes(tmvec,corVecEst)) + ggtitle('Correlation of Network Segregation and Age over All Networks')+ ylim(-.5,.5)
+Segreg_age_tm<-ggplot(Seg_CIplotdf[indofint,],aes(tmvec,CIbounds,color=domnetvec,alpha=netpropvec^2,group=V7)) + geom_line(size=1) + scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068')) + xlab("Transmodality") + ylab("AgeSegregCor") +theme_classic(base_size = 28) + geom_point(size=4,aes(tmvec,corVecEst)) + ggtitle('Correlation of Network Segregation and Age over All Networks')+ ylim(-.5,.5)
 
 # without proportion
 Segreg_age_tm<-ggplot(Seg_CIplotdf[indofint,],aes(tmvec,CIbounds,color=domnetvec,group=V7)) + geom_line(size=1,alpha=.5) + scale_color_manual(name="Predominant \nOverlapping \nYeo7 Network",values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068')) + xlab("Transmodality") + ylab("AgeSegregCor") +theme_classic(base_size = 28) + geom_point(size=4,aes(tmvec,corVecEst),alpha=.5) + ggtitle('Correlation of Network Segregation and Age over All Networks')+ ylim(-.5,.5) +theme(legend.text=element_text(size=20))
@@ -503,7 +500,26 @@ Segreg_age_scale_x<-ggplot(Seg_CIplotdf,aes(scalesvec,corVecEst,color=tmvec,alph
 ggarrange(Segreg_age_tm,Segreg_age_scale,Win_age_tm,Win_age_scale)
 
 
-##name="Predominant Overlapping \n Yeo7 Network")
+### adding in number of patches dimension next
+```
+
+```{r}
+# Spatial dispersement of network
+LHpi<-read.csv('/cbica/projects/pinesParcels/results/aggregated_data/numPatches_LH_allscales.csv')
+RHpi<-read.csv('/cbica/projects/pinesParcels/results/aggregated_data/numPatches_RH_allscales.csv')
+
+Seg_CIplotdf$LH_patchnum<-LHpi$patchnum_over_scalesL
+Seg_CIplotdf$RH_patchnum<-RHpi$patchnum_over_scalesR
+Seg_CIplotdf$Tot_patchnum<-Seg_CIplotdf$LH_patchnum+Seg_CIplotdf$RH_patchnum
+
+ggplot(Seg_CIplotdf[indofint,],aes(Tot_patchnum,corVecEst,color=domnetvec,alpha=netpropvec^2,group=V7)) + geom_point(size=4,aes(Tot_patchnum,corVecEst))+ scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068')) + xlab("Total Number of Patches") + ylab("AgeSegregCor") +theme_classic(base_size = 28) + ggtitle('Correlation of Network Segregation and Age over All Networks')+ ylim(-.5,.5)
+
+ggplot(Seg_CIplotdf[indofint,],aes(tmvec,Tot_patchnum,color=domnetvec,alpha=netpropvec^2,group=V7))+ geom_point(size=4,aes(tmvec,Tot_patchnum)) + scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068')) + xlab("Transmodality") + ylab("Total Patch number") +theme_classic(base_size = 28) + ggtitle('Correlation of Network Segregation and Age over All Networks')
+
+ggplot(Seg_CIplotdf[indofint,],aes(tmvec,Tot_patchnum,color=scalesvec,group=V7))+ geom_point(size=4,aes(tmvec,Tot_patchnum)) +theme_classic(base_size = 28) + ggtitle('Correlation of Network Segregation and Age over All Networks')
+
+
+ggplot(Seg_CIplotdf[indofint,],aes(tmvec,Tot_patchnum))+ geom_pointdensity(size=4, adjust = 3)+ xlab("Transmodality") + ylab("Total Patch number")+ ggtitle('Correlation of Network Segregation and Age over All Networks')
 ```
 
 ```{r}
