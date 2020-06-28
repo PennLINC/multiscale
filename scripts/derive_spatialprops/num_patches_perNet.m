@@ -15,17 +15,12 @@ gro_partfp=['/cbica/projects/pinesParcels/data/SingleParcellation/SingleAtlas_An
 gro_part=load(gro_partfp);
 
 Krange=2:30;
-subjs=load('/cbica/projects/pinesParcels/data/bblids.txt');
 
 % initialize dataframe which will store the number of patches for each network for each scale (same shape as segreg items or w/in items)
 % calculate dataframe size
 patchnum_over_scalesL=zeros((length(Krange)*((min(Krange)+max(Krange))/2)),1);
 % sep. L and R so I can leave more of the dataframe manipulation for R
 patchnum_over_scalesR=zeros((length(Krange)*((min(Krange)+max(Krange))/2)),1);
-
-% 694 because one slot will be group average, 3 so we can drop L and R right in thur along with a string-guide dimension (like the rope of theseus)
-BigPatchMat=zeros((length(Krange)*((min(Krange)+max(Krange))/2)),693,3);
-% BIG PATTY DIM 3: 1=L 2=R 3=COLNAME
 
 % corresponding column label string vector to be our inside man
 colNameVector=strings((length(Krange)*((min(Krange)+max(Krange))/2)),1);
@@ -38,7 +33,6 @@ for K=Krange
 	Kind_pn{K}=K_start:K_end;
 end
 
-for s=1:length(subjs);
 % for each scale
 for K=Krange;
 
@@ -244,13 +238,13 @@ for K=Krange;
 
 end
 
-% save 'em
+% save 'em (will need patchID column here in the future)
 save('/cbica/projects/pinesParcels/data/aggregated_data/surfNlabsR.mat','surfNlabsR')
 save('/cbica/projects/pinesParcels/data/aggregated_data/surfNlabsL.mat','surfNlabsL')
 
-% save other language-friendly tables
+% save other language-friendly tables (only number of patches not PatchID column n stuff)
 tabeL=table(patchnum_over_scalesL,colNameVector);
 tabeR=table(patchnum_over_scalesR,colNameVector);
 
-writetable(tabeR,'/cbica/projects/pinesParcels/results/aggregated_data/numPatches_RH_allscales.csv');
-writetable(tabeL,'/cbica/projects/pinesParcels/results/aggregated_data/numPatches_LH_allscales.csv');
+writetable(tabeR,'/cbica/projects/pinesParcels/results/aggregated_data/numPatches_groRH_allscales.csv');
+writetable(tabeL,'/cbica/projects/pinesParcels/results/aggregated_data/numPatches_groLH_allscales.csv');
