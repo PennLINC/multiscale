@@ -477,9 +477,6 @@ confvecupper_d[,7]<-CIgroupingInd
 colnames(confveclower_d)[2]<-"CIbounds"
 colnames(confvecupper_d)[2]<-"CIbounds"
 Seg_CIplotdf<-data.frame(rbind(confveclower_d,confvecupper_d))
-# range of interest until we work out K=2 and K=3
-indofint<-6:464
-indofint<-append(indofint,(470:928))
 
 
 Segreg_age_tm<-ggplot(Seg_CIplotdf[indofint,],aes(tmvec,CIbounds,color=domnetvec,alpha=netpropvec^2,group=V7)) + geom_line(size=1) + scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068')) + xlab("Transmodality") + ylab("AgeSegregCor") +theme_classic(base_size = 28) + geom_point(size=4,aes(tmvec,corVecEst)) + ggtitle('Correlation of Network Segregation and Age over All Networks')+ ylim(-.5,.5)
@@ -519,7 +516,9 @@ ggplot(Seg_CIplotdf[indofint,],aes(tmvec,Tot_patchnum,color=domnetvec,alpha=netp
 ggplot(Seg_CIplotdf[indofint,],aes(tmvec,Tot_patchnum,color=scalesvec,group=V7))+ geom_point(size=4,aes(tmvec,Tot_patchnum)) +theme_classic(base_size = 28) + ggtitle('Correlation of Network Segregation and Age over All Networks')
 
 
-ggplot(Seg_CIplotdf[indofint,],aes(tmvec,Tot_patchnum))+ geom_pointdensity(size=4, adjust = 3)+ xlab("Transmodality") + ylab("Total Patch number")+ ggtitle('Correlation of Network Segregation and Age over All Networks')
+ggplot(Seg_CIplotdf[indofint,],aes(tmvec,Tot_patchnum))+ geom_pointdensity(size=4, adjust = 3)+ xlab("Transmodality") + ylab("Total Patch number")
+
+ggplot(Seg_CIplotdf[indofint,],aes(corVecEst,Tot_patchnum))+ geom_pointdensity(size=4)+ xlab("Transmodality") + ylab("Total Patch number")
 ```
 
 ```{r}
