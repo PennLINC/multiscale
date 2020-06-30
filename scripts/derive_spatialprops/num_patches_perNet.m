@@ -1,20 +1,25 @@
 %add needed paths
 addpath(genpath('/cbica/projects/pinesParcels/multiscale/scripts/derive_parcels/Toolbox'));
 
+Krange=2:30;
+
 % load surface (sphere for well-behaved neighbor distances)
 surfL=read_surf('/cbica/software/external/freesurfer/centos7/6.0.0/subjects/fsaverage5/surf/lh.sphere');
 surfR=read_surf('/cbica/software/external/freesurfer/centos7/6.0.0/subjects/fsaverage5/surf/rh.sphere');
-% make an array of L and R xyz with an extra column to be populated with loadings, extra column for patch ID
+
+% make a 3D matrix of L and R xyz with an extra column to be populated with loadings, extra column for patch ID
 % 20484 for fsaverage5
-surfNLabels=zeros(20484,5);
-surfNLabels(1:10242,1:3)=surfL;
-surfNLabels(10243:20484,1:3)=surfR;
+% third dimension to store each scale
+surfNLabels=zeros(20484,5,length(Krange));
+for K=Krange
+	surfNLabels(1:10242,1:3,K-1)=surfL;
+	surfNLabels(10243:20484,1:3,K-1)=surfR;
+end
 
 % load group partitions (labels) to start, can run this over individs to get a distribution of patches per subj
 gro_partfp=['/cbica/projects/pinesParcels/data/SingleParcellation/SingleAtlas_Analysis/group_all_Ks.mat'];
 gro_part=load(gro_partfp);
 
-Krange=2:30;
 
 % initialize dataframe which will store the number of patches for each network for each scale (same shape as segreg items or w/in items)
 % calculate dataframe size
@@ -42,11 +47,11 @@ for K=Krange;
 	
 	% corresponding group_partition (K-1 because array starts at 1, K starts at 2)
 	gro_partK_affils=gro_part.affils(:,K-1);
-	% get it into the x y z df
-	surfNLabels(:,4)=gro_partK_affils;
+	% get it into the x y z df ; K-1 for same reason as above
+	surfNLabels(:,4,(K-1))=gro_partK_affils;
 	% split into L and R because XYZ coords only work w/r/t those in same hemisphere
-	surfNlabsL=surfNLabels(1:10242,:);
-	surfNlabsR=surfNLabels(10243:20484,:);	
+	surfNlabsL=surfNLabels(1:10242,:,(K-1));
+	surfNlabsR=surfNLabels(10243:20484,:,(K-1));	
 	
 	% vertices-to-test vectors
 	% will help to proceed from established patch vertices outwards 
@@ -236,11 +241,14 @@ for K=Krange;
 		['For Network ' num2str(N) ' at scale ' num2str(K) ',there are ' num2str(length(unique(Ndf(:,5)))) ' unique patches in the right hemisphere']
         end
 
+	% put them into broader across scales df before looping over next scale
+	surfNLabels(1:10242,:,(K-1))=surfNlabsL;
+	surfNLabels(10243:20484,:,(K-1))=surfNlabsR;
+
 end
 
 % save 'em (will need patchID column here in the future)
-save('/cbica/projects/pinesParcels/data/aggregated_data/surfNlabsR.mat','surfNlabsR')
-save('/cbica/projects/pinesParcels/data/aggregated_data/surfNlabsL.mat','surfNlabsL')
+save('/cbica/projects/pinesParcels/data/aggregated_data/surfNlabs.mat','surfNLabels')
 
 % save other language-friendly tables (only number of patches not PatchID column n stuff)
 tabeL=table(patchnum_over_scalesL,colNameVector);

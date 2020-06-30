@@ -75,9 +75,9 @@ gsegcols<-grep("globseg",colnames(masterdf))
 ```
 
 ```{r}
-# LH patch info
-LHpi<-read.csv('/cbica/projects/pinesParcels/results/aggregated_data/numPatches_LH_allscales.csv',header=F)
-RHpi<-read.csv('/cbica/projects/pinesParcels/results/aggregated_data/numPatches_RH_allscales.csv',header=F)
+# LH patch inf
+LHpi<-read.csv('/cbica/projects/pinesParcels/results/aggregated_data/numPatches_LH_allscales.csv')
+RHpi<-read.csv('/cbica/projects/pinesParcels/results/aggregated_data/numPatches_RH_allscales.csv')
 
 ```
 

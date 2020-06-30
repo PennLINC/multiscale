@@ -54,7 +54,7 @@ for s=1:length(subjs);
 s
 % for each scale
 for K=Krange;
-
+K
         % These are the master dataframe indices that apply to this scale
 	% Same index applies to string buddy
 	Kind=Kind_pn{K};
@@ -179,7 +179,7 @@ for K=Krange;
 	for N=1:K
 		Ndf=surfNlabsL(surfNlabsL(:,4)==N,:);
 		patchnum_over_scalesL(Kind(N))=length(unique(Ndf(:,5)));
-		['For Network ' num2str(N) ' at scale ' num2str(K) ',there are ' num2str(length(unique(Ndf(:,5)))) ' unique patches in the left hemisphere']
+		%['For Network ' num2str(N) ' at scale ' num2str(K) ',there are ' num2str(length(unique(Ndf(:,5)))) ' unique patches in the left hemisphere']
 		% corresponding string companion
 		colNameVector(Kind(N))=['scale' num2str(K) '_net' num2str(N) '_numPatches'];
 
@@ -278,14 +278,11 @@ for K=Krange;
         for N=1:K
                 Ndf=surfNlabsR(surfNlabsR(:,4)==N,:);
                 patchnum_over_scalesR(Kind(N))=length(unique(Ndf(:,5)));
-		['For Network ' num2str(N) ' at scale ' num2str(K) ',there are ' num2str(length(unique(Ndf(:,5)))) ' unique patches in the right hemisphere']
+		%['For Network ' num2str(N) ' at scale ' num2str(K) ',there are ' num2str(length(unique(Ndf(:,5)))) ' unique patches in the right hemisphere']
 		% and one for the big daddy df
                 BigPatchMat(Kind(N),s,2)=num2cell(length(unique(Ndf(:,5))));
         end
 
 end
 end
-bigtabuuu=cell2table(BigPatchMat);
-writetable(tabeR,'/cbica/projects/pinesParcels/results/aggregated_data/numPatches_RH_allscales.csv');
-writetable(tabeL,'/cbica/projects/pinesParcels/results/aggregated_data/numPatches_LH_allscales.csv');
-writetable(bigtabuuu,'/cbica/projects/pinesParcels/results/aggregated_data/numPatches_AllSubjs_AllScales_bothHemis.csv');
+save('/cbica/projects/pinesParcels/data/aggregated_data/numPatches_AllSubjs_AllScales_bothHemis.mat','BigPatchMat');
