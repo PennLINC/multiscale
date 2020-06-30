@@ -35,8 +35,5 @@ for V=1:length(bdsml);
 			bdsmr(V,i)=eucld_R;
 		end	
 end
-tabLe=array2table(bdsml);
-tabeR=array2table(bdsmr);
-writetable(tabLe,'/cbica/projects/pinesParcels/data/aggregated_data/euclidean_distance_left_fsaverage5.csv');
-writetable(tabeR,'/cbica/projects/pinesParcels/data/aggregated_data/euclidean_distance_right_fsaverage5.csv');
-
+save('/cbica/projects/pinesParcels/data/aggregated_data/euclidean_distance_left_fsaverage5.mat','bdsml');
+save('/cbica/projects/pinesParcels/data/aggregated_data/euclidean_distance_right_fsaverage5.mat','bdsmr');

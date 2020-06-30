@@ -18,8 +18,10 @@ rhGeoDmat=rhfile.cdata;
 
 
 % get in euclid's children
-eucl_l=load('/cbica/projects/pinesParcels/data/aggregated_data/euclidean_distance_left_fsaverage5.csv');
-eucl_r=load('/cbica/projects/pinesParcels/data/aggregated_data/euclidean_distance_right_fsaverage5.csv');
+eucl_l=load('/cbica/projects/pinesParcels/data/aggregated_data/euclidean_distance_left_fsaverage5.mat');
+eucl_r=load('/cbica/projects/pinesParcels/data/aggregated_data/euclidean_distance_right_fsaverage5.mat');
+eucl_l=eucl_l.bdsml;
+eucl_r=eucl_r.bdsmr;
 
 
 % Make a DF for euclidean distance and for geodesic, distance vectors set to length of N networks at K scales
@@ -37,6 +39,7 @@ end
 for K=Krange;
 	Kind=Kind_w{K};
 	nwise_geods=[];
+	nwise_eucs=[];
 	%% For each Network N (can adapt to make patch-wise metrics for column 5 instead of 4 if needed)
 		for N=1:K;
 			% get index of this network (4th column is network membership)
@@ -60,7 +63,7 @@ for K=Krange;
 			K
 			N
 			nwise_geods(N)=nansum([N_avg_gdist_L N_avg_gdist_R])
-			nwise_eucs(N)=nansum([N_avg_gdist_L N_avg_gdist_R])
+			nwise_eucs(N)=nansum([N_avg_edist_L N_avg_edist_R])
 		end
 end
 
