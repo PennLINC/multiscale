@@ -38,8 +38,6 @@ end
 % For each scale K
 for K=Krange;
 	Kind=Kind_w{K};
-	nwise_geods=[];
-	nwise_eucs=[];
 	%% For each Network N (can adapt to make patch-wise metrics for column 5 instead of 4 if needed)
 		for N=1:K;
 			% get index of this network (4th column is network membership)
@@ -62,8 +60,8 @@ for K=Krange;
 			curindex=Kind(N);
 			K
 			N
-			nwise_geods(N)=nansum([N_avg_gdist_L N_avg_gdist_R])
-			nwise_eucs(N)=nansum([N_avg_edist_L N_avg_edist_R])
+			nwise_geods(curindex)=nansum([N_avg_gdist_L N_avg_gdist_R])
+			nwise_eucs(curindex)=nansum([N_avg_edist_L N_avg_edist_R])
 		end
 end
 

@@ -14,16 +14,28 @@ library(ggpubr)
 library(vroom)
 library(mgcv)
 library(ggpointdensity)
+library(ppcor)
 # load in demo
 demo<-read.csv('/cbica/projects/pinesParcels/data/pnc_demo.csv')
-age<-data.frame(demo$ageAtScan1,demo$scanid)
+ageSex<-data.frame(demo$ageAtScan1,as.factor(demo$sex),demo$scanid,demo$bblid)
 subjects<-read.csv('/cbica/projects/pinesParcels/data/participants.txt',header = F)
-# Need to determine best qa file
-##qa<-read.csv('~/Desktop/multiscale/n1601_RestQAData_20170318.csv')
-colnames(subjects)<-c("scanid")
-colnames(age)<-c("Age","scanid")
-df<-merge(subjects,age,by="scanid")
 
+###M MOTION METRIC M###
+Rest_Motion_Data <- read.csv("/cbica/projects/pinesParcels/data/n1601_RestQAData_20170714.csv")
+NBack_Motion_Data <- read.csv("/cbica/projects/pinesParcels/data/n1601_NBACKQAData_20181001.csv")
+Idemo_Motion_Data <- read.csv("/cbica/projects/pinesParcels/data/n1601_idemo_FinalQA_092817.csv")
+
+motmerge<-merge(Rest_Motion_Data,NBack_Motion_Data,by='bblid')
+motmerge<-merge(motmerge,Idemo_Motion_Data,by='bblid')
+motmerge$Motion <- (motmerge$restRelMeanRMSMotion + motmerge$nbackRelMeanRMSMotion + motmerge$idemoRelMeanRMSMotion)/3;
+motiondf<-data.frame(motmerge$bblid,motmerge$Motion)
+colnames(motiondf)<-c('bblid','Motion')
+###M                 M###
+
+colnames(subjects)<-c("scanid")
+colnames(ageSex)<-c("Age","Sex","scanid","bblid")
+df<-merge(subjects,ageSex,by="scanid")
+df<-merge(df,motiondf,by='bblid')
 # community solutions guaged in this iteration
 community_vec<-seq(2,30)
 
@@ -43,24 +55,22 @@ recon_err$V1<-bblids[,1]
 dfdif=iter_err
 dfdif[,2:30]=iter_err[,2:30]-recon_err[2:30]
 
-# get ages in there
-ages<-data.frame(demo$ageAtScan1,demo$bblid)
-colnames(ages)<-c("Age","bblid")
+# get ages and motion in there
 
 colnames(iter_err)[1]<-"bblid"
 colnames(numiter)[1]<-"bblid"
 colnames(recon_err)[1]<-"bblid"
 colnames(dfdif)[1]<-"bblid"
 
-df_tc<-merge(ages,iter_err,by="bblid")
-df_ni<-merge(ages,numiter,by="bblid")
-df_rc<-merge(ages,recon_err,by="bblid")
-df_dif<-merge(ages,dfdif,by="bblid")
+df_tc<-merge(df,iter_err,by="bblid")
+df_ni<-merge(df,numiter,by="bblid")
+df_rc<-merge(df,recon_err,by="bblid")
+df_dif<-merge(df,dfdif,by="bblid")
 
-mdata<-melt(df_tc,id=c(1,2))
-mdatani<-melt(df_ni,id=c(1,2))
-mdatarc<-melt(df_rc,id=c(1,2))
-mdatadif<-melt(df_dif,id=c(1,2))
+mdata<-melt(df_tc,id=c(1,2,3,4,5))
+mdatani<-melt(df_ni,id=c(1,2,3,4,5))
+mdatarc<-melt(df_rc,id=c(1,2,3,4,5))
+mdatadif<-melt(df_dif,id=c(1,2,3,4,5))
 
 tc<-ggplot(data=mdata,aes(x=variable,y=value,group=bblid,color=Age)) +geom_line(alpha = 0.15)+scale_color_gradientn(colors=c("yellow","purple")) + theme_dark()+labs(title="Total cost over scales")
 ni<-ggplot(data=mdatani,aes(x=variable,y=value,group=bblid,color=Age)) +geom_line(alpha = 0.15)+scale_color_gradientn(colors=c("yellow","purple")) + theme_dark()+labs(title="Number of iterations over scales")
@@ -74,30 +84,86 @@ ggarrange(tc,ni,dif,rc)
 mreconerr<-(colMeans(recon_err)[2:30])
 mcrecnerrdf<-data.frame(mreconerr,community_vec)
 ggplot(data=mcrecnerrdf,aes(y=mreconerr,x=community_vec))+geom_line(col='white',size=2)+theme_dark(base_size = 28)+ggtitle("Reconstruction Error Over Scales")+ scale_x_continuous(name ="# of Communitites",  breaks=seq(2, 30, 4))+ylab("Recon. Error")
+
+# Motion and Sex Replacing Age (characterize indep. relations before controlling for them)
+
+
+# libraries just for this friggin raincloud
+library(readr)
+library(tidyverse)
+library(ggplot2)
+source("https://gist.githubusercontent.com/benmarwick/2a1bb0133ff568cbe28d/raw/fb53bd97121f7f9ce947837ef1a4c65a73bffb3f/geom_flat_violin.R")
+library(plyr)
+library(RColorBrewer)
+library(reshape2)
+raincloud_theme <- theme(
+  text = element_text(size = 10),
+  axis.title.x = element_text(size = 16),
+  axis.title.y = element_text(size = 16),
+  axis.text = element_text(size = 14),
+  axis.text.x = element_text(angle = 45, vjust = 0.5),
+  legend.title = element_text(size = 16),
+  legend.text = element_text(size = 16),
+  legend.position = "right",
+  plot.title = element_text(lineheight = .8, face = "bold", size = 16),
+  panel.border = element_blank(),
+  panel.grid.minor = element_blank(),
+  panel.grid.major = element_blank(),
+  axis.line.x = element_line(colour = "black", size = 0.5, linetype = "solid"),
+  axis.line.y = element_line(colour = "black", size = 0.5, linetype = "solid"))
+
+ggplot(data = df, aes(y = Motion, x = Sex, fill = Sex)) +
+    geom_flat_violin(position = position_nudge(x = .2, y = 0), alpha = .8) +
+    geom_point(aes(y = Motion, color = Sex), position = position_jitter(width = .15), size = .5, alpha = 0.8) +
+    geom_boxplot(width = .1, outlier.shape = NA, alpha = 0.5) +
+    coord_flip() +
+    theme_bw() +
+    raincloud_theme
+
+
+
+
+
+
+############# Equiv Plots for these fine variables
+tc<-ggplot(data=mdata,aes(x=variable,y=value,group=bblid,color=Motion)) +geom_line(alpha = 0.15)+scale_color_gradientn(colors=c("yellow","purple")) + theme_dark()+labs(title="Total cost over scales")
+ni<-ggplot(data=mdatani,aes(x=variable,y=value,group=bblid,color=Motion)) +geom_line(alpha = 0.15)+scale_color_gradientn(colors=c("yellow","purple")) + theme_dark()+labs(title="Number of iterations over scales")
+rc<-ggplot(data=mdatarc,aes(x=variable,y=value,group=bblid,color=Motion)) +geom_line(alpha = 0.15)+scale_color_gradientn(colors=c("yellow","purple")) + theme_dark()+labs(title="Reconstruction error over scales")
+dif<-ggplot(data=mdatadif,aes(x=variable,y=value,group=bblid,color=Motion)) +geom_line(alpha = 0.15)+scale_color_gradientn(colors=c("yellow","purple")) + theme_dark()+labs(title="Non-recon error over scales")
+
+ggarrange(tc,ni,dif,rc)
+
+tc<-ggplot(data=mdata,aes(x=variable,y=value,group=bblid,color=Sex)) +geom_line(alpha = 0.07,size=2) + theme_dark()+labs(title="Total cost over scales")
+ni<-ggplot(data=mdatani,aes(x=variable,y=value,group=bblid,color=Sex)) +geom_line(alpha = 0.07,size=2)+ theme_dark()+labs(title="Number of iterations over scales")
+rc<-ggplot(data=mdatarc,aes(x=variable,y=value,group=bblid,color=Sex)) +geom_line(alpha = 0.07,size=2)+ theme_dark()+labs(title="Reconstruction error over scales")
+dif<-ggplot(data=mdatadif,aes(x=variable,y=value,group=bblid,color=Sex)) +geom_line(alpha = 0.07,size=2) + theme_dark()+labs(title="Non-recon error over scales")
+
+ggarrange(tc,ni,dif,rc)
 ```
 
 ```{r}
 # load in FC features (takes about 3 minutes) - original file - not loaded in anymore because it tooks forever and new version is just rounded digits to a few decimal places
 
 fc<-vroom('/cbica/projects/pinesParcels/results/aggregated_data/fc/master_fcfeats.csv')
-oldfc<-vroom('/cbica/projects/pinesParcels/results/aggregated_data/fc/master_fcfeats_old.csv')
+#######oldfc<-vroom('/cbica/projects/pinesParcels/results/aggregated_data/fc/master_fcfeats_old.csv')
+####### indicates it was part of (passed) check if new fc selectively replaced K=3 - can reactivate for further confirm
 
 # set colnames to matlab-printed colnames
 colnames(fc)<-fc[1,]
-colnames(oldfc)<-oldfc[1,]
+#######colnames(oldfc)<-oldfc[1,]
 # aaaand remove it
 fc<-fc[-c(1),]
-oldfc<-oldfc[-c(1),]
+#######oldfc<-oldfc[-c(1),]
 
 # round ridiculous number of decimal points
 fc[] <- lapply(fc, function(x) {
   if(is.character(x)) round(as.numeric(as.character(x)),digits=3) else x
 })
-oldfc[] <- lapply(oldfc, function(x) {
-  if(is.character(x)) round(as.numeric(as.character(x)),digits=3) else x
-})
+#######oldfc[] <- lapply(oldfc, function(x) {
+#######  if(is.character(x)) round(as.numeric(as.character(x)),digits=3) else x
+#######})
 
-# check if new fc selectively replaced K=3
+
 
 # Baal knows why vroom needs more size for the rounded version
 #Sys.setenv("VROOM_CONNECTION_SIZE" = 2000000)
@@ -108,60 +174,90 @@ shams<-fc[694:695,]
 ### merge FC with subj info
 colnames(fc)[1]<-'bblid'
 # AGE
-masterdf<-merge(fc,demo,by='bblid')
+masterdf<-merge(fc,df,by='bblid')
 
-# EF
-subjbehav<-read.csv("/cbica/projects/pinesParcels/data/n713_Behavior_20181219.csv")
-ef<-data.frame(subjbehav$F1_Exec_Comp_Cog_Accuracy,subjbehav$bblid)
-colnames(ef)<-c('F1_Exec_Comp_Cog_Accuracy','bblid')
-# merge in
-masterdf<-merge(masterdf,ef,by='bblid')
-# MOTION METRIC
-# courtesty of ZC
-# port over ##
-Rest_Motion_Data <- read.csv("/cbica/projects/pinesParcels/data/n1601_RestQAData_20170714.csv")
-NBack_Motion_Data <- read.csv("/cbica/projects/pinesParcels/data/n1601_NBACKQAData_20181001.csv")
-Idemo_Motion_Data <- read.csv("/cbica/projects/pinesParcels/data/n1601_idemo_FinalQA_092817.csv")
-
-motmerge<-merge(Rest_Motion_Data,NBack_Motion_Data,by='bblid')
-motmerge<-merge(motmerge,Idemo_Motion_Data,by='bblid')
-motmerge$Motion <- (motmerge$restRelMeanRMSMotion + motmerge$nbackRelMeanRMSMotion + motmerge$idemoRelMeanRMSMotion)/3;
-motiondf<-data.frame(motmerge$bblid,motmerge$Motion)
-colnames(motiondf)<-c('bblid','Motion')
-masterdf<-merge(masterdf,motiondf,by='bblid')
 
 ### isolate global segreg columns
 gsegcols<-grep("globseg",colnames(masterdf))
+#paste("Indices of global segregation columns at ",gsegcols)
 
 ### plot mean global seg over scales by age
 # 2:30 is ind, 5455:5483 is group
-indglobseg<-cbind(masterdf$bblid,masterdf$ageAtScan1/12,masterdf$sex,masterdf$Motion,masterdf$F1_Exec_Comp_Cog_Accuracy,masterdf[,2:30])
-groglobseg<-cbind(masterdf$bblid,masterdf$ageAtScan1/12,masterdf$sex,masterdf$Motion,masterdf$F1_Exec_Comp_Cog_Accuracy,masterdf[,5455:5483])
+indglobseg<-cbind(masterdf$bblid,masterdf$Age/12,masterdf$Sex,masterdf$Motion,masterdf[,2:30])
+groglobseg<-cbind(masterdf$bblid,masterdf$Age/12,masterdf$Sex,masterdf$Motion,masterdf[,5455:5483])
 
 # set colnames
-colnames(indglobseg)[1:5]<-c("bblid", "Age","Sex","Motion","EF")
-colnames(groglobseg)[1:5]<-c("bblid", "Age","Sex","Motion","EF")
-colnames(indglobseg)[6:34]<-as.character(2:30)
-colnames(groglobseg)[6:34]<-as.character(2:30)
+colnames(indglobseg)[1:4]<-c("bblid", "Age","Sex","Motion")
+colnames(groglobseg)[1:4]<-c("bblid", "Age","Sex","Motion")
+colnames(indglobseg)[5:33]<-as.character(2:30)
+colnames(groglobseg)[5:33]<-as.character(2:30)
 indglobseg$Sex<-as.factor(indglobseg$Sex)
 groglobseg$Sex<-as.factor(groglobseg$Sex)
 
 # melt it
-mindglobseg<-melt(indglobseg, id=c(1,2))
-mgroglobseg<-melt(groglobseg, id=c(1,2))
+mindglobseg<-melt(indglobseg, id=c(1,2,3,4))
+mgroglobseg<-melt(groglobseg, id=c(1,2,3,4))
 
 # individual segregation over scales plots, colored by age ##
 indseg<-ggplot(data=mindglobseg,aes(x=as.numeric(as.character(variable)),y=value,group=bblid,color=Age)) +geom_line(alpha = 0.12)+scale_color_gradientn(colors=c("yellow","purple")) + theme_dark(base_size = 28)+labs(title="Global Segregation - Individ. Partitions") + scale_x_continuous(name ="# of Communitites",  breaks=seq(2, 30, 4))+ylab("Global Segregation")
 groseg<-ggplot(data=mgroglobseg,aes(x=as.numeric(as.character(variable)),y=value,group=bblid,color=Age)) +geom_line(alpha = 0.12)+scale_color_gradientn(colors=c("yellow","purple")) + theme_dark(base_size = 28)+labs(title="Global Segregation - Group Partitions") + scale_x_continuous(name ="# of Communitites", breaks=seq(2, 30, 4))+ylab("Global Segregation")
 ggarrange(indseg,groseg,ncol=1)
 
+# individual segregation over scales plots, colored by Motion ##
+indseg<-ggplot(data=mindglobseg,aes(x=as.numeric(as.character(variable)),y=value,group=bblid,color=Motion)) +geom_line(alpha = 0.12)+scale_color_gradientn(colors=c("yellow","purple")) + theme_dark(base_size = 28)+labs(title="Global Segregation - Individ. Partitions") + scale_x_continuous(name ="# of Communitites",  breaks=seq(2, 30, 4))+ylab("Global Segregation")
+groseg<-ggplot(data=mgroglobseg,aes(x=as.numeric(as.character(variable)),y=value,group=bblid,color=Motion)) +geom_line(alpha = 0.12)+scale_color_gradientn(colors=c("yellow","purple")) + theme_dark(base_size = 28)+labs(title="Global Segregation - Group Partitions") + scale_x_continuous(name ="# of Communitites", breaks=seq(2, 30, 4))+ylab("Global Segregation")
+ggarrange(indseg,groseg,ncol=1)
+
+# individual segregation over scales plots, colored by Sex ##
+indseg<-ggplot(data=mindglobseg,aes(x=as.numeric(as.character(variable)),y=value,group=bblid,color=Sex)) +geom_line(alpha = 0.1,size=2)+ theme_dark(base_size = 28)+labs(title="Global Segregation - Individ. Partitions") + scale_x_continuous(name ="# of Communitites",  breaks=seq(2, 30, 4))+ylab("Global Segregation")
+groseg<-ggplot(data=mgroglobseg,aes(x=as.numeric(as.character(variable)),y=value,group=bblid,color=Sex)) +geom_line(alpha = 0.1,size=2)+ theme_dark(base_size = 28)+labs(title="Global Segregation - Group Partitions") + scale_x_continuous(name ="# of Communitites", breaks=seq(2, 30, 4))+ylab("Global Segregation")
+ggarrange(indseg,groseg,ncol=1)
 
 
 # formal t.test for gro seg vs ind seg
 indsegvec<-as.vector(unlist(indglobseg[,3:31]))
 grosegvec<-as.vector(unlist(groglobseg[,3:31]))
 t.test(indsegvec,grosegvec,paired=T)
+
+
+
+########### Global seg after regressing out motion
+# regress effect of age out on sex and motion
+indglobseg_motSexC<-indglobseg
+groglobseg_motSexC<-groglobseg
+
+# Z-scored for check of my stats knowledge
+indglobseg_Zs<-indglobseg
+
+indglobseg_Zs$Age<-(indglobseg$Age-mean(indglobseg$Age))/sd(indglobseg$Age)
+indglobseg_Zs$Motion<-(indglobseg$Motion-mean(indglobseg$Motion))/sd(indglobseg$Motion)
+
+for (i in 5:33){
+  CLM<-lm(indglobseg[,i]~Motion+Sex,data=indglobseg)
+  indglobseg_motSexC[,i]<-CLM$residuals
+  GCLM<-lm(groglobseg[,i]~Motion+Sex,data=groglobseg)
+  groglobseg_motSexC[,i]<-GCLM$residuals
+  
+  
+  meanval<-mean(indglobseg[,i])
+  sdofvals<-sd(indglobseg[,i])
+  Zvals<-(indglobseg[,i]-meanval)/sdofvals
+  indglobseg_Zs[,i]<-Zvals
+}
+
+
+mCindglobseg<-melt(indglobseg_motSexC, id=c(1,2,3,4))
+mCgroglobseg<-melt(groglobseg_motSexC, id=c(1,2,3,4))
+
+
+
+# individual segregation over scales plots, colored by age ##
+indseg<-ggplot(data=mCindglobseg,aes(x=as.numeric(as.character(variable)),y=value,group=bblid,color=Age)) +geom_line(alpha = 0.12)+scale_color_gradientn(colors=c("yellow","purple")) + theme_dark(base_size = 28)+labs(title="M/S-Regressed Glob. Segreg. - Individ. Partitions") + scale_x_continuous(name ="# of Communitites",  breaks=seq(2, 30, 4))+ylab("Global Segregation")
+
+groseg<-ggplot(data=mCgroglobseg,aes(x=as.numeric(as.character(variable)),y=value,group=bblid,color=Age)) +geom_line(alpha = 0.12)+scale_color_gradientn(colors=c("yellow","purple")) + theme_dark(base_size = 28)+labs(title="M/S-Regressed Glob. Segreg. - Group Partitions") + scale_x_continuous(name ="# of Communitites",  breaks=seq(2, 30, 4))+ylab("Global Segregation")
+ggarrange(indseg,groseg,ncol=1)
 ```
+
 
 ```{r}
 ### get global seg cors
@@ -170,24 +266,31 @@ t.test(indsegvec,grosegvec,paired=T)
 ind_segcors<-matrix(0,29,2)
 ind_segcors[,1]<-2:30
 
-#### USES RESIDUALS, NOT SIMULTANEOUSLY FITTED AGE COEFFICIENT AT THE MOMENT ### APPLIES TO LINES 178-300
+#### repeated ggpplot uses residuals, NOT SIMULTANEOUSLY FITTED AGE COEFFICIENT AT THE MOMENT ### 
+### agebeta vec does use simulataneous fit (partial correlations)
 for (i in 1:29){
-  # i+5 because first column is scanid, second is age, third is sex, 4th is motion, 5th is EF
-  print(ggplot(indglobseg,aes(Age,indglobseg[,i+5])) + geom_point() + geom_smooth() +ylab(paste("Ind Global Segreg at Scale", i+1)))
-  linmod=lm(indglobseg[,i+5]~Sex+Motion,data=indglobseg)
-  agecor=(cor.test(linmod$residuals,groglobseg$Age,method = 'spearman'))$estimate
-  ind_segcors[i,2]<-agecor
+  # i+4 because first column is scanid, second is age, third is sex, 4th is motion
+  print(ggplot(indglobseg_motSexC,aes(Age,indglobseg_motSexC[,i+4])) + geom_point() + geom_smooth() +ylab(paste("Ind Global Segreg at Scale", i+1)))
+  
+  # relevant df
+  scaledf<-cbind(indglobseg$Age,indglobseg$Sex,indglobseg$Motion,indglobseg[,i+4])
+  # partial spearmans to extrac age relation
+  pspear=pcor(scaledf,method='spearman')$estimate
+  ind_segcors[i,2]<-pspear[4]
 }
+
 ## now group level
 # 29 for scales studied
 gro_segcors<-matrix(0,29,2)
 gro_segcors[,1]<-2:30
 for (i in 1:29){
-  print(ggplot(groglobseg,aes(Age,groglobseg[,i+5])) + geom_point() + geom_smooth() +ylab(paste("Gro Global Segreg at Scale", i+1)))
-  # i+5 because first column is scanid, second is age, third is sex, 4th is motion, 5th is EF
-  linmod=lm(groglobseg[,i+5]~Sex+Motion,data=groglobseg)
-  agecor=(cor.test(linmod$residuals,groglobseg$Age,method = 'spearman'))$estimate
-  gro_segcors[i,2]<-agecor
+  print(ggplot(groglobseg,aes(Age,groglobseg[,i+4])) + geom_point() + geom_smooth() +ylab(paste("Gro Global Segreg at Scale", i+1)))
+  # i+4 because first column is scanid, second is age, third is sex, 4th is motion, 5th is EF
+  # relevant df
+  scaledf<-cbind(groglobseg$Age,groglobseg$Sex,groglobseg$Motion,groglobseg[,i+4])
+  # partial spearmans to extrac age relation
+  pspear=pcor(scaledf,method='spearman')$estimate
+  gro_segcors[i,2]<-pspear[4]
 }
 
 indagecor<-correlations_over_scales(ind_segcors,"Global Segregation Age Correlation - Individ. Partitions")
@@ -213,31 +316,55 @@ ggplot(x,aes(X1,value,group=Partitioning,color=Partitioning)) + geom_step(size=3
 
 ```{r}
 ### get global seg cors FOR EF
-### Now with motion + sex control
-# 29 for scales studied
+# EF
+subjbehav<-read.csv("/cbica/projects/pinesParcels/data/n713_Behavior_20181219.csv")
+ef<-data.frame(subjbehav$F1_Exec_Comp_Cog_Accuracy,subjbehav$bblid)
+colnames(ef)<-c('F1_Exec_Comp_Cog_Accuracy','bblid')
+# merge in
+masterdf<-merge(masterdf,ef,by='bblid')
+### plot mean global seg over scales by age
+# 2:30 is ind, 5455:5483 is group
+indglobseg<-cbind(masterdf$bblid,masterdf$F1_Exec_Comp_Cog_Accuracy,masterdf$Sex,masterdf$Motion,masterdf[,2:30])
+groglobseg<-cbind(masterdf$bblid,masterdf$F1_Exec_Comp_Cog_Accuracy,masterdf$Sex,masterdf$Motion,masterdf[,5455:5483])
+
+# set colnames
+colnames(indglobseg)[1:4]<-c("bblid", "EF","Sex","Motion")
+colnames(groglobseg)[1:4]<-c("bblid", "EF","Sex","Motion")
+colnames(indglobseg)[5:33]<-as.character(2:30)
+colnames(groglobseg)[5:33]<-as.character(2:30)
+indglobseg$Sex<-as.factor(indglobseg$Sex)
+groglobseg$Sex<-as.factor(groglobseg$Sex)
+
 ind_segcors<-matrix(0,29,2)
 ind_segcors[,1]<-2:30
+
+#### repeated ggpplot uses residuals, NOT SIMULTANEOUSLY FITTED EF COEFFICIENT AT THE MOMENT ### 
+### agebeta vec does use simulataneous fit (partial correlations)
 for (i in 1:29){
-  # i+5 because first column is scanid, second is age, third is sex, 4th is motion, 5th is EF
-   print(ggplot(indglobseg,aes(EF,indglobseg[,i+5])) + geom_point() + geom_smooth() +ylab(paste("Ind Global Segreg at Scale", i+1)))
-  linmod=lm(indglobseg[,i+5]~Sex+Motion+Age,data=indglobseg)
-  EFcor=(cor.test(linmod$residuals,indglobseg$EF,method='spearman'))$estimate
-  ind_segcors[i,2]<-EFcor
+  
+  # relevant df
+  scaledf<-cbind(indglobseg$EF,indglobseg$Sex,indglobseg$Motion,indglobseg[,i+4])
+  # partial spearmans to extrac age relation
+  pspear=pcor(scaledf,method='spearman')$estimate
+  ind_segcors[i,2]<-pspear[4]
 }
+
 ## now group level
 # 29 for scales studied
 gro_segcors<-matrix(0,29,2)
 gro_segcors[,1]<-2:30
 for (i in 1:29){
-  # i+5 because first column is scanid, second is age, third is sex, 4th is motion, 5th is EF
-  linmod=lm(groglobseg[,i+5]~Sex+Motion+Age+EF,data=groglobseg)
-  EFcor=(cor.test(linmod$residuals,groglobseg$EF))$estimate
-  gro_segcors[i,2]<-EFcor
+
+  # relevant df
+  scaledf<-cbind(groglobseg$Age,groglobseg$Sex,groglobseg$Motion,groglobseg[,i+4])
+  # partial spearmans to extrac age relation
+  pspear=pcor(scaledf,method='spearman')$estimate
+  gro_segcors[i,2]<-pspear[4]
 }
 
-indagecor<-correlations_over_scales(ind_segcors,"Global Segregation Age Correlation - Individ. Partitions")
-groagecor<-correlations_over_scales(gro_segcors,"Global Segregation Age Correlation - Group Partitions")
-ggarrange(indagecor,groagecor,ncol = 1)
+indEFcor<-correlations_over_scales(ind_segcors,"Global Segregation EF Correlation - Individ. Partitions")
+groEFcor<-correlations_over_scales(gro_segcors,"Global Segregation EF Correlation - Group Partitions")
+ggarrange(indEFcor,groEFcor,ncol = 1)
 
 # merged
 ind_segcors_df<-data.frame(ind_segcors)
@@ -254,6 +381,7 @@ ggplot(x,aes(X1,value,group=Partitioning,color=Partitioning)) + geom_step(size=3
     geom_hline(aes(yintercept=-.098), linetype="dashed", col='#55185D',size=2.5) +
     geom_hline(aes(yintercept=.125), linetype="dashed", col='#ECB602',size=2.5) +
     geom_hline(aes(yintercept=-.125), linetype="dashed", col='#ECB602',size=2.5) + scale_color_manual(values = c("black", "grey"))+ggtitle("Global Segregation and EF Correlation Over Scales")
+
 ```
 
 ```{r}
