@@ -11,7 +11,7 @@ library(ggplot2)
 library(reshape2)
 library(dplyr)
 library(ggpubr)
-library(vroom)
+library(data.table)
 library(mgcv)
 library(ggpointdensity)
 library(ppcor)
@@ -144,16 +144,18 @@ ggarrange(tc,ni,dif,rc)
 ```{r}
 # load in FC features (takes about 3 minutes) - original file - not loaded in anymore because it tooks forever and new version is just rounded digits to a few decimal places
 
-fc<-vroom('/cbica/projects/pinesParcels/results/aggregated_data/fc/master_fcfeats.csv')
+#fc<-vroom('/cbica/projects/pinesParcels/results/aggregated_data/fc/master_fcfeats.csv')
 #######oldfc<-vroom('/cbica/projects/pinesParcels/results/aggregated_data/fc/master_fcfeats_old.csv')
 ####### indicates it was part of (passed) check if new fc selectively replaced K=3 - can reactivate for further confirm
-
+fc<-fread('/cbica/projects/pinesParcels/results/aggregated_data/fc/master_fcfeats.csv')
 # set colnames to matlab-printed colnames
-colnames(fc)<-fc[1,]
+colnames(fc)<-unlist(fc[1,])
 #######colnames(oldfc)<-oldfc[1,]
 # aaaand remove it
 fc<-fc[-c(1),]
 #######oldfc<-oldfc[-c(1),]
+
+fc<-data.frame(fc)
 
 # round ridiculous number of decimal points
 fc[] <- lapply(fc, function(x) {
@@ -266,7 +268,7 @@ ggarrange(indseg,groseg,ncol=1)
 ind_segcors<-matrix(0,29,2)
 ind_segcors[,1]<-2:30
 
-#### repeated ggpplot uses residuals, NOT SIMULTANEOUSLY FITTED AGE COEFFICIENT AT THE MOMENT ### 
+#### repeated ggpplot uses residuals, but pspear and cor over scales uses simultaneously fit spear-men
 ### agebeta vec does use simulataneous fit (partial correlations)
 for (i in 1:29){
   # i+4 because first column is scanid, second is age, third is sex, 4th is motion
@@ -321,11 +323,11 @@ subjbehav<-read.csv("/cbica/projects/pinesParcels/data/n713_Behavior_20181219.cs
 ef<-data.frame(subjbehav$F1_Exec_Comp_Cog_Accuracy,subjbehav$bblid)
 colnames(ef)<-c('F1_Exec_Comp_Cog_Accuracy','bblid')
 # merge in
-masterdf<-merge(masterdf,ef,by='bblid')
+masteref<-merge(masterdf,ef,by='bblid')
 ### plot mean global seg over scales by age
 # 2:30 is ind, 5455:5483 is group
-indglobseg<-cbind(masterdf$bblid,masterdf$F1_Exec_Comp_Cog_Accuracy,masterdf$Sex,masterdf$Motion,masterdf[,2:30])
-groglobseg<-cbind(masterdf$bblid,masterdf$F1_Exec_Comp_Cog_Accuracy,masterdf$Sex,masterdf$Motion,masterdf[,5455:5483])
+indglobseg<-cbind(masteref$bblid,masteref$F1_Exec_Comp_Cog_Accuracy,masteref$Sex,masteref$Motion,masteref[,2:30])
+groglobseg<-cbind(masteref$bblid,masteref$F1_Exec_Comp_Cog_Accuracy,masteref$Sex,masteref$Motion,masteref[,5455:5483])
 
 # set colnames
 colnames(indglobseg)[1:4]<-c("bblid", "EF","Sex","Motion")
@@ -389,9 +391,28 @@ ggplot(x,aes(X1,value,group=Partitioning,color=Partitioning)) + geom_step(size=3
 # 29 for scales studied
 ind_segcors<-matrix(0,29,2)
 ind_segcors[,1]<-2:30
+
+
+# throw age in again (reprise)
+indglobseg<-cbind(masterdf$bblid,masterdf$Age/12,masterdf$Sex,masterdf$Motion,masterdf[,2:30])
+groglobseg<-cbind(masterdf$bblid,masterdf$Age/12,masterdf$Sex,masterdf$Motion,masterdf[,5455:5483])
+
+# set colnames
+colnames(indglobseg)[1:4]<-c("bblid", "Age","Sex","Motion")
+colnames(groglobseg)[1:4]<-c("bblid", "Age","Sex","Motion")
+colnames(indglobseg)[5:33]<-as.character(2:30)
+colnames(groglobseg)[5:33]<-as.character(2:30)
+indglobseg$Sex<-as.factor(indglobseg$Sex)
+groglobseg$Sex<-as.factor(groglobseg$Sex)
+
+# melt it
+mindglobseg<-melt(indglobseg, id=c(1,2,3,4))
+mgroglobseg<-melt(groglobseg, id=c(1,2,3,4))
+
+
 for (i in 1:29){
-  # i+5 because first column is scanid, second is age, third is sex, 4th is motion, 5th is EF
-  linmod=lm(indglobseg[,i+5]~Age+Sex,data=indglobseg)
+  # i+4 because first column is scanid, second is age, third is sex, 4th is motion
+  linmod=lm(indglobseg[,i+4]~Age+Sex,data=indglobseg)
   motcor=(cor.test(linmod$residuals,indglobseg$Motion))$estimate
   ind_segcors[i,2]<-motcor
 }
@@ -400,8 +421,8 @@ for (i in 1:29){
 gro_segcors<-matrix(0,29,2)
 gro_segcors[,1]<-2:30
 for (i in 1:29){
-  # i+5 because first column is scanid, second is age, third is sex, 4th is motion, 5th is EF
-  linmod=lm(groglobseg[,i+5]~Age+Sex,data=groglobseg)
+  # i+4 because first column is scanid, second is age, third is sex, 4th is motion
+  linmod=lm(groglobseg[,i+4]~Age+Sex,data=groglobseg)
   motcor=(cor.test(linmod$residuals,groglobseg$Motion))$estimate
   gro_segcors[i,2]<-motcor
 }
@@ -474,7 +495,7 @@ for (i in 1:693){
   globalseg[,1,i]<-seq(2,30)
   # y values as error/cost
   # seems more matlabby than characteristic of R that I have to as.x(as.x(df)) for it to work, but here we are
-  globalseg[,2,i]<-as.array(as.matrix(indglobseg[i,3:31]))
+  globalseg[,2,i]<-as.array(as.matrix(indglobseg[i,5:33]))
   
   # scale SDs to be equiv in x and y dimensions (to enforce principled shape)
   #sd1<-(sd(globalseg[,1,i]))
@@ -535,49 +556,63 @@ individ_scalebywin_df<-masterdf[,indiv_wincols_ind]
 # ensure 464 length (number of scale by net withincon features)
 length(individ_scalebywin_df)
 
+
+########## 7/2/20 - changed to partial correlations to account for sex and motion for each network at each scale
+
+#### Commented out confidence intervals for now, not a feature of the pcor package utilized
 # will needs these functions throughout
-corconfinfvecupper<-function(x){
-  confinf<-cor.test(x,masterdf$ageAtScan1)[9]
-  return(unlist(confinf)[1])
-}
-corconfinfveclower<-function(x){
-  confinf<-cor.test(x,masterdf$ageAtScan1)[9]
-  return(unlist(confinf)[2])
-}
+###corconfinfvecupper<-function(x){
+###  confinf<-cor.test(x,masterdf$Age)[9]
+###  return(unlist(confinf)[1])
+###}
+###corconfinfveclower<-function(x){
+###  confinf<-cor.test(x,masterdf$Age)[9]
+###  return(unlist(confinf)[2])
+###}
+
 corEstVec<-function(x){
-  corest<-cor.test(x,masterdf$ageAtScan1)[4]
+  # relevant df
+  scaledf<-cbind(as.numeric(masterdf$Age),as.numeric(masterdf$Sex),masterdf$Motion,x)
+  # partial spearmans to extrac age relation
+  pspear=pcor(scaledf,method='spearman')$estimate
+  corest<-pspear[4]
   return(unlist(corest))
 }
+
+# Notice this references master E f, which has 5 fewer subjects
 corEstVec_EF<-function(x){
-  corest<-cor.test(x,masterdf$EF)[4]
+  # relevant df
+  scaledf<-cbind(as.numeric(masteref$EF),as.numeric(masteref$Sex),masteref$Motion,x)
+  # partial spearmans to extrac age relation
+  pspear=pcor(scaledf,method='spearman')$estimate
+  corest<-pspear[4]
   return(unlist(corest))
 }
 
 
-confvecupper<-as.numeric(lapply(masterdf[,indiv_wincols_ind],corconfinfvecupper))
-confveclower<-as.numeric(lapply(masterdf[,indiv_wincols_ind],corconfinfveclower))
+###confvecupper<-as.numeric(lapply(masterdf[,indiv_wincols_ind],corconfinfvecupper))
+###confveclower<-as.numeric(lapply(masterdf[,indiv_wincols_ind],corconfinfveclower))
 corVecEst<-as.numeric(lapply(masterdf[,indiv_wincols_ind],corEstVec))
-confveclower_d<-data.frame(tmvec,confveclower,scalesvec,domnetvec,netpropvec,corVecEst)
-confvecupper_d<-data.frame(tmvec,confvecupper,scalesvec,domnetvec,netpropvec,corVecEst)
-confvecdf<-data.frame(confveclower_d = confveclower_d, confvecupper_d  = confvecupper_d)
+###confveclower_d<-data.frame(tmvec,confveclower,scalesvec,domnetvec,netpropvec,corVecEst)
+###confvecupper_d<-data.frame(tmvec,confvecupper,scalesvec,domnetvec,netpropvec,corVecEst)
+###confvecdf<-data.frame(confveclower_d = confveclower_d, confvecupper_d  = confvecupper_d)
+confvecdf<-data.frame(tmvec,scalesvec,domnetvec,netpropvec,corVecEst)
 
 # augment dataframe for CI range plot
 CIgroupingInd<-as.factor(1:464)
-confveclower_d[,7]<-CIgroupingInd
-confvecupper_d[,7]<-CIgroupingInd
+###confveclower_d[,7]<-CIgroupingInd
+###confvecupper_d[,7]<-CIgroupingInd
 #corVecEst_d[,6]<-CIgroupingInd
-colnames(confveclower_d)[2]<-"CIbounds"
-colnames(confvecupper_d)[2]<-"CIbounds"
-win_CIplotdf<-data.frame(rbind(confveclower_d,confvecupper_d))
-# range of interest until we work out K=2 and K=3
-indofint<-6:464
-indofint<-append(indofint,(470:928))
+###colnames(confveclower_d)[2]<-"CIbounds"
+###colnames(confvecupper_d)[2]<-"CIbounds"
+###in_CIplotdf<-data.frame(rbind(confveclower_d,confvecupper_d))
+
 
 # plot it
-Win_age_tm<-ggplot(win_CIplotdf[indofint,],aes(tmvec,CIbounds,color=domnetvec,alpha=netpropvec^2,group=V7)) + geom_line(size=1) + scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068')) + xlab("Transmodality") + ylab("AgeWithinCor") +theme_classic(base_size = 28) + geom_point(size=4,aes(tmvec,corVecEst)) + ggtitle('Correlation of Within Network Connectivity and Age over All Networks')+ ylim(-.5,.5)
+Win_age_tm<-ggplot(confvecdf,aes(tmvec,corVecEst,color=domnetvec,alpha=netpropvec^2)) + scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068')) + xlab("Transmodality") + ylab("AgeWithinCor") +theme_classic(base_size = 28) + geom_point(size=4,aes(tmvec,corVecEst)) + ggtitle('Correlation of Within Network Connectivity and Age over All Communities')+ ylim(-.5,.5)
 
 # check for scale-specific effects
-Win_age_scale<-ggplot(win_CIplotdf[indofint,],aes(tmvec,corVecEst,color=scalesvec)) + geom_point(size=4) + xlab("Transmodality") + ylab("AgeWinCor")+theme_classic(base_size = 28)+ ylim(-.5,.5)+ ggtitle('Correlation of Within Network Connectivity and Age over All Networks')
+Win_age_scale<-ggplot(confvecdf,aes(tmvec,corVecEst,color=scalesvec)) + geom_point(size=4)+labs(title='Correlation of Network Segregation and Age over All Communities', x = 'Transmodality', y = "AgeWinCor", color="Topological \nScale")+theme_classic(base_size = 28)+ ylim(-.5,.5)+ ggtitle('Correlation of Within Network Connectivity and Age over All Communities')+ scale_colour_gradient(low="#55185D", high="#ECB602")
 ```
 
 ```{r}
@@ -589,36 +624,33 @@ indiv_scalebynet_df<-masterdf[,indiv_nsegcols_ind]
 # ensure 464 length (number of scale by net features)
 length(indiv_scalebynet_df)
 
-confvecupper<-as.numeric(lapply(masterdf[,indiv_nsegcols_ind],corconfinfvecupper))
-confveclower<-as.numeric(lapply(masterdf[,indiv_nsegcols_ind],corconfinfveclower))
+###confvecupper<-as.numeric(lapply(masterdf[,indiv_nsegcols_ind],corconfinfvecupper))
+###confveclower<-as.numeric(lapply(masterdf[,indiv_nsegcols_ind],corconfinfveclower))
 corVecEst<-as.numeric(lapply(masterdf[,indiv_nsegcols_ind],corEstVec))
 
-confveclower_d<-data.frame(tmvec,confveclower,scalesvec,domnetvec,netpropvec,corVecEst)
-confvecupper_d<-data.frame(tmvec,confvecupper,scalesvec,domnetvec,netpropvec,corVecEst)
-confvecdf<-data.frame(confveclower_d = confveclower_d, confvecupper_d  = confvecupper_d)
+###confveclower_d<-data.frame(tmvec,confveclower,scalesvec,domnetvec,netpropvec,corVecEst)
+###confvecupper_d<-data.frame(tmvec,confvecupper,scalesvec,domnetvec,netpropvec,corVecEst)
+###confvecdf<-data.frame(confveclower_d = confveclower_d, confvecupper_d  = confvecupper_d)
 
 # augment dataframe for CI range plot
 CIgroupingInd<-as.factor(1:464)
-confveclower_d[,7]<-CIgroupingInd
-confvecupper_d[,7]<-CIgroupingInd
+###confveclower_d[,7]<-CIgroupingInd
+###confvecupper_d[,7]<-CIgroupingInd
 #corVecEst_d[,6]<-CIgroupingInd
-colnames(confveclower_d)[2]<-"CIbounds"
-colnames(confvecupper_d)[2]<-"CIbounds"
-Seg_CIplotdf<-data.frame(rbind(confveclower_d,confvecupper_d))
+###colnames(confveclower_d)[2]<-"CIbounds"
+###colnames(confvecupper_d)[2]<-"CIbounds"
+###Seg_CIplotdf<-data.frame(rbind(confveclower_d,confvecupper_d))
 
+Seg_plotdf<-data.frame(tmvec,scalesvec,domnetvec,netpropvec,corVecEst)
 
-Segreg_age_tm<-ggplot(Seg_CIplotdf[indofint,],aes(tmvec,CIbounds,color=domnetvec,alpha=netpropvec^2,group=V7)) + geom_line(size=1) + scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068')) + xlab("Transmodality") + ylab("AgeSegregCor") +theme_classic(base_size = 28) + geom_point(size=4,aes(tmvec,corVecEst)) + ggtitle('Correlation of Network Segregation and Age over All Networks')+ ylim(-.5,.5)
+Segreg_age_tm<-ggplot(Seg_plotdf,aes(tmvec,corVecEst,color=domnetvec,alpha=netpropvec^2)) + scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068')) + xlab("Transmodality") + ylab("AgeSegregCor") +theme_classic(base_size = 28) + geom_point(size=4,aes(tmvec,corVecEst)) + ggtitle('Correlation of Network Segregation and Age over All Communities')+ ylim(-.5,.5)
 
 # without proportion
-Segreg_age_tm<-ggplot(Seg_CIplotdf[indofint,],aes(tmvec,CIbounds,color=domnetvec,group=V7)) + geom_line(size=1,alpha=.5) + scale_color_manual(name="Predominant \nOverlapping \nYeo7 Network",values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068')) + xlab("Transmodality") + ylab("AgeSegregCor") +theme_classic(base_size = 28) + geom_point(size=4,aes(tmvec,corVecEst),alpha=.5) + ggtitle('Correlation of Network Segregation and Age over All Networks')+ ylim(-.5,.5) +theme(legend.text=element_text(size=20))
+Segreg_age_tm_noprop<-ggplot(Seg_plotdf,aes(tmvec,corVecEst,color=domnetvec)) + geom_line(size=1,alpha=.5) + scale_color_manual(name="Predominant \nOverlapping \nYeo7 Network",values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068')) + xlab("Transmodality") + ylab("AgeSegregCor") +theme_classic(base_size = 28) + geom_point(size=4,aes(tmvec,corVecEst),alpha=.5) + ggtitle('Correlation of Network Segregation and Age over All Communities')+ ylim(-.5,.5) +theme(legend.text=element_text(size=20))
 
-Segreg_age_tm_point<-ggplot(Seg_CIplotdf[indofint,],aes(tmvec,corVecEst,color=domnetvec,group=V7))+ scale_color_manual(name="Predominant \nOverlapping \nYeo7 Network",values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068')) + xlab("Transmodality") + ylab('Segregation-Age Correlation') +theme_classic(base_size = 28) + geom_point(size=4,aes(tmvec,corVecEst),alpha=.7) + ggtitle('Correlation of Network Segregation and Age over All Communities')+ ylim(-.5,.5) +theme(legend.text=element_text(size=20))
+Segreg_age_scale<-ggplot(Seg_plotdf,aes(tmvec,corVecEst,color=scalesvec,alpha=.5)) +labs(title='Correlation of Network Segregation and Age over All Communities', x = 'Transmodality', y = "AgeSegregCor", color="Topological \nScale")+ geom_point(size=4,alpha=.5) +theme_classic(base_size = 28)+ ylim(-.5,.5)+ scale_colour_gradient(low="#55185D", high="#ECB602")
 
-Segreg_age_tm_line<-ggplot(Seg_CIplotdf[indofint,],aes(tmvec,CIbounds,color=domnetvec,group=V7)) + geom_line(size=1,alpha=.5) + scale_color_manual(name="Predominant \nOverlapping \nYeo7 Network",values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068')) + xlab("Transmodality") + ylab(expression(rho)) +theme_classic(base_size = 28) + ggtitle('Correlation of Network Segregation and Age over All Communities')+ ylim(-.5,.5) +theme(legend.text=element_text(size=20))
-
-Segreg_age_scale<-ggplot(Seg_CIplotdf[indofint,],aes(tmvec,corVecEst,color=scalesvec,alpha=.5)) +labs(title='Correlation of Network Segregation and Age over All Communities', x = 'Transmodality', y = expression(rho), color="Topological \nScale")+ geom_point(size=4,alpha=.5) +theme_classic(base_size = 28)+ ylim(-.5,.5)+ scale_colour_gradient(low="#55185D", high="#ECB602")
-
-Segreg_age_scale_x<-ggplot(Seg_CIplotdf,aes(scalesvec,corVecEst,color=tmvec,alpha=.5)) +labs(title='Correlation of Network Segregation and Age over All Communities', x = '# of Communities', y = 'Segregation-Age Correlation', color="Transmodality")+ geom_point(size=4,alpha=.5) +theme_classic(base_size = 28)+ ylim(-.5,.5)+ scale_colour_gradient(low="#55185D", high="#ECB602")
+Segreg_age_scale_x<-ggplot(Seg_plotdf,aes(scalesvec,corVecEst,color=tmvec,alpha=.5)) +labs(title='Correlation of Network Segregation and Age over All Communities', x = '# of Communities', y = 'Segregation-Age Correlation', color="Transmodality")+ geom_point(size=4,alpha=.5) +theme_classic(base_size = 28)+ ylim(-.5,.5)+ scale_colour_gradient(low="#55185D", high="#ECB602")
 
 
 
@@ -785,13 +817,13 @@ for (i in 1:2){
         # get average value of b/w but same modality connectivity
         avg_bw_same<-rowMeans(masterdf[,match_NetN_scaleK_bw_indivi_cols_ind,drop=F])
         # get mean agecor with matching networks
-        avg_bw_agecor<-unlist(cor.test(avg_bw_same,masterdf$ageAtScan1)[4])
+        avg_bw_agecor<-corEstVec(avg_bw_same)
       } else if (NModality!=modalloopvar[i]) {  
         avg_bw_agecor<-NULL
         # get average value of b/w but same modality connectivity
         avg_bw_dif<-rowMeans(masterdf[,unmatch_NetN_scaleK_bw_indivi_cols_ind, drop=F])
         # get mean agecor with non-matching networks
-        avg_bw_agecor<-unlist(cor.test(avg_bw_dif,masterdf$ageAtScan1)[4])
+        avg_bw_agecor<-corEstVec(avg_bw_dif)
       } else if (NModality==modalloopvar[i] && (exists("matchvec[1]"))=='FALSE') {
         # easily findable index for cells which should not be filled (i.e., there is no "to unimodal connectivity" for the only unimodal networks at any scale)
         avg_bw_agecor<-999
@@ -801,7 +833,7 @@ for (i in 1:2){
     # get average bw network connectivty age correlation for this network at this scale
       both=cbind(masterdf[,match_NetN_scaleK_bw_indivi_cols_ind],masterdf[,unmatch_NetN_scaleK_bw_indivi_cols_ind, drop=F])
       avg_bw=rowMeans(both)
-      avg_bw_coarse_agecor<-cor.test(avg_bw,masterdf$ageAtScan1)[4]
+      avg_bw_coarse_agecor<-corEstVec(avg_bw)
       bwAgeCorVecs[Nind,3]=unlist(avg_bw_coarse_agecor)
     }
     # Print out ratio of transmodal to unimodal at this scale
@@ -825,24 +857,21 @@ colnames(bwAgeCorVecs)<-c('bw_to_unimodal','bw_to_transmodal','avg_bw','K','N')
 length(indiv_scalebynet_df)
 bwdf<-data.frame(tmvec,scalesvec,domnetvec,netpropvec,bwAgeCorVecs$avg_bw,bwAgeCorVecs$bw_to_unimodal,bwAgeCorVecs$bw_to_transmodal)
 
-# range of interest until we work out K=2 and K=3
-indofint<-6:464
-
 
 # avg b/w
-avgbw_age_tm<-ggplot(bwdf[indofint,],aes(tmvec,bwAgeCorVecs.avg_bw,color=domnetvec,alpha=netpropvec^2)) + geom_point(size=6)+ scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068')) + xlab("Transmodality") + ylab("AgeBWCor") +theme_classic(base_size = 28) + ggtitle('Correlation of B/w con avg and Age over All Networks') + ylim(-.5,.5)
+avgbw_age_tm<-ggplot(bwdf,aes(tmvec,bwAgeCorVecs.avg_bw,color=domnetvec,alpha=netpropvec^2)) + geom_point(size=6)+ scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068')) + xlab("Transmodality") + ylab("AgeBWCor") +theme_classic(base_size = 28) + ggtitle('Correlation of B/w con avg and Age over All Networks') + ylim(-.5,.5)
 
-avgbw_age_scale<-ggplot(bwdf[indofint,],aes(tmvec,bwAgeCorVecs.avg_bw,color=scalesvec)) + geom_point(size=6) + xlab("Transmodality") + ylab("AgeBWCor")+theme_classic(base_size = 28)+ ylim(-.5,.5)
+avgbw_age_scale<-ggplot(bwdf,aes(tmvec,bwAgeCorVecs.avg_bw,color=scalesvec)) + geom_point(size=6) + xlab("Transmodality") + ylab("AgeBWCor")+theme_classic(base_size = 28)+ ylim(-.5,.5)
 
 # b/w to unimodal
-unibw_age_tm<-ggplot(bwdf[indofint,],aes(tmvec,bwAgeCorVecs.bw_to_unimodal,color=domnetvec,alpha=netpropvec^2)) + geom_point(size=6)+ scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068')) + xlab("Transmodality") + ylab("AgeBWUCor") +theme_classic(base_size = 28) + ggtitle('Correlation of B/w unimodal con and Age over All Networks')+ ylim(-.5,.5)
+unibw_age_tm<-ggplot(bwdf,aes(tmvec,bwAgeCorVecs.bw_to_unimodal,color=domnetvec,alpha=netpropvec^2)) + geom_point(size=6)+ scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068')) + xlab("Transmodality") + ylab("AgeBWUCor") +theme_classic(base_size = 28) + ggtitle('Correlation of B/w unimodal con and Age over All Networks')+ ylim(-.5,.5)
 
-unibw_age_scale<-ggplot(bwdf[indofint,],aes(tmvec,bwAgeCorVecs.bw_to_unimodal,color=scalesvec)) + geom_point(size=6) + xlab("Transmodality") + ylab("AgeBWUCor")+theme_classic(base_size = 28)+ ylim(-.5,.5)
+unibw_age_scale<-ggplot(bwdf,aes(tmvec,bwAgeCorVecs.bw_to_unimodal,color=scalesvec)) + geom_point(size=6) + xlab("Transmodality") + ylab("AgeBWUCor")+theme_classic(base_size = 28)+ ylim(-.5,.5)
 
 # b/w to transmodal
-transbw_age_tm<-ggplot(bwdf[indofint,],aes(tmvec,bwAgeCorVecs.bw_to_transmodal,color=domnetvec,alpha=netpropvec^2)) + geom_point(size=6)+ scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068')) + xlab("Transmodality") + ylab("AgeBWTCor") +theme_classic(base_size = 28) + ggtitle('Correlation of B/w transmodal con and Age over All Networks')+ ylim(-.5,.5)
+transbw_age_tm<-ggplot(bwdf,aes(tmvec,bwAgeCorVecs.bw_to_transmodal,color=domnetvec,alpha=netpropvec^2)) + geom_point(size=6)+ scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068')) + xlab("Transmodality") + ylab("AgeBWTCor") +theme_classic(base_size = 28) + ggtitle('Correlation of B/w transmodal con and Age over All Networks')+ ylim(-.5,.5)
 
-transbw_age_scale<-ggplot(bwdf[indofint,],aes(tmvec,bwAgeCorVecs.bw_to_transmodal,color=scalesvec)) + geom_point(size=6) + xlab("Transmodality") + ylab("AgeBWTCor")+theme_classic(base_size = 28)+ ylim(-.5,.5)
+transbw_age_scale<-ggplot(bwdf,aes(tmvec,bwAgeCorVecs.bw_to_transmodal,color=scalesvec)) + geom_point(size=6) + xlab("Transmodality") + ylab("AgeBWTCor")+theme_classic(base_size = 28)+ ylim(-.5,.5)
 
 ggarrange(avgbw_age_tm,unibw_age_tm,transbw_age_tm,avgbw_age_scale,unibw_age_scale,transbw_age_scale)
 ```
@@ -922,15 +951,22 @@ indiv_nsegcols_ind<-intersect(nsegcols,indiv)
 gro_nsegcols_ind<-intersect(nsegcols,group)
 
 # functions to write out the corvec estimates for matlab-based viz
-corEstVecNsave<-function(x,K,vecIn){
-  corest<-cor.test(x,masterdf$ageAtScan1)[4]
-  val<-unlist(corest)
-  append(vecIn,val)
+pcorEstVecNsave<-function(x,K,vecIn){
+  # relevant df
+  scaledf<-cbind(as.numeric(masterdf$Age),as.numeric(masterdf$Sex),masterdf$Motion,x)
+  # partial spearmans to extrac age relation
+  pspear=pcor(scaledf,method='spearman')$estimate
+  corest<-unlist(pspear[4])
+  append(vecIn,corest)
 }
-corEstVec_EFNsave<-function(x,K,vecIn){
-  corest<-cor.test(x,masterdf$F1_Exec_Comp_Cog_Accuracy)[4]
-  val<-unlist(corest)
-  append(vecIn,val)
+
+pcorEstVec_EFNsave<-function(x,K,vecIn){
+  # relevant df
+  scaledf<-cbind(as.numeric(masteref$F1_Exec_Comp_Cog_Accuracy),as.numeric(masteref$Sex),masteref$Motion,x)
+  # partial spearmans to extrac age relation
+  pspear=pcor(scaledf,method='spearman')$estimate
+  corest<-unlist(pspear[4])
+  append(vecIn,corest)
 }
 
 # get residuals (constant over loops)
@@ -942,31 +978,14 @@ for (i in 2:30){
   # just individualized for now
   # reads in vector of segreg vals aligned with age vals and scale 
   vec_age<-NULL
-  vec_age<-lapply(masterdf[,intersect(indiv_nsegcols_ind,scaleind)],corEstVecNsave,K=i,vecIn=vec_age)
+  vec_age<-lapply(masterdf[,intersect(indiv_nsegcols_ind,scaleind)],pcorEstVecNsave,K=i,vecIn=vec_age)
   vecfp_Age<-paste('/cbica/projects/pinesParcels/results/EffectVecs/',as.character(i),'_Age.csv',sep='')
   write.table(as.numeric(vec_age),vecfp_Age,row.names = F,col.names = F,sep = ',')
   vec_ef<-NULL
-  vec_ef<-lapply(masterdf[,intersect(indiv_nsegcols_ind,scaleind)],corEstVec_EFNsave,K=i,vecIn=vec_ef)
+  vec_ef<-lapply(masteref[,intersect(indiv_nsegcols_ind,scaleind)],pcorEstVec_EFNsave,K=i,vecIn=vec_ef)
   vecfp_EF<-paste('/cbica/projects/pinesParcels/results/EffectVecs/',as.character(i),'_EF.csv',sep='')
   write.table(as.numeric(vec_ef),vecfp_EF,row.names = F,col.names = F,sep = ',')
 }
-
-
-indiv_scalebynet_df<-masterdf[,indiv_nsegcols_ind]
-# isolate scales
-scale2ind=grep('seg_scale2_net',colnames(masterdf))
-scale16ind=grep('seg_scale16_net',colnames(masterdf))
-scale25ind=grep('seg_scale25_net',colnames(masterdf))
-
-# eval age assoc w/ segreg at each scale
-corVecEst_2<-as.numeric(lapply(masterdf[,intersect(gro_nsegcols_ind,scale2ind)],corEstVec))
-corVecEst_16<-as.numeric(lapply(masterdf[,intersect(indiv_nsegcols_ind,scale16ind)],corEstVec))
-corVecEst_25<-as.numeric(lapply(masterdf[,intersect(indiv_nsegcols_ind,scale25ind)],corEstVec))
-corVecEst_2_EF<-as.numeric(lapply(masterdf[,intersect(gro_nsegcols_ind,scale2ind)],corEstVec_EF))
-corVecEst_16_EF<-as.numeric(lapply(masterdf[,intersect(indiv_nsegcols_ind,scale16ind)],corEstVec_EF))
-corVecEst_25_EF<-as.numeric(lapply(masterdf[,intersect(indiv_nsegcols_ind,scale25ind)],corEstVec_EF))
-
-
 
 # Write em out as matlab readable vectors (K: N1est N2est ... Nnest)
 
@@ -989,8 +1008,16 @@ tmpexcl<-graddmcor[graddmcor[,2]<0.35,1]
 #86690  88190  88859  89063  89534  96201  98879
 tempexclind<-which(tmpexcl %in% merged_df$bblid)
 merged_df_tmpexcl=merged_df[-c(tempexclind),]
-testfordmseg<-merge(merged_df_tmpexcl, f , by="Subjects")
+colnames(merged_df_tmpexcl)[1]<-"Subjects"
 masterdf$Subjects<-as.factor(masterdf$Subjects)
-merged_df_tmpexcl$Subjects<-as.factor(merged_df_tmpexcl$Subjects)
+testfordmseg<-merge(merged_df_tmpexcl, masterdf, by="Subjects")
 ```
+
+```{r}
+# long df
+long_precursor<-data.frame(masterdf$bblid,masterdf$Age,masterdf$Sex,masterdf$Motion,masterdf[,indiv_nsegcols_ind])
+melt_long<-melt(long_precursor,id=c(1,2,3,4))
+tmvecRepped<-rep(tmvec,each=693)
+melt_long$transmodality<-tmvecRepped
+saveRDS(melt_long,file = '~/Desktop/Long_bblidAgeSexMotionSegreg.rds')
 ```
