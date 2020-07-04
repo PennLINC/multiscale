@@ -11,6 +11,7 @@ library(ggplot2)
 library(reshape2)
 library(dplyr)
 library(ggpubr)
+library(vroom)
 library(data.table)
 library(mgcv)
 library(ggpointdensity)
@@ -144,28 +145,33 @@ ggarrange(tc,ni,dif,rc)
 ```{r}
 # load in FC features (takes about 3 minutes) - original file - not loaded in anymore because it tooks forever and new version is just rounded digits to a few decimal places
 
-#fc<-vroom('/cbica/projects/pinesParcels/results/aggregated_data/fc/master_fcfeats.csv')
+###fc<-vroom('/cbica/projects/pinesParcels/results/aggregated_data/fc/master_fcfeats.csv')
+
 #######oldfc<-vroom('/cbica/projects/pinesParcels/results/aggregated_data/fc/master_fcfeats_old.csv')
 ####### indicates it was part of (passed) check if new fc selectively replaced K=3 - can reactivate for further confirm
-fc<-fread('/cbica/projects/pinesParcels/results/aggregated_data/fc/master_fcfeats.csv')
+#fc<-fread('/cbica/projects/pinesParcels/results/aggregated_data/fc/master_fcfeats.csv')
 # set colnames to matlab-printed colnames
-colnames(fc)<-unlist(fc[1,])
+###colnames(fc)<-unlist(fc[1,])
 #######colnames(oldfc)<-oldfc[1,]
 # aaaand remove it
-fc<-fc[-c(1),]
+###fc<-fc[-c(1),]
 #######oldfc<-oldfc[-c(1),]
 
-fc<-data.frame(fc)
+#fc<-data.frame(fc)
 
 # round ridiculous number of decimal points
-fc[] <- lapply(fc, function(x) {
-  if(is.character(x)) round(as.numeric(as.character(x)),digits=3) else x
-})
+###fc[] <- lapply(fc, function(x) {
+###  if(is.character(x)) round(as.numeric(as.character(x)),digits=3) else x
+###})
 #######oldfc[] <- lapply(oldfc, function(x) {
 #######  if(is.character(x)) round(as.numeric(as.character(x)),digits=3) else x
 #######})
 
+# trying to re-write the rounded version again
+###write.csv(fc,'/cbica/projects/pinesParcels/results/aggregated_data/fc/master_fcfeats_rounded.csv')
 
+### it's rounded now bb
+fc<-vroom('/cbica/projects/pinesParcels/results/aggregated_data/fc/master_fcfeats_rounded.csv')
 
 # Baal knows why vroom needs more size for the rounded version
 #Sys.setenv("VROOM_CONNECTION_SIZE" = 2000000)
@@ -885,30 +891,22 @@ group_scalebynet_df<-masterdf[,gro_wincols_ind]
 length(group_scalebynet_df)
 
 
-confvecupper<-as.numeric(lapply(masterdf[,gro_wincols_ind],corconfinfvecupper))
-confveclower<-as.numeric(lapply(masterdf[,gro_wincols_ind],corconfinfveclower))
+#confvecupper<-as.numeric(lapply(masterdf[,gro_wincols_ind],corconfinfvecupper))
+#confveclower<-as.numeric(lapply(masterdf[,gro_wincols_ind],corconfinfveclower))
 corVecEst<-as.numeric(lapply(masterdf[,gro_wincols_ind],corEstVec))
-confveclower_d<-data.frame(tmvec,confveclower,scalesvec,domnetvec,netpropvec,corVecEst)
-confvecupper_d<-data.frame(tmvec,confvecupper,scalesvec,domnetvec,netpropvec,corVecEst)
-confvecdf<-data.frame(confveclower_d = confveclower_d, confvecupper_d  = confvecupper_d)
+#confveclower_d<-data.frame(tmvec,confveclower,scalesvec,domnetvec,netpropvec,corVecEst)
+#confvecupper_d<-data.frame(tmvec,confvecupper,scalesvec,domnetvec,netpropvec,corVecEst)
+GWin_plotdf<-data.frame(tmvec,scalesvec,domnetvec,netpropvec,corVecEst)
 
 # augment dataframe for CI range plot
 CIgroupingInd<-as.factor(1:464)
-confveclower_d[,7]<-CIgroupingInd
-confvecupper_d[,7]<-CIgroupingInd
 #corVecEst_d[,6]<-CIgroupingInd
-colnames(confveclower_d)[2]<-"CIbounds"
-colnames(confvecupper_d)[2]<-"CIbounds"
-gro_win_CIplotdf<-data.frame(rbind(confveclower_d,confvecupper_d))
-# range of interest until we work out K=2 and K=3
-indofint<-6:464
-indofint<-append(indofint,(470:928))
 
 # plot it
-Win_age_tm_gro<-ggplot(gro_win_CIplotdf[indofint,],aes(tmvec,CIbounds,color=domnetvec,alpha=netpropvec^2,group=V7)) + geom_line(size=1) + scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068')) + xlab("Transmodality") + ylab("AgeWithinCor") +theme_classic(base_size = 28) + geom_point(size=4,aes(tmvec,corVecEst)) + ggtitle('Correlation of Within Connectivity and Age over All Networks (GRO)')+ ylim(-.5,.5)
+Win_age_tm_gro<-ggplot(GWin_plotdf,aes(tmvec,corVecEst,color=domnetvec,alpha=netpropvec^2)) + scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068')) + xlab("Transmodality") + ylab("AgeWithinCor") +theme_classic(base_size = 28) + geom_point(size=4,aes(tmvec,corVecEst)) + ggtitle('Correlation of Within Connectivity and Age over All Networks (GRO)')+ ylim(-.5,.5)
 
 # check for scale-specific effects
-Win_age_scale_gro<-ggplot(gro_win_CIplotdf[indofint,],aes(tmvec,corVecEst,color=scalesvec)) + geom_point(size=4) + xlab("Transmodality") + ylab("AgeSegregCor")+theme_classic(base_size = 28)+ ylim(-.5,.5)
+Win_age_scale_gro<-ggplot(GWin_plotdf,aes(tmvec,corVecEst,color=scalesvec)) + geom_point(size=4) + xlab("Transmodality") + ylab("AgeSegregCor")+theme_classic(base_size = 28)+ ylim(-.5,.5)
 
 # pull out scale x network segregation for individualized maps
 gro_nsegcols_ind<-intersect(nsegcols,group)
@@ -916,37 +914,38 @@ gro_scalebynet_df<-masterdf[,gro_nsegcols_ind]
 # ensure 464 length (number of scale by net features)
 length(gro_scalebynet_df)
 
-confvecupper<-as.numeric(lapply(masterdf[,gro_nsegcols_ind],corconfinfvecupper))
-confveclower<-as.numeric(lapply(masterdf[,gro_nsegcols_ind],corconfinfveclower))
 corVecEst<-as.numeric(lapply(masterdf[,gro_nsegcols_ind],corEstVec))
 
-confveclower_d<-data.frame(tmvec,confveclower,scalesvec,domnetvec,netpropvec,corVecEst)
-confvecupper_d<-data.frame(tmvec,confvecupper,scalesvec,domnetvec,netpropvec,corVecEst)
-confvecdf<-data.frame(confveclower_d = confveclower_d, confvecupper_d  = confvecupper_d)
+GSeg_plotdf<-data.frame(tmvec,scalesvec,domnetvec,netpropvec,corVecEst)
 
-# augment dataframe for CI range plot
-CIgroupingInd<-as.factor(1:464)
-confveclower_d[,7]<-CIgroupingInd
-confvecupper_d[,7]<-CIgroupingInd
-#corVecEst_d[,6]<-CIgroupingInd
-colnames(confveclower_d)[2]<-"CIbounds"
-colnames(confvecupper_d)[2]<-"CIbounds"
-gro_seg_CIplotdf<-data.frame(rbind(confveclower_d,confvecupper_d))
-# range of interest until we work out K=2 and K=3
-indofint<-6:464
-indofint<-append(indofint,(470:928))
+Segreg_age_tm_gro<-ggplot(GSeg_plotdf,aes(tmvec,corVecEst,color=domnetvec,alpha=netpropvec^2)) + scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068')) + xlab("Transmodality") + ylab("AgeSegregCor") +theme_classic(base_size = 28) + geom_point(size=4,aes(tmvec,corVecEst)) + ggtitle('Correlation of Segregation and Age over All Networks (GRO)')+ ylim(-.5,.5)
 
-
-Segreg_age_tm_gro<-ggplot(gro_seg_CIplotdf[indofint,],aes(tmvec,CIbounds,color=domnetvec,alpha=netpropvec^2,group=V7)) + geom_line(size=1) + scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068')) + xlab("Transmodality") + ylab("AgeSegregCor") +theme_classic(base_size = 28) + geom_point(size=4,aes(tmvec,corVecEst)) + ggtitle('Correlation of Segregation and Age over All Networks (GRO)')+ ylim(-.5,.5)
-
-Segreg_age_scale_gro<-ggplot(gro_seg_CIplotdf[indofint,],aes(tmvec,corVecEst,color=scalesvec)) + geom_point(size=4) + xlab("Transmodality") + ylab("AgeSegregCor")+theme_classic(base_size = 28)+ ylim(-.5,.5)
+Segreg_age_scale_gro<-ggplot(GSeg_plotdf,aes(tmvec,corVecEst,color=scalesvec)) + geom_point(size=4) + xlab("Transmodality") + ylab("AgeSegregCor")+theme_classic(base_size = 28)+ ylim(-.5,.5)
 
 
 ggarrange(Segreg_age_tm_gro,Segreg_age_scale_gro,Win_age_tm_gro,Win_age_scale_gro)
 ```
 
 ```{r}
-# get the gang together
+# Segregation controlling for between-to-unimodal connectivity
+
+# functions to control for covariates in linear model framework 
+#BetWeen UniModal Control
+lmEstVecBWUMC<-function(x,foursixfourindex){
+  # extract corresponding between network connectivity
+  bwAgeCorVecs$
+  # relevant df
+  scaledf<-cbind(as.numeric(masterdf$Age),as.numeric(masterdf$Sex),masterdf$Motion,x)
+  # partial spearmans to extrac age relation
+  pspear=pcor(scaledf,method='spearman')$estimate
+  corest<-unlist(pspear[4])
+  append(vecIn,corest)
+}
+
+```
+
+```{r}
+# get the gang together (write out vectors of network metric effect relations)
 indiv_nsegcols_ind<-intersect(nsegcols,indiv)
 gro_nsegcols_ind<-intersect(nsegcols,group)
 
@@ -1006,11 +1005,16 @@ graddmcor<-read.csv('/cbica/projects/pinesParcels/results/aggregated_data/Spatia
 tmpexcl<-graddmcor[graddmcor[,2]<0.35,1]
 #100869 106154 107929 109577 110166 110354 118807 120922 121017 122352 122669 127305 130121 130332 131747  80537  83207
 #86690  88190  88859  89063  89534  96201  98879
+colnames(graddmcor)[1]<-"bblid"
+
+# make sure Subjects columns are set to same variable class if this doesn't run
+testfordmseg<-merge(masterdf,graddmcor,by="bblid")
+
 tempexclind<-which(tmpexcl %in% merged_df$bblid)
-merged_df_tmpexcl=merged_df[-c(tempexclind),]
-colnames(merged_df_tmpexcl)[1]<-"Subjects"
-masterdf$Subjects<-as.factor(masterdf$Subjects)
-testfordmseg<-merge(merged_df_tmpexcl, masterdf, by="Subjects")
+merged_df_tmpexcl=testfordmseg[-c(tempexclind),]
+
+plot(merged_df_tmpexcl$V2)
+
 ```
 
 ```{r}
@@ -1018,6 +1022,8 @@ testfordmseg<-merge(merged_df_tmpexcl, masterdf, by="Subjects")
 long_precursor<-data.frame(masterdf$bblid,masterdf$Age,masterdf$Sex,masterdf$Motion,masterdf[,indiv_nsegcols_ind])
 melt_long<-melt(long_precursor,id=c(1,2,3,4))
 tmvecRepped<-rep(tmvec,each=693)
+domnetvecRepped<-rep(domnetvec,each=693)
 melt_long$transmodality<-tmvecRepped
+melt_long$dominantYeo<-domnetvecRepped
 saveRDS(melt_long,file = '~/Desktop/Long_bblidAgeSexMotionSegreg.rds')
 ```
