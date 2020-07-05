@@ -1027,3 +1027,22 @@ melt_long$transmodality<-tmvecRepped
 melt_long$dominantYeo<-domnetvecRepped
 saveRDS(melt_long,file = '~/Desktop/Long_bblidAgeSexMotionSegreg.rds')
 ```
+
+```{r}
+# patch nums per subj
+subjPatchNums<-read.csv('/cbica/projects/pinesParcels/results/aggregated_data/SubjPatchNums.csv',skip = 1)
+patchByAgeDf<-merge(subjPatchNums,demo,by='bblid')
+patchAgecorVec<-rep(0,464)
+for (i in 1:464){
+  #print(paste(colnames(patchByAgeDf)[i+1]))
+  a=cor.test(patchByAgeDf[,i+1],patchByAgeDf$ageAtScan1)
+  patchAgecorVec[i]=a$estimate
+}
+
+confvecdf<-data.frame(tmvec,scalesvec,domnetvec,netpropvec,patchAgecorVec)
+ggplot(confvecdf,aes(tmvec,patchAgecorVec,color=domnetvec,alpha=netpropvec^2)) + scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068')) + xlab("Transmodality") + ylab("AgePatchNumCor") +theme_classic(base_size = 28) + geom_point(size=4,aes(tmvec,patchAgecorVec)) + ggtitle('Correlation of Total Patch Number and Age over All Communities')+ ylim(-.5,.5)+
+    geom_hline(aes(yintercept=.098), linetype="dashed", col='#55185D',size=2.5) +
+    geom_hline(aes(yintercept=-.098), linetype="dashed", col='#55185D',size=2.5) +
+    geom_hline(aes(yintercept=.125), linetype="dashed", col='#ECB602',size=2.5)+
+    geom_hline(aes(yintercept=-.125), linetype="dashed", col='#ECB602',size=2.5)
+```
