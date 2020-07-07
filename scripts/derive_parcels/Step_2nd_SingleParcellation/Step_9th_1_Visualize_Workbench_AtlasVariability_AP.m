@@ -138,7 +138,7 @@ V_rh = gifti;
 V_rh.cdata = VariabilityLabel_rh';
 V_rh_File = [Variability_Visualize_Folder '/VariabilityLabel_Scale' num2str(K) '_rh.func.gii'];
 save(V_rh, V_rh_File);
-cmd = ['wb_command -cifti-create-dense-scalar ' Variability_Visualize_Folder '/VariabilityLabel' ...
+cmd = ['wb_command -cifti-create-dense-scalar ' Variability_Visualize_Folder '/VariabilityLabel_Scale' num2str(K) ...
        '.dscalar.nii -left-metric ' V_lh_File ' -right-metric ' V_rh_File];
 system(cmd);
 system(['rm -rf ' V_lh_File ' ' V_rh_File]);
