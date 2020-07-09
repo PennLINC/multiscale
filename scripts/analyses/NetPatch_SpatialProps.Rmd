@@ -224,7 +224,7 @@ Seg_CIplotdf$Patch_GeoDisperse<-piGD$nwise_geods
 Seg_CIplotdf$Patch_EucDisperse<-piED$nwise_eucs
 Seg_CIplotdf$Patch_Disperse<-Seg_CIplotdf$Patch_GeoDisperse+Seg_CIplotdf$Tot_patchnum
 
-ggplot(Seg_CIplotdf,aes(Patch_Disperse,CIbounds,color=domnetvec,alpha=netpropvec^2,group=V7)) + geom_line(size=1) + scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068')) + xlab("Geodesic dispersion") + ylab("AgeSegregCor") +theme_classic(base_size = 28) + geom_point(size=4,aes(Patch_Disperse,corVecEst)) + ggtitle('Correlation of Network Segregation and Age over All Networks')+ ylim(-.5,.5)
+ggplot(Seg_CIplotdf,aes(Patch_GeoDisperse,CIbounds,color=domnetvec,alpha=netpropvec^2,group=V7)) + scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068')) + xlab("Geodesic dispersion") + ylab("AgeSegregCor") +theme_classic(base_size = 28) + geom_point(size=6,aes(Patch_GeoDisperse,corVecEst)) + ggtitle('Correlation of Network Segregation and Age over All Networks')+ ylim(-.5,.5)
 
 ggplot(Seg_CIplotdf,aes(Tot_patchnum,Patch_GeoDisperse,color=domnetvec,alpha=netpropvec^2,group=V7)) + geom_point(size=4,aes(Tot_patchnum,Patch_GeoDisperse))+ scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068')) + xlab("Total Number of Patches") + ylab("Geodesic Dispersion") +theme_classic(base_size = 28)
 

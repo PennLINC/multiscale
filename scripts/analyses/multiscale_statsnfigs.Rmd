@@ -145,27 +145,27 @@ ggarrange(tc,ni,dif,rc)
 ```{r}
 # load in FC features (takes about 3 minutes) - original file - not loaded in anymore because it tooks forever and new version is just rounded digits to a few decimal places
 
-###fc<-vroom('/cbica/projects/pinesParcels/results/aggregated_data/fc/master_fcfeats.csv')
+#fc<-vroom('/cbica/projects/pinesParcels/results/aggregated_data/fc/master_fcfeats.csv')
 
-#######oldfc<-vroom('/cbica/projects/pinesParcels/results/aggregated_data/fc/master_fcfeats_old.csv')
+#oldfc<-vroom('/cbica/projects/pinesParcels/results/aggregated_data/fc/master_fcfeats_old.csv')
 ####### indicates it was part of (passed) check if new fc selectively replaced K=3 - can reactivate for further confirm
 #fc<-fread('/cbica/projects/pinesParcels/results/aggregated_data/fc/master_fcfeats.csv')
 # set colnames to matlab-printed colnames
-###colnames(fc)<-unlist(fc[1,])
-#######colnames(oldfc)<-oldfc[1,]
+#colnames(fc)<-unlist(fc[1,])
+#colnames(oldfc)<-oldfc[1,]
 # aaaand remove it
-###fc<-fc[-c(1),]
-#######oldfc<-oldfc[-c(1),]
+#fc<-fc[-c(1),]
+#oldfc<-oldfc[-c(1),]
 
 #fc<-data.frame(fc)
 
 # round ridiculous number of decimal points
-###fc[] <- lapply(fc, function(x) {
-###  if(is.character(x)) round(as.numeric(as.character(x)),digits=3) else x
-###})
-#######oldfc[] <- lapply(oldfc, function(x) {
-#######  if(is.character(x)) round(as.numeric(as.character(x)),digits=3) else x
-#######})
+#fc[] <- lapply(fc, function(x) {
+#  if(is.character(x)) round(as.numeric(as.character(x)),digits=3) else x
+#})
+#oldfc[] <- lapply(oldfc, function(x) {
+#  if(is.character(x)) round(as.numeric(as.character(x)),digits=3) else x
+#})
 
 # trying to re-write the rounded version again
 ###write.csv(fc,'/cbica/projects/pinesParcels/results/aggregated_data/fc/master_fcfeats_rounded.csv')
@@ -173,14 +173,12 @@ ggarrange(tc,ni,dif,rc)
 ### it's rounded now bb
 fc<-vroom('/cbica/projects/pinesParcels/results/aggregated_data/fc/master_fcfeats_rounded.csv')
 
-# Baal knows why vroom needs more size for the rounded version
-#Sys.setenv("VROOM_CONNECTION_SIZE" = 2000000)
-#fc<-read.delim('/cbica/projects/pinesParcels/results/aggregated_data/fc/master_fcfeats_rounded.csv')
+# take out row number row
+fc<-fc[-c(1)]
+
 # isolate shams (although merge should take them out later)
 shams<-fc[694:695,]
 
-### merge FC with subj info
-colnames(fc)[1]<-'bblid'
 # AGE
 masterdf<-merge(fc,df,by='bblid')
 
@@ -662,8 +660,202 @@ Segreg_age_scale_x<-ggplot(Seg_plotdf,aes(scalesvec,corVecEst,color=tmvec,alpha=
 
 ggarrange(Segreg_age_tm,Segreg_age_scale,Win_age_tm,Win_age_scale)
 
+```
 
-### adding in number of patches dimension next
+```{r}
+# long df
+long_precursor<-data.frame(masterdf$bblid,masterdf$Age,masterdf$Sex,masterdf$Motion,masterdf[,indiv_nsegcols_ind])
+melt_long<-melt(long_precursor,id=c(1,2,3,4))
+tmvecRepped<-rep(tmvec,each=693)
+domnetvecRepped<-rep(domnetvec,each=693)
+melt_long$transmodality<-tmvecRepped
+melt_long$dominantYeo<-domnetvecRepped
+saveRDS(melt_long,file = '~/Desktop/Long_bblidAgeSexMotionSegreg.rds')
+```
+
+
+```{r}
+# delineate age trajectories of every net.
+library(gratia)
+library(dplyr)
+library(svglite)
+library(cowplot)
+
+covariates=" ~s(Age,k=4)+Sex+Motion"   
+
+minAgeEst<-rep(0,length=length(masterdf[,indiv_nsegcols_ind]))
+maxAgeEst<-rep(0,length=length(masterdf[,indiv_nsegcols_ind]))
+
+derivInfo<-array(0,dim=c(464,200))
+                  
+#for i in 464
+for (i in 1:length(masterdf[,indiv_nsegcols_ind])){
+  x<-colnames(masterdf[,indiv_nsegcols_ind][i])
+  form<-as.formula(paste("",x,"", covariates, sep=""))
+  igam<-gam(formula = form,data=masterdf)
+  derv<-derivatives(igam,term='Age')
+  derv<- derv %>%
+  mutate(sig = !(0 >lower & 0 < upper))
+  derv$sig_deriv = derv$derivative*derv$sig
+  print(x)
+  if (all(derv$sig==FALSE)){minAgeEst[i]=0; maxAgeEst[i]=0}
+  else {
+  minAgeEst[i]<-min(derv$data[derv$sig==T])
+  maxAgeEst[i]<-max(derv$data[derv$sig==T])
+  derivInfo[i,]=derv$derivative
+  }
+  cat(sprintf("\nSig change: %1.2f - %1.2f\n",minAgeEst[i],maxAgeEst[i]))
+}
+
+# years format
+minAgeEst<-minAgeEst/12
+maxAgeEst<-maxAgeEst/12
+
+CIgroupingInd<-as.factor(1:464)
+
+# x=age y=TM, span = range
+AgeSpan_plotdf_MinAge<-data.frame(tmvec,scalesvec,domnetvec,corVecEst,netpropvec,minAgeEst,CIgroupingInd)
+
+AgeSpan_plotdf_MaxAge<-data.frame(tmvec,scalesvec,domnetvec,corVecEst,netpropvec,maxAgeEst,CIgroupingInd)
+
+colnames(AgeSpan_plotdf_MinAge)[6]<-"AgeBounds"
+colnames(AgeSpan_plotdf_MaxAge)[6]<-"AgeBounds"
+
+AgeSpan_plotdf<-data.frame(rbind(AgeSpan_plotdf_MinAge,AgeSpan_plotdf_MaxAge))
+
+ggplot(AgeSpan_plotdf,aes(AgeBounds,corVecEst,color=domnetvec,group=CIgroupingInd)) +geom_line(size=1) +labs(title='Age Effect Span', x = 'Span of Spline Deriv 95% CI ~= 0', y = 'AgeSegregEst') +theme_classic(base_size = 28)+ xlim(c(8,23))+ scale_color_manual(name="Predominant \nOverlapping \nYeo7 Network",values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068'))
+
+ggplot(AgeSpan_plotdf,aes(AgeBounds,corVecEst,color=scalesvec,group=CIgroupingInd)) +geom_line(size=1) +labs(title='Age Effect Span', x = 'Span of Spline Deriv 95% CI ~= 0', y = 'AgeSegregEst') +theme_classic(base_size = 28)+ xlim(c(8,23))
+
+
+##### This is to plot the deriv as color on the linespan plot
+
+#convert to years for more interpretable slope
+derivInfoYears<-derivInfo*12
+
+# average over bins of 20 to get 10 deriv values for each network
+derivInfoBins<-array(0,dim=c(464,10))
+for (n in 1:464){
+for (i in 1:10){
+  # ((i*29)-20):(i*20) is the range to average over
+  avgDeriv<-mean(derivInfoYears[n,((i*20)-19):(i*20)])
+  derivInfoBins[n,i]<-avgDeriv
+}
+}
+
+# need to split span into 10 to map on derivs to 1/10th of span
+dimInfo<-dim(AgeSpan_plotdf)
+allmins<-AgeSpan_plotdf$AgeBounds[1:(dimInfo[1]/2)]
+allmaxes<-AgeSpan_plotdf$AgeBounds[((dimInfo[1]/2)+1):dimInfo[1]]
+all_ageEffect_Widths<-(allmaxes-allmins)
+
+# make 10 x 464 length vector of 1/10th age spans
+# for example, if network one has an age effect span of 5 years (9-14 y.o.), split up into 9-9.5,9.5-10,10-10.5...13.5-14
+
+fullbounds<-AgeSpan_plotdf$AgeBounds
+TenBinsBounds<-array(0,dim=c(464*10,1))
+for (i in 1:10){
+  # Ten Bins Bounds contain the discrete length that each derivative should be painted onto a line segment for - this needs to be combined to start at where the age onset effect starts
+  TenBinsBounds[((i*464)-463):(i*464)]<-((all_ageEffect_Widths/10)*i)+minAgeEst
+}
+
+
+
+
+# Make very long deriv spanning plot with dumb code
+VL_derivInfo<-data.frame(rbind(AgeSpan_plotdf,AgeSpan_plotdf,AgeSpan_plotdf,AgeSpan_plotdf,AgeSpan_plotdf,AgeSpan_plotdf,AgeSpan_plotdf,AgeSpan_plotdf,AgeSpan_plotdf,AgeSpan_plotdf))
+
+# same dumb shit for deriv
+derivStack<-c(derivInfoBins[,1],derivInfoBins[,2],derivInfoBins[,3],derivInfoBins[,4],derivInfoBins[,5],derivInfoBins[,6],derivInfoBins[,7],derivInfoBins[,8],derivInfoBins[,9],derivInfoBins[,10])
+
+# set derivative for coloring
+for (i in 1:10){
+  VL_derivInfo$deriv[((i*464)-463):(i*464)]<-derivInfoBins[,i]
+}
+
+# set corresponding 10ths of line segments to be colored by 10-wise deriv chunking
+VL_derivInfo$AgeBounds<-rbind(TenBinsBounds,TenBinsBounds)
+VL_derivInfo$deriv<-c(derivStack,derivStack)
+#+ scale_colour_gradient(low="#55185D", high="#ECB602")
+
+a<-ggplot(VL_derivInfo,aes(AgeBounds,tmvec,color=deriv,group=CIgroupingInd)) +geom_line(size=3) +labs(title='Slope of Segreg-Age Relation Over Age Range', x = 'Span of Spline Deriv 95% CI ~= 0', y = 'Transmodality') +theme_classic(base_size = 28)+ xlim(c(8,23))+ scale_colour_gradientn(colours=c('white','blue','red','white'),values = c(0,.22,.32,1))
+
+b<-ggplot(VL_derivInfo[1:4640,],aes(AgeBounds,corVecEst,color=deriv,group=CIgroupingInd)) +geom_line(size=3) +labs(title='Slope of Segreg-Age Relation Over Age Range', x = 'Span of Spline Deriv 95% CI ~= 0', y = 'Age Segregation Effect') +theme_classic(base_size = 28)+ xlim(c(8,23))+ scale_colour_gradientn(colours=c('white','blue','red','white'),values = c(0,.22,.32,1))
+
+# C is going to be with an exaggerated deriv slope to see if segments are changing
+VL_derivInfo$deriv<-VL_derivInfo$deriv*2000
+VL_derivInfo$deriv<-VL_derivInfo$deriv^3
+
+c<-ggplot(VL_derivInfo,aes(AgeBounds,tmvec,color=deriv,group=CIgroupingInd)) +geom_line(size=3) +labs(title='Slope of Segreg-Age Relation Over Age Range', x = 'Span of Spline Deriv 95% CI ~= 0', y = 'Transmodality') +theme_classic(base_size = 28)+ xlim(c(8,23))+ scale_colour_gradientn(colours=c('red','white','white','blue'),values = c(0,.22,.32,1))
+ggarrange(a,b,c,nrow = 1)
+```
+
+```{r}
+font_size=20
+
+
+
+get_derivs_and_plot <- function(modobj,smooth_var,low_color=NULL,hi_color=NULL){
+  this_font_size = font_size*1.25
+  if (is.null(low_color)){low_color = "white"}
+  if (is.null(hi_color)){hi_color = "#324c1d"}
+  derv<-derivatives(modobj,term=smooth_var)
+  derv<- derv %>%
+    mutate(sig = !(0 >lower & 0 < upper))
+  derv$sig_deriv = derv$derivative*derv$sig
+  cat(sprintf("\nSig change: %1.2f - %1.2f\n",min(derv$data[derv$sig==T]),max(derv$data[derv$sig==T])))
+  d1<- ggplot(data=derv) + geom_tile(aes(x = data, y = .5, fill = sig_deriv))
+  
+
+  # will have to change this for negatively-sloped age-effects (swap low and high), color corresponds to metric family used
+   d1 <- d1 + scale_fill_gradient(low = low_color, high = hi_color,limits = c(0,max(derv$derivative)))
+#    d1 <- d1 + scale_fill_gradient2(low = "#324c1d", midpoint = 0, mid = "white", high = "white",limits = c(min(derv$derivative),max(derv$derivative)))
+  
+  d1 <- d1 + 
+    labs(x = smooth_var,fill = sprintf("Change Per Year")) + 
+    theme(axis.title.y = element_blank(),
+          axis.text.y = element_blank(),
+          axis.text.x = element_text(size = this_font_size),
+          axis.line = element_blank(),
+          axis.ticks.y = element_blank(),
+          text = element_text(size=this_font_size),
+          legend.text = element_text(size = this_font_size),
+          axis.title = element_text(size = this_font_size),
+          legend.key.width = unit(1,"cm"),
+          legend.position = "right",
+          plot.margin = unit(c(0, 0, 0, 0), "cm"))+
+    guides(fill = guide_colorbar(ticks=T, ticks.linewidth = 2, ticks.colour = "black", reverse = F,direction = "vertical",title.position = "top")) +
+    geom_rect(aes(ymin=0,ymax=1,xmin=min(data),xmax=max(data)),color="black",fill="white",alpha = 0)
+  return(d1)
+}
+
+p1<- p1+theme(text = element_text(size=this_font_size),
+              axis.text = element_text(size = this_font_size),
+              axis.title.y = element_text(size = this_font_size),
+              axis.title.x = element_blank(),
+              axis.text.x = element_blank(),
+              axis.ticks.x = element_blank(),
+              legend.text = element_text(size = this_font_size),
+              legend.title = element_text(size = this_font_size),
+              axis.title = element_text(size = this_font_size),
+              panel.grid.major = element_blank(),
+              panel.grid.minor = element_blank(),
+              panel.background = element_rect(fill = "transparent",colour = NA),
+              plot.background = element_rect(fill = "transparent",colour = NA),
+              plot.margin = unit(c(.2, .2, 0, .2), "cm")) + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.background = element_blank()) + theme(axis.line.x = element_line(colour = 'black', size = 2), axis.line.y = element_line(colour = 'black', size = 2), axis.ticks.length = unit(.25, "cm"), axis.text = element_text(face="bold",size=30), axis.title = element_text(face="bold",size=30), axis.title.y = element_text(margin = margin(t = 0, r = 39, b = 0, l = 0),size = 30))  #Top, left,Bottom, right
+
+# derivative calculation and plot object
+d1 <- get_derivs_and_plot(modobj = rtpp_gam,smooth_var = "visitageyears") + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.background = element_blank()) + theme(axis.line.x = element_line(colour = 'black', size = 2), axis.line.y = element_line(colour = 'black', size = 2), axis.ticks.length = unit(.25, "cm"), axis.text = element_text(face="bold",size=30), axis.title = element_text(face="bold",size=30)) + guides(fill = guide_colorbar(draw.ulim = F, frame.colour = "black", frame.linetype=1, frame.linewidth = 3 , ticks=T, ticks.linewidth = 2,  ticks.colour = "black", reverse = F,direction = "vertical",title.position = "top"))  +
+  theme(plot.margin=unit(c(0,0,0,0),"cm")) #Top, left,Bottom, right
+# stick plots together
+scatter <- list(p1)
+bar <- list(d1)
+allplots <- c(scatter,bar)
+pg<-plot_grid(rel_heights = c(16,3),plotlist = allplots,align = "v",axis = "lr",ncol = 1)
+final_plot <- pg
+
+
+
 ```
 
 ```{r}
@@ -851,6 +1043,11 @@ for (i in 1:2){
 }
 bwAgeCorVecs<-data.frame(bwAgeCorVecs)
 ```
+```{r}
+# temp version
+tmumRatVec<-c(1,2,1,0.666666666666667,1,.75,1.6667,1.25,1,0.833333,1.4,1.1667,1,1.5,1.2857,1.125,1,1.375,1.222,1.1,1,.9166667,.846,1.0833,.8571,.8,1,.8125,.6666)
+```
+
 
 ```{r}
 
@@ -1015,17 +1212,6 @@ merged_df_tmpexcl=testfordmseg[-c(tempexclind),]
 
 plot(merged_df_tmpexcl$V2)
 
-```
-
-```{r}
-# long df
-long_precursor<-data.frame(masterdf$bblid,masterdf$Age,masterdf$Sex,masterdf$Motion,masterdf[,indiv_nsegcols_ind])
-melt_long<-melt(long_precursor,id=c(1,2,3,4))
-tmvecRepped<-rep(tmvec,each=693)
-domnetvecRepped<-rep(domnetvec,each=693)
-melt_long$transmodality<-tmvecRepped
-melt_long$dominantYeo<-domnetvecRepped
-saveRDS(melt_long,file = '~/Desktop/Long_bblidAgeSexMotionSegreg.rds')
 ```
 
 ```{r}
