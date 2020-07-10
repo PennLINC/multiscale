@@ -776,7 +776,9 @@ VL_derivInfo$AgeBounds<-TenBinsBounds
 #VL_derivInfo$deriv<-c(derivStack,derivStack)
 #+ scale_colour_gradient(low="#55185D", high="#ECB602")
 
-a<-ggplot(VL_derivInfo,aes(AgeBounds,tmvec,color=deriv,group=CIgroupingInd)) +geom_line(size=1, position=ggstance::position_dodgev(height=0.3)) +labs(title='Slope of Segreg-Age Relation Over Age Range', x = 'Span of Spline Deriv 95% CI ~= 0', y = 'Transmodality') +theme_classic(base_size = 28)+ xlim(c(8,23))+ scale_colour_gradientn(colours=c('white','blue','red','white'),values = c(0,.2625,.2635,1))
+a<-ggplot(VL_derivInfo,aes(AgeBounds,tmvec,color=deriv,group=CIgroupingInd)) +geom_line(size=1, position=ggstance::position_dodgev(height=0.3)) +labs(title='Slope of Segreg-Age Relation Over Age Range', x = 'Span of Spline Deriv 95% CI ~= 0', y = 'Transmodality') +theme_classic(base_size = 28)+ xlim(c(8,23))+ scale_colour_gradientn(colours=c('white','blue','red','white'),values = c(0,.263,.264,1))
+
+c<-ggplot(VL_derivInfo,aes(AgeBounds,tmvec,color=domnetvec,group=CIgroupingInd)) +geom_line(size=1) +labs(title='Slope of Segreg-Age Relation Over Age Range', x = 'Span of Spline Deriv 95% CI ~= 0', y = 'Transmodality') +theme_classic(base_size = 28)+ xlim(c(8,23))+ scale_color_manual(name="Predominant \nOverlapping \nYeo7 Network",values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068'))
 
 b<-ggplot(VL_derivInfo[1:4640,],aes(AgeBounds,corVecEst,color=deriv,group=CIgroupingInd)) +geom_line(size=2) +labs(title='Slope of Segreg-Age Relation Over Age Range', x = 'Span of Spline Deriv 95% CI ~= 0', y = 'Age Segregation Effect') +theme_classic(base_size = 28)+ xlim(c(8,23))+ scale_colour_gradientn(colours=c('white','blue','red','white'),values = c(0,.22,.32,1))
 
