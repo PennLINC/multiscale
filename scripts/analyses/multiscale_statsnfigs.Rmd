@@ -680,6 +680,7 @@ library(gratia)
 library(dplyr)
 library(svglite)
 library(cowplot)
+library(mgcv)
 
 covariates=" ~s(Age,k=3)+Sex+Motion"   
 
@@ -687,7 +688,10 @@ minAgeEst<-rep(0,length=length(masterdf[,indiv_nsegcols_ind]))
 maxAgeEst<-rep(0,length=length(masterdf[,indiv_nsegcols_ind]))
 
 derivInfo<-array(0,dim=c(464,200))
-                  
+NetSplines<-array(0,dim=c(464,693))                  
+
+
+
 #for i in 464
 for (i in 1:length(masterdf[,indiv_nsegcols_ind])){
   x<-colnames(masterdf[,indiv_nsegcols_ind][i])
@@ -703,6 +707,8 @@ for (i in 1:length(masterdf[,indiv_nsegcols_ind])){
   maxAgeEst[i]<-max(derv$data[derv$sig==T])
   # changed to sig deriv only 7/10/20
   derivInfo[i,]=derv$sig_deriv
+  forSpline<-predict(igam, data = masterdf, type = "terms")
+  NetSplines[i,]<-forSpline[,3]
   }
   ###cat(sprintf("\nSig change: %1.2f - %1.2f\n",minAgeEst[i],maxAgeEst[i]))
 }
@@ -713,150 +719,93 @@ maxAgeEst<-maxAgeEst/12
 
 CIgroupingInd<-as.factor(1:464)
 
-# x=age y=TM, span = range
-AgeSpan_plotdf_MinAge<-data.frame(tmvec,scalesvec,domnetvec,corVecEst,netpropvec,minAgeEst,CIgroupingInd)
-
-AgeSpan_plotdf_MaxAge<-data.frame(tmvec,scalesvec,domnetvec,corVecEst,netpropvec,maxAgeEst,CIgroupingInd)
-
-colnames(AgeSpan_plotdf_MinAge)[6]<-"AgeBounds"
-colnames(AgeSpan_plotdf_MaxAge)[6]<-"AgeBounds"
-
-AgeSpan_plotdf<-data.frame(rbind(AgeSpan_plotdf_MinAge,AgeSpan_plotdf_MaxAge))
-
-
 #convert to years for more interpretable slope
-derivInfoYears<-derivInfo*12
-
-# average over bins of 20 to get 10 deriv values for each network
-derivInfoBins<-array(0,dim=c(464,10))
-for (n in 1:464){
-  # get length of sig span to divide into 10
-  sigSpan=derivInfoYears[n,derivInfoYears[n,]!=0]
-  nonzeros=length(sigSpan)
-  tenthOfLength=nonzeros/10
-for (i in 1:10){
-  # ((i*29)-20):(i*20) is the range to average over
-  avgDeriv<-mean(sigSpan[((i*tenthOfLength)-(tenthOfLength-1)):(i*tenthOfLength)])
-  derivInfoBins[n,i]<-avgDeriv
-}
-}
-
-##### This is to plot the deriv as color on the linespan plot
+derivInfo<-derivInfo*12
 
 
-# need to split span into 10 to map on derivs to 1/10th of span
-dimInfo<-dim(AgeSpan_plotdf)
-allmins<-AgeSpan_plotdf$AgeBounds[1:(dimInfo[1]/2)]
-allmaxes<-AgeSpan_plotdf$AgeBounds[((dimInfo[1]/2)+1):dimInfo[1]]
-all_ageEffect_Widths<-(allmaxes-allmins)
 
-# Make very long deriv spanning plot with dumb code (5x because it is 2x span needed, the agespan info that neccessitated 2x span is now in TenBinsBOunds)
-VL_derivInfo<-data.frame(rbind(AgeSpan_plotdf,AgeSpan_plotdf,AgeSpan_plotdf,AgeSpan_plotdf,AgeSpan_plotdf))
 
-# same dumb shit for deriv
-#derivStack<-c(derivInfoBins[,1],derivInfoBins[,2],derivInfoBins[,3],derivInfoBins[,4],derivInfoBins[,5],derivInfoBins[,6],derivInfoBins[,7],derivInfoBins[,8],derivInfoBins[,9],derivInfoBins[,10])
 
-# make 10 x 464 length vector of 1/10th age spans
-# for example, if network one has an age effect span of 5 years (9-14 y.o.), split up into 9-9.5,9.5-10,10-10.5...13.5-14
+# get a vector of the agespan split into 200 to match the deriv vals
+agerange<-range(masterdf$Age)/12
+seq(agerange[1],agerange[2],length.out = 200)
+agerange200<-seq(agerange[1],agerange[2],length.out = 200)
 
-fullbounds<-AgeSpan_plotdf$AgeBounds
-TenBinsBounds<-array(0,dim=c(464*10,1))
-for (i in 1:10){
-  # Ten Bins Bounds contain the discrete length that each derivative should be painted onto a line segment for - this needs to be combined to start at where the age onset effect starts
-  TenBinsBounds[((i*464)-463):(i*464)]<-((all_ageEffect_Widths/10)*i)+minAgeEst
+AgeSpan_plotdf2<-data.frame(tmvec,scalesvec,domnetvec,corVecEst,netpropvec,CIgroupingInd)
+
+
+
+# needs to be converted to repeat 464 times before progressing to next age bracket
+agerange200464<-array(dim=c(200*464,1))
+for (i in 1:length(agerange200)){
+agerange200464[((464*i)-463):(464*i)]<-rep(agerange200[i],464)
 }
 
-# set derivative for coloring
-for (i in 1:10){
-  VL_derivInfo$deriv[((i*464)-463):(i*464)]<-derivInfoBins[,i]
+# now we need deriv vals of same format, but they will change for every network at every age bracket. Using sig change should take care of whiting out zeros
+deriv200464<-array(dim=c(200*464,1))
+for (i in 1:length(agerange200)){
+deriv200464[((464*i)-463):(464*i)]<-derivInfo[,i]
 }
 
-# set corresponding 10ths of line segments to be colored by 10-wise deriv chunking
-VL_derivInfo$AgeBounds<-TenBinsBounds
-#VL_derivInfo$deriv<-c(derivStack,derivStack)
-#+ scale_colour_gradient(low="#55185D", high="#ECB602")
+LongAgeSpan_plotdf2<-data.frame(sapply(AgeSpan_plotdf2,rep.int,times=200))
+LongAgeSpan_plotdf2$agespans<-agerange200464
+LongAgeSpan_plotdf2$derivs<-deriv200464
 
-a<-ggplot(VL_derivInfo,aes(AgeBounds,tmvec,color=deriv,group=CIgroupingInd)) +geom_line(size=1, position=ggstance::position_dodgev(height=0.3)) +labs(title='Slope of Segreg-Age Relation Over Age Range', x = 'Span of Spline Deriv 95% CI ~= 0', y = 'Transmodality') +theme_classic(base_size = 28)+ xlim(c(8,23))+ scale_colour_gradientn(colours=c('white','blue','red','white'),values = c(0,.263,.264,1))
+ggplot(LongAgeSpan_plotdf2,aes(agespans,tmvec,color=derivs,group=CIgroupingInd)) +geom_line(size=5,alpha=.3) +labs(title='Network Segregation Effect Manifestation', x = 'Age', y = 'Transmodality') +theme_classic(base_size = 28)+ xlim(c(8,23))+ scale_colour_gradientn(colours=c('green','blue','white','red','yellow'),values = c(0,.215,.265,.315,1),name="Change Per Year")
 
-c<-ggplot(VL_derivInfo,aes(AgeBounds,tmvec,color=domnetvec,group=CIgroupingInd)) +geom_line(size=1) +labs(title='Slope of Segreg-Age Relation Over Age Range', x = 'Span of Spline Deriv 95% CI ~= 0', y = 'Transmodality') +theme_classic(base_size = 28)+ xlim(c(8,23))+ scale_color_manual(name="Predominant \nOverlapping \nYeo7 Network",values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068'))
 
-b<-ggplot(VL_derivInfo[1:4640,],aes(AgeBounds,corVecEst,color=deriv,group=CIgroupingInd)) +geom_line(size=2) +labs(title='Slope of Segreg-Age Relation Over Age Range', x = 'Span of Spline Deriv 95% CI ~= 0', y = 'Age Segregation Effect') +theme_classic(base_size = 28)+ xlim(c(8,23))+ scale_colour_gradientn(colours=c('white','blue','red','white'),values = c(0,.22,.32,1))
 
-# C is going to be with an exaggerated deriv slope to see if segments are changing
-#VL_derivInfo$deriv<-VL_derivInfo$deriv*2000
-#VL_derivInfo$deriv<-VL_derivInfo$deriv^3
 
-#c<-ggplot(VL_derivInfo,aes(AgeBounds,tmvec,color=deriv,group=CIgroupingInd)) +geom_line(size=3) +labs(title='Slope of Segreg-Age Relation Over Age Range', x = 'Span of Spline Deriv 95% CI ~= 0', y = 'Transmodality') +theme_classic(base_size = 28)+ xlim(c(8,23))+ scale_colour_gradientn(colours=c('red','white','white','blue'),values = c(0,.22,.32,1))
-#ggarrange(a,b,c,nrow = 1)
+
+
 ```
 
 ```{r}
-font_size=20
+# With the smooths overlaid
+AgeSpan_plotdf3<-data.frame(tmvec,scalesvec,domnetvec,corVecEst,netpropvec,CIgroupingInd)
+LongAgeSpan_plotdf3<-data.frame(sapply(AgeSpan_plotdf3,rep.int,times=693))
 
 
+Transmodality693464<-array(dim=c(693*464,1))
+for (i in 1:464){
+Transmodality693464[((693*i)-692):(693*i)]<-tmvec[i]
+}
+LongAgeSpan_plotdf3$Transmodality<-Transmodality693464
 
-get_derivs_and_plot <- function(modobj,smooth_var,low_color=NULL,hi_color=NULL){
-  this_font_size = font_size*1.25
-  if (is.null(low_color)){low_color = "white"}
-  if (is.null(hi_color)){hi_color = "#324c1d"}
-  derv<-derivatives(modobj,term=smooth_var)
-  derv<- derv %>%
-    mutate(sig = !(0 >lower & 0 < upper))
-  derv$sig_deriv = derv$derivative*derv$sig
-  cat(sprintf("\nSig change: %1.2f - %1.2f\n",min(derv$data[derv$sig==T]),max(derv$data[derv$sig==T])))
-  d1<- ggplot(data=derv) + geom_tile(aes(x = data, y = .5, fill = sig_deriv))
-  
-
-  # will have to change this for negatively-sloped age-effects (swap low and high), color corresponds to metric family used
-   d1 <- d1 + scale_fill_gradient(low = low_color, high = hi_color,limits = c(0,max(derv$derivative)))
-#    d1 <- d1 + scale_fill_gradient2(low = "#324c1d", midpoint = 0, mid = "white", high = "white",limits = c(min(derv$derivative),max(derv$derivative)))
-  
-  d1 <- d1 + 
-    labs(x = smooth_var,fill = sprintf("Change Per Year")) + 
-    theme(axis.title.y = element_blank(),
-          axis.text.y = element_blank(),
-          axis.text.x = element_text(size = this_font_size),
-          axis.line = element_blank(),
-          axis.ticks.y = element_blank(),
-          text = element_text(size=this_font_size),
-          legend.text = element_text(size = this_font_size),
-          axis.title = element_text(size = this_font_size),
-          legend.key.width = unit(1,"cm"),
-          legend.position = "right",
-          plot.margin = unit(c(0, 0, 0, 0), "cm"))+
-    guides(fill = guide_colorbar(ticks=T, ticks.linewidth = 2, ticks.colour = "black", reverse = F,direction = "vertical",title.position = "top")) +
-    geom_rect(aes(ymin=0,ymax=1,xmin=min(data),xmax=max(data)),color="black",fill="white",alpha = 0)
-  return(d1)
+GroupingInd693464<-array(dim=c(693*464,1))
+for (i in 1:464){
+GroupingInd693464[((693*i)-692):(693*i)]<-CIgroupingInd[i]
 }
 
-p1<- p1+theme(text = element_text(size=this_font_size),
-              axis.text = element_text(size = this_font_size),
-              axis.title.y = element_text(size = this_font_size),
-              axis.title.x = element_blank(),
-              axis.text.x = element_blank(),
-              axis.ticks.x = element_blank(),
-              legend.text = element_text(size = this_font_size),
-              legend.title = element_text(size = this_font_size),
-              axis.title = element_text(size = this_font_size),
-              panel.grid.major = element_blank(),
-              panel.grid.minor = element_blank(),
-              panel.background = element_rect(fill = "transparent",colour = NA),
-              plot.background = element_rect(fill = "transparent",colour = NA),
-              plot.margin = unit(c(.2, .2, 0, .2), "cm")) + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.background = element_blank()) + theme(axis.line.x = element_line(colour = 'black', size = 2), axis.line.y = element_line(colour = 'black', size = 2), axis.ticks.length = unit(.25, "cm"), axis.text = element_text(face="bold",size=30), axis.title = element_text(face="bold",size=30), axis.title.y = element_text(margin = margin(t = 0, r = 39, b = 0, l = 0),size = 30))  #Top, left,Bottom, right
-
-# derivative calculation and plot object
-d1 <- get_derivs_and_plot(modobj = rtpp_gam,smooth_var = "visitageyears") + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.background = element_blank()) + theme(axis.line.x = element_line(colour = 'black', size = 2), axis.line.y = element_line(colour = 'black', size = 2), axis.ticks.length = unit(.25, "cm"), axis.text = element_text(face="bold",size=30), axis.title = element_text(face="bold",size=30)) + guides(fill = guide_colorbar(draw.ulim = F, frame.colour = "black", frame.linetype=1, frame.linewidth = 3 , ticks=T, ticks.linewidth = 2,  ticks.colour = "black", reverse = F,direction = "vertical",title.position = "top"))  +
-  theme(plot.margin=unit(c(0,0,0,0),"cm")) #Top, left,Bottom, right
-# stick plots together
-scatter <- list(p1)
-bar <- list(d1)
-allplots <- c(scatter,bar)
-pg<-plot_grid(rel_heights = c(16,3),plotlist = allplots,align = "v",axis = "lr",ncol = 1)
-final_plot <- pg
+LongAgeSpan_plotdf3$Grouping<-GroupingInd693464
 
 
+
+NetSplines693464<-array(dim=c(693*464,1))
+for (i in 1:464){
+NetSplines693464[((693*i)-692):(693*i)]<-NetSplines[i,]
+}
+LongAgeSpan_plotdf3$Splines<-NetSplines693464
+
+
+# put this guy through the same wrangling ringer as the "estimated age", which is how the spline is ported in
+
+NetSplinesAgeSideCar693464<-array(dim=c(693*464,1))
+for (i in 1:464){
+NetSplinesAgeSideCar693464[((693*i)-692):(693*i)]<-masterdf$Age
+}
+LongAgeSpan_plotdf3$Age<-NetSplinesAgeSideCar693464
+
+LongAgeSpan_plotdf3$Splines<-((LongAgeSpan_plotdf3$Splines*sd(masterdf$Age)+mean(masterdf$Age)))
+
+
+
+
+ggplot(LongAgeSpan_plotdf3,aes(Age,Splines,color=Transmodality,group=Grouping)) +geom_line(size=1,alpha=.1) +labs(title='Network Segregation Effect Manifestation', x = 'Age', y = 'Predicted Segregation') +theme_classic(base_size = 28)+ xlim(c(8,23))
 
 ```
+
+
 
 ```{r}
 # Spatial dispersement of network
