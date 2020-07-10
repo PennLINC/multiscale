@@ -681,7 +681,7 @@ library(dplyr)
 library(svglite)
 library(cowplot)
 
-covariates=" ~s(Age,k=4)+Sex+Motion"   
+covariates=" ~s(Age,k=3)+Sex+Motion"   
 
 minAgeEst<-rep(0,length=length(masterdf[,indiv_nsegcols_ind]))
 maxAgeEst<-rep(0,length=length(masterdf[,indiv_nsegcols_ind]))
@@ -697,14 +697,14 @@ for (i in 1:length(masterdf[,indiv_nsegcols_ind])){
   derv<- derv %>%
   mutate(sig = !(0 >lower & 0 < upper))
   derv$sig_deriv = derv$derivative*derv$sig
-  print(x)
-  if (all(derv$sig==FALSE)){minAgeEst[i]=0; maxAgeEst[i]=0}
-  else {
+  if (all(derv$sig==FALSE)){minAgeEst[i]=0; maxAgeEst[i]=0
+  } else {
   minAgeEst[i]<-min(derv$data[derv$sig==T])
   maxAgeEst[i]<-max(derv$data[derv$sig==T])
-  derivInfo[i,]=derv$derivative
+  # changed to sig deriv only 7/10/20
+  derivInfo[i,]=derv$sig_deriv
   }
-  cat(sprintf("\nSig change: %1.2f - %1.2f\n",minAgeEst[i],maxAgeEst[i]))
+  ###cat(sprintf("\nSig change: %1.2f - %1.2f\n",minAgeEst[i],maxAgeEst[i]))
 }
 
 # years format
@@ -723,12 +723,6 @@ colnames(AgeSpan_plotdf_MaxAge)[6]<-"AgeBounds"
 
 AgeSpan_plotdf<-data.frame(rbind(AgeSpan_plotdf_MinAge,AgeSpan_plotdf_MaxAge))
 
-ggplot(AgeSpan_plotdf,aes(AgeBounds,corVecEst,color=domnetvec,group=CIgroupingInd)) +geom_line(size=1) +labs(title='Age Effect Span', x = 'Span of Spline Deriv 95% CI ~= 0', y = 'AgeSegregEst') +theme_classic(base_size = 28)+ xlim(c(8,23))+ scale_color_manual(name="Predominant \nOverlapping \nYeo7 Network",values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068'))
-
-ggplot(AgeSpan_plotdf,aes(AgeBounds,corVecEst,color=scalesvec,group=CIgroupingInd)) +geom_line(size=1) +labs(title='Age Effect Span', x = 'Span of Spline Deriv 95% CI ~= 0', y = 'AgeSegregEst') +theme_classic(base_size = 28)+ xlim(c(8,23))
-
-
-##### This is to plot the deriv as color on the linespan plot
 
 #convert to years for more interpretable slope
 derivInfoYears<-derivInfo*12
@@ -736,18 +730,31 @@ derivInfoYears<-derivInfo*12
 # average over bins of 20 to get 10 deriv values for each network
 derivInfoBins<-array(0,dim=c(464,10))
 for (n in 1:464){
+  # get length of sig span to divide into 10
+  sigSpan=derivInfoYears[n,derivInfoYears[n,]!=0]
+  nonzeros=length(sigSpan)
+  tenthOfLength=nonzeros/10
 for (i in 1:10){
   # ((i*29)-20):(i*20) is the range to average over
-  avgDeriv<-mean(derivInfoYears[n,((i*20)-19):(i*20)])
+  avgDeriv<-mean(sigSpan[((i*tenthOfLength)-(tenthOfLength-1)):(i*tenthOfLength)])
   derivInfoBins[n,i]<-avgDeriv
 }
 }
+
+##### This is to plot the deriv as color on the linespan plot
+
 
 # need to split span into 10 to map on derivs to 1/10th of span
 dimInfo<-dim(AgeSpan_plotdf)
 allmins<-AgeSpan_plotdf$AgeBounds[1:(dimInfo[1]/2)]
 allmaxes<-AgeSpan_plotdf$AgeBounds[((dimInfo[1]/2)+1):dimInfo[1]]
 all_ageEffect_Widths<-(allmaxes-allmins)
+
+# Make very long deriv spanning plot with dumb code (5x because it is 2x span needed, the agespan info that neccessitated 2x span is now in TenBinsBOunds)
+VL_derivInfo<-data.frame(rbind(AgeSpan_plotdf,AgeSpan_plotdf,AgeSpan_plotdf,AgeSpan_plotdf,AgeSpan_plotdf))
+
+# same dumb shit for deriv
+#derivStack<-c(derivInfoBins[,1],derivInfoBins[,2],derivInfoBins[,3],derivInfoBins[,4],derivInfoBins[,5],derivInfoBins[,6],derivInfoBins[,7],derivInfoBins[,8],derivInfoBins[,9],derivInfoBins[,10])
 
 # make 10 x 464 length vector of 1/10th age spans
 # for example, if network one has an age effect span of 5 years (9-14 y.o.), split up into 9-9.5,9.5-10,10-10.5...13.5-14
@@ -759,35 +766,26 @@ for (i in 1:10){
   TenBinsBounds[((i*464)-463):(i*464)]<-((all_ageEffect_Widths/10)*i)+minAgeEst
 }
 
-
-
-
-# Make very long deriv spanning plot with dumb code
-VL_derivInfo<-data.frame(rbind(AgeSpan_plotdf,AgeSpan_plotdf,AgeSpan_plotdf,AgeSpan_plotdf,AgeSpan_plotdf,AgeSpan_plotdf,AgeSpan_plotdf,AgeSpan_plotdf,AgeSpan_plotdf,AgeSpan_plotdf))
-
-# same dumb shit for deriv
-derivStack<-c(derivInfoBins[,1],derivInfoBins[,2],derivInfoBins[,3],derivInfoBins[,4],derivInfoBins[,5],derivInfoBins[,6],derivInfoBins[,7],derivInfoBins[,8],derivInfoBins[,9],derivInfoBins[,10])
-
 # set derivative for coloring
 for (i in 1:10){
   VL_derivInfo$deriv[((i*464)-463):(i*464)]<-derivInfoBins[,i]
 }
 
 # set corresponding 10ths of line segments to be colored by 10-wise deriv chunking
-VL_derivInfo$AgeBounds<-rbind(TenBinsBounds,TenBinsBounds)
-VL_derivInfo$deriv<-c(derivStack,derivStack)
+VL_derivInfo$AgeBounds<-TenBinsBounds
+#VL_derivInfo$deriv<-c(derivStack,derivStack)
 #+ scale_colour_gradient(low="#55185D", high="#ECB602")
 
-a<-ggplot(VL_derivInfo,aes(AgeBounds,tmvec,color=deriv,group=CIgroupingInd)) +geom_line(size=3) +labs(title='Slope of Segreg-Age Relation Over Age Range', x = 'Span of Spline Deriv 95% CI ~= 0', y = 'Transmodality') +theme_classic(base_size = 28)+ xlim(c(8,23))+ scale_colour_gradientn(colours=c('white','blue','red','white'),values = c(0,.22,.32,1))
+a<-ggplot(VL_derivInfo,aes(AgeBounds,tmvec,color=deriv,group=CIgroupingInd)) +geom_line(size=1, position=ggstance::position_dodgev(height=0.3)) +labs(title='Slope of Segreg-Age Relation Over Age Range', x = 'Span of Spline Deriv 95% CI ~= 0', y = 'Transmodality') +theme_classic(base_size = 28)+ xlim(c(8,23))+ scale_colour_gradientn(colours=c('white','blue','red','white'),values = c(0,.2625,.2635,1))
 
-b<-ggplot(VL_derivInfo[1:4640,],aes(AgeBounds,corVecEst,color=deriv,group=CIgroupingInd)) +geom_line(size=3) +labs(title='Slope of Segreg-Age Relation Over Age Range', x = 'Span of Spline Deriv 95% CI ~= 0', y = 'Age Segregation Effect') +theme_classic(base_size = 28)+ xlim(c(8,23))+ scale_colour_gradientn(colours=c('white','blue','red','white'),values = c(0,.22,.32,1))
+b<-ggplot(VL_derivInfo[1:4640,],aes(AgeBounds,corVecEst,color=deriv,group=CIgroupingInd)) +geom_line(size=2) +labs(title='Slope of Segreg-Age Relation Over Age Range', x = 'Span of Spline Deriv 95% CI ~= 0', y = 'Age Segregation Effect') +theme_classic(base_size = 28)+ xlim(c(8,23))+ scale_colour_gradientn(colours=c('white','blue','red','white'),values = c(0,.22,.32,1))
 
 # C is going to be with an exaggerated deriv slope to see if segments are changing
-VL_derivInfo$deriv<-VL_derivInfo$deriv*2000
-VL_derivInfo$deriv<-VL_derivInfo$deriv^3
+#VL_derivInfo$deriv<-VL_derivInfo$deriv*2000
+#VL_derivInfo$deriv<-VL_derivInfo$deriv^3
 
-c<-ggplot(VL_derivInfo,aes(AgeBounds,tmvec,color=deriv,group=CIgroupingInd)) +geom_line(size=3) +labs(title='Slope of Segreg-Age Relation Over Age Range', x = 'Span of Spline Deriv 95% CI ~= 0', y = 'Transmodality') +theme_classic(base_size = 28)+ xlim(c(8,23))+ scale_colour_gradientn(colours=c('red','white','white','blue'),values = c(0,.22,.32,1))
-ggarrange(a,b,c,nrow = 1)
+#c<-ggplot(VL_derivInfo,aes(AgeBounds,tmvec,color=deriv,group=CIgroupingInd)) +geom_line(size=3) +labs(title='Slope of Segreg-Age Relation Over Age Range', x = 'Span of Spline Deriv 95% CI ~= 0', y = 'Transmodality') +theme_classic(base_size = 28)+ xlim(c(8,23))+ scale_colour_gradientn(colours=c('red','white','white','blue'),values = c(0,.22,.32,1))
+#ggarrange(a,b,c,nrow = 1)
 ```
 
 ```{r}
