@@ -794,14 +794,13 @@ NetSplinesAgeSideCar693464<-array(dim=c(693*464,1))
 for (i in 1:464){
 NetSplinesAgeSideCar693464[((693*i)-692):(693*i)]<-masterdf$Age
 }
-LongAgeSpan_plotdf3$Age<-NetSplinesAgeSideCar693464
-
-LongAgeSpan_plotdf3$Splines<-((LongAgeSpan_plotdf3$Splines*sd(masterdf$Age)+mean(masterdf$Age)))
+LongAgeSpan_plotdf3$Age<-NetSplinesAgeSideCar693464/12
 
 
 
 
-ggplot(LongAgeSpan_plotdf3,aes(Age,Splines,color=Transmodality,group=Grouping)) +geom_line(size=1,alpha=.1) +labs(title='Network Segregation Effect Manifestation', x = 'Age', y = 'Predicted Segregation') +theme_classic(base_size = 28)+ xlim(c(8,23))
+
+ggplot(LongAgeSpan_plotdf3,aes(Age,Splines,color=Transmodality,group=Grouping)) +geom_line(size=1,alpha=.1) +labs(title='Network Segregation Effect Manifestation', x = 'Age', y = 'Predicted Segregation') +theme_classic(base_size = 28)+ xlim(c(8,23))+ scale_colour_gradient(low="#55185D", high="#ECB602")
 
 ```
 
