@@ -15,10 +15,10 @@ grad_rh = pgr.cdata(:,1);
 atlasdir='/cbica/projects/pinesParcels/data/YeoAtlas/Schaef/';
 
 % load in schaef annotations (from CBIG)
-[v,schaef200L,ct2L]=read_annotation([atlasdir 'lh.Schaefer2018_200Parcels_17Networks_order.annot']);
-[v,schaef400L,ct4L]=read_annotation([atlasdir 'lh.Schaefer2018_400Parcels_17Networks_order.annot']);
-[v,schaef200R,ct2R]=read_annotation([atlasdir 'rh.Schaefer2018_200Parcels_17Networks_order.annot']);
-[v,schaef400R,ct4R]=read_annotation([atlasdir 'rh.Schaefer2018_400Parcels_17Networks_order.annot']);
+[v,schaef200L,ct2L]=read_annotation([atlasdir 'lh.Schaefer2018_200Parcels_7Networks_order.annot']);
+[v,schaef400L,ct4L]=read_annotation([atlasdir 'lh.Schaefer2018_400Parcels_7Networks_order.annot']);
+[v,schaef200R,ct2R]=read_annotation([atlasdir 'rh.Schaefer2018_200Parcels_7Networks_order.annot']);
+[v,schaef400R,ct4R]=read_annotation([atlasdir 'rh.Schaefer2018_400Parcels_7Networks_order.annot']);
 
 % initialize blank struct for names and PG vals
 LH200=cell(length(ct2L.struct_names),2);
@@ -59,8 +59,8 @@ for N=1:length(unique(schaef400L))
 
 end
 
-writetable(cell2table(LH200),'/cbica/projects/pinesParcels/data/SchaefLH200_transmodality.csv');
-writetable(cell2table(RH200),'/cbica/projects/pinesParcels/data/SchaefRH200_transmodality.csv');
-writetable(cell2table(LH400),'/cbica/projects/pinesParcels/data/SchaefLH400_transmodality.csv');
-writetable(cell2table(RH400),'/cbica/projects/pinesParcels/data/SchaefRH400_transmodality.csv');
+writetable(cell2table(LH200),'/cbica/projects/pinesParcels/data/SchaefLH200_transmodality7.csv');
+writetable(cell2table(RH200),'/cbica/projects/pinesParcels/data/SchaefRH200_transmodality7.csv');
+writetable(cell2table(LH400),'/cbica/projects/pinesParcels/data/SchaefLH400_transmodality7.csv');
+writetable(cell2table(RH400),'/cbica/projects/pinesParcels/data/SchaefRH400_transmodality7.csv');
 

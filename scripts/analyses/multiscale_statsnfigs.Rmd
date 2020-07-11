@@ -272,11 +272,22 @@ ggarrange(indseg,groseg,ncol=1)
 ind_segcors<-matrix(0,29,2)
 ind_segcors[,1]<-2:30
 
+# 7/11 - testing across age ranges for that dependence
+indglobseg_813<-subset(indglobseg,indglobseg$Age<13)
+indglobseg_1318<-subset(indglobseg,indglobseg$Age>13 & indglobseg$Age <18)
+groglobseg_1823<-subset(groglobseg,groglobseg$Age>18)
+groglobseg_813<-subset(groglobseg,groglobseg$Age<13)
+groglobseg_1318<-subset(groglobseg,groglobseg$Age>13 & groglobseg$Age <18)
+groglobseg_1823<-subset(groglobseg,groglobseg$Age>18)
+
 #### repeated ggpplot uses residuals, but pspear and cor over scales uses simultaneously fit spear-men
 ### agebeta vec does use simulataneous fit (partial correlations)
 for (i in 1:29){
   # i+4 because first column is scanid, second is age, third is sex, 4th is motion
   print(ggplot(indglobseg_motSexC,aes(Age,indglobseg_motSexC[,i+4])) + geom_point() + geom_smooth() +ylab(paste("Ind Global Segreg at Scale", i+1)))
+  
+  
+  # 7/11 - testing across age ranges for that dependence
   
   # relevant df
   scaledf<-cbind(indglobseg$Age,indglobseg$Sex,indglobseg$Motion,indglobseg[,i+4])
@@ -310,7 +321,7 @@ mergeddf<-merge(ind_segcors_df,gro_segcors_df,by="X1")
 colnames(mergeddf)<-c("X1","Individualized","Consensus")
 x<-melt(mergeddf,id="X1")
 colnames(x)<-c("X1","Partitioning","value")
-ggplot(x,aes(X1,value,group=Partitioning,color=Partitioning)) + geom_step(size=3)+ylab('Segregation-Age Correlation')+
+all<-ggplot(x,aes(X1,value,group=Partitioning,color=Partitioning)) + geom_step(size=3)+ylab('Segregation-Age Correlation')+
     theme_dark(base_size = 28)+
     theme(axis.text=element_text(), axis.title = element_text(),panel.grid.minor = element_blank(), plot.title = element_text())+
     xlab("# of Communities") + scale_x_continuous(breaks=seq(2, 30, 4)) +
@@ -318,6 +329,122 @@ ggplot(x,aes(X1,value,group=Partitioning,color=Partitioning)) + geom_step(size=3
     geom_hline(aes(yintercept=-.098), linetype="dashed", col='#55185D',size=2.5) +
     geom_hline(aes(yintercept=.125), linetype="dashed", col='#ECB602',size=2.5) +
     geom_hline(aes(yintercept=-.125), linetype="dashed", col='#ECB602',size=2.5) + scale_color_manual(values = c("black", "grey"))+ggtitle("Global Segregation and Age Correlation Over Scales")
+
+
+
+#### age segment-specific plots
+########younguns###########
+for (i in 1:29){
+  # i+4 because first column is scanid, second is age, third is sex, 4th is motion
+  # 7/11 - testing across age ranges for that dependence
+  
+  # relevant df
+  scaledf<-cbind(indglobseg_813$Age,indglobseg_813$Sex,indglobseg_813$Motion,indglobseg_813[,i+4])
+  # partial spearmans to extrac age relation
+  pspear=pcor(scaledf,method='spearman')$estimate
+  ind_segcors[i,2]<-pspear[4]
+}
+
+for (i in 1:29){
+  scaledf<-cbind(groglobseg_813$Age,groglobseg_813$Sex,groglobseg_813$Motion,groglobseg_813[,i+4])
+  # partial spearmans to extrac age relation
+  pspear=pcor(scaledf,method='spearman')$estimate
+  gro_segcors[i,2]<-pspear[4]
+}
+
+youngindagecor<-correlations_over_scales(ind_segcors,"Global Segregation Age Correlation - 8-13 Year Olds")
+
+ind_segcors_df<-data.frame(ind_segcors)
+gro_segcors_df<-data.frame(gro_segcors)
+mergeddf<-merge(ind_segcors_df,gro_segcors_df,by="X1")
+colnames(mergeddf)<-c("X1","Individualized","Consensus")
+x<-melt(mergeddf,id="X1")
+colnames(x)<-c("X1","Partitioning","value")
+young<-ggplot(x,aes(X1,value,group=Partitioning,color=Partitioning)) + geom_step(size=3)+ylab('Segregation-Age Correlation')+
+    theme_dark(base_size = 28)+
+    theme(axis.text=element_text(), axis.title = element_text(),panel.grid.minor = element_blank(), plot.title = element_text())+
+    xlab("# of Communities") + scale_x_continuous(breaks=seq(2, 30, 4)) +
+    geom_hline(aes(yintercept=.098), linetype="dashed", col='#55185D',size=2.5) +
+    geom_hline(aes(yintercept=-.098), linetype="dashed", col='#55185D',size=2.5) +
+    geom_hline(aes(yintercept=.125), linetype="dashed", col='#ECB602',size=2.5) +
+    geom_hline(aes(yintercept=-.125), linetype="dashed", col='#ECB602',size=2.5) + scale_color_manual(values = c("black", "grey"))+ggtitle("Global Segregation and Age Correlation Over Scales - 8-13 Years")
+
+###########mids##############
+for (i in 1:29){
+  # i+4 because first column is scanid, second is age, third is sex, 4th is motion
+  # 7/11 - testing across age ranges for that dependence
+  
+  # relevant df
+  scaledf<-cbind(indglobseg_1318$Age,indglobseg_1318$Sex,indglobseg_1318$Motion,indglobseg_1318[,i+4])
+  # partial spearmans to extrac age relation
+  pspear=pcor(scaledf,method='spearman')$estimate
+  ind_segcors[i,2]<-pspear[4]
+}
+for (i in 1:29){
+  scaledf<-cbind(groglobseg_1318$Age,groglobseg_1318$Sex,groglobseg_1318$Motion,groglobseg_1318[,i+4])
+  # partial spearmans to extrac age relation
+  pspear=pcor(scaledf,method='spearman')$estimate
+  gro_segcors[i,2]<-pspear[4]
+}
+
+midindagecor<-correlations_over_scales(ind_segcors,"Global Segregation Age Correlation - 13-18 Year Olds")
+
+ind_segcors_df<-data.frame(ind_segcors)
+gro_segcors_df<-data.frame(gro_segcors)
+mergeddf<-merge(ind_segcors_df,gro_segcors_df,by="X1")
+colnames(mergeddf)<-c("X1","Individualized","Consensus")
+x<-melt(mergeddf,id="X1")
+colnames(x)<-c("X1","Partitioning","value")
+mid<-ggplot(x,aes(X1,value,group=Partitioning,color=Partitioning)) + geom_step(size=3)+ylab('Segregation-Age Correlation')+
+    theme_dark(base_size = 28)+
+    theme(axis.text=element_text(), axis.title = element_text(),panel.grid.minor = element_blank(), plot.title = element_text())+
+    xlab("# of Communities") + scale_x_continuous(breaks=seq(2, 30, 4)) +
+    geom_hline(aes(yintercept=.098), linetype="dashed", col='#55185D',size=2.5) +
+    geom_hline(aes(yintercept=-.098), linetype="dashed", col='#55185D',size=2.5) +
+    geom_hline(aes(yintercept=.125), linetype="dashed", col='#ECB602',size=2.5) +
+    geom_hline(aes(yintercept=-.125), linetype="dashed", col='#ECB602',size=2.5) + scale_color_manual(values = c("black", "grey"))+ggtitle("Global Segregation and Age Correlation Over Scales - 13-18 Years")
+
+
+###########geezers##########
+for (i in 1:29){
+  # i+4 because first column is scanid, second is age, third is sex, 4th is motion
+  # 7/11 - testing across age ranges for that dependence
+  
+  # relevant df
+  scaledf<-cbind(indglobseg_1823$Age,indglobseg_1823$Sex,indglobseg_1823$Motion,indglobseg_1823[,i+4])
+  # partial spearmans to extrac age relation
+  pspear=pcor(scaledf,method='spearman')$estimate
+  ind_segcors[i,2]<-pspear[4]
+}
+
+for (i in 1:29){
+  scaledf<-cbind(groglobseg_1823$Age,groglobseg_1823$Sex,groglobseg_1823$Motion,groglobseg_1823[,i+4])
+  # partial spearmans to extrac age relation
+  pspear=pcor(scaledf,method='spearman')$estimate
+  gro_segcors[i,2]<-pspear[4]
+}
+
+oldindagecor<-correlations_over_scales(ind_segcors,"Global Segregation Age Correlation - 18-23 Year Olds")
+
+
+ind_segcors_df<-data.frame(ind_segcors)
+gro_segcors_df<-data.frame(gro_segcors)
+mergeddf<-merge(ind_segcors_df,gro_segcors_df,by="X1")
+colnames(mergeddf)<-c("X1","Individualized","Consensus")
+x<-melt(mergeddf,id="X1")
+colnames(x)<-c("X1","Partitioning","value")
+old<-ggplot(x,aes(X1,value,group=Partitioning,color=Partitioning)) + geom_step(size=3)+ylab('Segregation-Age Correlation')+
+    theme_dark(base_size = 28)+
+    theme(axis.text=element_text(), axis.title = element_text(),panel.grid.minor = element_blank(), plot.title = element_text())+
+    xlab("# of Communities") + scale_x_continuous(breaks=seq(2, 30, 4)) +
+    geom_hline(aes(yintercept=.098), linetype="dashed", col='#55185D',size=2.5) +
+    geom_hline(aes(yintercept=-.098), linetype="dashed", col='#55185D',size=2.5) +
+    geom_hline(aes(yintercept=.125), linetype="dashed", col='#ECB602',size=2.5) +
+    geom_hline(aes(yintercept=-.125), linetype="dashed", col='#ECB602',size=2.5) + scale_color_manual(values = c("black", "grey"))+ggtitle("Global Segregation and Age Correlation Over Scales - 18-23 Years")
+
+ageBreakDown<-ggarrange(indagecor,youngindagecor,midindagecor,oldindagecor)
+gro_vs_ind<-ggarrange(all,young,mid,old)
+
 ```
 
 ```{r}
@@ -708,7 +835,12 @@ for (i in 1:length(masterdf[,indiv_nsegcols_ind])){
   # changed to sig deriv only 7/10/20
   derivInfo[i,]=derv$sig_deriv
   forSpline<-predict(igam, data = masterdf, type = "terms")
-  NetSplines[i,]<-forSpline[,3]
+  # adding mean val because output values are centered
+  #colOfInt<-unlist(masterdf[,indiv_nsegcols_ind][i])
+  NetSplines[i,]<-forSpline[,3]+coef(igam)[1]
+  if (mean(colOfInt)<.3){
+    print(paste(x,mean(colOfInt)))
+  }
   }
   ###cat(sprintf("\nSig change: %1.2f - %1.2f\n",minAgeEst[i],maxAgeEst[i]))
 }
@@ -799,8 +931,8 @@ LongAgeSpan_plotdf3$Age<-NetSplinesAgeSideCar693464/12
 
 
 
-
-ggplot(LongAgeSpan_plotdf3,aes(Age,Splines,color=Transmodality,group=Grouping)) +geom_line(size=1,alpha=.1) +labs(title='Network Segregation Effect Manifestation', x = 'Age', y = 'Predicted Segregation') +theme_classic(base_size = 28)+ xlim(c(8,23))+ scale_colour_gradient(low="#55185D", high="#ECB602")
+# [1:4851] plots first 7 networks (693 points for each)
+ggplot(LongAgeSpan_plotdf3[1:4851,],aes(Age,Splines,color=Transmodality,group=Grouping)) +geom_line(size=1,alpha=.1) +labs(title='Network Segregation Effect Manifestation', x = 'Age', y = 'Predicted Segregation') +theme_classic(base_size = 28)+ xlim(c(8,23))+ scale_colour_gradient(low="#55185D", high="#ECB602")
 
 ```
 
@@ -808,6 +940,7 @@ ggplot(LongAgeSpan_plotdf3,aes(Age,Splines,color=Transmodality,group=Grouping)) 
 
 ```{r}
 # Spatial dispersement of network
+library(ggpointdensity)
 LHpi<-read.csv('/cbica/projects/pinesParcels/results/aggregated_data/numPatches_LH_allscales.csv')
 RHpi<-read.csv('/cbica/projects/pinesParcels/results/aggregated_data/numPatches_RH_allscales.csv')
 
@@ -815,16 +948,16 @@ Seg_CIplotdf$LH_patchnum<-LHpi$patchnum_over_scalesL
 Seg_CIplotdf$RH_patchnum<-RHpi$patchnum_over_scalesR
 Seg_CIplotdf$Tot_patchnum<-Seg_CIplotdf$LH_patchnum+Seg_CIplotdf$RH_patchnum
 
-ggplot(Seg_CIplotdf[indofint,],aes(Tot_patchnum,corVecEst,color=domnetvec,alpha=netpropvec^2,group=V7)) + geom_point(size=4,aes(Tot_patchnum,corVecEst))+ scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068')) + xlab("Total Number of Patches") + ylab("AgeSegregCor") +theme_classic(base_size = 28) + ggtitle('Correlation of Network Segregation and Age over All Networks')+ ylim(-.5,.5)
+ggplot(Seg_CIplotdf,aes(Tot_patchnum,corVecEst,color=domnetvec,alpha=netpropvec^2,group=V7)) + geom_point(size=4,aes(Tot_patchnum,corVecEst))+ scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068')) + xlab("Total Number of Patches") + ylab("AgeSegregCor") +theme_classic(base_size = 28) + ggtitle('Correlation of Network Segregation and Age over All Networks')+ ylim(-.5,.5)
 
-ggplot(Seg_CIplotdf[indofint,],aes(tmvec,Tot_patchnum,color=domnetvec,alpha=netpropvec^2,group=V7))+ geom_point(size=4,aes(tmvec,Tot_patchnum)) + scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068')) + xlab("Transmodality") + ylab("Total Patch number") +theme_classic(base_size = 28) + ggtitle('Correlation of Network Segregation and Age over All Networks')
+ggplot(Seg_CIplotdf,aes(tmvec,Tot_patchnum,color=domnetvec,alpha=netpropvec^2,group=V7))+ geom_point(size=4,aes(tmvec,Tot_patchnum)) + scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068')) + xlab("Transmodality") + ylab("Total Patch number") +theme_classic(base_size = 28) + ggtitle('Correlation of Network Segregation and Age over All Networks')
 
-ggplot(Seg_CIplotdf[indofint,],aes(tmvec,Tot_patchnum,color=scalesvec,group=V7))+ geom_point(size=4,aes(tmvec,Tot_patchnum)) +theme_classic(base_size = 28) + ggtitle('Correlation of Network Segregation and Age over All Networks')
+ggplot(Seg_CIplotdf,aes(tmvec,Tot_patchnum,color=scalesvec,group=V7))+ geom_point(size=4,aes(tmvec,Tot_patchnum)) +theme_classic(base_size = 28) + ggtitle('Correlation of Network Segregation and Age over All Networks')+ scale_colour_gradient(low="#55185D", high="#ECB602")
 
 
-ggplot(Seg_CIplotdf[indofint,],aes(tmvec,Tot_patchnum))+ geom_pointdensity(size=4, adjust = 3)+ xlab("Transmodality") + ylab("Total Patch number")
+ggplot(Seg_CIplotdf,aes(tmvec,Tot_patchnum))+ geom_pointdensity(size=4, adjust = 3)+ xlab("Transmodality") + ylab("Total Patch number")
 
-ggplot(Seg_CIplotdf[indofint,],aes(corVecEst,Tot_patchnum))+ geom_pointdensity(size=4)+ xlab("Transmodality") + ylab("Total Patch number")
+ggplot(Seg_CIplotdf,aes(corVecEst,Tot_patchnum))+ geom_pointdensity(size=4)+ xlab("Transmodality") + ylab("Total Patch number")
 ```
 
 ```{r}
