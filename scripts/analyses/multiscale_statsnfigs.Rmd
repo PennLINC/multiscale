@@ -271,11 +271,12 @@ ggarrange(indseg,groseg,ncol=1)
 # 29 for scales studied
 ind_segcors<-matrix(0,29,2)
 ind_segcors[,1]<-2:30
-
+# make an "all" segcors for plotting a thousand lines down or so
+ind_segcorsa<-ind_segcors
 # 7/11 - testing across age ranges for that dependence
 indglobseg_813<-subset(indglobseg,indglobseg$Age<13)
 indglobseg_1318<-subset(indglobseg,indglobseg$Age>13 & indglobseg$Age <18)
-groglobseg_1823<-subset(groglobseg,groglobseg$Age>18)
+indglobseg_1823<-subset(groglobseg,groglobseg$Age>18)
 groglobseg_813<-subset(groglobseg,groglobseg$Age<13)
 groglobseg_1318<-subset(groglobseg,groglobseg$Age>13 & groglobseg$Age <18)
 groglobseg_1823<-subset(groglobseg,groglobseg$Age>18)
@@ -294,6 +295,7 @@ for (i in 1:29){
   # partial spearmans to extrac age relation
   pspear=pcor(scaledf,method='spearman')$estimate
   ind_segcors[i,2]<-pspear[4]
+  ind_segcorsa[i,2]<-pspear[4]
 }
 
 ## now group level
@@ -334,6 +336,9 @@ all<-ggplot(x,aes(X1,value,group=Partitioning,color=Partitioning)) + geom_step(s
 
 #### age segment-specific plots
 ########younguns###########
+ind_segcorsy<-matrix(0,29,2)
+ind_segcorsy[,1]<-2:30
+
 for (i in 1:29){
   # i+4 because first column is scanid, second is age, third is sex, 4th is motion
   # 7/11 - testing across age ranges for that dependence
@@ -343,6 +348,7 @@ for (i in 1:29){
   # partial spearmans to extrac age relation
   pspear=pcor(scaledf,method='spearman')$estimate
   ind_segcors[i,2]<-pspear[4]
+  ind_segcorsy[i,2]<-pspear[4]
 }
 
 for (i in 1:29){
@@ -370,6 +376,8 @@ young<-ggplot(x,aes(X1,value,group=Partitioning,color=Partitioning)) + geom_step
     geom_hline(aes(yintercept=-.125), linetype="dashed", col='#ECB602',size=2.5) + scale_color_manual(values = c("black", "grey"))+ggtitle("Global Segregation and Age Correlation Over Scales - 8-13 Years")
 
 ###########mids##############
+ind_segcorsm<-matrix(0,29,2)
+ind_segcorsm[,1]<-2:30
 for (i in 1:29){
   # i+4 because first column is scanid, second is age, third is sex, 4th is motion
   # 7/11 - testing across age ranges for that dependence
@@ -379,6 +387,7 @@ for (i in 1:29){
   # partial spearmans to extrac age relation
   pspear=pcor(scaledf,method='spearman')$estimate
   ind_segcors[i,2]<-pspear[4]
+  ind_segcorsm[i,2]<-pspear[4]
 }
 for (i in 1:29){
   scaledf<-cbind(groglobseg_1318$Age,groglobseg_1318$Sex,groglobseg_1318$Motion,groglobseg_1318[,i+4])
@@ -406,6 +415,8 @@ mid<-ggplot(x,aes(X1,value,group=Partitioning,color=Partitioning)) + geom_step(s
 
 
 ###########geezers##########
+ind_segcorsg<-matrix(0,29,2)
+ind_segcorsg[,1]<-2:30
 for (i in 1:29){
   # i+4 because first column is scanid, second is age, third is sex, 4th is motion
   # 7/11 - testing across age ranges for that dependence
@@ -415,6 +426,7 @@ for (i in 1:29){
   # partial spearmans to extrac age relation
   pspear=pcor(scaledf,method='spearman')$estimate
   ind_segcors[i,2]<-pspear[4]
+  ind_segcorsg[i,2]<-pspear[4]
 }
 
 for (i in 1:29){
@@ -836,7 +848,7 @@ for (i in 1:length(masterdf[,indiv_nsegcols_ind])){
   derivInfo[i,]=derv$sig_deriv
   forSpline<-predict(igam, data = masterdf, type = "terms")
   # adding mean val because output values are centered
-  #colOfInt<-unlist(masterdf[,indiv_nsegcols_ind][i])
+  colOfInt<-unlist(masterdf[,indiv_nsegcols_ind][i])
   NetSplines[i,]<-forSpline[,3]+coef(igam)[1]
   if (mean(colOfInt)<.3){
     print(paste(x,mean(colOfInt)))
@@ -1279,6 +1291,170 @@ for (i in 2:30){
 forMLpc<-cbind(df$bblid,df$Age,df$Motion,df$Sex)
 MPpcFN<-'/cbica/projects/pinesParcels/results/EffectVecs/forMLpc.csv'
 write.table(forMLpc,MPpcFN,,row.names = F,col.names = F,sep = ',')
+```
+
+```{r}
+##################### START OF PARTICIPATION COEFFICIENT ######################
+# global participation coefficient by age
+
+globPC<-read.csv('/cbica/projects/pinesParcels/results/EffectVecs/avgPC.csv')
+colnames(globPC)[1]<-'bblid'
+
+globPCdf<-merge(df,data.frame(globPC),by='bblid')
+# take out scanid
+globPCdf<-globPCdf[,-c(2)]
+# change age to years
+globPCdf$Age<-globPCdf$Age/12
+
+colnames(globPCdf)[5:33]<-as.character(2:30)
+globPCdfMotSexCor<-globPCdf
+for (i in 5:33){
+  CLM<-lm(globPCdf[,i]~Motion+Sex,data=globPCdf)
+  globPCdfMotSexCor[,i]<-CLM$residuals
+}
+
+mCindglobPC<-melt(globPCdfMotSexCor, id=c(1,2,3,4))
+
+# individual PARTICIPATION COEFFICIENT over scales plots, colored by age ##
+indPC<-ggplot(data=mCindglobPC,aes(x=as.numeric(as.character(variable)),y=value,group=bblid,color=Age)) +geom_line(alpha = 0.12,size=1.5)+scale_color_gradientn(colors=c("yellow","purple")) + theme_dark(base_size = 28)+labs(title="M/S-Regressed Glob. PartCoef") + scale_x_continuous(name ="# of Communitites",  breaks=seq(2, 30, 4))+ylab("Global Participation Coef.")
+
+
+### get global PARTICIPATION COEFFICIENT 
+### Now with motion + sex control
+# 29 for scales studied
+ind_pccors<-matrix(0,29,2)
+ind_pccors[,1]<-2:30
+
+# 7/11 - testing across age ranges for that dependence
+indglobpc_813<-subset(globPCdf,globPCdf$Age<13)
+indglobpc_1318<-subset(globPCdf,globPCdf$Age>13 & globPCdf$Age <18)
+indglobpc_1823<-subset(globPCdf,globPCdf$Age>18)
+
+#### repeated ggpplot uses residuals, but pspear and cor over scales uses simultaneously fit spear-men
+### agebeta vec does use simulataneous fit (partial correlations)
+for (i in 1:29){
+  # i+4 because first column is scanid, second is age, third is sex, 4th is motion
+  print(ggplot(globPCdfMotSexCor,aes(Age,globPCdfMotSexCor[,i+4])) + geom_point() + geom_smooth() +ylab(paste("Ind Global PC at Scale", i+1)))
+  
+  
+  # 7/11 - testing across age ranges for that dependence
+  
+  # relevant df
+  scaledf<-cbind(globPCdf$Age,globPCdf$Sex,globPCdf$Motion,globPCdf[,i+4])
+  # partial spearmans to extrac age relation
+  pspear=pcor(scaledf,method='spearman')$estimate
+  ind_pccors[i,2]<-pspear[4]
+}
+
+
+indagecorPC<-correlations_over_scales(ind_pccors,"Global Participation Coef Age Correlation - Individ. Partitions")
+ggarrange(indPC,indagecorPC,ncol = 1)
+ind_pccors_df<-data.frame(ind_pccors)
+
+#### age segment-specific plots
+########younguns###########
+ind_pccorsy<-matrix(0,29,2)
+ind_pccorsy[,1]<-2:30
+
+for (i in 1:29){
+  # i+4 because first column is scanid, second is age, third is sex, 4th is motion
+  # 7/11 - testing across age ranges for that dependence
+  
+  # relevant df
+  scaledf<-cbind(indglobpc_813$Age,indglobpc_813$Sex,indglobpc_813$Motion,indglobpc_813[,i+4])
+  # partial spearmans to extrac age relation
+  pspear=pcor(scaledf,method='spearman')$estimate
+  ind_pccorsy[i,2]<-pspear[4]
+}
+
+youngindagecor<-correlations_over_scales(ind_pccorsy,"Global Partif. Coef. Age Correlation - 8-13 Year Olds")
+
+ind_pccorsy_df<-data.frame(ind_pccorsy)
+
+###########mids##############
+ind_pccorsm<-matrix(0,29,2)
+ind_pccorsm[,1]<-2:30
+
+for (i in 1:29){
+  # i+4 because first column is scanid, second is age, third is sex, 4th is motion
+  # 7/11 - testing across age ranges for that dependence
+  
+  # relevant df
+  scaledf<-cbind(indglobpc_1318$Age,indglobpc_1318$Sex,indglobpc_1318$Motion,indglobpc_1318[,i+4])
+  # partial spearmans to extrac age relation
+  pspear=pcor(scaledf,method='spearman')$estimate
+  ind_pccorsm[i,2]<-pspear[4]
+}
+
+midindagecor<-correlations_over_scales(ind_pccorsm,"Global Partif. Coef. Age Correlation - 13-18 Year Olds")
+
+ind_pccorsm_df<-data.frame(ind_pccorsm)
+
+
+###########geezers##########
+ind_pccorsg<-matrix(0,29,2)
+ind_pccorsg[,1]<-2:30
+for (i in 1:29){
+  # i+4 because first column is scanid, second is age, third is sex, 4th is motion
+  # 7/11 - testing across age ranges for that dependence
+  
+  # relevant df
+  scaledf<-cbind(indglobpc_1823$Age,indglobpc_1823$Sex,indglobpc_1823$Motion,indglobpc_1823[,i+4])
+  # partial spearmans to extrac age relation
+  pspear=pcor(scaledf,method='spearman')$estimate
+  ind_pccorsg[i,2]<-pspear[4]
+}
+
+
+oldindagecor<-correlations_over_scales(ind_pccorsg,"Global Partif. Coef. Age Correlation - 18-23 Year Olds")
+
+
+ind_pccorsg_df<-data.frame(ind_pccorsg)
+
+
+ageBreakDown<-ggarrange(indagecorPC,youngindagecor,midindagecor,oldindagecor)
+
+
+# merged
+mergeddf<-merge(ind_pccors_df,ind_pccorsy_df,by="X1")
+mergeddf<-merge(mergeddf,ind_pccorsm_df,by="X1")
+mergeddf<-merge(mergeddf,ind_pccorsg_df,by='X1')
+colnames(mergeddf)<-c("X1","All","Young","Mid","Old")
+x<-melt(mergeddf,id="X1")
+colnames(x)<-c("X1","AgeBracket","value")
+allpc<-ggplot(x,aes(X1,value,group=AgeBracket,color=AgeBracket)) + geom_step(size=3)+ylab('ParCoef-Age Correlation')+
+    theme_dark(base_size = 28)+
+    theme(axis.text=element_text(), axis.title = element_text(),panel.grid.minor = element_blank(), plot.title = element_text())+
+    xlab("# of Communities") + scale_x_continuous(breaks=seq(2, 30, 4)) +
+    geom_hline(aes(yintercept=.098), linetype="dashed", col='#55185D',size=2.5) +
+    geom_hline(aes(yintercept=-.098), linetype="dashed", col='#55185D',size=2.5) +
+  geom_hline(aes(yintercept=.125), linetype="dashed", col='#ECB602',size=2.5) +
+    geom_hline(aes(yintercept=-.125), linetype="dashed", col='#ECB602',size=2.5) + scale_color_manual(values = c("white","green", "blue","red"))+ggtitle("Global Part.Coef. and Age Correlation Over Scales")
+
+#### re-iterating global seg for comparison
+ind_gseg_df<-data.frame(ind_segcorsa)
+ind_gsegy_df<-data.frame(ind_segcorsy)
+ind_gsegm_df<-data.frame(ind_segcorsm)
+ind_gsegg_df<-data.frame(ind_segcorsg)
+
+mergeddf<-merge(ind_gseg_df,ind_gsegy_df,by="X1")
+mergeddf<-merge(mergeddf,ind_gsegm_df,by="X1")
+mergeddf<-merge(mergeddf,ind_gsegg_df,by='X1')
+colnames(mergeddf)<-c("X1","All","Young","Mid","Old")
+x<-melt(mergeddf,id="X1")
+colnames(x)<-c("X1","AgeBracket","value")
+allseg<-ggplot(x,aes(X1,value,group=AgeBracket,color=AgeBracket)) + geom_step(size=3)+ylab('Segregation-Age Correlation')+
+    theme_dark(base_size = 28)+
+    theme(axis.text=element_text(), axis.title = element_text(),panel.grid.minor = element_blank(), plot.title = element_text())+
+    xlab("# of Communities") + scale_x_continuous(breaks=seq(2, 30, 4)) +
+    geom_hline(aes(yintercept=.098), linetype="dashed", col='#55185D',size=2.5) +
+    geom_hline(aes(yintercept=-.098), linetype="dashed", col='#55185D',size=2.5) +
+  geom_hline(aes(yintercept=.125), linetype="dashed", col='#ECB602',size=2.5) +
+    geom_hline(aes(yintercept=-.125), linetype="dashed", col='#ECB602',size=2.5) + scale_color_manual(values = c("white","green", "blue","red"))+ggtitle("Global Segregation and Age Correlation Over Scales")
+
+
+ggarrange(allseg,allpc)
+##################### END OF PARTICIPATION COEFFICIENT #######################
 ```
 
 ```{r}
