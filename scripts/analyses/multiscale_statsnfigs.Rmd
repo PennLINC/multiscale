@@ -1276,7 +1276,7 @@ for (i in 2:30){
 #h5 can support this file format, but this r does not support h5
 
 ### screw it we're regressing in matlab
-forMLpc<-cbind(df$bblid,df$Age,df$Motion)
+forMLpc<-cbind(df$bblid,df$Age,df$Motion,df$Sex)
 MPpcFN<-'/cbica/projects/pinesParcels/results/EffectVecs/forMLpc.csv'
 write.table(forMLpc,MPpcFN,,row.names = F,col.names = F,sep = ',')
 ```
