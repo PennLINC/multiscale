@@ -1269,6 +1269,19 @@ for (i in 2:30){
 ```
 
 ```{r}
+# longer effect vectors for vertex-wisepc
+# also need matlab-reading capacity
+#library(rmatio)
+#pospc=read.mat('/cbica/projects/pinesParcels/results/aggregated_data/vwise_pospc_allscales_allsubjs.mat')
+#h5 can support this file format, but this r does not support h5
+
+### screw it we're regressing in matlab
+forMLpc<-cbind(df$bblid,df$Age,df$Motion)
+MPpcFN<-'/cbica/projects/pinesParcels/results/EffectVecs/forMLpc.csv'
+write.table(forMLpc,MPpcFN,,row.names = F,col.names = F,sep = ',')
+```
+
+```{r}
 # load gradstats
 grad_sum_df<-read.csv('/cbica/projects/pinesParcels/lambdas_pg1.csv',header=F)
 age<-data.frame(demo$ageAtScan1,demo$bblid)
