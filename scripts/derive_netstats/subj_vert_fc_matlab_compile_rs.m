@@ -19,7 +19,7 @@ function subj_vert_fc_rs(fc_configfp)
 	%%% Make empty cell arrays with a spot for each metric at each scale
 	for i=2:max(Krange)
         	Khouse{i}=zeros(i);
-        	GKhouse{i}==zeros(i);
+        	GKhouse{i}=zeros(i);
         	K_bTS_house{i}=zeros(i);
 	end
 	
@@ -27,8 +27,8 @@ function subj_vert_fc_rs(fc_configfp)
 	partcoefpos=zeros(17734,length(Krange));
 	partcoefneg=zeros(17734,length(Krange));
 	
-        vw_ts_l_p=['/cbica/projects/pinesParcels/data/Data/Rs/' num2str(subjs(s)) '/surf/lh.fs5.sm6.residualised.mgh'];
-	vw_ts_r_p=['/cbica/projects/pinesParcels/data/Data/Rs/' num2str(subjs(s)) '/surf/rh.fs5.sm6.residualised.mgh'];
+        vw_ts_l_p=['/cbica/projects/pinesParcels/data/Rs/' num2str(subjs(s)) '/surf/lh.fs5.sm6.residualised.mgh'];
+	vw_ts_r_p=['/cbica/projects/pinesParcels/data/Rs/' num2str(subjs(s)) '/surf/rh.fs5.sm6.residualised.mgh'];
 	vw_ts_l=MRIread(vw_ts_l_p);
 	vw_ts_r=MRIread(vw_ts_r_p);
 	vw_ts_l=vw_ts_l.vol;
@@ -94,7 +94,7 @@ function subj_vert_fc_rs(fc_configfp)
 			%g_winconvals(N)=g_wincon;
 			% and within connectivity assessed via cor. w/ U corresponding to same K
 			K_TimeSeries=vw_ts_bothrw(:,Kind);	
-			bTS_wincon=mean(corr(K_TimeSeries,subj_yu(:,N)));
+			%bTS_wincon=mean(corr(K_TimeSeries,subj_yu(:,N)));
 			%bTS_winconvals(N)=bTS_wincon;
 			% values are reasonable relative to each other (wincon > g_wincon), but lower than expected. Double check to make sure mapping on correctly
 			% make vector for all values except for current K (N) to loop through
@@ -110,15 +110,15 @@ function subj_vert_fc_rs(fc_configfp)
 				g_bwMat=ba_conmat(g_Kind,g_NotKind);
 				bwcon=mean(mean(bwMat));
 				g_bwcon=mean(mean(g_bwMat));
-				bTScon=mean(corr(K_TimeSeries,subj_yu(:,curOtherNet)));
+				%bTScon=mean(corr(K_TimeSeries,subj_yu(:,curOtherNet)));
 				
 				Kmat(N,curOtherNet)=bwcon;
 				g_Kmat(N,curOtherNet)=g_bwcon;
-				bTS_Kmat(N,curOtherNet)=bTScon;
+				%bTS_Kmat(N,curOtherNet)=bTScon;
 			end
 			Kmat(N,N)=wincon;
 			g_Kmat(N,N)=g_wincon;
-			bTS_Kmat(N,N)=bTS_wincon;
+			%bTS_Kmat(N,N)=bTS_wincon;
 		end
 		% small section to get vertex-wise participation coefficients for this this subject at this scale
 		[pospc, negpc] = participation_coef_sign(ba_conmat,subj_V(:,K+1));
@@ -139,7 +139,7 @@ function subj_vert_fc_rs(fc_configfp)
 		%%% save all FC, PC coef files in subj dir to be aggregated later
 		Khouse{K}=Kmat;
                 GKhouse{K}=g_Kmat;
-                K_bTS_house{K}=bTS_Kmat;
+                %K_bTS_house{K}=bTS_Kmat;
 		toc
 	end
 	% save files to subjdir

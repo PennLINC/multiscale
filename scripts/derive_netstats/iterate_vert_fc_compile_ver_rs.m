@@ -43,8 +43,8 @@ group_parts=group_parts.affils;
 group_parts_masked=group_parts(any(group_parts,2),:);
 
 % only 1 to test it out
-for s=1
-%for s=1:length(subjs);
+%for s=1
+for s=2:length(subjs);
 	outdir = ['/cbica/projects/pinesParcels/data/CombinedData/' num2str(subjs(s)) '/fc_metrics_rs.mat']; 
 	outdirp = ['/cbica/projects/pinesParcels/data/CombinedData/' num2str(subjs(s)) '/pc_metrics_rs.mat'];
 	% commented out for overwriting
@@ -53,7 +53,7 @@ for s=1
 		% save needed arguments
 		save(configfp, 's', 'surfMask', 'Krange', 'subjs', 'group_parts_masked', 'outdir', 'outdirp');
 		% turn this into a qsub command
-		cmd = ['/cbica/projects/pinesParcels/multiscale/scripts/derive_netstats/run_subj_vert_fc_matlab_compile.sh $MATLAB_DIR ' configfp ];
+		cmd = ['/cbica/projects/pinesParcels/multiscale/scripts/derive_netstats/run_subj_vert_fc_matlab_compile_rs.sh $MATLAB_DIR ' configfp ];
 	
 		fid=fopen(['/cbica/projects/pinesParcels/data/CombinedData/' num2str(subjs(s)) '/tmp.sh'], 'w');
 		fprintf(fid,cmd);
