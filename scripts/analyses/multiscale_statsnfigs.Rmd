@@ -1429,7 +1429,7 @@ allpc<-ggplot(x,aes(X1,value,group=AgeBracket,color=AgeBracket)) + geom_step(siz
     geom_hline(aes(yintercept=.098), linetype="dashed", col='#55185D',size=2.5) +
     geom_hline(aes(yintercept=-.098), linetype="dashed", col='#55185D',size=2.5) +
   geom_hline(aes(yintercept=.125), linetype="dashed", col='#ECB602',size=2.5) +
-    geom_hline(aes(yintercept=-.125), linetype="dashed", col='#ECB602',size=2.5) + scale_color_manual(values = c("white","green", "blue","red"))+ggtitle("Global Part.Coef. and Age Correlation Over Scales")
+    geom_hline(aes(yintercept=-.125), linetype="dashed", col='#ECB602',size=2.5) + scale_color_manual(values = c("white","none", "none","red"))+ggtitle("Global Part.Coef. and Age Correlation Over Scales")
 
 #### re-iterating global seg for comparison
 ind_gseg_df<-data.frame(ind_segcorsa)
@@ -1450,7 +1450,7 @@ allseg<-ggplot(x,aes(X1,value,group=AgeBracket,color=AgeBracket)) + geom_step(si
     geom_hline(aes(yintercept=.098), linetype="dashed", col='#55185D',size=2.5) +
     geom_hline(aes(yintercept=-.098), linetype="dashed", col='#55185D',size=2.5) +
   geom_hline(aes(yintercept=.125), linetype="dashed", col='#ECB602',size=2.5) +
-    geom_hline(aes(yintercept=-.125), linetype="dashed", col='#ECB602',size=2.5) + scale_color_manual(values = c("white","green", "blue","red"))+ggtitle("Global Segregation and Age Correlation Over Scales")
+    geom_hline(aes(yintercept=-.125), linetype="dashed", col='#ECB602',size=2.5) + scale_color_manual(values = c("white","none", "none","none"))+ggtitle("Global Segregation and Age Correlation Over Scales")
 
 
 ggarrange(allseg,allpc)
