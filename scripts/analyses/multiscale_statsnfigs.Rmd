@@ -1277,7 +1277,28 @@ for (i in 2:30){
 }
 
 # Write em out as matlab readable vectors (K: N1est N2est ... Nnest)
+```
 
+```{r}
+# same approach to write normative segregation for each network at each scale
+SegEstVecNsave<-function(x,K,vecIn){
+  # relevant df
+  meanSeg<-mean(x)
+  append(vecIn,meanSeg)
+}
+
+# loop over scales
+for (i in 2:30){
+  print(i)
+  keyphrase<-paste('seg_scale',as.character(i),'_net',sep='')
+  scaleind=grep(keyphrase,colnames(masterdf))
+  # just individualized for now
+  # reads in vector of segreg vals aligned with age vals and scale 
+  vec_Seg<-NULL
+  vec_Seg<-lapply(masterdf[,intersect(indiv_nsegcols_ind,scaleind)],SegEstVecNsave,K=i,vecIn=vec_Seg)
+  vecfp_Seg<-paste('/cbica/projects/pinesParcels/results/EffectVecs/',as.character(i),'_mSeg.csv',sep='')
+  write.table(as.numeric(vec_Seg),vecfp_Seg,row.names = F,col.names = F,sep = ',')
+}
 ```
 
 ```{r}
@@ -1465,6 +1486,7 @@ colnames(grad_sum_df)<-c("bblid","grad1lambda")
 colnames(age)<-c("age","bblid")
 grad_sum_df$bblid<-as.integer(grad_sum_df$bblid)
 merged_df<-merge(grad_sum_df,age,by="bblid")
+plot(merged_df$age,merged_df$grad1lambda)
 
 # load grad-dm-cors
 graddmcor<-read.csv('/cbica/projects/pinesParcels/results/aggregated_data/SpatialCorIndK3DMPG1.csv',header=F);
@@ -1501,6 +1523,25 @@ ggplot(confvecdf,aes(tmvec,patchAgecorVec,color=domnetvec,alpha=netpropvec^2)) +
     geom_hline(aes(yintercept=-.098), linetype="dashed", col='#55185D',size=2.5) +
     geom_hline(aes(yintercept=.125), linetype="dashed", col='#ECB602',size=2.5)+
     geom_hline(aes(yintercept=-.125), linetype="dashed", col='#ECB602',size=2.5)
+```
+
+
+```{r}
+# FC mats with age effects overlaid instead of FC values
+library(corrplot)
+# going to use domnet vec to assign dominant yeo7 network as colnames
+for (K in 2:30){
+  # index where this K starts in domnetvec
+  K_start=((K-1)*(K))/2
+  K_end=(((K-1)*(K))/2)+K-1
+  Kind<-K_start:K_end
+  AgeEfMatFn=paste('/cbica/projects/pinesParcels/results/EffectMats/fc_ageMat_K',K,'.csv',sep='')
+  AgeEfMat=as.matrix(read.csv(AgeEfMatFn))
+  colnames(AgeEfMat)<-domnetvec[Kind]
+  rownames(AgeEfMat)<-domnetvec[Kind]
+  corrplot(AgeEfMat,is.corr = F)
+}
+
 ```
 
 

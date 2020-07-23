@@ -2,14 +2,14 @@
 
 addpath('/cbica/projects/pinesParcels/multiscale/scripts/derive_parcels/Toolbox');
 vecsfp='/cbica/projects/pinesParcels/results/EffectVecs';
-vecs=dir([vecsfp '/*Age.csv']);
+vecs=dir([vecsfp '/*mSeg.csv']);
 %uncomment to switch to EF
 %vecs=dir([vecsfp '/*_EF.csv']);
 % first two are . and ..
 sizevecs=size(vecs);
 for i=1:sizevecs(1)
 	% Set to AGE for this version. Change lines 3 and 5 if you switch this one. and the _Age.csv fn a few lines down
-	effectname='Age'
+	effectname='mSeg'
 	%effectname='EF'
 	% i + 1 because 1:29 files but 2:30 scales
 	scale=i+1;
