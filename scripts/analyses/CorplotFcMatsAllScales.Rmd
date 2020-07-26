@@ -1,0 +1,15 @@
+---
+title: "AgeFCMatViz"
+author: "Adam"
+date: "7/23/2020"
+output: html_document
+---
+
+```{r}
+library(corrplot)
+for (i in 2:30){
+  AgeEfMatFn=paste('/cbica/projects/pinesParcels/results/EffectMats/fc_ageMat_K',i,'.csv',sep='')
+  AgeEfMat=read.csv(AgeEfMatFn)
+  corrplot(as.matrix(AgeEfMat),is.corr = F)
+}
+```
