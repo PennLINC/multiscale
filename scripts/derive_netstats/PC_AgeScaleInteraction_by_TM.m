@@ -4,6 +4,7 @@
 addpath(genpath('/cbica/projects/pinesParcels/multiscale/scripts/derive_parcels/Toolbox'));
 % Load in previously calculated age relation change over scales
 COS=load('/cbica/projects/pinesParcels/results/EffectVecs/agePCspearTotChange.mat');
+NCOS=load('/cbica/projects/pinesParcels/results/EffectVecs/ageNegPCspearTotChange.mat');
 % Load in normative transmodality
 ProjectFolder = '/cbica/projects/pinesParcels/data/princ_gradients';
 pgl = gifti([ProjectFolder '/Gradients.lh.fsaverage5.func.gii']);
@@ -31,3 +32,8 @@ CMTM=vertcat(grad_lh_masked,grad_rh_masked);
 VertVecs=table(CMTM,COS.PcAgeTotDif);
 
 writetable(VertVecs,'/cbica/projects/pinesParcels/results/aggregated_data/ScaleAgeOrg_TM_interaction.csv');
+
+% same thing but for negative weights
+NVertVecs=table(CMTM,NCOS.NegPcAgeTotDif);
+
+writetable(NVertVecs,'/cbica/projects/pinesParcels/results/aggregated_data/ScaleAgeNegOrg_TM_interaction.csv');

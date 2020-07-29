@@ -7,17 +7,20 @@ ProjectFolder = '/cbica/projects/pinesParcels/data/SingleParcellation';
 
 % load in posPCmatrix
 ppcstruct=load('/cbica/projects/pinesParcels/results/aggregated_data/vwise_pospc_allscales_allsubjs.mat');
-
+npcstruct=load('/cbica/projects/pinesParcels/results/aggregated_data/vwise_negpc_allscales_allsubjs.mat');
 % initialize empty matrix for each network PC value for each subject (extra column for bblid)
-dataframe=zeros(693,464);
+dataframe=zeros(693,465);
+dataframeneg=zeros(693,465);
 
 % for each subj
 for s=1:length(subjs);
 	s
 	% initialize vector for 464 network PC values
 	subjVector=subjs(s);
+	subjVectorN=subjs(s);
 	% extract subjects' pcs
 	subjspcs=ppcstruct.pcoefpos(:,:,s);
+	subjsnpcs=npcstruct.pcoefneg(:,:,s);
 	% for each scale
 	for K=Krange;
 		% extract subjects' partitions for this scale
@@ -31,20 +34,27 @@ for s=1:length(subjs);
 		[ ~ , subj_V(:,K+1)]=max(subj_V,[],2); 	
 		% extract pcs for this scale
 		subjpcsK=subjspcs(:,K);
+		subjnpcsK=subjsnpcs(:,K);
 		% for each net
 		for N=1:K;
 			% get vertices belonging to net N
 			Kind=find(subj_V(:,K+1)==N);
 			% get avg pc of these vertices (at this scale)
 			meanPC=mean(subjpcsK(Kind));
+			meanNPC=mean(subjnpcsK(Kind));
 			% append vector of scaleK_netN_PC
 			subjVector=[subjVector meanPC];
+			subjVectorN=[subjVectorN meanNPC];
 		end
 	end
 	dataframe(s,:)=subjVector;
+	dataframeneg(s,:)=subjVectorN;
 end
 % print out average network-wise PC for sanity check
 avgNwisePCs=mean(dataframe);
+avgNNwisePCs=mean(dataframeneg);
 % write it out
 writetable(table(dataframe),'/cbica/projects/pinesParcels/results/aggregated_data/NetworkWisePCVals.csv');
 writetable(table(avgNwisePCs),'/cbica/projects/pinesParcels/results/aggregated_data/MeanNetworkWisePCVals.csv'); 
+writetable(table(dataframeneg),'/cbica/projects/pinesParcels/results/aggregated_data/NetworkWiseNegPCVals.csv');
+writetable(table(avgNNwisePCs),'/cbica/projects/pinesParcels/results/aggregated_data/MeanNetworkWiseNegPCVals.csv');

@@ -1235,6 +1235,12 @@ library(ggpointdensity)
 ggplot(f,aes(x=CMTM,y=Var2)) + geom_pointdensity(adjust=.5) + scale_color_viridis_c() +xlab('Transmodality') + ylab('Change in Age-Promiscuity Relation over Scales')
 
 ggplot(f,aes(x=CMTM,y=Var2)) + geom_point(alpha=.08,size=2) +xlab('Transmodality') + ylab('Change in Age-Promiscuity Relation over Scales')
+
+# and for negative PC
+f2=read.csv('/cbica/projects/pinesParcels/results/aggregated_data/ScaleAgeNegOrg_TM_interaction.csv')
+ggplot(f2,aes(x=CMTM,y=Var2)) + geom_pointdensity(adjust=.5) + scale_color_viridis_c() +xlab('Transmodality') + ylab('Change in Age-Promiscuity Relation over Scales')
+
+ggplot(f2,aes(x=CMTM,y=Var2)) + geom_point(alpha=.08,size=2) +xlab('Transmodality') + ylab('Change in Age-Promiscuity Relation over Scales')
 ```
 
 
@@ -1336,7 +1342,7 @@ for (y in 1:7){
       scalefield=splitname[4]
       net1field=splitname[5]
       net2field=splitname[7]
-      # doctor up scale and net1field so they are exclusively the value of interest
+      # doctor up scale and net1field so they are exclusively the value of interestx
       scale=as.numeric(unlist(strsplit(scalefield,'e'))[2])
       net1=unlist(strsplit(net1field,'s'))[2]
       net2=net2field 
@@ -1477,16 +1483,35 @@ write.table(forMLpc,MPpcFN,,row.names = F,col.names = F,sep = ',')
 # global participation coefficient by age
 
 globPC<-read.csv('/cbica/projects/pinesParcels/results/EffectVecs/avgPC.csv')
+NegglobPC<-read.csv('/cbica/projects/pinesParcels/results/EffectVecs/avgNegPC.csv')
+
 colnames(globPC)[1]<-'bblid'
+colnames(NegglobPC)[1]<-'bblid'
 
 globPCdf<-merge(df,data.frame(globPC),by='bblid')
+NegglobPCdf<-merge(df,data.frame(NegglobPC),by='bblid')
+
 # take out scanid
 globPCdf<-globPCdf[,-c(2)]
+NegglobPCdf<-NegglobPCdf[,-c(2)]
 # change age to years
 globPCdf$Age<-globPCdf$Age/12
+NegglobPCdf$Age<-NegglobPCdf$Age/12
 
 colnames(globPCdf)[5:33]<-as.character(2:30)
+colnames(NegglobPCdf)[5:33]<-as.character(2:30)
+
 globPCdfMotSexCor<-globPCdf
+NegglobPCdfMotSexCor<-NegglobPCdf
+
+######## end of data tidying - below not adapted for neg yet (use find and replace in sep. chunk)
+
+
+######## Comment this out to run on positive PC again
+###globPCdfMotSexCor<-NegglobPCdfMotSexCor
+
+
+
 for (i in 5:33){
   CLM<-lm(globPCdf[,i]~Motion+Sex,data=globPCdf)
   globPCdfMotSexCor[,i]<-CLM$residuals
@@ -1610,7 +1635,7 @@ allpc<-ggplot(x,aes(X1,value,group=AgeBracket,color=AgeBracket)) + geom_step(siz
     geom_hline(aes(yintercept=.098), linetype="dashed", col='#55185D',size=2.5) +
     geom_hline(aes(yintercept=-.098), linetype="dashed", col='#55185D',size=2.5) +
   geom_hline(aes(yintercept=.125), linetype="dashed", col='#ECB602',size=2.5) +
-    geom_hline(aes(yintercept=-.125), linetype="dashed", col='#ECB602',size=2.5) + scale_color_manual(values = c("white","none", "none","red"))+ggtitle("Global Part.Coef. and Age Correlation Over Scales")
+    geom_hline(aes(yintercept=-.125), linetype="dashed", col='#ECB602',size=2.5) + scale_color_manual(values = c("white","green", "blue","red"))+ggtitle("Global Part.Coef. and Age Correlation Over Scales")
 
 #### re-iterating global seg for comparison
 ind_gseg_df<-data.frame(ind_segcorsa)
@@ -1667,7 +1692,28 @@ CIgroupingInd<-as.factor(1:464)
 PC_plotdf<-data.frame(tmvec,scalesvec,domnetvec,netpropvec,PCcorVecEst)
 
 PC_age_tm<-ggplot(PC_plotdf,aes(tmvec,PCcorVecEst,color=domnetvec,alpha=netpropvec^2)) + scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068')) + xlab("Transmodality") + ylab("Age PC Cor") +theme_classic(base_size = 28) + geom_point(size=4,aes(tmvec,PCcorVecEst)) + ggtitle('Correlation of Network PC and Age over All Communities')+ ylim(-.5,.5)
+```
 
+```{r}
+# network-wise negative PC effects
+# load in the network-PC vals
+NegpcNetVals<-read.csv('/cbica/projects/pinesParcels/results/aggregated_data/NetworkWiseNegPCVals.csv')
+colnames(NegpcNetVals)[1]<-'bblid'
+# used same matlab code to get these, same colname order applies
+colnames(NegpcNetVals)[2:465]<-colnames(masterdf[,indiv_nsegcols_ind])
+
+# PC-specific DF
+pcmasterdf<-merge(NegpcNetVals,df,by='bblid')
+
+
+NegPCcorVecEst<-as.numeric(lapply(pcmasterdf[,2:465],corEstVec))
+
+# augment dataframe for CI range plot
+CIgroupingInd<-as.factor(1:464)
+
+NegPC_plotdf<-data.frame(tmvec,scalesvec,domnetvec,netpropvec,NegPCcorVecEst)
+
+NegPC_age_tm<-ggplot(NegPC_plotdf,aes(tmvec,NegPCcorVecEst,color=domnetvec,alpha=netpropvec^2)) + scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068')) + xlab("Transmodality") + ylab("Age Neg PC Cor") +theme_classic(base_size = 28) + geom_point(size=4,aes(tmvec,NegPCcorVecEst)) + ggtitle('Correlation of Network Neg PC and Age over All Communities')+ ylim(-.5,.5)
 ##################### END OF PARTICIPATION COEFFICIENT #######################
 ```
 
