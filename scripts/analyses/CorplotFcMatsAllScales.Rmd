@@ -7,9 +7,15 @@ output: html_document
 
 ```{r}
 library(corrplot)
-for (i in 2:30){
-  AgeEfMatFn=paste('/cbica/projects/pinesParcels/results/EffectMats/fc_ageMat_K',i,'.csv',sep='')
-  AgeEfMat=read.csv(AgeEfMatFn)
-  corrplot(as.matrix(AgeEfMat),is.corr = F)
+for (K in 2:30){
+  K_start=((K-1)*(K))/2
+  K_end=(((K-1)*(K))/2)+K-1
+  Kind<-K_start:K_end
+  AgeEfMatFn=paste('/cbica/projects/pinesParcels/results/EffectMats/fc_ageMat_K',K,'.csv',sep='')
+  AgeEfMat=as.matrix(read.csv(AgeEfMatFn))
+  # requires domnetvec to be ran in other rmd
+  colnames(AgeEfMat)=domnetvec[Kind]
+  rownames(AgeEfMat)=domnetvec[Kind]
+  corrplot(AgeEfMat,is.corr = F)
 }
 ```
