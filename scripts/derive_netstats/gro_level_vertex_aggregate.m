@@ -43,11 +43,11 @@ fn=[outdir '/ind_vertices_mseg_allscales.mat'];
 save(fn,'dfseg_avg');
 % save for age relations eval
 fn=[outdir '/ind_vertices_win_allscales.mat'];
-save(fn,'dfwin');
+save(fn,'dfwin','-v7.3');
 fn=[outdir '/ind_vertices_bw_allscales.mat'];
-save(fn, 'dfbw');
+save(fn, 'dfbw','-v7.3');
 fn=[outdir '/ind_vertices_seg_allscales.mat'];
-save(fn, 'dfseg');
+save(fn, 'dfseg','-v7.3');
 % save for r friendly format (not needed atm, commented out)
 %writetable(cell2table(dfwin),strcat(outdir,'/vertices_win_allscales.csv'));
 %writetable(cell2table(dfbw),strcat(outdir,'/vertices_bw_allscales.csv'));
@@ -87,8 +87,8 @@ fn=[outdir '/gro_vertices_mseg_allscales.mat'];
 save(fn, 'dfseg_avg');
 % save for age relations eval
 fn=[outdir '/gro_vertices_win_allscales.mat'];
-save(fn, 'dfwin');
+save(fn, 'dfwin','-v7.3');
 fn=[outdir '/gro_vertices_bw_allscales.mat'];
-save(fn, 'dfbw');
+save(fn, 'dfbw','-v7.3');
 fn=[outdir '/gro_vertices_seg_allscales.mat'];
-save(fn, 'dfseg');
+save(fn, 'dfseg','-v7.3');
