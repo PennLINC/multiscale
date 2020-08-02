@@ -6,4 +6,4 @@ for i in $B; do
 	A+=" ${i}"
 done
 echo "$A "
-exec montage $A  -geometry +3+10 /cbica/projects/pinesParcels/results/viz/ConsOverScakes.png
+exec montage $A  -geometry +3+10 /cbica/projects/pinesParcels/results/viz/ConsOverScales.png

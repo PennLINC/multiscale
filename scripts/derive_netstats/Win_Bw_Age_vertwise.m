@@ -36,8 +36,6 @@ BwAgeEff=zeros(17734,29);
 %7/13/20 - used subj at index 542 to confirm alignment of ids - same 1st 10 vert pcs at scale 1 as from individual folder (individual pc_metrics.mat)
 parNetmat=table2array(nnet(:,2:4));
 
-%%%%%%%%%%%%%%%%%%%%%%%% Left off here
-
 for K=Krange
 	K
 	WinK=winstruct.dfwin(:,K-1,:);
@@ -82,6 +80,27 @@ BwAgeMidDif=BwAgeEff(:,18)-BwAgeEff(:,9);
 WinAgeFineDif=WinAgeEff(:,29)-WinAgeEff(:,19);
 BwAgeFineDif=BwAgeEff(:,29)-BwAgeEff(:,19);
 
+% actual correlations fit to each vertices' age relation over scales
+WinAgeEffScalesCor=zeros(17734,1);
+BwAgeEffScalesCor=zeros(17734,1);
+for v=1:17734
+	WinOverScales=WinAgeEff(v,:);
+	BwOverScales=BwAgeEff(v,:);
+	WinAgeEffScalesCor(v)=corr(WinOverScales',Krange');
+	BwAgeEffScalesCor(v)=corr(BwOverScales',Krange');
+end
+
+% change above scale 7
+fineKrange=8:30;
+fWinAgeEffScalesCor=zeros(17734,1);
+fBwAgeEffScalesCor=zeros(17734,1);
+for v=1:17734
+        WinOverScales=WinAgeEff(v,7:29);
+        BwOverScales=BwAgeEff(v,7:29);
+        fWinAgeEffScalesCor(v)=corr(WinOverScales',fineKrange');
+        fBwAgeEffScalesCor(v)=corr(BwOverScales',fineKrange');
+end
+
 % write out ageCorChanges
 fnT=['/cbica/projects/pinesParcels/results/EffectVecs/ageWinspearTotChange.mat'];
 fnC=['/cbica/projects/pinesParcels/results/EffectVecs/ageWinspearCoarseChange.mat'];
@@ -102,3 +121,13 @@ save(fnT,'BwAgeTotDif');
 save(fnC,'BwAgeCoarseDif');
 save(fnM,'BwAgeMidDif');
 save(fnF,'BwAgeFineDif');
+
+% write out correlation (slope) of vertexwise age correlations over scales
+fnW=['/cbica/projects/pinesParcels/results/EffectVecs/ageWinCor_x_ScaleCor.mat'];
+fnBW=['/cbica/projects/pinesParcels/results/EffectVecs/ageBwCor_x_ScaleCor.mat'];
+ffnW=['/cbica/projects/pinesParcels/results/EffectVecs/ageWinCor_x_ScaleCorFine.mat'];
+ffnBW=['/cbica/projects/pinesParcels/results/EffectVecs/ageBwCor_x_ScaleCorFine.mat'];
+save(fnW,'WinAgeEffScalesCor');
+save(fnBW,'BwAgeEffScalesCor');
+save(ffnW,'fWinAgeEffScalesCor');
+save(ffnBW,'fBwAgeEffScalesCor');
