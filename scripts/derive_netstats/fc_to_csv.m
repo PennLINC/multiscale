@@ -34,6 +34,9 @@ win_over_scales=zeros((length(Krange)*((min(Krange)+max(Krange))/2)),1);
 Networkwise_seg_over_scales=win_over_scales;
 % global segregation is just one per each K for each subj
 glob_seg_over_scales=zeros(length(Krange),1);
+%%% Added global within and global between
+glob_win_over_scales=zeros(length(Krange),1);
+glob_bw_over_scales=zeros(length(Krange),1);
 % but between network features are trickier, adapted triangular number of K for each scale
 bw_over_scales=[];
 for K=Krange
@@ -105,10 +108,14 @@ for t=1:3;
 		
 	%% NW-WISE AND GLOBAL SEG %%
 	glob_seg_strings=strings(length(glob_seg_over_scales),1);
+	glob_win_strings=strings(length(glob_seg_over_scales),1);
+	glob_bw_strings=strings(length(glob_seg_over_scales),1);	
 	seg_strings=strings(length(Networkwise_seg_over_scales),1);
 	% can recycle indices here, netseg indices should be the same as within network (1 per network per scale)
 	df_ns=cell(length(subjs)+1,length(Networkwise_seg_over_scales));
 	df_gns=cell(length(subjs)+1,length(glob_seg_over_scales));	
+	df_gw=cell(length(subjs)+1,length(glob_seg_over_scales));
+	df_gbw=cell(length(subjs)+1,length(glob_seg_over_scales));
 	for K=Krange
 		% recycled indices
 		Kind=Kind_w{K};
@@ -118,11 +125,15 @@ for t=1:3;
 		end
 		df_ns(1,Kind)=cellstr(seg_strings(Kind));
 		df_gns(1,K)=cellstr(strcat(thirdname, '_globseg_scale', num2str(K)));
+		df_gw(1,K)=cellstr(strcat(thirdname, '_globWin_scale', num2str(K)));
+		df_gbw(1,K)=cellstr(strcat(thirdname, '_globBw_scale', num2str(K)));
 		%extract matrices from this scale
 		featurematrix=feats{K};
 		for s=1:length(subjs);
 			subjmat=featurematrix(:,:,s);
 			segvec=zeros(length(K));
+			winvec=zeros(length(K));
+			bwvec=zeros(length(K));
 			% calc segreg for each network
 			for N=1:K
 				Nrow=subjmat(N,:);
@@ -133,10 +144,16 @@ for t=1:3;
 				bwz=mean(atanh(bwvals));
 				seg=(winz-bwz)/winz;
 				segvec(N)=seg;
+				% added b/w and w/in for global versions of each
+				winvec(N)=winval;
+				bwvec(N)=mean(bwvals);
 			end
 			df_ns(s+1,Kind)=num2cell(segvec);
 			% note that this measure of global seg averages over networks, not vertices
 			df_gns(s+1,K)=num2cell(mean(segvec));
+			% same goes for within and between
+			df_gw(s+1,K)=num2cell(mean(winvec));
+			df_gbw(s+1,K)=num2cell(mean(bwvec));
 		end
 	end
 
@@ -214,6 +231,15 @@ for t=1:3;
 	% Make subjs col for all 1/3rd dfs
 	third_df(2:(length(subjs)+1),1,t)=num2cell(subjs);	
 	third_df(1,1,t)=cellstr('Subjects');
+	%%%%% Special section to save out global within and between separately (only using individ partitions atm)
+	df_gw(2:(length(subjs)+1),1)=num2cell(subjs);
+        df_gw(1,1)=cellstr('Subjects');
+        df_gbw(2:(length(subjs)+1),1)=num2cell(subjs);
+        df_gbw(1,1)=cellstr('Subjects');
+	if t == 1
+		writetable(cell2table(df_gw),strcat(outdir,'/globalWin_fcfeats.csv'));
+		writetable(cell2table(df_gbw),strcat(outdir,'/globalBw_fcfeats.csv'));
+	end
 	end
 	% merge individualized, groupcon, and basis ts-derived series with same horzcat
 	% INDIVID. | GROUP | BASIS |
@@ -223,5 +249,4 @@ end
 df=[third_df(:,:,1), third_df(:,:,2), third_df(:,:,3)];
 % save in R friendly format
 writetable(cell2table(df),strcat(outdir,'/master_fcfeats.csv'));
-
 

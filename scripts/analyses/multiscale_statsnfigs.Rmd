@@ -275,6 +275,117 @@ indseg<-ggplot(data=mCindglobseg,aes(x=as.numeric(as.character(variable)),y=valu
 
 groseg<-ggplot(data=mCgroglobseg,aes(x=as.numeric(as.character(variable)),y=value,group=bblid,color=Age)) +geom_line(alpha = 0.12)+scale_color_gradientn(colors=c("yellow","purple")) + theme_dark(base_size = 28)+labs(title="M/S-Regressed Glob. Segreg. - Group Partitions") + scale_x_continuous(name ="# of Communitites",  breaks=seq(2, 30, 4))+ylab("Global Segregation")
 ggarrange(indseg,groseg,ncol=1)
+
+### Add rank plot
+indglobseg_motSexCRank<-indglobseg_motSexC
+for (K in 2:30){
+  indglobseg_motSexCRank[,K+3]=rank(indglobseg_motSexC[,K+3])
+}
+mCindglobsegRank<-melt(indglobseg_motSexCRank, id=c(1,2,3,4))
+
+ggplot(data=mCindglobsegRank,aes(x=as.numeric(as.character(variable)),y=value,group=bblid,color=Age)) +geom_line(alpha = 0.2)+scale_color_gradientn(colors=c("yellow","purple")) + theme_dark(base_size = 28)+labs(title="M/S-Regressed Glob. Segreg. - Individ. Partitions") + scale_x_continuous(name ="# of Communitites",  breaks=seq(2, 30, 4))+ylab("Global Segregation Rank")
+```
+
+```{r}
+
+GBw=vroom('/cbica/projects/pinesParcels/results/aggregated_data/fc/globalBw_fcfeats.csv')
+GWin=vroom('/cbica/projects/pinesParcels/results/aggregated_data/fc/globalWin_fcfeats.csv')
+
+colnames(GBw)<-unlist(GBw[1,])
+colnames(GWin)<-unlist(GWin[1,])
+
+# identical parsing as above
+
+GBw<-data.frame(GBw)
+GWin<-data.frame(GWin)
+
+# round ridiculous number of decimal points
+GBw[] <- lapply(GBw, function(x) {
+  if(is.character(x)) round(as.numeric(as.character(x)),digits=3) else x
+})
+GWin[] <- lapply(GWin, function(x) {
+  if(is.character(x)) round(as.numeric(as.character(x)),digits=3) else x
+})
+
+# isolate shams (although merge should take them out later)
+shams<-fc[694:695,]
+
+# set subjects column to bblid
+colnames(GWin)[1]<-'bblid'
+colnames(GBw)[1]<-'bblid'
+GWindf<-merge(GWin,df,by='bblid')
+GBwdf<-merge(GBw,df,by='bblid')
+
+### isolate global columns
+gWincols<-grep("globWin",colnames(GWindf))
+gBwcols<-grep("globBw",colnames(GBwdf))
+#paste("Indices of global segregation columns at ",gsegcols)
+
+### plot mean global seg over scales by age
+# 2:30 is ind, 5455:5483 is group
+indglobWin<-cbind(GWindf$bblid,GWindf$Age/12,GWindf$Sex,GWindf$Motion,GWindf[,2:30])
+indglobBw<-cbind(GBwdf$bblid,GBwdf$Age/12,GBwdf$Sex,GBwdf$Motion,GBwdf[,2:30])
+
+# set colnames
+colnames(indglobWin)[1:4]<-c("bblid", "Age","Sex","Motion")
+colnames(indglobBw)[1:4]<-c("bblid", "Age","Sex","Motion")
+colnames(indglobWin)[5:33]<-as.character(2:30)
+colnames(indglobBw)[5:33]<-as.character(2:30)
+indglobWin$Sex<-as.factor(indglobseg$Sex)
+indglobBw$Sex<-as.factor(groglobseg$Sex)
+
+# regress effect of age out on sex and motion
+indglobWin_motSexC<-indglobWin
+indglobBw_motSexC<-indglobBw
+
+for (i in 5:33){
+  WCLM<-lm(indglobWin[,i]~Motion+Sex,data=indglobWin)
+  indglobWin_motSexC[,i]<-WCLM$residuals
+  BWCLM<-lm(indglobBw_motSexC[,i]~Motion+Sex,data=indglobBw)
+  indglobBw_motSexC[,i]<-BWCLM$residuals
+  # add in mean for more interpretable values
+  indglobWin_motSexC[,i]<-indglobWin_motSexC[,i]+mean(indglobWin[,i])
+  indglobBw_motSexC[,i]<-indglobBw_motSexC[,i]+mean(indglobBw[,i])
+}
+
+
+# melt it
+mindglobwin<-melt(indglobWin_motSexC, id=c(1,2,3,4))
+mgroglobbw<-melt(indglobBw_motSexC, id=c(1,2,3,4))
+
+
+WinAll<-ggplot(data=mindglobwin,aes(x=as.numeric(as.character(variable)),y=value,group=bblid,color=Age)) +geom_line(alpha = 0.12)+scale_color_gradientn(colors=c("yellow","purple")) + theme_dark(base_size = 28)+labs(title="M/S-Regressed Glob. Within - Individ. Partitions") + scale_x_continuous(name ="# of Communitites",  breaks=seq(2, 30, 4))+ylab("Global Within")
+
+BwAll<-ggplot(data=mgroglobbw,aes(x=as.numeric(as.character(variable)),y=value,group=bblid,color=Age)) +geom_line(alpha = 0.12)+scale_color_gradientn(colors=c("yellow","purple")) + theme_dark(base_size = 28)+labs(title="M/S-Regressed Glob. Bw - Individ. Partitions") + scale_x_continuous(name ="# of Communitites",  breaks=seq(2, 30, 4))+ylab("Global Between")
+
+### Now with motion + sex control
+# 29 for scales studied
+ind_GWincors<-matrix(0,29,2)
+ind_GWincors[,1]<-2:30
+ind_GBwcors<-matrix(0,29,2)
+ind_GBwcors[,1]<-2:30
+
+for (i in 1:29){
+  # i+4 because first column is scanid, second is age, third is sex, 4th is motion
+  print(ggplot(indglobWin_motSexC,aes(Age,indglobWin_motSexC[,i+4])) + geom_point() + geom_smooth() +ylab(paste("Ind Global Win at Scale", i+1)))
+    print(ggplot(indglobBw_motSexC,aes(Age,indglobBw_motSexC[,i+4])) + geom_point() + geom_smooth() +ylab(paste("Ind Global BW at Scale", i+1)))
+  
+# relevant df
+  Winscaledf<-cbind(indglobWin$Age,indglobWin$Sex,indglobWin$Motion,indglobWin[,i+4])
+  Bwscaledf<-cbind(indglobBw$Age,indglobBw$Sex,indglobBw$Motion,indglobBw[,i+4])
+  # partial spearmans to extrac age relation
+  pspear=pcor(Winscaledf,method='spearman')$estimate
+  ind_GWincors[i,2]<-pspear[4]
+  pspear=pcor(Bwscaledf,method='spearman')$estimate
+  ind_GBwcors[i,2]<-pspear[4]
+}
+
+
+WinCors<-correlations_over_scales(ind_GWincors,"Global WithinCon Age Correlation")
+
+BwCors<-correlations_over_scales(ind_GBwcors,"Global BetweenCon Age Correlation")
+
+ggarrange(WinAll,WinCors,BwAll,BwCors)
 ```
 
 
@@ -470,6 +581,9 @@ old<-ggplot(x,aes(X1,value,group=Partitioning,color=Partitioning)) + geom_step(s
 ageBreakDown<-ggarrange(indagecor,youngindagecor,midindagecor,oldindagecor)
 gro_vs_ind<-ggarrange(all,young,mid,old)
 
+```
+```{r}
+ggarrange(indseg,indagecor,WinAll,WinCors,BwAll,BwCors,ncol = 2,nrow=3)
 ```
 
 ```{r}
@@ -908,7 +1022,7 @@ LongAgeSpan_plotdf2<-data.frame(sapply(AgeSpan_plotdf2,rep.int,times=200))
 LongAgeSpan_plotdf2$agespans<-agerange200464
 LongAgeSpan_plotdf2$derivs<-deriv200464
 
-ggplot(LongAgeSpan_plotdf2,aes(agespans,tmvec,color=derivs,group=CIgroupingInd)) +geom_line(size=5,alpha=.3) +labs(title='Network Segregation Effect Manifestation', x = 'Age', y = 'Transmodality') +theme_classic(base_size = 28)+ xlim(c(8,23))+ scale_colour_gradientn(colours=c('green','blue','white','red','yellow'),values = c(0,.215,.265,.315,1),name="Change Per Year")
+ggplot(LongAgeSpan_plotdf2,aes(agespans,tmvec,color=derivs,group=CIgroupingInd)) +geom_line(size=5,alpha=.3) +labs(title='Network Segregation Effect Manifestation', x = 'Age', y = 'Transmodality') +theme_classic(base_size = 28)+ xlim(c(8,23))+ scale_colour_gradientn(colours=c('white','blue','white','red','yellow'),values = c(0,.215,.265,.315,1),name="Change Per Year")
 
 
 
@@ -1263,44 +1377,44 @@ ageEfvec=NULL
 scalevec=NULL
 
 ## for all b/w cols
-#for (i in 1:length(colnames(individ_scalebybw_df))){
-#    #print(i)
-#    # extract column name. Will parse column name to determine nature of #connection
-#    curcolname<-colnames(individ_scalebybw_df)[i]
-#    splitname<-unlist(strsplit(curcolname,'_'))
-#    scalefield=splitname[4]
-#    net1field=splitname[5]
-#    net2field=splitname[7]
-#    # doctor up scale and net1field so they are exclusively the value of #interest
-#    scale=as.numeric(unlist(strsplit(scalefield,'e'))[2])
-#    net1=unlist(strsplit(net1field,'s'))[2]
-#    net2=net2field 
-#    # helping phriendly index
-#    K_start=((scale-1)*(scale))/2
-#    K_end=(((scale-1)*(scale))/2)+scale-1
-#    Kind<-K_start:K_end
-#    # get TM values of both nets at this scale
-#    tm1=tmvec[Kind[as.numeric(net1)]]
-#    tm2=tmvec[Kind[as.numeric(net2)]]
-#    # absolute value as directionality is meaningless here
-#    tmdif=abs(tm1-tm2)
-#    # get position in master df of this column (need to use \b for exact matches #only)
-#    curcolnameexact<-paste('\\',curcolname,'\\b',sep='')
-#    colindex<-grep(curcolnameexact,colnames(masterdf))
-#    # get Age relation controlling for sex and motion
-#    pcordf<-cbind(masterdf$Age,masterdf$Sex,masterdf$Motion,masterdf[,colindex])
-#    # partial spearmans to extrac age relation
-#    pspear=pcor(pcordf,method='spearman')$estimate
-#    # save both to respective vectors
-#    tmdifvec<-append(tmdifvec,tmdif)
-#    ageEfvec<-append(ageEfvec,pspear[4])
-#    # accompanying scalevec so we can look at the typical transmodality #difference at each scale
-#    scalevec=append(scalevec,scale)
-#}
-#
+for (i in 1:length(colnames(individ_scalebybw_df))){
+    #print(i)
+    # extract column name. Will parse column name to determine nature of #connection
+    curcolname<-colnames(individ_scalebybw_df)[i]
+    splitname<-unlist(strsplit(curcolname,'_'))
+    scalefield=splitname[4]
+    net1field=splitname[5]
+    net2field=splitname[7]
+    # doctor up scale and net1field so they are exclusively the value of #interest
+    scale=as.numeric(unlist(strsplit(scalefield,'e'))[2])
+    net1=unlist(strsplit(net1field,'s'))[2]
+    net2=net2field 
+    # helping phriendly index
+    K_start=((scale-1)*(scale))/2
+    K_end=(((scale-1)*(scale))/2)+scale-1
+    Kind<-K_start:K_end
+    # get TM values of both nets at this scale
+    tm1=tmvec[Kind[as.numeric(net1)]]
+    tm2=tmvec[Kind[as.numeric(net2)]]
+    # absolute value as directionality is meaningless here
+    tmdif=abs(tm1-tm2)
+    # get position in master df of this column (need to use \b for exact matches #only)
+    curcolnameexact<-paste('\\',curcolname,'\\b',sep='')
+    colindex<-grep(curcolnameexact,colnames(masterdf))
+    # get Age relation controlling for sex and motion
+    pcordf<-cbind(masterdf$Age,masterdf$Sex,masterdf$Motion,masterdf[,colindex])
+    # partial spearmans to extrac age relation
+    pspear=pcor(pcordf,method='spearman')$estimate
+    # save both to respective vectors
+    tmdifvec<-append(tmdifvec,tmdif)
+    ageEfvec<-append(ageEfvec,pspear[4])
+    # accompanying scalevec so we can look at the typical transmodality #difference at each scale
+    scalevec=append(scalevec,scale)
+}
+
 ## merged vectors
-#BwAgeCorTMDifDf<-data.frame(tmdifvec,ageEfvec)
-#ggplot(BwAgeCorTMDifDf,aes(x=tmdifvec,y=ageEfvec)) + #geom_point(alpha=.07,size=5) + xlab('Transmodality Difference') + ylab('Age #Correlation') + ggtitle('Pairwise Between-Network Age-FC Relations')
+BwAgeCorTMDifDf<-data.frame(tmdifvec,ageEfvec)
+ggplot(BwAgeCorTMDifDf,aes(x=tmdifvec,y=ageEfvec)) + geom_point(alpha=.07,size=5) + xlab('Transmodality Difference') + ylab('Age #Correlation') + ggtitle('Pairwise Between-Network Age-FC Relations')
 #
 ## combine scalevec and transmodality dif vec for transmodality difference #differences
 #ScaleTMDifDf<-data.frame(tmdifvec,scalevec)
