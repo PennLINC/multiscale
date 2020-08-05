@@ -8,10 +8,14 @@ output: html_document
 ```{r}
 library(corrplot)
 library(circlize)
+library(ggraph)
+library(igraph)
  
 grid.col = c(Motor = "#3281ab", Visual = "#670068", DA = "#007500", VA = '#b61ad0', FP = "#d77d00", DM = "#c1253c", Limbic = '#007502')
 
-col_fun=function(x) ifelse(x<0,"red","blue")
+col_fun=function(x) ifelse(abs(x)<.18,"#00000000",
+                           ifelse(x<0,"red","blue")
+)
   
 for (K in 2:30){
   K_start=((K-1)*(K))/2
@@ -27,25 +31,28 @@ for (K in 2:30){
   ReArAgeEfMat<-AgeEfMat[curTmRank,curTmRank]
   #corrplot(AgeEfMat,is.corr = F)
   #chordDiagram(AgeEfMat,grid.col = grid.col)
-  ReArAgeEfMat[ReArAgeEfMat > -.1 & ReArAgeEfMat < .1]=0
-  corrplot(ReArAgeEfMat,is.corr = F)
-  chordDiagram(ReArAgeEfMat,grid.col = grid.col, col = col_fun,symmetric = "TRUE")
+  #ReArAgeEfMat[ReArAgeEfMat > -.1 & ReArAgeEfMat < .1]=0
+  #corrplot(ReArAgeEfMat,is.corr = F)
+  
+  chordDiagram(ReArAgeEfMat,grid.col = grid.col, col = col_fun,symmetric = "TRUE",annotationTrack=c("name","grid"),self.link = 1)
+  title(paste(K))
 }
+
 ```
 
 ```{r}
-numbers <- sample(c(1:1000), 100, replace = T)
-data <- matrix( numbers, ncol=5)
-rownames(data) <- paste0("orig-", seq(1,20))
-colnames(data) <- paste0("dest-", seq(1,5))
-
-# Load the circlize library
-
-
-col_fun = colorRamp2(breaks = c(-0.4, 0, 0.4),
-                  colors = c("red", "white", "blue"),
-                  transparency = .2)
-# Make the circular plot
-AgeEfMat[AgeEfMat > -.15 & AgeEfMat < .15]=0
-chordDiagram(AgeEfMat)
+d1 <- data.frame(from="origin", to=paste("group", seq(1,10), sep=""))
+d2 <- data.frame(from=rep(d1$to, each=10), to=paste("subgroup", seq(1,100), sep="_"))
+hierarchy <- cbind.data.frame(domnetvec,scalesvec)
+ 
+# create a vertices data.frame. One line per object of our hierarchy, giving features of nodes.
+vertices <- data.frame(name = unique(c(as.character(hierarchy$domnetvec), as.character(hierarchy$domnetvec))) ) 
+mygraph <- graph_from_data_frame( hierarchy, vertices=vertices )
+plot(mygraph, vertex.label="", edge.arrow.size=0, vertex.size=2)
+ggraph(mygraph, layout = 'dendrogram', circular = FALSE) + 
+  geom_edge_link() +
+  theme_void()
+ggraph(mygraph, layout = 'dendrogram', circular = TRUE) + 
+  geom_edge_diagonal() +
+  theme_void()
 ```
