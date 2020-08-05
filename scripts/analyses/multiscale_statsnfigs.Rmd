@@ -1284,7 +1284,7 @@ bwdf<-data.frame(tmvec,scalesvec,domnetvec,netpropvec,bwAgeCorVecs$avg_bw,bwAgeC
 # avg b/w
 avgbw_age_tm<-ggplot(bwdf,aes(tmvec,bwAgeCorVecs.avg_bw,color=domnetvec,alpha=netpropvec^2)) + geom_point(size=6)+ scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068')) + xlab("Transmodality") + ylab("AgeBWCor") +theme_classic(base_size = 28) + ggtitle('Correlation of B/w con avg and Age over All Networks') + ylim(-.5,.5)
 
-avgbw_age_scale<-ggplot(bwdf,aes(tmvec,bwAgeCorVecs.avg_bw,color=scalesvec)) + geom_point(size=6) + xlab("Transmodality") + ylab("AgeBWCor")+theme_classic(base_size = 28)+ ylim(-.5,.5)
+avgbw_age_scale<-ggplot(bwdf,aes(tmvec,bwAgeCorVecs.avg_bw,color=scalesvec)) + geom_point(size=6) + xlab("Transmodality") + ylab("AgeBWCor")+theme_classic(base_size = 28)+ ylim(-.5,.5)+ scale_colour_gradient(low="#55185D", high="#ECB602")
 
 # b/w to unimodal
 unibw_age_tm<-ggplot(bwdf,aes(tmvec,bwAgeCorVecs.bw_to_unimodal,color=domnetvec,alpha=netpropvec^2)) + geom_point(size=6)+ scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068')) + xlab("Transmodality") + ylab("AgeBWUCor") +theme_classic(base_size = 28) + ggtitle('Correlation of B/w unimodal con and Age over All Networks')+ ylim(-.5,.5)
@@ -1342,6 +1342,7 @@ Segreg_age_scale_gro<-ggplot(GSeg_plotdf,aes(tmvec,corVecEst,color=scalesvec)) +
 
 ggarrange(Segreg_age_tm_gro,Segreg_age_scale_gro,Win_age_tm_gro,Win_age_scale_gro)
 ```
+
 ```{r}
 # quick plot of each vertices' change in age-org relation over scales and transmodality
 f=read.csv('/cbica/projects/pinesParcels/results/aggregated_data/ScaleAgeOrg_TM_interaction.csv')
@@ -1551,6 +1552,64 @@ for (y in 1:7){
   geom_smooth(method='lm',linetype="dashed",color=itercolor,size=2) + xlab('Transmodality Difference') +  ylim(-.4,.4) +xlim(-.1,13)+ ylab('Age Correlation') + ggtitle(paste('Pairwise Between-Network Age-FC Relations - ',Y7vec[y], ' excluded',sep=''))+geom_text(x=11,y=.3,label=paste('r =', cor_of_int))) 
 }
 
+
+```
+
+```{r}
+### Corresponding within by transmodality plot
+# Transmodality Dif and Age-relation
+indiv_wincols_ind<-intersect(wincols,indiv)
+individ_scalebywin_df<-masterdf[,indiv_wincols_ind]
+
+# to later use wincolnames to extrapolate if if network is unimodal or transmodal along bwcol indices
+wincolnames<-colnames(individ_scalebywin_df)
+
+# initialize empty age effect vector 
+ageEfvec=NULL
+
+# make a scale vector to match transmodality difference values
+# this is to look at how finer scales confer networks that are less different
+scalevec=NULL
+
+## for all b/w cols
+for (i in 1:length(colnames(individ_scalebybw_df))){
+    #print(i)
+    # extract column name. Will parse column name to determine nature of #connection
+    curcolname<-colnames(individ_scalebybw_df)[i]
+    splitname<-unlist(strsplit(curcolname,'_'))
+    scalefield=splitname[4]
+    net1field=splitname[5]
+    net2field=splitname[7]
+    # doctor up scale and net1field so they are exclusively the value of #interest
+    scale=as.numeric(unlist(strsplit(scalefield,'e'))[2])
+    net1=unlist(strsplit(net1field,'s'))[2]
+    net2=net2field 
+    # helping phriendly index
+    K_start=((scale-1)*(scale))/2
+    K_end=(((scale-1)*(scale))/2)+scale-1
+    Kind<-K_start:K_end
+    # get TM values of both nets at this scale
+    tm1=tmvec[Kind[as.numeric(net1)]]
+    tm2=tmvec[Kind[as.numeric(net2)]]
+    # absolute value as directionality is meaningless here
+    tmdif=abs(tm1-tm2)
+    # get position in master df of this column (need to use \b for exact matches #only)
+    curcolnameexact<-paste('\\',curcolname,'\\b',sep='')
+    colindex<-grep(curcolnameexact,colnames(masterdf))
+    # get Age relation controlling for sex and motion
+    pcordf<-cbind(masterdf$Age,masterdf$Sex,masterdf$Motion,masterdf[,colindex])
+    # partial spearmans to extrac age relation
+    pspear=pcor(pcordf,method='spearman')$estimate
+    # save both to respective vectors
+    tmdifvec<-append(tmdifvec,tmdif)
+    ageEfvec<-append(ageEfvec,pspear[4])
+    # accompanying scalevec so we can look at the typical transmodality #difference at each scale
+    scalevec=append(scalevec,scale)
+}
+
+## merged vectors
+BwAgeCorTMDifDf<-data.frame(tmdifvec,ageEfvec)
+ggplot(BwAgeCorTMDifDf,aes(x=tmdifvec,y=ageEfvec)) + geom_point(alpha=.07,size=5) + xlab('Transmodality Difference') + ylab('Age #Correlation') + ggtitle('Pairwise Between-Network Age-FC Relations')
 
 ```
 

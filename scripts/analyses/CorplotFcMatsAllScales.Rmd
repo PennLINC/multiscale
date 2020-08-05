@@ -7,6 +7,12 @@ output: html_document
 
 ```{r}
 library(corrplot)
+library(circlize)
+ 
+grid.col = c(Motor = "#3281ab", Visual = "#670068", DA = "#007500", VA = '#b61ad0', FP = "#d77d00", DM = "#c1253c", Limbic = '#007502')
+
+col_fun=function(x) ifelse(x<0,"red","blue")
+  
 for (K in 2:30){
   K_start=((K-1)*(K))/2
   K_end=(((K-1)*(K))/2)+K-1
@@ -16,6 +22,30 @@ for (K in 2:30){
   # requires domnetvec to be ran in other rmd
   colnames(AgeEfMat)=domnetvec[Kind]
   rownames(AgeEfMat)=domnetvec[Kind]
-  corrplot(AgeEfMat,is.corr = F)
+  # get tmvec to arrange matrix by transmodality
+  curTmRank<-order(tmvec[Kind])
+  ReArAgeEfMat<-AgeEfMat[curTmRank,curTmRank]
+  #corrplot(AgeEfMat,is.corr = F)
+  #chordDiagram(AgeEfMat,grid.col = grid.col)
+  ReArAgeEfMat[ReArAgeEfMat > -.1 & ReArAgeEfMat < .1]=0
+  corrplot(ReArAgeEfMat,is.corr = F)
+  chordDiagram(ReArAgeEfMat,grid.col = grid.col, col = col_fun,symmetric = "TRUE")
 }
+```
+
+```{r}
+numbers <- sample(c(1:1000), 100, replace = T)
+data <- matrix( numbers, ncol=5)
+rownames(data) <- paste0("orig-", seq(1,20))
+colnames(data) <- paste0("dest-", seq(1,5))
+
+# Load the circlize library
+
+
+col_fun = colorRamp2(breaks = c(-0.4, 0, 0.4),
+                  colors = c("red", "white", "blue"),
+                  transparency = .2)
+# Make the circular plot
+AgeEfMat[AgeEfMat > -.15 & AgeEfMat < .15]=0
+chordDiagram(AgeEfMat)
 ```
