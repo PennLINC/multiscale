@@ -16,6 +16,7 @@ library(data.table)
 library(mgcv)
 library(ggpointdensity)
 library(ppcor)
+library(viridis)
 # load in demo
 demo<-read.csv('/cbica/projects/pinesParcels/data/pnc_demo.csv')
 ageSex<-data.frame(demo$ageAtScan1,as.factor(demo$sex),demo$scanid,demo$bblid)
@@ -73,10 +74,10 @@ mdatani<-melt(df_ni,id=c(1,2,3,4,5))
 mdatarc<-melt(df_rc,id=c(1,2,3,4,5))
 mdatadif<-melt(df_dif,id=c(1,2,3,4,5))
 
-tc<-ggplot(data=mdata,aes(x=variable,y=value,group=bblid,color=Age)) +geom_line(alpha = 0.15)+scale_color_gradientn(colors=c("yellow","purple")) + theme_dark()+labs(title="Total cost over scales")
-ni<-ggplot(data=mdatani,aes(x=variable,y=value,group=bblid,color=Age)) +geom_line(alpha = 0.15)+scale_color_gradientn(colors=c("yellow","purple")) + theme_dark()+labs(title="Number of iterations over scales")
-rc<-ggplot(data=mdatarc,aes(x=variable,y=value,group=bblid,color=Age)) +geom_line(alpha = 0.15)+scale_color_gradientn(colors=c("yellow","purple")) + theme_dark()+labs(title="Reconstruction error over scales")
-dif<-ggplot(data=mdatadif,aes(x=variable,y=value,group=bblid,color=Age)) +geom_line(alpha = 0.15)+scale_color_gradientn(colors=c("yellow","purple")) + theme_dark()+labs(title="Non-recon error over scales")
+tc<-ggplot(data=mdata[1:5000,],aes(x=variable,y=value,group=bblid,color=Age)) +geom_step(alpha = 0.15,size=10)+ scale_color_gradient2(low = "green", mid = 'red', high = "green") + theme_minimal()+labs(title="Total cost over scales")
+ni<-ggplot(data=mdatani,aes(x=variable,y=value,group=bblid,color=Age)) +geom_line(alpha = 0.15)+scale_color_gradientn(colors=c("yellow","purple")) + theme_minimal()+labs(title="Number of iterations over scales")
+rc<-ggplot(data=mdatarc,aes(x=variable,y=value,group=bblid,color=Age)) +geom_line(alpha = 0.15)+scale_color_gradientn(colors=c("yellow","purple")) + theme_minimal()+labs(title="Reconstruction error over scales")
+dif<-ggplot(data=mdatadif,aes(x=variable,y=value,group=bblid,color=Age)) +geom_line(alpha = 0.15)+scale_color_gradientn(colors=c("yellow","purple")) + theme_minimal()+labs(title="Non-recon error over scales")
 
 
 ggarrange(tc,ni,dif,rc)
@@ -84,7 +85,7 @@ ggarrange(tc,ni,dif,rc)
 # plot average recon error over scales
 mreconerr<-(colMeans(recon_err)[2:30])
 mcrecnerrdf<-data.frame(mreconerr,community_vec)
-ggplot(data=mcrecnerrdf,aes(y=mreconerr,x=community_vec))+geom_line(col='white',size=2)+theme_dark(base_size = 28)+ggtitle("Reconstruction Error Over Scales")+ scale_x_continuous(name ="# of Communitites",  breaks=seq(2, 30, 4))+ylab("Recon. Error")
+ggplot(data=mcrecnerrdf,aes(y=mreconerr,x=community_vec))+geom_line(col='black',size=2)+theme_minimal(base_size = 28)+ggtitle("Reconstruction Error Over Scales")+ scale_x_continuous(name ="# of Communitites",  breaks=seq(2, 30, 4))+ylab("Recon. Error")
 
 # Motion and Sex Replacing Age (characterize indep. relations before controlling for them)
 
@@ -127,17 +128,17 @@ ggplot(data = df, aes(y = Motion, x = Sex, fill = Sex)) +
 
 
 ############# Equiv Plots for these fine variables
-tc<-ggplot(data=mdata,aes(x=variable,y=value,group=bblid,color=Motion)) +geom_line(alpha = 0.15)+scale_color_gradientn(colors=c("yellow","purple")) + theme_dark()+labs(title="Total cost over scales")
-ni<-ggplot(data=mdatani,aes(x=variable,y=value,group=bblid,color=Motion)) +geom_line(alpha = 0.15)+scale_color_gradientn(colors=c("yellow","purple")) + theme_dark()+labs(title="Number of iterations over scales")
-rc<-ggplot(data=mdatarc,aes(x=variable,y=value,group=bblid,color=Motion)) +geom_line(alpha = 0.15)+scale_color_gradientn(colors=c("yellow","purple")) + theme_dark()+labs(title="Reconstruction error over scales")
-dif<-ggplot(data=mdatadif,aes(x=variable,y=value,group=bblid,color=Motion)) +geom_line(alpha = 0.15)+scale_color_gradientn(colors=c("yellow","purple")) + theme_dark()+labs(title="Non-recon error over scales")
+tc<-ggplot(data=mdata,aes(x=variable,y=value,group=bblid,color=Motion)) +geom_line(alpha = 0.15)+scale_color_gradientn(colors=c("yellow","purple")) + theme_minimal()+labs(title="Total cost over scales")
+ni<-ggplot(data=mdatani,aes(x=variable,y=value,group=bblid,color=Motion)) +geom_line(alpha = 0.15)+scale_color_gradientn(colors=c("yellow","purple")) + theme_minimal()+labs(title="Number of iterations over scales")
+rc<-ggplot(data=mdatarc,aes(x=variable,y=value,group=bblid,color=Motion)) +geom_line(alpha = 0.15)+scale_color_gradientn(colors=c("yellow","purple")) + theme_minimal()+labs(title="Reconstruction error over scales")
+dif<-ggplot(data=mdatadif,aes(x=variable,y=value,group=bblid,color=Motion)) +geom_line(alpha = 0.15)+scale_color_gradientn(colors=c("yellow","purple")) + theme_minimal()+labs(title="Non-recon error over scales")
 
 ggarrange(tc,ni,dif,rc)
 
-tc<-ggplot(data=mdata,aes(x=variable,y=value,group=bblid,color=Sex)) +geom_line(alpha = 0.07,size=2) + theme_dark()+labs(title="Total cost over scales")
-ni<-ggplot(data=mdatani,aes(x=variable,y=value,group=bblid,color=Sex)) +geom_line(alpha = 0.07,size=2)+ theme_dark()+labs(title="Number of iterations over scales")
-rc<-ggplot(data=mdatarc,aes(x=variable,y=value,group=bblid,color=Sex)) +geom_line(alpha = 0.07,size=2)+ theme_dark()+labs(title="Reconstruction error over scales")
-dif<-ggplot(data=mdatadif,aes(x=variable,y=value,group=bblid,color=Sex)) +geom_line(alpha = 0.07,size=2) + theme_dark()+labs(title="Non-recon error over scales")
+tc<-ggplot(data=mdata,aes(x=variable,y=value,group=bblid,color=Sex)) +geom_line(alpha = 0.07,size=2) + theme_minimal()+labs(title="Total cost over scales")
+ni<-ggplot(data=mdatani,aes(x=variable,y=value,group=bblid,color=Sex)) +geom_line(alpha = 0.07,size=2)+ theme_minimal()+labs(title="Number of iterations over scales")
+rc<-ggplot(data=mdatarc,aes(x=variable,y=value,group=bblid,color=Sex)) +geom_line(alpha = 0.07,size=2)+ theme_minimal()+labs(title="Reconstruction error over scales")
+dif<-ggplot(data=mdatadif,aes(x=variable,y=value,group=bblid,color=Sex)) +geom_line(alpha = 0.07,size=2) + theme_minimal()+labs(title="Non-recon error over scales")
 
 ggarrange(tc,ni,dif,rc)
 
@@ -146,9 +147,26 @@ varoverscales=read.csv('/cbica/projects/pinesParcels/results/aggregated_data/Var
 colnames(varoverscales)=c('SoftVar','HardVar')
 varoverscales$community_vec<-community_vec
 
-avgrecon<-ggplot(data=mcrecnerrdf,aes(y=mreconerr,x=community_vec))+geom_line(col='white',size=2)+theme_dark(base_size = 28)+ggtitle("Reconstruction Error Over Scales")+ scale_x_continuous(name ="# of Communitites",  breaks=seq(2, 30, 4))+ylab("Recon. Error")
-avgSPvar<-ggplot(data=varoverscales,aes(y=SoftVar,x=community_vec))+geom_line(col='white',size=2)+theme_dark(base_size = 28)+ggtitle("Loading Variability (MAD)")+ scale_x_continuous(name ="# of Communitites",  breaks=seq(2, 30, 4))+ylab("Avg. MAD")
-avgHPvar<-ggplot(data=varoverscales,aes(y=HardVar,x=community_vec))+geom_line(col='white',size=2)+theme_dark(base_size = 28)+ggtitle("Label Variability (Entropy)")+ scale_x_continuous(name ="# of Communitites",  breaks=seq(2, 30, 4))+ylab("Avg. Entropy")
+# make a vector for shape in these plots
+scalevec<-rep(0,times=29)
+changevec<-scalevec
+for (i in 2:29){
+  changevec[i]<-mcrecnerrdf$mreconerr[i]-mcrecnerrdf$mreconerr[i-1]
+}
+
+
+shapedvec<-c(2,6,12,25)
+scalevec[shapedvec]<-1
+
+mcrecnerrdf$shape<-scalevec
+mcrecnerrdf$change<-changevec
+
+# make vector for scales of interest
+
+
+avgrecon<-ggplot(data=mcrecnerrdf,aes(y=mreconerr,x=community_vec))+geom_line(col='black',size=2)+theme_minimal(base_size = 28)+geom_step(data=mcrecnerrdf,aes(y=mreconerr,x=community_vec))+geom_step(data=mcrecnerrdf[2:29,],aes(y=abs(change*10),x=community_vec))+ggtitle("Reconstruction Error Over Scales")+ scale_x_continuous(name ="# of Communitites",  breaks=seq(2, 30, 4))+ylab("Recon. Error")
+avgSPvar<-ggplot(data=varoverscales,aes(y=SoftVar,x=community_vec))+geom_line(col='black',size=2)+theme_minimal(base_size = 28)+ggtitle("Loading Variability (MAD)")+ scale_x_continuous(name ="# of Communitites",  breaks=seq(2, 30, 4))+ylab("Avg. MAD")
+avgHPvar<-ggplot(data=varoverscales,aes(y=HardVar,x=community_vec))+geom_line(col='black',size=2)+theme_minimal(base_size = 28)+ggtitle("Label Variability (Entropy)")+ scale_x_continuous(name ="# of Communitites",  breaks=seq(2, 30, 4))+ylab("Avg. Entropy")
 
 ggarrange(avgrecon,avgHPvar,avgSPvar,nrow = 3)
 ```
@@ -216,18 +234,18 @@ mindglobseg<-melt(indglobseg, id=c(1,2,3,4))
 mgroglobseg<-melt(groglobseg, id=c(1,2,3,4))
 
 # individual segregation over scales plots, colored by age ##
-indseg<-ggplot(data=mindglobseg,aes(x=as.numeric(as.character(variable)),y=value,group=bblid,color=Age)) +geom_line(alpha = 0.12)+scale_color_gradientn(colors=c("yellow","purple")) + theme_dark(base_size = 28)+labs(title="Global Segregation - Individ. Partitions") + scale_x_continuous(name ="# of Communitites",  breaks=seq(2, 30, 4))+ylab("Global Segregation")
-groseg<-ggplot(data=mgroglobseg,aes(x=as.numeric(as.character(variable)),y=value,group=bblid,color=Age)) +geom_line(alpha = 0.12)+scale_color_gradientn(colors=c("yellow","purple")) + theme_dark(base_size = 28)+labs(title="Global Segregation - Group Partitions") + scale_x_continuous(name ="# of Communitites", breaks=seq(2, 30, 4))+ylab("Global Segregation")
+indseg<-ggplot(data=mindglobseg,aes(x=as.numeric(as.character(variable)),y=value,group=bblid,color=Age)) +geom_line(alpha = 0.12)+scale_color_gradientn(colors=c("yellow","purple")) + theme_minimal(base_size = 28)+labs(title="Global Segregation - Individ. Partitions") + scale_x_continuous(name ="# of Communitites",  breaks=seq(2, 30, 4))+ylab("Global Segregation")
+groseg<-ggplot(data=mgroglobseg,aes(x=as.numeric(as.character(variable)),y=value,group=bblid,color=Age)) +geom_line(alpha = 0.12)+scale_color_gradientn(colors=c("yellow","purple")) + theme_minimal(base_size = 28)+labs(title="Global Segregation - Group Partitions") + scale_x_continuous(name ="# of Communitites", breaks=seq(2, 30, 4))+ylab("Global Segregation")
 ggarrange(indseg,groseg,ncol=1)
 
 # individual segregation over scales plots, colored by Motion ##
-indseg<-ggplot(data=mindglobseg,aes(x=as.numeric(as.character(variable)),y=value,group=bblid,color=Motion)) +geom_line(alpha = 0.12)+scale_color_gradientn(colors=c("yellow","purple")) + theme_dark(base_size = 28)+labs(title="Global Segregation - Individ. Partitions") + scale_x_continuous(name ="# of Communitites",  breaks=seq(2, 30, 4))+ylab("Global Segregation")
-groseg<-ggplot(data=mgroglobseg,aes(x=as.numeric(as.character(variable)),y=value,group=bblid,color=Motion)) +geom_line(alpha = 0.12)+scale_color_gradientn(colors=c("yellow","purple")) + theme_dark(base_size = 28)+labs(title="Global Segregation - Group Partitions") + scale_x_continuous(name ="# of Communitites", breaks=seq(2, 30, 4))+ylab("Global Segregation")
+indseg<-ggplot(data=mindglobseg,aes(x=as.numeric(as.character(variable)),y=value,group=bblid,color=Motion)) +geom_line(alpha = 0.12)+scale_color_gradientn(colors=c("yellow","purple")) + theme_minimal(base_size = 28)+labs(title="Global Segregation - Individ. Partitions") + scale_x_continuous(name ="# of Communitites",  breaks=seq(2, 30, 4))+ylab("Global Segregation")
+groseg<-ggplot(data=mgroglobseg,aes(x=as.numeric(as.character(variable)),y=value,group=bblid,color=Motion)) +geom_line(alpha = 0.12)+scale_color_gradientn(colors=c("yellow","purple")) + theme_minimal(base_size = 28)+labs(title="Global Segregation - Group Partitions") + scale_x_continuous(name ="# of Communitites", breaks=seq(2, 30, 4))+ylab("Global Segregation")
 ggarrange(indseg,groseg,ncol=1)
 
 # individual segregation over scales plots, colored by Sex ##
-indseg<-ggplot(data=mindglobseg,aes(x=as.numeric(as.character(variable)),y=value,group=bblid,color=Sex)) +geom_line(alpha = 0.1,size=2)+ theme_dark(base_size = 28)+labs(title="Global Segregation - Individ. Partitions") + scale_x_continuous(name ="# of Communitites",  breaks=seq(2, 30, 4))+ylab("Global Segregation")
-groseg<-ggplot(data=mgroglobseg,aes(x=as.numeric(as.character(variable)),y=value,group=bblid,color=Sex)) +geom_line(alpha = 0.1,size=2)+ theme_dark(base_size = 28)+labs(title="Global Segregation - Group Partitions") + scale_x_continuous(name ="# of Communitites", breaks=seq(2, 30, 4))+ylab("Global Segregation")
+indseg<-ggplot(data=mindglobseg,aes(x=as.numeric(as.character(variable)),y=value,group=bblid,color=Sex)) +geom_step(alpha = 0.15,size=10)+ theme_minimal(base_size = 28)+labs(title="Global Segregation - Individ. Partitions") + scale_x_continuous(name ="# of Communitites",  breaks=seq(2, 30, 4))+ylab("Global Segregation")
+groseg<-ggplot(data=mgroglobseg,aes(x=as.numeric(as.character(variable)),y=value,group=bblid,color=Sex)) +geom_line(alpha = 0.1,size=2)+ theme_minimal(base_size = 28)+labs(title="Global Segregation - Group Partitions") + scale_x_continuous(name ="# of Communitites", breaks=seq(2, 30, 4))+ylab("Global Segregation")
 ggarrange(indseg,groseg,ncol=1)
 
 
@@ -249,6 +267,11 @@ indglobseg_Zs<-indglobseg
 indglobseg_Zs$Age<-(indglobseg$Age-mean(indglobseg$Age))/sd(indglobseg$Age)
 indglobseg_Zs$Motion<-(indglobseg$Motion-mean(indglobseg$Motion))/sd(indglobseg$Motion)
 
+```
+
+```{r}
+# break up the big chunks
+
 for (i in 5:33){
   CLM<-lm(indglobseg[,i]~Motion+Sex,data=indglobseg)
   indglobseg_motSexC[,i]<-CLM$residuals
@@ -262,18 +285,24 @@ for (i in 5:33){
   sdofvals<-sd(indglobseg[,i])
   Zvals<-(indglobseg[,i]-meanval)/sdofvals
   indglobseg_Zs[,i]<-Zvals
+  
+  plotdf<-data.frame((indglobseg_motSexC[,i]+mean(indglobseg[,i])),(indglobseg$Age))
+  colnames(plotdf)=c('Segregation','Age')
+print(ggplot(data=plotdf,aes(x=Age,y=Segregation)) +geom_point() + theme_minimal(base_size = 28)+labs(title=paste((i-3))) + scale_x_continuous(name ="Age",  breaks=seq(2, 30, 4))+ylab("Global Segregation"))
 }
 
+```
 
+```{r}
 mCindglobseg<-melt(indglobseg_motSexC, id=c(1,2,3,4))
 mCgroglobseg<-melt(groglobseg_motSexC, id=c(1,2,3,4))
 
 
 
 # individual segregation over scales plots, colored by age ##
-indseg<-ggplot(data=mCindglobseg,aes(x=as.numeric(as.character(variable)),y=value,group=bblid,color=Age)) +geom_line(alpha = 0.12)+scale_color_gradientn(colors=c("yellow","purple")) + theme_dark(base_size = 28)+labs(title="M/S-Regressed Glob. Segreg. - Individ. Partitions") + scale_x_continuous(name ="# of Communitites",  breaks=seq(2, 30, 4))+ylab("Global Segregation")
+indseg<-ggplot(data=mCindglobseg,aes(x=as.numeric(as.character(variable)),y=value,group=bblid,color=Age)) +geom_step(alpha = 0.3,size=10)+ scale_color_viridis(option="D") + theme_minimal(base_size = 28)+labs(title="M/S-Regressed Glob. Segreg. - Individ. Partitions") + scale_x_continuous(name ="# of Communitites",  breaks=seq(2, 30, 4))+ylab("Global Segregation")
 
-groseg<-ggplot(data=mCgroglobseg,aes(x=as.numeric(as.character(variable)),y=value,group=bblid,color=Age)) +geom_line(alpha = 0.12)+scale_color_gradientn(colors=c("yellow","purple")) + theme_dark(base_size = 28)+labs(title="M/S-Regressed Glob. Segreg. - Group Partitions") + scale_x_continuous(name ="# of Communitites",  breaks=seq(2, 30, 4))+ylab("Global Segregation")
+groseg<-ggplot(data=mCgroglobseg,aes(x=as.numeric(as.character(variable)),y=value,group=bblid,color=Age)) +geom_line(alpha = 0.12)+scale_color_gradientn(colors=c("yellow","purple")) + theme_minimal(base_size = 28)+labs(title="M/S-Regressed Glob. Segreg. - Group Partitions") + scale_x_continuous(name ="# of Communitites",  breaks=seq(2, 30, 4))+ylab("Global Segregation")
 ggarrange(indseg,groseg,ncol=1)
 
 ### Add rank plot
@@ -283,7 +312,7 @@ for (K in 2:30){
 }
 mCindglobsegRank<-melt(indglobseg_motSexCRank, id=c(1,2,3,4))
 
-ggplot(data=mCindglobsegRank,aes(x=as.numeric(as.character(variable)),y=value,group=bblid,color=Age)) +geom_line(alpha = 0.2)+scale_color_gradientn(colors=c("yellow","purple")) + theme_dark(base_size = 28)+labs(title="M/S-Regressed Glob. Segreg. - Individ. Partitions") + scale_x_continuous(name ="# of Communitites",  breaks=seq(2, 30, 4))+ylab("Global Segregation Rank")
+ggplot(data=mCindglobsegRank,aes(x=as.numeric(as.character(variable)),y=value,group=bblid,color=Age)) +geom_line(alpha = 0.2)+scale_color_gradientn(colors=c("yellow","purple")) + theme_minimal(base_size = 28)+labs(title="M/S-Regressed Glob. Segreg. - Individ. Partitions") + scale_x_continuous(name ="# of Communitites",  breaks=seq(2, 30, 4))+ylab("Global Segregation Rank")
 ```
 
 ```{r}
@@ -354,9 +383,9 @@ mindglobwin<-melt(indglobWin_motSexC, id=c(1,2,3,4))
 mgroglobbw<-melt(indglobBw_motSexC, id=c(1,2,3,4))
 
 
-WinAll<-ggplot(data=mindglobwin,aes(x=as.numeric(as.character(variable)),y=value,group=bblid,color=Age)) +geom_line(alpha = 0.12)+scale_color_gradientn(colors=c("yellow","purple")) + theme_dark(base_size = 28)+labs(title="M/S-Regressed Glob. Within - Individ. Partitions") + scale_x_continuous(name ="# of Communitites",  breaks=seq(2, 30, 4))+ylab("Global Within")
+WinAll<-ggplot(data=mindglobwin,aes(x=as.numeric(as.character(variable)),y=value,group=bblid,color=Age)) +geom_line(alpha = 0.12)+scale_color_gradientn(colors=c("yellow","purple")) + theme_minimal(base_size = 28)+labs(title="M/S-Regressed Glob. Within - Individ. Partitions") + scale_x_continuous(name ="# of Communitites",  breaks=seq(2, 30, 4))+ylab("Global Within")
 
-BwAll<-ggplot(data=mgroglobbw,aes(x=as.numeric(as.character(variable)),y=value,group=bblid,color=Age)) +geom_line(alpha = 0.12)+scale_color_gradientn(colors=c("yellow","purple")) + theme_dark(base_size = 28)+labs(title="M/S-Regressed Glob. Bw - Individ. Partitions") + scale_x_continuous(name ="# of Communitites",  breaks=seq(2, 30, 4))+ylab("Global Between")
+BwAll<-ggplot(data=mgroglobbw,aes(x=as.numeric(as.character(variable)),y=value,group=bblid,color=Age)) +geom_line(alpha = 0.12)+scale_color_gradientn(colors=c("yellow","purple")) + theme_minimal(base_size = 28)+labs(title="M/S-Regressed Glob. Bw - Individ. Partitions") + scale_x_continuous(name ="# of Communitites",  breaks=seq(2, 30, 4))+ylab("Global Between")
 
 ### Now with motion + sex control
 # 29 for scales studied
@@ -448,7 +477,7 @@ colnames(mergeddf)<-c("X1","Individualized","Consensus")
 x<-melt(mergeddf,id="X1")
 colnames(x)<-c("X1","Partitioning","value")
 all<-ggplot(x,aes(X1,value,group=Partitioning,color=Partitioning)) + geom_step(size=3)+ylab('Segregation-Age Correlation')+
-    theme_dark(base_size = 28)+
+    theme_minimal(base_size = 28)+
     theme(axis.text=element_text(), axis.title = element_text(),panel.grid.minor = element_blank(), plot.title = element_text())+
     xlab("# of Communities") + scale_x_continuous(breaks=seq(2, 30, 4)) +
     geom_hline(aes(yintercept=.098), linetype="dashed", col='#55185D',size=2.5) +
@@ -491,7 +520,7 @@ colnames(mergeddf)<-c("X1","Individualized","Consensus")
 x<-melt(mergeddf,id="X1")
 colnames(x)<-c("X1","Partitioning","value")
 young<-ggplot(x,aes(X1,value,group=Partitioning,color=Partitioning)) + geom_step(size=3)+ylab('Segregation-Age Correlation')+
-    theme_dark(base_size = 28)+
+    theme_minimal(base_size = 28)+
     theme(axis.text=element_text(), axis.title = element_text(),panel.grid.minor = element_blank(), plot.title = element_text())+
     xlab("# of Communities") + scale_x_continuous(breaks=seq(2, 30, 4)) +
     geom_hline(aes(yintercept=.098), linetype="dashed", col='#55185D',size=2.5) +
@@ -529,7 +558,7 @@ colnames(mergeddf)<-c("X1","Individualized","Consensus")
 x<-melt(mergeddf,id="X1")
 colnames(x)<-c("X1","Partitioning","value")
 mid<-ggplot(x,aes(X1,value,group=Partitioning,color=Partitioning)) + geom_step(size=3)+ylab('Segregation-Age Correlation')+
-    theme_dark(base_size = 28)+
+    theme_minimal(base_size = 28)+
     theme(axis.text=element_text(), axis.title = element_text(),panel.grid.minor = element_blank(), plot.title = element_text())+
     xlab("# of Communities") + scale_x_continuous(breaks=seq(2, 30, 4)) +
     geom_hline(aes(yintercept=.098), linetype="dashed", col='#55185D',size=2.5) +
@@ -570,7 +599,7 @@ colnames(mergeddf)<-c("X1","Individualized","Consensus")
 x<-melt(mergeddf,id="X1")
 colnames(x)<-c("X1","Partitioning","value")
 old<-ggplot(x,aes(X1,value,group=Partitioning,color=Partitioning)) + geom_step(size=3)+ylab('Segregation-Age Correlation')+
-    theme_dark(base_size = 28)+
+    theme_minimal(base_size = 28)+
     theme(axis.text=element_text(), axis.title = element_text(),panel.grid.minor = element_blank(), plot.title = element_text())+
     xlab("# of Communities") + scale_x_continuous(breaks=seq(2, 30, 4)) +
     geom_hline(aes(yintercept=.098), linetype="dashed", col='#55185D',size=2.5) +
@@ -646,7 +675,7 @@ colnames(mergeddf)<-c("X1","Individualized","Consensus")
 x<-melt(mergeddf,id="X1")
 colnames(x)<-c("X1","Partitioning","value")
 ggplot(x,aes(X1,value,group=Partitioning,color=Partitioning)) + geom_step(size=3)+ylab('Segregation-EF Correlation')+
-    theme_dark(base_size = 28)+
+    theme_minimal(base_size = 28)+
     theme(axis.text=element_text(), axis.title = element_text(),panel.grid.minor = element_blank(), plot.title = element_text())+
     xlab("# of Communities") + scale_x_continuous(breaks=seq(2, 30, 4)) +
     geom_hline(aes(yintercept=.098), linetype="dashed", col='#55185D',size=2.5) +
@@ -705,7 +734,7 @@ colnames(mergeddf)<-c("X1","Individualized","Consensus")
 x<-melt(mergeddf,id="X1")
 colnames(x)<-c("X1","Partitioning","value")
 ggplot(x,aes(X1,value,group=Partitioning,color=Partitioning)) + geom_step(size=3)+ylab('Segregation-Motion Correlation')+
-    theme_dark(base_size = 28)+
+    theme_minimal(base_size = 28)+
     theme(axis.text=element_text(), axis.title = element_text(),panel.grid.minor = element_blank(), plot.title = element_text())+
     xlab("# of Communities") + scale_x_continuous(breaks=seq(2, 30, 4)) +
     geom_hline(aes(yintercept=.098), linetype="dashed", col='#55185D',size=2.5) +
@@ -1022,7 +1051,7 @@ LongAgeSpan_plotdf2<-data.frame(sapply(AgeSpan_plotdf2,rep.int,times=200))
 LongAgeSpan_plotdf2$agespans<-agerange200464
 LongAgeSpan_plotdf2$derivs<-deriv200464
 
-ggplot(LongAgeSpan_plotdf2,aes(agespans,tmvec,color=derivs,group=CIgroupingInd)) +geom_line(size=5,alpha=.3) +labs(title='Network Segregation Effect Manifestation', x = 'Age', y = 'Transmodality') +theme_classic(base_size = 28)+ xlim(c(8,23))+ scale_colour_gradientn(colours=c('white','blue','white','red','yellow'),values = c(0,.215,.265,.315,1),name="Change Per Year")
+ggplot(LongAgeSpan_plotdf2,aes(agespans,tmvec,color=derivs,group=CIgroupingInd)) +geom_line(size=5,alpha=.3) +labs(title='Network Segregation Effect Manifestation', x = 'Age', y = 'Transmodality') +theme_classic(base_size = 28)+ xlim(c(8,23))+ scale_colour_gradientn(colours=c(black,'blue',black,'red','yellow'),values = c(0,.215,.265,.315,1),name="Change Per Year")
 
 
 
@@ -1344,16 +1373,17 @@ ggarrange(Segreg_age_tm_gro,Segreg_age_scale_gro,Win_age_tm_gro,Win_age_scale_gr
 ```
 
 ```{r}
+
 # quick plot of each vertices' change in age-org relation over scales and transmodality
-f=read.csv('/cbica/projects/pinesParcels/results/aggregated_data/ScaleAgeOrg_TM_interaction.csv')
+f=read.csv('/cbica/projects/pinesParcels/results/aggregated_data/ScaleAgeWin_TM_interaction.csv')
 library(ggpointdensity)
-ggplot(f,aes(x=CMTM,y=Var2)) + geom_pointdensity(adjust=.5) + scale_color_viridis_c() +xlab('Transmodality') + ylab('Change in Age-Promiscuity Relation over Scales')
+ggplot(f,aes(x=CMTM,y=Var2)) + geom_pointdensity(adjust=.5) + scale_color_viridis_c() +xlab('Transmodality') + ylab('Change in Age-Within Relation (Slope) over Scales')
 
 ggplot(f,aes(x=CMTM,y=Var2)) + geom_point(alpha=.08,size=2) +xlab('Transmodality') + ylab('Change in Age-Promiscuity Relation over Scales')
 
 # and for negative PC
-f2=read.csv('/cbica/projects/pinesParcels/results/aggregated_data/ScaleAgeNegOrg_TM_interaction.csv')
-ggplot(f2,aes(x=CMTM,y=Var2)) + geom_pointdensity(adjust=.5) + scale_color_viridis_c() +xlab('Transmodality') + ylab('Change in Age-Promiscuity Relation over Scales')
+f2=read.csv('/cbica/projects/pinesParcels/results/aggregated_data/ScaleAgeWin_TM_interaction.csv')
+ggplot(f2,aes(x=CMTM,y=Var2)) + geom_pointdensity(adjust=.5) + scale_color_viridis_c() +xlab('Transmodality') + ylab('Change in Age-Between Relation (Slope) over Scales')
 
 ggplot(f2,aes(x=CMTM,y=Var2)) + geom_point(alpha=.08,size=2) +xlab('Transmodality') + ylab('Change in Age-Promiscuity Relation over Scales')
 ```
@@ -1756,7 +1786,7 @@ for (i in 5:33){
 mCindglobPC<-melt(globPCdfMotSexCor, id=c(1,2,3,4))
 
 # individual PARTICIPATION COEFFICIENT over scales plots, colored by age ##
-indPC<-ggplot(data=mCindglobPC,aes(x=as.numeric(as.character(variable)),y=value,group=bblid,color=Age)) +geom_line(alpha = 0.12,size=1.5)+scale_color_gradientn(colors=c("yellow","purple")) + theme_dark(base_size = 28)+labs(title="M/S-Regressed Glob. PartCoef") + scale_x_continuous(name ="# of Communitites",  breaks=seq(2, 30, 4))+ylab("Global Participation Coef.")
+indPC<-ggplot(data=mCindglobPC,aes(x=as.numeric(as.character(variable)),y=value,group=bblid,color=Age)) +geom_line(alpha = 0.12,size=1.5)+scale_color_gradientn(colors=c("yellow","purple")) + theme_minimal(base_size = 28)+labs(title="M/S-Regressed Glob. PartCoef") + scale_x_continuous(name ="# of Communitites",  breaks=seq(2, 30, 4))+ylab("Global Participation Coef.")
 
 
 ### get global PARTICIPATION COEFFICIENT 
@@ -1863,7 +1893,7 @@ colnames(mergeddf)<-c("X1","All","Young","Mid","Old")
 x<-melt(mergeddf,id="X1")
 colnames(x)<-c("X1","AgeBracket","value")
 allpc<-ggplot(x,aes(X1,value,group=AgeBracket,color=AgeBracket)) + geom_step(size=3)+ylab('ParCoef-Age Correlation')+
-    theme_dark(base_size = 28)+
+    theme_minimal(base_size = 28)+
     theme(axis.text=element_text(), axis.title = element_text(),panel.grid.minor = element_blank(), plot.title = element_text())+
     xlab("# of Communities") + scale_x_continuous(breaks=seq(2, 30, 4)) +
     geom_hline(aes(yintercept=.098), linetype="dashed", col='#55185D',size=2.5) +
@@ -1884,7 +1914,7 @@ colnames(mergeddf)<-c("X1","All","Young","Mid","Old")
 x<-melt(mergeddf,id="X1")
 colnames(x)<-c("X1","AgeBracket","value")
 allseg<-ggplot(x,aes(X1,value,group=AgeBracket,color=AgeBracket)) + geom_step(size=3)+ylab('Segregation-Age Correlation')+
-    theme_dark(base_size = 28)+
+    theme_minimal(base_size = 28)+
     theme(axis.text=element_text(), axis.title = element_text(),panel.grid.minor = element_blank(), plot.title = element_text())+
     xlab("# of Communities") + scale_x_continuous(breaks=seq(2, 30, 4)) +
     geom_hline(aes(yintercept=.098), linetype="dashed", col='#55185D',size=2.5) +
@@ -2256,18 +2286,18 @@ mindglobseg<-melt(indglobseg, id=c(1,2,3,4))
 mgroglobseg<-melt(groglobseg, id=c(1,2,3,4))
 
 # individual segregation over scales plots, colored by age ##
-indseg<-ggplot(data=mindglobseg,aes(x=as.numeric(as.character(variable)),y=value,group=bblid,color=Age)) +geom_line(alpha = 0.12)+scale_color_gradientn(colors=c("yellow","purple")) + theme_dark(base_size = 28)+labs(title="Global Segregation - Individ. Partitions") + scale_x_continuous(name ="# of Communitites",  breaks=seq(2, 30, 4))+ylab("Global Segregation")
-groseg<-ggplot(data=mgroglobseg,aes(x=as.numeric(as.character(variable)),y=value,group=bblid,color=Age)) +geom_line(alpha = 0.12)+scale_color_gradientn(colors=c("yellow","purple")) + theme_dark(base_size = 28)+labs(title="Global Segregation - Group Partitions") + scale_x_continuous(name ="# of Communitites", breaks=seq(2, 30, 4))+ylab("Global Segregation")
+indseg<-ggplot(data=mindglobseg,aes(x=as.numeric(as.character(variable)),y=value,group=bblid,color=Age)) +geom_line(alpha = 0.12)+scale_color_gradientn(colors=c("yellow","purple")) + theme_minimal(base_size = 28)+labs(title="Global Segregation - Individ. Partitions") + scale_x_continuous(name ="# of Communitites",  breaks=seq(2, 30, 4))+ylab("Global Segregation")
+groseg<-ggplot(data=mgroglobseg,aes(x=as.numeric(as.character(variable)),y=value,group=bblid,color=Age)) +geom_line(alpha = 0.12)+scale_color_gradientn(colors=c("yellow","purple")) + theme_minimal(base_size = 28)+labs(title="Global Segregation - Group Partitions") + scale_x_continuous(name ="# of Communitites", breaks=seq(2, 30, 4))+ylab("Global Segregation")
 ggarrange(indseg,groseg,ncol=1)
 
 # individual segregation over scales plots, colored by Motion ##
-indseg<-ggplot(data=mindglobseg,aes(x=as.numeric(as.character(variable)),y=value,group=bblid,color=Motion)) +geom_line(alpha = 0.12)+scale_color_gradientn(colors=c("yellow","purple")) + theme_dark(base_size = 28)+labs(title="Global Segregation - Individ. Partitions") + scale_x_continuous(name ="# of Communitites",  breaks=seq(2, 30, 4))+ylab("Global Segregation")
-groseg<-ggplot(data=mgroglobseg,aes(x=as.numeric(as.character(variable)),y=value,group=bblid,color=Motion)) +geom_line(alpha = 0.12)+scale_color_gradientn(colors=c("yellow","purple")) + theme_dark(base_size = 28)+labs(title="Global Segregation - Group Partitions") + scale_x_continuous(name ="# of Communitites", breaks=seq(2, 30, 4))+ylab("Global Segregation")
+indseg<-ggplot(data=mindglobseg,aes(x=as.numeric(as.character(variable)),y=value,group=bblid,color=Motion)) +geom_line(alpha = 0.12)+scale_color_gradientn(colors=c("yellow","purple")) + theme_minimal(base_size = 28)+labs(title="Global Segregation - Individ. Partitions") + scale_x_continuous(name ="# of Communitites",  breaks=seq(2, 30, 4))+ylab("Global Segregation")
+groseg<-ggplot(data=mgroglobseg,aes(x=as.numeric(as.character(variable)),y=value,group=bblid,color=Motion)) +geom_line(alpha = 0.12)+scale_color_gradientn(colors=c("yellow","purple")) + theme_minimal(base_size = 28)+labs(title="Global Segregation - Group Partitions") + scale_x_continuous(name ="# of Communitites", breaks=seq(2, 30, 4))+ylab("Global Segregation")
 ggarrange(indseg,groseg,ncol=1)
 
 # individual segregation over scales plots, colored by Sex ##
-indseg<-ggplot(data=mindglobseg,aes(x=as.numeric(as.character(variable)),y=value,group=bblid,color=Sex)) +geom_line(alpha = 0.1,size=2)+ theme_dark(base_size = 28)+labs(title="Global Segregation - Individ. Partitions") + scale_x_continuous(name ="# of Communitites",  breaks=seq(2, 30, 4))+ylab("Global Segregation")
-groseg<-ggplot(data=mgroglobseg,aes(x=as.numeric(as.character(variable)),y=value,group=bblid,color=Sex)) +geom_line(alpha = 0.1,size=2)+ theme_dark(base_size = 28)+labs(title="Global Segregation - Group Partitions") + scale_x_continuous(name ="# of Communitites", breaks=seq(2, 30, 4))+ylab("Global Segregation")
+indseg<-ggplot(data=mindglobseg,aes(x=as.numeric(as.character(variable)),y=value,group=bblid,color=Sex)) +geom_line(alpha = 0.1,size=2)+ theme_minimal(base_size = 28)+labs(title="Global Segregation - Individ. Partitions") + scale_x_continuous(name ="# of Communitites",  breaks=seq(2, 30, 4))+ylab("Global Segregation")
+groseg<-ggplot(data=mgroglobseg,aes(x=as.numeric(as.character(variable)),y=value,group=bblid,color=Sex)) +geom_line(alpha = 0.1,size=2)+ theme_minimal(base_size = 28)+labs(title="Global Segregation - Group Partitions") + scale_x_continuous(name ="# of Communitites", breaks=seq(2, 30, 4))+ylab("Global Segregation")
 ggarrange(indseg,groseg,ncol=1)
 
 
@@ -2309,9 +2339,9 @@ mCgroglobseg<-melt(groglobseg_motSexC, id=c(1,2,3,4))
 
 
 # individual segregation over scales plots, colored by age ##
-indseg<-ggplot(data=mCindglobseg,aes(x=as.numeric(as.character(variable)),y=value,group=bblid,color=Age)) +geom_line(alpha = 0.12)+scale_color_gradientn(colors=c("yellow","purple")) + theme_dark(base_size = 28)+labs(title="M/S-Regressed Glob. Segreg. - Individ. Partitions") + scale_x_continuous(name ="# of Communitites",  breaks=seq(2, 30, 4))+ylab("Global Segregation")
+indseg<-ggplot(data=mCindglobseg,aes(x=as.numeric(as.character(variable)),y=value,group=bblid,color=Age)) +geom_line(alpha = 0.12)+scale_color_gradientn(colors=c("yellow","purple")) + theme_minimal(base_size = 28)+labs(title="M/S-Regressed Glob. Segreg. - Individ. Partitions") + scale_x_continuous(name ="# of Communitites",  breaks=seq(2, 30, 4))+ylab("Global Segregation")
 
-groseg<-ggplot(data=mCgroglobseg,aes(x=as.numeric(as.character(variable)),y=value,group=bblid,color=Age)) +geom_line(alpha = 0.12)+scale_color_gradientn(colors=c("yellow","purple")) + theme_dark(base_size = 28)+labs(title="M/S-Regressed Glob. Segreg. - Group Partitions") + scale_x_continuous(name ="# of Communitites",  breaks=seq(2, 30, 4))+ylab("Global Segregation")
+groseg<-ggplot(data=mCgroglobseg,aes(x=as.numeric(as.character(variable)),y=value,group=bblid,color=Age)) +geom_line(alpha = 0.12)+scale_color_gradientn(colors=c("yellow","purple")) + theme_minimal(base_size = 28)+labs(title="M/S-Regressed Glob. Segreg. - Group Partitions") + scale_x_continuous(name ="# of Communitites",  breaks=seq(2, 30, 4))+ylab("Global Segregation")
 ggarrange(indseg,groseg,ncol=1)
 ```
 
@@ -2374,7 +2404,7 @@ colnames(mergeddf)<-c("X1","Individualized","Consensus")
 x<-melt(mergeddf,id="X1")
 colnames(x)<-c("X1","Partitioning","value")
 all<-ggplot(x,aes(X1,value,group=Partitioning,color=Partitioning)) + geom_step(size=3)+ylab('Segregation-Age Correlation')+
-    theme_dark(base_size = 28)+
+    theme_minimal(base_size = 28)+
     theme(axis.text=element_text(), axis.title = element_text(),panel.grid.minor = element_blank(), plot.title = element_text())+
     xlab("# of Communities") + scale_x_continuous(breaks=seq(2, 30, 4)) +
     geom_hline(aes(yintercept=.098), linetype="dashed", col='#55185D',size=2.5) +
@@ -2417,7 +2447,7 @@ colnames(mergeddf)<-c("X1","Individualized","Consensus")
 x<-melt(mergeddf,id="X1")
 colnames(x)<-c("X1","Partitioning","value")
 young<-ggplot(x,aes(X1,value,group=Partitioning,color=Partitioning)) + geom_step(size=3)+ylab('Segregation-Age Correlation')+
-    theme_dark(base_size = 28)+
+    theme_minimal(base_size = 28)+
     theme(axis.text=element_text(), axis.title = element_text(),panel.grid.minor = element_blank(), plot.title = element_text())+
     xlab("# of Communities") + scale_x_continuous(breaks=seq(2, 30, 4)) +
     geom_hline(aes(yintercept=.098), linetype="dashed", col='#55185D',size=2.5) +
@@ -2455,7 +2485,7 @@ colnames(mergeddf)<-c("X1","Individualized","Consensus")
 x<-melt(mergeddf,id="X1")
 colnames(x)<-c("X1","Partitioning","value")
 mid<-ggplot(x,aes(X1,value,group=Partitioning,color=Partitioning)) + geom_step(size=3)+ylab('Segregation-Age Correlation')+
-    theme_dark(base_size = 28)+
+    theme_minimal(base_size = 28)+
     theme(axis.text=element_text(), axis.title = element_text(),panel.grid.minor = element_blank(), plot.title = element_text())+
     xlab("# of Communities") + scale_x_continuous(breaks=seq(2, 30, 4)) +
     geom_hline(aes(yintercept=.098), linetype="dashed", col='#55185D',size=2.5) +
@@ -2496,7 +2526,7 @@ colnames(mergeddf)<-c("X1","Individualized","Consensus")
 x<-melt(mergeddf,id="X1")
 colnames(x)<-c("X1","Partitioning","value")
 old<-ggplot(x,aes(X1,value,group=Partitioning,color=Partitioning)) + geom_step(size=3)+ylab('Segregation-Age Correlation')+
-    theme_dark(base_size = 28)+
+    theme_minimal(base_size = 28)+
     theme(axis.text=element_text(), axis.title = element_text(),panel.grid.minor = element_blank(), plot.title = element_text())+
     xlab("# of Communities") + scale_x_continuous(breaks=seq(2, 30, 4)) +
     geom_hline(aes(yintercept=.098), linetype="dashed", col='#55185D',size=2.5) +
@@ -2569,7 +2599,7 @@ colnames(mergeddf)<-c("X1","Individualized","Consensus")
 x<-melt(mergeddf,id="X1")
 colnames(x)<-c("X1","Partitioning","value")
 ggplot(x,aes(X1,value,group=Partitioning,color=Partitioning)) + geom_step(size=3)+ylab('Segregation-EF Correlation')+
-    theme_dark(base_size = 28)+
+    theme_minimal(base_size = 28)+
     theme(axis.text=element_text(), axis.title = element_text(),panel.grid.minor = element_blank(), plot.title = element_text())+
     xlab("# of Communities") + scale_x_continuous(breaks=seq(2, 30, 4)) +
     geom_hline(aes(yintercept=.098), linetype="dashed", col='#55185D',size=2.5) +

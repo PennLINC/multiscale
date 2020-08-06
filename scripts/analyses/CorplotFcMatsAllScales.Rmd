@@ -13,7 +13,7 @@ library(igraph)
  
 grid.col = c(Motor = "#3281ab", Visual = "#670068", DA = "#007500", VA = '#b61ad0', FP = "#d77d00", DM = "#c1253c", Limbic = '#007502')
 
-col_fun=function(x) ifelse(abs(x)<.18,"#00000000",
+col_fun=function(x) ifelse(abs(x)<.1,"#00000000",
                            ifelse(x<0,"red","blue")
 )
   
@@ -29,10 +29,9 @@ for (K in 2:30){
   # get tmvec to arrange matrix by transmodality
   curTmRank<-order(tmvec[Kind])
   ReArAgeEfMat<-AgeEfMat[curTmRank,curTmRank]
-  #corrplot(AgeEfMat,is.corr = F)
-  #chordDiagram(AgeEfMat,grid.col = grid.col)
-  #ReArAgeEfMat[ReArAgeEfMat > -.1 & ReArAgeEfMat < .1]=0
-  #corrplot(ReArAgeEfMat,is.corr = F)
+  ReArAgeEfMatThresh<-ReArAgeEfMat
+  ReArAgeEfMatThresh[ReArAgeEfMat > -.1 & ReArAgeEfMat < .1]=0
+  corrplot(ReArAgeEfMatThresh,is.corr = F)
   
   chordDiagram(ReArAgeEfMat,grid.col = grid.col, col = col_fun,symmetric = "TRUE",annotationTrack=c("name","grid"),self.link = 1)
   title(paste(K))
