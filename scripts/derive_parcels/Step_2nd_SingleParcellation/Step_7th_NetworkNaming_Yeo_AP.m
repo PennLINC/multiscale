@@ -38,9 +38,11 @@ for K=Krange
 end
 % make strings vector for colnames
 corres_strings=strings(length(correspondence_over_scales),1);
+corres_strings17=strings(length(correspondence_over_scales),1);
 % make a cell dataframe (unfortunately) to keep colnames and values together (rows for colnames, scales, maj net name, and maj net prop)
 %%% transmodality binning to be done in R to reduce matlab usage
 df_corres=cell(4,length(correspondence_over_scales));
+df_corres17=cell(4,length(correspondence_over_scales));
 %%%%%%%%%%%%%%%%%
 
 for K=Krange
@@ -52,12 +54,15 @@ for K=Krange
 	for N=1:K
 		curindex=Kind(N);
 		corres_strings(curindex)=strcat('Corres_y7_scores_scale_', num2str(K), '_net', num2str(N));
+		corres_strings17(curindex)=strcat('Corres_y17_scores_scale_', num2str(K), '_net', num2str(N));
 	end
 
 	% its like boom
 	df_corres(2,Kind)=deal(num2cell(K));	
+	df_corres17(2,Kind)=deal(num2cell(K));
 	% put it in the df like slam
 	df_corres(1,Kind)=cellstr(corres_strings(Kind));
+	df_corres17(1,Kind)=cellstr(corres_strings(Kind));
 	K
 	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -96,12 +101,12 @@ for K=Krange
     		% display the network name
     		ind = find(NetworkID == Label_Yeo_System17_Unique(Max_Index));
 		ind7 = find(NetworkID7 == Label_Yeo_System7_Unique(Max_Index7));
-    		disp([num2str(i) ' Coarse maximum yeo alignment:  ' NetworkName{ind}]);
+    		disp([num2str(i) ' Coarse maximum yeo alignment:  ' NetworkNameGranular{ind}]);
     		disp([num2str(i) ' Direct 7 yeo alignment:  ' NetworkName7{ind7}]);
     		
 		% add the major network name to the cell df (use Kind, which starts from sum of all previously needed slots in the df row (for coarser scales))
 		df_corres(3,Kind(i))=cellstr(num2str(NetworkName7{ind7}));
-
+		df_corres17(3,Kind(i))=cellstr(num2str(NetworkNameGranular{ind}));
 		% added to give proportion of yeo alignment with each derived network
     		% gets sum of proprotion for all involved vertices, divides by number of vertices (supposed to be the same as average)
 		totverts=sum(number);
@@ -110,6 +115,7 @@ for K=Krange
 		prop7=number7/totverts7;
 		% maximum proportional representation
 		df_corres(4,Kind(i))=num2cell((max(number7)/totverts7));
+		df_corres17(4,Kind(i))=num2cell((max(number)/totverts));
 		% index location, turn into logical (binary boolean mask)
     		logicalind=ismember(NetworkID,Label_Yeo_System17_Unique);    
     		logicalind7=ismember(NetworkID7,Label_Yeo_System7_Unique);
@@ -141,3 +147,4 @@ for K=Krange
 	end
 end
 writetable(cell2table(df_corres),'/cbica/projects/pinesParcels/results/aggregated_data/fc/network_yCorrespondence_overscales.csv');
+writetable(cell2table(df_corres17),'/cbica/projects/pinesParcels/results/aggregated_data/fc/network_y17Correspondence_overscales.csv');

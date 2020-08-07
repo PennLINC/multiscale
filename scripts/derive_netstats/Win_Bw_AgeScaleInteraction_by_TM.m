@@ -3,8 +3,8 @@
 % add paths
 addpath(genpath('/cbica/projects/pinesParcels/multiscale/scripts/derive_parcels/Toolbox'));
 % Load in previously calculated age relation change over scales
-WOS=load('/cbica/projects/pinesParcels/results/EffectVecs/ageWinspear.mat');
-BWOS=load('/cbica/projects/pinesParcels/results/EffectVecs/ageBwspear.mat');
+WOS=load('/cbica/projects/pinesParcels/results/EffectVecs/ageWinCor_x_ScaleCor.mat');
+BWOS=load('/cbica/projects/pinesParcels/results/EffectVecs/ageBwCor_x_ScaleCor.mat');
 % Load in normative transmodality
 ProjectFolder = '/cbica/projects/pinesParcels/data/princ_gradients';
 pgl = gifti([ProjectFolder '/Gradients.lh.fsaverage5.func.gii']);
@@ -29,11 +29,11 @@ grad_rh_masked=grad_rh(Index_r);
 CMTM=vertcat(grad_lh_masked,grad_rh_masked);
 
 % vertex info of interest (scale-dependence of its age-Win effect and transmodality)
-VertVecs=table(CMTM,WOS.WinAgeEff);
+VertVecs=table(CMTM,WOS.WinAgeEffScalesCor);
 
 writetable(VertVecs,'/cbica/projects/pinesParcels/results/aggregated_data/ScaleAgeWin_TM_interaction.csv');
 
 % same thing but for BW fit
-NVertVecs=table(CMTM,BWOS.BwAgeEff);
+NVertVecs=table(CMTM,BWOS.BwAgeEffScalesCor);
 
 writetable(NVertVecs,'/cbica/projects/pinesParcels/results/aggregated_data/ScaleAgeBw_TM_interaction.csv');

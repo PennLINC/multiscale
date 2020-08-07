@@ -827,6 +827,14 @@ scalesvec<-as.numeric(rac[2,])
 domnetvec<-as.factor(rac[3,])
 netpropvec<-as.numeric(rac[4,])
 
+# 17 network version
+### Get in Consensus-reference atlas correspondence
+rac17<-read.csv('/cbica/projects/pinesParcels/results/aggregated_data/fc/network_y17Correspondence_overscales.csv',stringsAsFactors = F)
+scalesvec17<-as.numeric(rac17[2,])
+domnetvec17<-as.factor(rac17[3,])
+netpropvec17<-as.numeric(rac17[4,])
+
+
 #### read in transmodality
 tm<-read.csv('/cbica/projects/pinesParcels/results/aggregated_data/fc/network_transmodality_overscales.csv',stringsAsFactors = F)
 colnames(tm)<-tm[1,]
@@ -912,6 +920,10 @@ Win_age_tm<-ggplot(confvecdf,aes(tmvec,corVecEst,color=domnetvec,alpha=netpropve
 
 # check for scale-specific effects
 Win_age_scale<-ggplot(confvecdf,aes(tmvec,corVecEst,color=scalesvec)) + geom_point(size=4)+labs(title='Correlation of Network Segregation and Age over All Communities', x = 'Transmodality', y = "AgeWinCor", color="Topological \nScale")+theme_classic(base_size = 28)+ ylim(-.5,.5)+ ggtitle('Correlation of Within Network Connectivity and Age over All Communities')+ scale_colour_gradient(low="#55185D", high="#ECB602")
+
+#17 network version
+confvecdf17<-data.frame(tmvec,scalesvec,domnetvec17,netpropvec17,corVecEst)
+Win_age_tm17<-ggplot(confvecdf17,aes(tmvec,corVecEst,color=domnetvec17,alpha=netpropvec17^2)) + scale_color_manual(values=c('#dc8303','#8d2049','#596a85','#2d9a3d','#007938','#d9e200','#bc0943','#2b1f67','#48593a','#91a967','#4183a8','#00bb89','#3245a3','#9e3ca2','#eb75b3','#68126f','#d1001c')) + xlab("Transmodality") + ylab("AgeWinCor") +theme_classic(base_size = 28) + geom_point(size=4,aes(tmvec,corVecEst)) + ggtitle('Correlation of Within-Network Con and Age over All Communities')+ ylim(-.5,.5)
 ```
 
 ```{r}
@@ -945,9 +957,9 @@ Seg_plotdf<-data.frame(tmvec,scalesvec,domnetvec,netpropvec,corVecEst)
 Segreg_age_tm<-ggplot(Seg_plotdf,aes(tmvec,corVecEst,color=domnetvec,alpha=netpropvec^2)) + scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068')) + xlab("Transmodality") + ylab("AgeSegregCor") +theme_classic(base_size = 28) + geom_point(size=4,aes(tmvec,corVecEst)) + ggtitle('Correlation of Network Segregation and Age over All Communities')+ ylim(-.5,.5)
 
 # without proportion
-Segreg_age_tm_noprop<-ggplot(Seg_plotdf[1:300,],aes(tmvec,corVecEst,color=domnetvec)) + geom_line(size=1,alpha=.5) + scale_color_manual(name="Predominant \nOverlapping \nYeo7 Network",values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068')) + xlab("Transmodality") + ylab("AgeSegregCor") +theme_classic(base_size = 28) + geom_point(size=4,aes(tmvec,corVecEst),alpha=.5) + ggtitle('Correlation of Network Segregation and Age over All Communities')+ ylim(-.5,.5) +theme(legend.text=element_text(size=20))
+Segreg_age_tm_noprop<-ggplot(Seg_plotdf,aes(tmvec,corVecEst,color=domnetvec)) + geom_line(size=1,alpha=.5) + scale_color_manual(name="Predominant \nOverlapping \nYeo7 Network",values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068')) + xlab("Transmodality") + ylab("AgeSegregCor") +theme_classic(base_size = 28) + geom_point(size=4,aes(tmvec,corVecEst),alpha=.5) + ggtitle('Correlation of Network Segregation and Age over All Communities')+ ylim(-.5,.5) +theme(legend.text=element_text(size=20))
 
-Segreg_age_scale<-ggplot(Seg_plotdf[1:200,],aes(tmvec,corVecEst,color=scalesvec,alpha=.5)) +labs(title='Correlation of Network Segregation and Age over All Communities', x = 'Transmodality', y = "AgeSegregCor", color="Topological \nScale")+ geom_point(size=4,alpha=.5) +theme_classic(base_size = 28)+ ylim(-.5,.5)+ scale_colour_gradient(low="#55185D", high="#ECB602")
+Segreg_age_scale<-ggplot(Seg_plotdf,aes(tmvec,corVecEst,color=scalesvec,alpha=.5)) +labs(title='Correlation of Network Segregation and Age over All Communities', x = 'Transmodality', y = "AgeSegregCor", color="Topological \nScale")+ geom_point(size=4,alpha=.5) +theme_classic(base_size = 28)+ ylim(-.5,.5)+ scale_colour_gradient(low="#55185D", high="#ECB602")
 
 Segreg_age_scale_x<-ggplot(Seg_plotdf,aes(scalesvec,corVecEst,color=tmvec,alpha=.5)) +labs(title='Correlation of Network Segregation and Age over All Communities', x = '# of Communities', y = 'Segregation-Age Correlation', color="Transmodality")+ geom_point(size=4,alpha=.5) +theme_classic(base_size = 28)+ ylim(-.5,.5)+ scale_colour_gradient(low="#55185D", high="#ECB602")
 
@@ -955,6 +967,9 @@ Segreg_age_scale_x<-ggplot(Seg_plotdf,aes(scalesvec,corVecEst,color=tmvec,alpha=
 
 ggarrange(Segreg_age_tm,Segreg_age_scale,Win_age_tm,Win_age_scale)
 
+#17 network version
+Seg_plotdf<-data.frame(tmvec,scalesvec,domnetvec17,netpropvec17,corVecEst)
+Segreg_age_tm<-ggplot(Seg_plotdf,aes(tmvec,corVecEst,color=domnetvec17,alpha=netpropvec17^2)) + scale_color_manual(values=c('#dc8303','#8d2049','#596a85','#2d9a3d','#007938','#d9e200','#bc0943','#2b1f67','#48593a','#91a967','#4183a8','#00bb89','#3245a3','#9e3ca2','#eb75b3','#68126f','#d1001c')) + xlab("Transmodality") + ylab("AgeSegregCor") +theme_classic(base_size = 28) + geom_point(size=4,aes(tmvec,corVecEst)) + ggtitle('Correlation of Network Segregation and Age over All Communities')+ ylim(-.5,.5)
 ```
 
 ```{r}
@@ -1051,7 +1066,7 @@ LongAgeSpan_plotdf2<-data.frame(sapply(AgeSpan_plotdf2,rep.int,times=200))
 LongAgeSpan_plotdf2$agespans<-agerange200464
 LongAgeSpan_plotdf2$derivs<-deriv200464
 
-ggplot(LongAgeSpan_plotdf2,aes(agespans,tmvec,color=derivs,group=CIgroupingInd)) +geom_line(size=5,alpha=.3) +labs(title='Network Segregation Effect Manifestation', x = 'Age', y = 'Transmodality') +theme_classic(base_size = 28)+ xlim(c(8,23))+ scale_colour_gradientn(colours=c(black,'blue',black,'red','yellow'),values = c(0,.215,.265,.315,1),name="Change Per Year")
+ggplot(LongAgeSpan_plotdf2,aes(agespans,tmvec,color=derivs,group=CIgroupingInd)) +geom_line(size=5,alpha=.3) +labs(title='Network Segregation Effect Manifestation', x = 'Age', y = 'Transmodality') +theme_classic(base_size = 28)+ xlim(c(8,23))+ scale_colour_gradientn(colours=c('green','blue','white','red','yellow'),values = c(0,.215,.265,.315,1),name="Change Per Year")
 
 
 
@@ -1104,6 +1119,36 @@ ggplot(LongAgeSpan_plotdf3,aes(Age,Splines,color=Transmodality,group=Grouping)) 
 
 ```
 
+
+```{r}
+set.seed(417)
+library(plotly)
+temp <- sample(20:60,100,replace = T)
+pressure <- sample(50:100,100,replace = T)
+dtime <- sample(50:100,100,replace = T)
+
+axx <- list(
+  range = c(0,100)
+)
+
+axy <- list(
+  range = c(0,100)
+)
+
+axz <- list(
+  range = c(0,100)
+)
+
+scene = list(
+  xaxis = axx,
+  yaxis = axy,
+  zaxis = axz,
+  camera = list(eye = list(x = -1.25, y = 1.25, z = 1.25)))
+
+fig<-plot_ly(x=temp, y=pressure, z=dtime, type="scatter3d", mode="markers", color=temp)
+
+fig <- fig %>% layout(title = "3D Scatter plot", scene = scene)
+```
 
 
 ```{r}
@@ -1326,6 +1371,11 @@ transbw_age_tm<-ggplot(bwdf,aes(tmvec,bwAgeCorVecs.bw_to_transmodal,color=domnet
 transbw_age_scale<-ggplot(bwdf,aes(tmvec,bwAgeCorVecs.bw_to_transmodal,color=scalesvec)) + geom_point(size=6) + xlab("Transmodality") + ylab("AgeBWTCor")+theme_classic(base_size = 28)+ ylim(-.5,.5)
 
 ggarrange(avgbw_age_tm,unibw_age_tm,transbw_age_tm,avgbw_age_scale,unibw_age_scale,transbw_age_scale)
+
+#17 network version
+bwdf17<-data.frame(tmvec,scalesvec,domnetvec17,netpropvec17,bwAgeCorVecs$avg_bw,bwAgeCorVecs$bw_to_unimodal,bwAgeCorVecs$bw_to_transmodal)
+
+Segreg_age_tm17<-ggplot(bwdf17,aes(tmvec,bwAgeCorVecs.avg_bw,color=domnetvec17,alpha=netpropvec17^2)) + scale_color_manual(values=c('#dc8303','#8d2049','#596a85','#2d9a3d','#007938','#d9e200','#bc0943','#2b1f67','#48593a','#91a967','#4183a8','#00bb89','#3245a3','#9e3ca2','#eb75b3','#68126f','#d1001c')) + xlab("Transmodality") + ylab("AgeB/WCor") +theme_classic(base_size = 28) + geom_point(size=4,aes(tmvec,bwAgeCorVecs.avg_bw)) + ggtitle('Correlation of B/w Con Avg and Age over All Communities')+ ylim(-.5,.5)
 ```
 
 ```{r}
@@ -1379,13 +1429,14 @@ f=read.csv('/cbica/projects/pinesParcels/results/aggregated_data/ScaleAgeWin_TM_
 library(ggpointdensity)
 ggplot(f,aes(x=CMTM,y=Var2)) + geom_pointdensity(adjust=.5) + scale_color_viridis_c() +xlab('Transmodality') + ylab('Change in Age-Within Relation (Slope) over Scales')
 
-ggplot(f,aes(x=CMTM,y=Var2)) + geom_point(alpha=.08,size=2) +xlab('Transmodality') + ylab('Change in Age-Promiscuity Relation over Scales')
+ggplot(f,aes(x=CMTM,y=Var2)) + geom_point(alpha=.08,size=2) +xlab('Transmodality') + ylab('Change in Age-Within Relation (Slope) over Scales')
 
-# and for negative PC
-f2=read.csv('/cbica/projects/pinesParcels/results/aggregated_data/ScaleAgeWin_TM_interaction.csv')
-ggplot(f2,aes(x=CMTM,y=Var2)) + geom_pointdensity(adjust=.5) + scale_color_viridis_c() +xlab('Transmodality') + ylab('Change in Age-Between Relation (Slope) over Scales')
+# and for Between
+f2=read.csv('/cbica/projects/pinesParcels/results/aggregated_data/ScaleAgeBw_TM_interaction.csv')
+ggplot(f2,aes(x=CMTM,y=Var2)) + geom_pointdensity(adjust=.3) + scale_color_viridis_c() +xlab('Transmodality') + ylab('Change in Age-Between Relation (Slope) over Scales')
 
-ggplot(f2,aes(x=CMTM,y=Var2)) + geom_point(alpha=.08,size=2) +xlab('Transmodality') + ylab('Change in Age-Promiscuity Relation over Scales')
+ggplot(f2,aes(x=CMTM,y=Var2)) + geom_point(alpha=.08,size=2) +xlab('Transmodality') + ylab('Change in Age-Between Relation (Slope) over Scales')
+
 ```
 
 
