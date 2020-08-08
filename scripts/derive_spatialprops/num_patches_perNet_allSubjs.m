@@ -12,11 +12,6 @@ surfNLabels=zeros(20484,5);
 surfNLabels(1:10242,1:3)=surfL;
 surfNLabels(10243:20484,1:3)=surfR;
 
-% load group partitions (labels) to start, can run this over individs to get a distribution of patches per subj
-%gro_partfp=['/cbica/projects/pinesParcels/data/SingleParcellation/SingleAtlas_Analysis/group_all_Ks.mat'];
-%gro_part=load(gro_partfp);
-
-
 % load medial wall info to fill in the blanks
 surfML = '/cbica/projects/pinesParcels/data/H_SNR_masks/lh.Mask_SNR.label';
 mwIndVec_l = read_medial_wall_label(surfML);

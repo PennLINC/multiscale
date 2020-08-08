@@ -48,7 +48,7 @@ full_df_colnum=(3*(length(win_over_scales)+length(Networkwise_seg_over_scales)+l
 % length(subjs) +1 so theres a row for colnames
 % looks like we can expect 16,357 columns for this dataframe if Krange=2:30
 
-%%df=zeros((length(subjs)+1),full_df_colnum);
+
 %% will have to change all of these to cells to accom. mixed strings and numeric
 df=cell(length(subjs)+1,full_df_colnum);
 
