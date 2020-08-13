@@ -170,7 +170,7 @@ selectvec[19]<-1
 mcrecnerrdf$select<-selectvec
 # make vector for scales of interest
 
-avgrecon<-ggplot(data=mcrecnerrdf,aes(y=mreconerr,x=community_vec,color=abs(change)))+geom_step(size=2)+theme_minimal(base_size = 28)+ggtitle("Reconstruction Error Over Scales")+ scale_x_continuous(name ="# of Communitites",  breaks=seq(2, 30, 4))+ylab("Recon. Error")+scale_color_continuous(name='Decrease\nfrom prev.') + geom_point(data=mcrecnerrdf,aes(y=mreconerr,x=community_vec,size=select*5))+guides(size=F)
+avgrecon<-ggplot(data=mcrecnerrdf,aes(y=mreconerr,x=community_vec,color=abs(change)))+geom_step(size=2)+theme_minimal(base_size = 28)+ggtitle("Reconstruction Error Over Scales")+ scale_x_continuous(name ="# of Communitites",  breaks=seq(2, 30, 4))+ylab("Recon. Error")+scale_color_continuous(name='Decrease\nfrom prev.') + geom_point(data=mcrecnerrdf,aes(y=mreconerr,x=community_vec,size=select*5))+guides(size=F)+theme(legend.position="left")
 
 avgSPvar<-ggplot(data=varoverscales,aes(y=SoftVar,x=community_vec))+geom_step(col='black',size=2)+theme_minimal(base_size = 28)+ggtitle("Loading Variability (MAD)")+ scale_x_continuous(name ="# of Communitites",  breaks=seq(2, 30, 4))+ylab("Avg. MAD")
 avgHPvar<-ggplot(data=varoverscales,aes(y=HardVar,x=community_vec))+geom_step(col='black',size=2)+theme_minimal(base_size = 28)+ggtitle("Label Variability (Entropy)")+ scale_x_continuous(name ="# of Communitites",  breaks=seq(2, 30, 4))+ylab("Avg. Entropy")
@@ -241,11 +241,13 @@ mindglobseg<-melt(indglobseg, id=c(1,2,3,4))
 mgroglobseg<-melt(groglobseg, id=c(1,2,3,4))
 
 # individual segregation over scales plots, colored by age ##
-indseg<-ggplot(data=mindglobseg,aes(x=as.numeric(as.character(variable)),y=value,group=bblid,color=Age)) +geom_line(alpha = 0.12)+scale_color_gradientn(colors=c("yellow","purple")) + theme_minimal(base_size = 28)+labs(title="Global Segregation - Individ. Partitions") + scale_x_continuous(name ="# of Communitites",  breaks=seq(2, 30, 4))+ylab("Global Segregation")
+indseg<-ggplot(data=mindglobseg,aes(x=as.numeric(as.character(variable)),y=value,group=bblid,color=Age)) +geom_line(size=2,alpha = 0.2)+ scale_x_continuous(name ="# of Communitites", breaks=seq(2, 30, 4))+ scale_colour_gradient2(low='#1B75BB',mid='orchid4',high='#FAAF40',midpoint = 15) + theme_minimal(base_size = 28)+labs(title="Global Segregation - Individ. Partitions") +ylab("Global Segregation")
+                                                                                                                                                                                                                                                                                                                          
 groseg<-ggplot(data=mgroglobseg,aes(x=as.numeric(as.character(variable)),y=value,group=bblid,color=Age)) +geom_line(alpha = 0.12)+scale_color_gradientn(colors=c("yellow","purple")) + theme_minimal(base_size = 28)+labs(title="Global Segregation - Group Partitions") + scale_x_continuous(name ="# of Communitites", breaks=seq(2, 30, 4))+ylab("Global Segregation")
 ggarrange(indseg,groseg,ncol=1)
 
-# individual segregation over scales plots, colored by Motion ##
+# individual segregation over scales pl
+#plots, colored by Motion ##
 indseg<-ggplot(data=mindglobseg,aes(x=as.numeric(as.character(variable)),y=value,group=bblid,color=Motion)) +geom_line(alpha = 0.12)+scale_color_gradientn(colors=c("yellow","purple")) + theme_minimal(base_size = 28)+labs(title="Global Segregation - Individ. Partitions") + scale_x_continuous(name ="# of Communitites",  breaks=seq(2, 30, 4))+ylab("Global Segregation")
 groseg<-ggplot(data=mgroglobseg,aes(x=as.numeric(as.character(variable)),y=value,group=bblid,color=Motion)) +geom_line(alpha = 0.12)+scale_color_gradientn(colors=c("yellow","purple")) + theme_minimal(base_size = 28)+labs(title="Global Segregation - Group Partitions") + scale_x_continuous(name ="# of Communitites", breaks=seq(2, 30, 4))+ylab("Global Segregation")
 ggarrange(indseg,groseg,ncol=1)
@@ -298,6 +300,20 @@ for (i in 5:33){
 print(ggplot(data=plotdf,aes(x=Age,y=Segregation)) +geom_point() + theme_minimal(base_size = 28)+labs(title=paste((i-3))) + scale_x_continuous(name ="Age",  breaks=seq(2, 30, 4))+ylab("Global Segregation"))
 }
 
+
+# mean seg and sd over scales plot
+SegMeans<-NULL
+SegSds<-NULL
+for (i in 5:33){ # 2 because first col is name
+  SegMeans[i-4]<-mean(indglobseg_motSexC[,i])
+  SegSds[i-4]<-sd(indglobseg_motSexC[,i])
+}
+
+forSegplot<-data.frame(cbind(SegMeans,community_vec))
+forSegplus<-data.frame(cbind(SegMeans+SegSds,community_vec))
+forSegminus<-data.frame(cbind(SegMeans-SegSds,community_vec))
+
+ggplot(forSegplot,aes(community_vec,SegMeans)) + geom_step(col="#262228", size=2) + geom_step(data=forSegplus,aes(community_vec,V1), color="#0375B4", size = 2) + geom_step(data=forSegminus,aes(community_vec,V1), color="#0375B4", size = 2)+theme_minimal(base_size = 35) +theme(panel.grid.minor = element_blank()) + xlab('# of Communities') +ylab("Global Segregation") +labs(title="Global Segregation - Individ. Partitions")
 ```
 
 ```{r}
@@ -445,7 +461,7 @@ groglobseg_1823<-subset(groglobseg,groglobseg$Age>18)
 ### agebeta vec does use simulataneous fit (partial correlations)
 for (i in 1:29){
   # i+4 because first column is scanid, second is age, third is sex, 4th is motion
-  print(ggplot(indglobseg_motSexC,aes(Age,indglobseg_motSexC[,i+4])) + geom_point() + geom_smooth() +ylab(paste("Ind Global Segreg at Scale", i+1)))
+  print(ggplot(indglobseg_motSexC,aes(Age,indglobseg_motSexC[,i+4])) + geom_point(size=2,alpha=.3) +theme_minimal(base_size = 30)+ geom_smooth() +ylab(paste("Segreg. at Scale", i+1)))
   
   
   # 7/11 - testing across age ranges for that dependence
@@ -518,7 +534,7 @@ for (i in 1:29){
   gro_segcors[i,2]<-pspear[4]
 }
 
-youngindagecor<-correlations_over_scales(ind_segcors,"Global Segregation Age Correlation - 8-13 Year Olds")
+youngindagecor<-correlations_over_scales_minor(ind_segcors,"Global Segregation Age Correlation - 8-13 Year Olds")
 
 ind_segcors_df<-data.frame(ind_segcors)
 gro_segcors_df<-data.frame(gro_segcors)
@@ -556,7 +572,7 @@ for (i in 1:29){
   gro_segcors[i,2]<-pspear[4]
 }
 
-midindagecor<-correlations_over_scales(ind_segcors,"Global Segregation Age Correlation - 13-18 Year Olds")
+midindagecor<-correlations_over_scales_minor(ind_segcors,"Global Segregation Age Correlation - 13-18 Year Olds")
 
 ind_segcors_df<-data.frame(ind_segcors)
 gro_segcors_df<-data.frame(gro_segcors)
@@ -596,7 +612,7 @@ for (i in 1:29){
   gro_segcors[i,2]<-pspear[4]
 }
 
-oldindagecor<-correlations_over_scales(ind_segcors,"Global Segregation Age Correlation - 18-23 Year Olds")
+oldindagecor<-correlations_over_scales_minor(ind_segcors,"Global Segregation Age Correlation - 18-23 Year Olds")
 
 
 ind_segcors_df<-data.frame(ind_segcors)
