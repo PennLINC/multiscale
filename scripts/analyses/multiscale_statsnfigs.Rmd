@@ -6,6 +6,7 @@ output: html_document
 ---
 
 ```{r}
+source('~/cbica/projects/pinesParcels/multiscale/scripts/analyses/')
 library(shapes)
 library(ggplot2)
 library(reshape2)
@@ -1017,7 +1018,7 @@ library(cowplot)
 library(mgcv)
 library(viridis)
 
-covariates=" ~s(Age,k=3)+Sex+Motion"   
+covariates=" ~s(Age,k=4)+Sex+Motion"   
 
 minAgeEst<-rep(0,length=length(masterdf[,indiv_nsegcols_ind]))
 maxAgeEst<-rep(0,length=length(masterdf[,indiv_nsegcols_ind]))
@@ -1068,7 +1069,6 @@ derivInfo<-derivInfo*12
 
 # get a vector of the agespan split into 200 to match the deriv vals
 agerange<-range(masterdf$Age)/12
-seq(agerange[1],agerange[2],length.out = 200)
 agerange200<-seq(agerange[1],agerange[2],length.out = 200)
 
 AgeSpan_plotdf2<-data.frame(tmvec,scalesvec,domnetvec,corVecEst,netpropvec,CIgroupingInd)
@@ -1094,54 +1094,6 @@ LongAgeSpan_plotdf2$derivs<-deriv200464
 ggplot(LongAgeSpan_plotdf2,aes(agespans,tmvec,color=derivs,group=CIgroupingInd)) +geom_line(size=5,alpha=.8) +labs(title='Network Segregation Effect Manifestation', x = 'Age', y = 'Transmodality') +theme_classic(base_size = 28)+ xlim(c(8,23))+ scale_colour_gradientn(colours=c('#ffe900','#ddcd78','white','#888fac','#002a72'),values = c(0,.05,.265,.615,1),name="Change Per Year")
 
 
-
-
-#### attempt and trendlines in corrplot
-
-# Change each col and row to a factor (scale3_net3 is a factor, scale3_net4)
-factors<-464
-
-# k number of factors for each df/plot, iterative over scales
-#for(k factors
-  # scale index
-  scaleind<-paste('_scale',k,'_',sep='')
-  #pull cols at this scale
-  # for individualized only
-  scaleind<-grep(scaleind,colnames(masterdf))
-  scaleindivind<-intersect(scaleind,indiv)
-  #make df with rows as subjects and columns as scaleindivind
-  # fill it with the subject wise values from each column, then bestow colnames
-  scale_df<-masterdf[scaleindivind]
-  scale_df$age<-masterdf$Age
-  # array for 200 gam values for each scaleindivind value (gammarray)
-  gamma_ray<-array(0,c(200,length(scaleindivind)))
-  # for i in scaleindivind
-  gamma_ray[,i]<-
-# ggplot needs to call all from same scale to construct pseudo-corplot
-# margins=FALSE
-# Age in Viridis
-# Seg in cividis
-# row of net-wise segreg beneath
-  
-# indicators of processing stream
-ind='ind'
-gro='gro'
-###bts='bts'
-###
-#### indicators of fc feature type
-bwi='_bw_FC_'
-wini='_win_FC_'
-nsegi='_seg_scale'
-###gsegi='_globseg_scale'
-###
-#### indices of said indicators
-indiv=grep(ind,colnames(masterdf))
-group=grep(gro,colnames(masterdf))
-###basists=grep(bts,colnames(df))
-bwcol=grep(bwi,colnames(masterdf))
-wincols=grep(wini,colnames(masterdf))
-nsegcols=grep(nsegi,colnames(masterdf))
-
 ```
 
 ```{r}
@@ -1150,12 +1102,14 @@ AgeSpan_plotdf3<-data.frame(tmvec,scalesvec,domnetvec,corVecEst,netpropvec,CIgro
 LongAgeSpan_plotdf3<-data.frame(sapply(AgeSpan_plotdf3,rep.int,times=693))
 
 
+# assign same transmodality value to each point on same lines
 Transmodality693464<-array(dim=c(693*464,1))
 for (i in 1:464){
 Transmodality693464[((693*i)-692):(693*i)]<-tmvec[i]
 }
 LongAgeSpan_plotdf3$Transmodality<-Transmodality693464
 
+# grouping index so all points of same line have CIgroupingInd in common
 GroupingInd693464<-array(dim=c(693*464,1))
 for (i in 1:464){
 GroupingInd693464[((693*i)-692):(693*i)]<-CIgroupingInd[i]
@@ -1164,7 +1118,7 @@ GroupingInd693464[((693*i)-692):(693*i)]<-CIgroupingInd[i]
 LongAgeSpan_plotdf3$Grouping<-GroupingInd693464
 
 
-
+# ports actual splines in
 NetSplines693464<-array(dim=c(693*464,1))
 for (i in 1:464){
 NetSplines693464[((693*i)-692):(693*i)]<-NetSplines[i,]
@@ -1185,6 +1139,191 @@ LongAgeSpan_plotdf3$Age<-NetSplinesAgeSideCar693464/12
 
 # [1:4851] plots first 7 networks (693 points for each)
 ggplot(LongAgeSpan_plotdf3,aes(Age,Splines,color=Transmodality,group=Grouping)) +geom_line(size=1,alpha=.1) +labs(title='Network Segregation Effect Manifestation', x = 'Age', y = 'Predicted Segregation') +theme_classic(base_size = 28)+ xlim(c(8,23))+ scale_colour_gradient(low="#55185D", high="#ECB602")
+
+```
+
+```{r}
+#### attempt and trendlines in corrplot, depends on stuff like the covariates call and vectors from the above chunk
+
+# k number of factors for each df/plot, iterative over scales
+# SET K
+#for(K in 2:30){
+  # will use k index to find approp. spot in NetSplines array
+  # scratch that, netsplines array is just segreg. we need MORE
+  K_start=((K-1)*(K))/2
+  K_end=(((K-1)*(K))/2)+K-1
+  Kind<-K_start:K_end
+  # scale index
+  scaleind<-paste('_scale',K,'_',sep='')
+  #pull cols at this scale
+  # for individualized only
+  scaleind<-grep(scaleind,colnames(masterdf))
+  scaleindivind<-intersect(scaleind,indiv)
+  #make df with rows as subjects and columns as scaleindivind
+  # fill it with the subject wise values from each column, then bestow colnames
+  scale_df<-masterdf[scaleindivind]
+  scale_df$age<-masterdf$Age
+  # array for 693 gam values for each scaleindivind value (gammarray)
+  gamma_ray<-array(0,c(693,length(scaleindivind)))
+  
+  
+  
+  segcols_inscaleindivind<-intersect(scaleindivind,nsegcols)
+  wincols_inscaleindivind<-intersect(scaleindivind,wincols)
+  bwcols_inscaleindivind<-intersect(scaleindivind,bwcol)
+  
+  
+  # array for total psuedocorrplot
+  plotarray<-t(array(as.character(paste('plot_',seq(1:(K*K)),sep='')),c(K,K)))
+  
+  for(i in 1:K){
+    
+    ##### SEGREGATION
+    # fill in segregs (K segregs, gam array [1:K])
+    # get position of this network in broader scale-specific individualized features index 
+    posish<-grep(segcols_inscaleindivind[i],scaleindivind)
+    # turn this particular FC feature into a gam
+    x<-colnames(masterdf[segcols_inscaleindivind][i])
+    form<-as.formula(paste("",x,"", covariates, sep=""))
+    igam<-gam(formula = form,data=masterdf)
+    # extract spline from igam
+    derv<-derivatives(igam,term='Age')
+    derv<- derv %>%
+    # find where to gray out non-sig trends
+    mutate(sig = !(0 >lower & 0 < upper))
+    derv$sig_deriv = derv$derivative*derv$sig
+    # else {
+    #minAgeEst[i]<-min(derv$data[derv$sig==T])
+    #maxAgeEst[i]<-max(derv$data[derv$sig==T])
+    # changed to color sig deriv only
+    #derivInfo[i,]=derv$sig_deriv
+    forSpline<-predict(igam, data = masterdf, type = "terms")
+    # adding mean val because output values are centered
+    gamma_ray[,posish]<-forSpline[,3]+coef(igam)[1]
+    # use linear slope from straightdforward age cor to color scheme
+    scaledf<-cbind(masterdf$Age,masterdf$Sex,masterdf$Motion,masterdf[,scaleindivind[i]])
+    # partial spearmans to extrac age relation
+    pspear=pcor(scaledf,method='spearman')$estimate
+    linear_segcor<-pspear[4]
+    if (all(derv$sig==FALSE)){gamcolor='gray'
+    } else if (linear_segcor>0) {gamcolor='blue'
+    } else if (linear_segcor<0) {gamcolor='red'
+    }
+    # With the smooths overlaid
+    AgeSpan_plotdf4<-data.frame(tmvec,scalesvec,domnetvec,corVecEst,netpropvec,CIgroupingInd)
+    LongAgeSpan_plotdf4<-data.frame(sapply(AgeSpan_plotdf4,rep.int,times=693))
+    # port age in
+    LongAgeSpan_plotdf4$Age<-masterdf$Age/12
+    # ports actual splines in
+    LongAgeSpan_plotdf4$SegSplines<-forSpline[,3]+coef(igam)[1]
+    # will need to change this to input ggplot as a plot within a ggplot vector
+    print(ggplot(LongAgeSpan_plotdf4,aes(Age,SegSplines)) +geom_line(size=5,color=gamcolor) +labs(title=paste('Net. Seg. Scale',K,' Net',i,sep=''), x = 'Age', y = 'Predicted Value') +theme_classic(base_size = 28)+ xlim(c(8,23)))
+    
+    #### WITHIN   
+    # fill in withins (K withins, gam array [K+1:2K])
+    # get position of this network in broader scale-specific individualized features index 
+    posish<-grep(wincols_inscaleindivind[i],scaleindivind)
+    # turn this particular FC feature into a gam
+    x<-colnames(masterdf[wincols_inscaleindivind][i])
+    form<-as.formula(paste("",x,"", covariates, sep=""))
+    igam<-gam(formula = form,data=masterdf)
+    # extract spline from igam
+    derv<-derivatives(igam,term='Age')
+    derv<- derv %>%
+    # find where to omit non-sig trends
+    mutate(sig = !(0 >lower & 0 < upper))
+    derv$sig_deriv = derv$derivative*derv$sig
+    #if (all(derv$sig==FALSE)){minAgeEst[i]=0; maxAgeEst[i]=0
+    #} else {
+    #minAgeEst[i]<-min(derv$data[derv$sig==T])
+    #maxAgeEst[i]<-max(derv$data[derv$sig==T])
+    # changed to sig deriv only
+    #derivInfo[i,]=derv$sig_deriv
+    forSpline<-predict(igam, data = masterdf, type = "terms")
+    # adding mean val because output values are centered
+    gamma_ray[,posish]<-forSpline[,3]+coef(igam)[1]
+    # use linear slope from straightdforward age cor to color scheme
+    scaledf<-cbind(masterdf$Age,masterdf$Sex,masterdf$Motion,masterdf[,scaleindivind[posish]])
+    # partial spearmans to extract age relation
+    pspear=pcor(scaledf,method='spearman')$estimate
+    linear_wincor<-pspear[4]
+    if (all(derv$sig==FALSE)){gamcolor='gray'
+    } else if (linear_wincor>0) {gamcolor='blue'
+    } else if (linear_wincor<0) {gamcolor='red'
+    }
+    # With the smooths overlaid
+    AgeSpan_plotdf4<-data.frame(tmvec,scalesvec,domnetvec,corVecEst,netpropvec,CIgroupingInd)
+    LongAgeSpan_plotdf4<-data.frame(sapply(AgeSpan_plotdf4,rep.int,times=693))
+    # port age in
+    LongAgeSpan_plotdf4$Age<-masterdf$Age/12
+    # ports actual splines in
+    LongAgeSpan_plotdf4$WinSplines<-forSpline[,3]+coef(igam)[1]
+    # will need to change this to input ggplot as a plot within a ggplot vector
+    winplot<-ggplot(LongAgeSpan_plotdf4,aes(Age,WinSplines)) +geom_line(size=5,color=gamcolor) +labs(title=paste('Net. Win. Scale',K,' Net',i,sep=''), x = 'Age', y = 'Predicted Value') +theme_classic(base_size = 28)+ xlim(c(8,23))
+    
+    # fit WITHIN to diagonals of plot array
+    plotarraywin<-diag(plotarray)
+    assign(plotarraywin[i],winplot)
+    
+    # the big betweenchillada 
+    #throw another loop in here, one segreg/win value per net but many b/w conn values
+    ###  BETWEEN
+    # make off diagonal plot array for filling
+    # annoying fix for top triangle where it was counting sequentially over columns instead of rows 
+    toptri<-t(plotarray)[lower.tri(plotarray)]
+    # and bottom
+    bottri<-plotarray[lower.tri(plotarray)]
+    for (b in 1:length(bwcols_inscaleindivind)){
+    # fill in betweens ( ((K-1)*(K))/2 betweens [2K+1: 2K + (((K-1)*(K))/2))])
+    posish<-grep(bwcols_inscaleindivind[b],scaleindivind)
+    x<-colnames(masterdf[bwcols_inscaleindivind][b])
+    form<-as.formula(paste("",x,"", covariates, sep=""))
+    igam<-gam(formula = form,data=masterdf)
+    # extract spline from igam
+    derv<-derivatives(igam,term='Age')
+    derv<- derv %>%
+    # find where to omit non-sig trends
+    mutate(sig = !(0 >lower & 0 < upper))
+    derv$sig_deriv = derv$derivative*derv$sig
+    #if (all(derv$sig==FALSE)){minAgeEst[i]=0; maxAgeEst[i]=0
+    #} else {
+    #minAgeEst[i]<-min(derv$data[derv$sig==T])
+    #maxAgeEst[i]<-max(derv$data[derv$sig==T])
+    # changed to sig deriv only
+    #derivInfo[i,]=derv$sig_deriv
+    forSpline<-predict(igam, data = masterdf, type = "terms")
+    # adding mean val because output values are centered
+    gamma_ray[,posish]<-forSpline[,3]+coef(igam)[1]
+    # use linear slope from straightdforward age cor to color scheme
+    scaledf<-cbind(masterdf$Age,masterdf$Sex,masterdf$Motion,masterdf[,scaleindivind[posish]])
+    # partial spearmans to extract age relation
+    pspear=pcor(scaledf,method='spearman')$estimate
+    linear_wincor<-pspear[4]
+    if (all(derv$sig==FALSE)){gamcolor='gray'
+    } else if (linear_wincor>0) {gamcolor='blue'
+    } else if (linear_wincor<0) {gamcolor='red'
+    }
+    # With the smooths overlaid
+    AgeSpan_plotdf4<-data.frame(tmvec,scalesvec,domnetvec,corVecEst,netpropvec,CIgroupingInd)
+    LongAgeSpan_plotdf4<-data.frame(sapply(AgeSpan_plotdf4,rep.int,times=693))
+    # port age in
+    LongAgeSpan_plotdf4$Age<-masterdf$Age/12
+    # ports actual splines in
+    LongAgeSpan_plotdf4$BwSplines<-forSpline[,3]+coef(igam)[1]
+    # will need to change this to input ggplot as a plot within a ggplot vector
+    bwplot<-ggplot(LongAgeSpan_plotdf4,aes(Age,BwSplines)) +geom_line(size=5,color=gamcolor) +labs(title=x, x = 'Age', y = 'Predicted Value') +theme_classic(base_size = 28)+ xlim(c(8,23))     
+    # fit BETWEEN to off-diagonals of plot array
+    # get top triangle off diagonals
+    assign(toptri[b],bwplot)
+    assign(bottri[b],bwplot)
+    }
+  
+
+}
+plotvec<-c(print(plotarray,quote = F))
+plotveccommas<-paste(plotvec,collapse=",")
+ggarrangecommand<-paste('ggarrange(',plotveccommas,',ncol=K,nrow=K)',sep='')
+eval(parse(text=ggarrangecommand)) 
 
 ```
 

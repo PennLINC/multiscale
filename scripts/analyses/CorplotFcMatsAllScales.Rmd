@@ -10,7 +10,6 @@ library(corrplot)
 library(circlize)
 library(ggraph)
 library(igraph)
-library(gg)
  
 grid.col = c(Motor = "#3281ab", Visual = "#670068", DA = "#007500", VA = '#b61ad0', FP = "#d77d00", DM = "#c1253c", Limbic = '#007502')
 
