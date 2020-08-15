@@ -1,4 +1,4 @@
-correlations_over_scales_minor <- function(correlations,title){
+correlations_over_scalesplot_minor <- function(correlations,title){
   df<-data.frame(correlations)
   ggplot(df,aes(X1,X2)) + geom_step(size=3)+ylab(expression(rho))+
     theme_minimal(base_size = 31)+

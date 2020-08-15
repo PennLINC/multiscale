@@ -534,7 +534,7 @@ for (i in 1:29){
   gro_segcors[i,2]<-pspear[4]
 }
 
-youngindagecor<-correlations_over_scales_minor(ind_segcors,"Global Segregation Age Correlation - 8-13 Year Olds")
+youngindagecor<-correlations_over_scalesplot_minor(ind_segcors,"Global Segregation Age Correlation - 8-13 Year Olds")
 
 ind_segcors_df<-data.frame(ind_segcors)
 gro_segcors_df<-data.frame(gro_segcors)
@@ -572,7 +572,7 @@ for (i in 1:29){
   gro_segcors[i,2]<-pspear[4]
 }
 
-midindagecor<-correlations_over_scales_minor(ind_segcors,"Global Segregation Age Correlation - 13-18 Year Olds")
+midindagecor<-correlations_over_scalesplot_minor(ind_segcors,"Global Segregation Age Correlation - 13-18 Year Olds")
 
 ind_segcors_df<-data.frame(ind_segcors)
 gro_segcors_df<-data.frame(gro_segcors)
@@ -612,7 +612,7 @@ for (i in 1:29){
   gro_segcors[i,2]<-pspear[4]
 }
 
-oldindagecor<-correlations_over_scales_minor(ind_segcors,"Global Segregation Age Correlation - 18-23 Year Olds")
+oldindagecor<-correlations_over_scalesplot_minor(ind_segcors,"Global Segregation Age Correlation - 18-23 Year Olds")
 
 
 ind_segcors_df<-data.frame(ind_segcors)
@@ -634,6 +634,7 @@ ageBreakDown<-ggarrange(indagecor,youngindagecor,midindagecor,oldindagecor)
 gro_vs_ind<-ggarrange(all,young,mid,old)
 
 ```
+
 ```{r}
 ggarrange(indseg,indagecor,WinAll,WinCors,BwAll,BwCors,ncol = 2,nrow=3)
 ```
@@ -1014,6 +1015,7 @@ library(dplyr)
 library(svglite)
 library(cowplot)
 library(mgcv)
+library(viridis)
 
 covariates=" ~s(Age,k=3)+Sex+Motion"   
 
@@ -1089,12 +1091,56 @@ LongAgeSpan_plotdf2<-data.frame(sapply(AgeSpan_plotdf2,rep.int,times=200))
 LongAgeSpan_plotdf2$agespans<-agerange200464
 LongAgeSpan_plotdf2$derivs<-deriv200464
 
-ggplot(LongAgeSpan_plotdf2,aes(agespans,tmvec,color=derivs,group=CIgroupingInd)) +geom_line(size=5,alpha=.3) +labs(title='Network Segregation Effect Manifestation', x = 'Age', y = 'Transmodality') +theme_classic(base_size = 28)+ xlim(c(8,23))+ scale_colour_gradientn(colours=c('green','blue','white','red','yellow'),values = c(0,.215,.265,.315,1),name="Change Per Year")
+ggplot(LongAgeSpan_plotdf2,aes(agespans,tmvec,color=derivs,group=CIgroupingInd)) +geom_line(size=5,alpha=.8) +labs(title='Network Segregation Effect Manifestation', x = 'Age', y = 'Transmodality') +theme_classic(base_size = 28)+ xlim(c(8,23))+ scale_colour_gradientn(colours=c('#ffe900','#ddcd78','white','#888fac','#002a72'),values = c(0,.05,.265,.615,1),name="Change Per Year")
 
 
 
 
+#### attempt and trendlines in corrplot
 
+# Change each col and row to a factor (scale3_net3 is a factor, scale3_net4)
+factors<-464
+
+# k number of factors for each df/plot, iterative over scales
+#for(k factors
+  # scale index
+  scaleind<-paste('_scale',k,'_',sep='')
+  #pull cols at this scale
+  # for individualized only
+  scaleind<-grep(scaleind,colnames(masterdf))
+  scaleindivind<-intersect(scaleind,indiv)
+  #make df with rows as subjects and columns as scaleindivind
+  # fill it with the subject wise values from each column, then bestow colnames
+  scale_df<-masterdf[scaleindivind]
+  scale_df$age<-masterdf$Age
+  # array for 200 gam values for each scaleindivind value (gammarray)
+  gamma_ray<-array(0,c(200,length(scaleindivind)))
+  # for i in scaleindivind
+  gamma_ray[,i]<-
+# ggplot needs to call all from same scale to construct pseudo-corplot
+# margins=FALSE
+# Age in Viridis
+# Seg in cividis
+# row of net-wise segreg beneath
+  
+# indicators of processing stream
+ind='ind'
+gro='gro'
+###bts='bts'
+###
+#### indicators of fc feature type
+bwi='_bw_FC_'
+wini='_win_FC_'
+nsegi='_seg_scale'
+###gsegi='_globseg_scale'
+###
+#### indices of said indicators
+indiv=grep(ind,colnames(masterdf))
+group=grep(gro,colnames(masterdf))
+###basists=grep(bts,colnames(df))
+bwcol=grep(bwi,colnames(masterdf))
+wincols=grep(wini,colnames(masterdf))
+nsegcols=grep(nsegi,colnames(masterdf))
 
 ```
 
