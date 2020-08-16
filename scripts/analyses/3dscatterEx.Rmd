@@ -1,0 +1,40 @@
+---
+title: "Untitled"
+author: "Adam"
+date: "8/16/2020"
+output: html_document
+---
+
+```{r}
+# 3d scatter plot example
+
+set.seed(417)
+library(plotly)
+temp <- sample(20:60,100,replace = T)
+pressure <- sample(50:100,100,replace = T)
+dtime <- sample(50:100,100,replace = T)
+
+axx <- list(
+  range = c(0,100)
+)
+
+axy <- list(
+  range = c(0,100)
+)
+
+axz <- list(
+  range = c(0,100)
+)
+
+scene = list(
+  xaxis = axx,
+  yaxis = axy,
+  zaxis = axz,
+  camera = list(eye = list(x = -1.25, y = 1.25, z = 1.25)))
+
+fig<-plot_ly(x=temp, y=pressure, z=dtime, type="scatter3d", mode="markers", color=temp)
+
+fig <- fig %>% layout(title = "3D Scatter plot", scene = scene)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.

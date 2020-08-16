@@ -33,6 +33,7 @@ community_vec<-seq(2,30)
 
 # bblids got rounded in matlab csvwrite in this iteration, plug ids directly in
 bblids<-read.delim('/cbica/projects/pinesParcels/data/bblids.txt',header=F)
+
 ```
 
 ```{r}
@@ -234,4 +235,28 @@ ggplot(Seg_CIplotdf,aes(Tot_patchnum,Patch_GeoDisperse)) + geom_point(size=4,aes
 ggplot(Seg_CIplotdf,aes(tmvec,Patch_GeoDisperse,color=domnetvec,alpha=netpropvec^2,group=V7))+ geom_point(size=8,aes(tmvec,Patch_GeoDisperse)) + scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068')) + xlab("Transmodality") + ylab("Geodesic Dispersion") +theme_classic(base_size = 28)
 
 ggplot(Seg_CIplotdf,aes(tmvec,Patch_EucDisperse,color=domnetvec,alpha=netpropvec^2,group=V7))+ geom_point(size=8,aes(tmvec,Patch_EucDisperse)) + scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068')) + xlab("Transmodality") + ylab("Euclidean Dispersion") +theme_classic(base_size = 28)
+```
+
+```{r}
+# Spatial dispersement of network
+library(ggpointdensity)
+LHpi<-read.csv('/cbica/projects/pinesParcels/results/aggregated_data/numPatches_LH_allscales.csv')
+RHpi<-read.csv('/cbica/projects/pinesParcels/results/aggregated_data/numPatches_RH_allscales.csv')
+
+Seg_CIplotdf$LH_patchnum<-LHpi$patchnum_over_scalesL
+Seg_CIplotdf$RH_patchnum<-RHpi$patchnum_over_scalesR
+Seg_CIplotdf$Tot_patchnum<-Seg_CIplotdf$LH_patchnum+Seg_CIplotdf$RH_patchnum
+
+ggplot(Seg_CIplotdf,aes(Tot_patchnum,corVecEst,color=domnetvec,alpha=netpropvec^2,group=V7)) + geom_point(size=4,aes(Tot_patchnum,corVecEst))+ scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068')) + xlab("Total Number of Patches") + ylab("AgeSegregCor") +theme_classic(base_size = 28) + ggtitle('Correlation of Network Segregation and Age over All Networks')+ ylim(-.5,.5)
+
+ggplot(Seg_CIplotdf,aes(tmvec,Tot_patchnum,color=domnetvec,alpha=netpropvec^2,group=V7))+ geom_point(size=4,aes(tmvec,Tot_patchnum)) + scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068')) + xlab("Transmodality") + ylab("Total Patch number") +theme_classic(base_size = 28) + ggtitle('Correlation of Network Segregation and Age over All Networks')
+
+ggplot(Seg_CIplotdf,aes(tmvec,Tot_patchnum,color=scalesvec,group=V7))+ geom_point(size=4,aes(tmvec,Tot_patchnum)) +theme_classic(base_size = 28) + ggtitle('Correlation of Network Segregation and Age over All Networks')+ scale_colour_gradient(low="#55185D", high="#ECB602")
+
+
+ggplot(Seg_CIplotdf,aes(tmvec,Tot_patchnum))+ geom_pointdensity(size=4, adjust = 3)+ xlab("Transmodality") + ylab("Total Patch number")
+
+ggplot(Seg_CIplotdf,aes(corVecEst,Tot_patchnum))+ geom_pointdensity(size=4)+ xlab("Transmodality") + ylab("Total Patch number")
+```
+
 ```

@@ -1,0 +1,304 @@
+```{r}
+##################### START OF PARTICIPATION COEFFICIENT ######################
+# global participation coefficient by age
+
+globPC<-read.csv('/cbica/projects/pinesParcels/results/EffectVecs/avgPC.csv')
+NegglobPC<-read.csv('/cbica/projects/pinesParcels/results/EffectVecs/avgNegPC.csv')
+
+colnames(globPC)[1]<-'bblid'
+colnames(NegglobPC)[1]<-'bblid'
+
+globPCdf<-merge(df,data.frame(globPC),by='bblid')
+NegglobPCdf<-merge(df,data.frame(NegglobPC),by='bblid')
+
+# take out scanid
+globPCdf<-globPCdf[,-c(2)]
+NegglobPCdf<-NegglobPCdf[,-c(2)]
+# change age to years
+globPCdf$Age<-globPCdf$Age/12
+NegglobPCdf$Age<-NegglobPCdf$Age/12
+
+colnames(globPCdf)[5:33]<-as.character(2:30)
+colnames(NegglobPCdf)[5:33]<-as.character(2:30)
+
+globPCdfMotSexCor<-globPCdf
+NegglobPCdfMotSexCor<-NegglobPCdf
+
+######## end of data tidying - below not adapted for neg yet (use find and replace in sep. chunk)
+
+
+######## Comment this out to run on positive PC again
+###globPCdfMotSexCor<-NegglobPCdfMotSexCor
+
+
+
+for (i in 5:33){
+  CLM<-lm(globPCdf[,i]~Motion+Sex,data=globPCdf)
+  globPCdfMotSexCor[,i]<-CLM$residuals
+  # Add mean so we get real values back out
+  globPCdfMotSexCor[,i]<-globPCdfMotSexCor[,i]+mean(globPCdf[,i])
+}
+
+mCindglobPC<-melt(globPCdfMotSexCor, id=c(1,2,3,4))
+
+# individual PARTICIPATION COEFFICIENT over scales plots, colored by age ##
+indPC<-ggplot(data=mCindglobPC,aes(x=as.numeric(as.character(variable)),y=value,group=bblid,color=Age)) +geom_line(alpha = 0.12,size=1.5)+scale_color_gradientn(colors=c("yellow","purple")) + theme_minimal(base_size = 28)+labs(title="M/S-Regressed Glob. PartCoef") + scale_x_continuous(name ="# of Communitites",  breaks=seq(2, 30, 4))+ylab("Global Participation Coef.")
+
+
+### get global PARTICIPATION COEFFICIENT 
+### Now with motion + sex control
+# 29 for scales studied
+ind_pccors<-matrix(0,29,2)
+ind_pccors[,1]<-2:30
+
+# 7/11 - testing across age ranges for that dependence
+indglobpc_813<-subset(globPCdf,globPCdf$Age<13)
+indglobpc_1318<-subset(globPCdf,globPCdf$Age>13 & globPCdf$Age <18)
+indglobpc_1823<-subset(globPCdf,globPCdf$Age>18)
+
+#### repeated ggpplot uses residuals, but pspear and cor over scales uses simultaneously fit spear-men
+### agebeta vec does use simulataneous fit (partial correlations)
+for (i in 1:29){
+  # i+4 because first column is scanid, second is age, third is sex, 4th is motion
+  print(ggplot(globPCdfMotSexCor,aes(Age,globPCdfMotSexCor[,i+4])) + geom_point() + geom_smooth() +ylab(paste("Ind Global PC at Scale", i+1)))
+  
+  
+  # 7/11 - testing across age ranges for that dependence
+  
+  # relevant df
+  scaledf<-cbind(globPCdf$Age,globPCdf$Sex,globPCdf$Motion,globPCdf[,i+4])
+  # partial spearmans to extrac age relation
+  pspear=pcor(scaledf,method='spearman')$estimate
+  ind_pccors[i,2]<-pspear[4]
+}
+
+
+indagecorPC<-correlations_over_scales(ind_pccors,"Global Participation Coef Age Correlation - Individ. Partitions")
+ggarrange(indPC,indagecorPC,ncol = 1)
+ind_pccors_df<-data.frame(ind_pccors)
+
+#### age segment-specific plots
+########younguns###########
+ind_pccorsy<-matrix(0,29,2)
+ind_pccorsy[,1]<-2:30
+
+for (i in 1:29){
+  # i+4 because first column is scanid, second is age, third is sex, 4th is motion
+  # 7/11 - testing across age ranges for that dependence
+  
+  # relevant df
+  scaledf<-cbind(indglobpc_813$Age,indglobpc_813$Sex,indglobpc_813$Motion,indglobpc_813[,i+4])
+  # partial spearmans to extrac age relation
+  pspear=pcor(scaledf,method='spearman')$estimate
+  ind_pccorsy[i,2]<-pspear[4]
+}
+
+youngindagecor<-correlations_over_scales(ind_pccorsy,"Global Partif. Coef. Age Correlation - 8-13 Year Olds")
+
+ind_pccorsy_df<-data.frame(ind_pccorsy)
+
+###########mids##############
+ind_pccorsm<-matrix(0,29,2)
+ind_pccorsm[,1]<-2:30
+
+for (i in 1:29){
+  # i+4 because first column is scanid, second is age, third is sex, 4th is motion
+  # 7/11 - testing across age ranges for that dependence
+  
+  # relevant df
+  scaledf<-cbind(indglobpc_1318$Age,indglobpc_1318$Sex,indglobpc_1318$Motion,indglobpc_1318[,i+4])
+  # partial spearmans to extrac age relation
+  pspear=pcor(scaledf,method='spearman')$estimate
+  ind_pccorsm[i,2]<-pspear[4]
+}
+
+midindagecor<-correlations_over_scales(ind_pccorsm,"Global Partif. Coef. Age Correlation - 13-18 Year Olds")
+
+ind_pccorsm_df<-data.frame(ind_pccorsm)
+
+
+###########geezers##########
+ind_pccorsg<-matrix(0,29,2)
+ind_pccorsg[,1]<-2:30
+for (i in 1:29){
+  # i+4 because first column is scanid, second is age, third is sex, 4th is motion
+  # 7/11 - testing across age ranges for that dependence
+  
+  # relevant df
+  scaledf<-cbind(indglobpc_1823$Age,indglobpc_1823$Sex,indglobpc_1823$Motion,indglobpc_1823[,i+4])
+  # partial spearmans to extrac age relation
+  pspear=pcor(scaledf,method='spearman')$estimate
+  ind_pccorsg[i,2]<-pspear[4]
+}
+
+
+oldindagecor<-correlations_over_scales(ind_pccorsg,"Global Partif. Coef. Age Correlation - 18-23 Year Olds")
+
+
+ind_pccorsg_df<-data.frame(ind_pccorsg)
+
+
+ageBreakDown<-ggarrange(indagecorPC,youngindagecor,midindagecor,oldindagecor)
+
+
+# merged
+mergeddf<-merge(ind_pccors_df,ind_pccorsy_df,by="X1")
+mergeddf<-merge(mergeddf,ind_pccorsm_df,by="X1")
+mergeddf<-merge(mergeddf,ind_pccorsg_df,by='X1')
+colnames(mergeddf)<-c("X1","All","Young","Mid","Old")
+x<-melt(mergeddf,id="X1")
+colnames(x)<-c("X1","AgeBracket","value")
+allpc<-ggplot(x,aes(X1,value,group=AgeBracket,color=AgeBracket)) + geom_step(size=3)+ylab('ParCoef-Age Correlation')+
+    theme_minimal(base_size = 28)+
+    theme(axis.text=element_text(), axis.title = element_text(),panel.grid.minor = element_blank(), plot.title = element_text())+
+    xlab("# of Communities") + scale_x_continuous(breaks=seq(2, 30, 4)) +
+    geom_hline(aes(yintercept=.098), linetype="dashed", col='#55185D',size=2.5) +
+    geom_hline(aes(yintercept=-.098), linetype="dashed", col='#55185D',size=2.5) +
+  geom_hline(aes(yintercept=.125), linetype="dashed", col='#ECB602',size=2.5) +
+    geom_hline(aes(yintercept=-.125), linetype="dashed", col='#ECB602',size=2.5) + scale_color_manual(values = c("white","green", "blue","red"))+ggtitle("Global Part.Coef. and Age Correlation Over Scales")
+
+#### re-iterating global seg for comparison
+ind_gseg_df<-data.frame(ind_segcorsa)
+ind_gsegy_df<-data.frame(ind_segcorsy)
+ind_gsegm_df<-data.frame(ind_segcorsm)
+ind_gsegg_df<-data.frame(ind_segcorsg)
+
+mergeddf<-merge(ind_gseg_df,ind_gsegy_df,by="X1")
+mergeddf<-merge(mergeddf,ind_gsegm_df,by="X1")
+mergeddf<-merge(mergeddf,ind_gsegg_df,by='X1')
+colnames(mergeddf)<-c("X1","All","Young","Mid","Old")
+x<-melt(mergeddf,id="X1")
+colnames(x)<-c("X1","AgeBracket","value")
+allseg<-ggplot(x,aes(X1,value,group=AgeBracket,color=AgeBracket)) + geom_step(size=3)+ylab('Segregation-Age Correlation')+
+    theme_minimal(base_size = 28)+
+    theme(axis.text=element_text(), axis.title = element_text(),panel.grid.minor = element_blank(), plot.title = element_text())+
+    xlab("# of Communities") + scale_x_continuous(breaks=seq(2, 30, 4)) +
+    geom_hline(aes(yintercept=.098), linetype="dashed", col='#55185D',size=2.5) +
+    geom_hline(aes(yintercept=-.098), linetype="dashed", col='#55185D',size=2.5) +
+  geom_hline(aes(yintercept=.125), linetype="dashed", col='#ECB602',size=2.5) +
+    geom_hline(aes(yintercept=-.125), linetype="dashed", col='#ECB602',size=2.5) + scale_color_manual(values = c("white","none", "none","none"))+ggtitle("Global Segregation and Age Correlation Over Scales")
+
+
+ggarrange(allseg,allpc)
+```
+
+```{r}
+# network-wise PC effects
+# load in the network-PC vals
+pcNetVals<-read.csv('/cbica/projects/pinesParcels/results/aggregated_data/NetworkWisePCVals.csv')
+colnames(pcNetVals)[1]<-'bblid'
+# used same matlab code to get these, same colname order applies
+colnames(pcNetVals)[2:465]<-colnames(masterdf[,indiv_nsegcols_ind])
+
+# PC-specific DF
+pcmasterdf<-merge(pcNetVals,df,by='bblid')
+
+
+PCcorVecEst<-as.numeric(lapply(pcmasterdf[,2:465],corEstVec))
+
+###confveclower_d<-data.frame(tmvec,confveclower,scalesvec,domnetvec,netpropvec,corVecEst)
+###confvecupper_d<-data.frame(tmvec,confvecupper,scalesvec,domnetvec,netpropvec,corVecEst)
+###confvecdf<-data.frame(confveclower_d = confveclower_d, confvecupper_d  = confvecupper_d)
+
+# augment dataframe for CI range plot
+CIgroupingInd<-as.factor(1:464)
+###confveclower_d[,7]<-CIgroupingInd
+###confvecupper_d[,7]<-CIgroupingInd
+#corVecEst_d[,6]<-CIgroupingInd
+###colnames(confveclower_d)[2]<-"CIbounds"
+###colnames(confvecupper_d)[2]<-"CIbounds"
+###Seg_CIplotdf<-data.frame(rbind(confveclower_d,confvecupper_d))
+
+PC_plotdf<-data.frame(tmvec,scalesvec,domnetvec,netpropvec,PCcorVecEst)
+
+PC_age_tm<-ggplot(PC_plotdf,aes(tmvec,PCcorVecEst,color=domnetvec,alpha=netpropvec^2)) + scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068')) + xlab("Transmodality") + ylab("Age PC Cor") +theme_classic(base_size = 28) + geom_point(size=4,aes(tmvec,PCcorVecEst)) + ggtitle('Correlation of Network PC and Age over All Communities')+ ylim(-.5,.5)
+```
+
+```{r}
+# network-wise negative PC effects
+# load in the network-PC vals
+NegpcNetVals<-read.csv('/cbica/projects/pinesParcels/results/aggregated_data/NetworkWiseNegPCVals.csv')
+colnames(NegpcNetVals)[1]<-'bblid'
+# used same matlab code to get these, same colname order applies
+colnames(NegpcNetVals)[2:465]<-colnames(masterdf[,indiv_nsegcols_ind])
+
+# PC-specific DF
+pcmasterdf<-merge(NegpcNetVals,df,by='bblid')
+
+
+NegPCcorVecEst<-as.numeric(lapply(pcmasterdf[,2:465],corEstVec))
+
+# augment dataframe for CI range plot
+CIgroupingInd<-as.factor(1:464)
+
+NegPC_plotdf<-data.frame(tmvec,scalesvec,domnetvec,netpropvec,NegPCcorVecEst)
+
+NegPC_age_tm<-ggplot(NegPC_plotdf,aes(tmvec,NegPCcorVecEst,color=domnetvec,alpha=netpropvec^2)) + scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068')) + xlab("Transmodality") + ylab("Age Neg PC Cor") +theme_classic(base_size = 28) + geom_point(size=4,aes(tmvec,NegPCcorVecEst)) + ggtitle('Correlation of Network Neg PC and Age over All Communities')+ ylim(-.5,.5)
+##################### END OF PARTICIPATION COEFFICIENT #######################
+```
+
+```{r}
+# load gradstats
+grad_sum_df<-read.csv('/cbica/projects/pinesParcels/lambdas_pg1.csv',header=F)
+age<-data.frame(demo$ageAtScan1,demo$bblid)
+colnames(grad_sum_df)<-c("bblid","grad1lambda")
+colnames(age)<-c("age","bblid")
+grad_sum_df$bblid<-as.integer(grad_sum_df$bblid)
+merged_df<-merge(grad_sum_df,age,by="bblid")
+plot(merged_df$age,merged_df$grad1lambda)
+
+# load grad-dm-cors
+graddmcor<-read.csv('/cbica/projects/pinesParcels/results/aggregated_data/SpatialCorIndK3DMPG1.csv',header=F);
+# temp exlcusion of misreads
+tmpexcl<-graddmcor[graddmcor[,2]<0.35,1]
+#100869 106154 107929 109577 110166 110354 118807 120922 121017 122352 122669 127305 130121 130332 131747  80537  83207
+#86690  88190  88859  89063  89534  96201  98879
+colnames(graddmcor)[1]<-"bblid"
+
+# make sure Subjects columns are set to same variable class if this doesn't run
+testfordmseg<-merge(masterdf,graddmcor,by="bblid")
+
+tempexclind<-which(tmpexcl %in% merged_df$bblid)
+merged_df_tmpexcl=testfordmseg[-c(tempexclind),]
+
+plot(merged_df_tmpexcl$V2)
+
+```
+
+```{r}
+# patch nums per subj
+subjPatchNums<-read.csv('/cbica/projects/pinesParcels/results/aggregated_data/SubjPatchNums.csv',skip = 1)
+patchByAgeDf<-merge(subjPatchNums,demo,by='bblid')
+patchAgecorVec<-rep(0,464)
+for (i in 1:464){
+  #print(paste(colnames(patchByAgeDf)[i+1]))
+  a=cor.test(patchByAgeDf[,i+1],patchByAgeDf$ageAtScan1)
+  patchAgecorVec[i]=a$estimate
+}
+
+confvecdf<-data.frame(tmvec,scalesvec,domnetvec,netpropvec,patchAgecorVec)
+ggplot(confvecdf,aes(tmvec,patchAgecorVec,color=domnetvec,alpha=netpropvec^2)) + scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068')) + xlab("Transmodality") + ylab("AgePatchNumCor") +theme_classic(base_size = 28) + geom_point(size=4,aes(tmvec,patchAgecorVec)) + ggtitle('Correlation of Total Patch Number and Age over All Communities')+ ylim(-.5,.5)+
+    geom_hline(aes(yintercept=.098), linetype="dashed", col='#55185D',size=2.5) +
+    geom_hline(aes(yintercept=-.098), linetype="dashed", col='#55185D',size=2.5) +
+    geom_hline(aes(yintercept=.125), linetype="dashed", col='#ECB602',size=2.5)+
+    geom_hline(aes(yintercept=-.125), linetype="dashed", col='#ECB602',size=2.5)
+```
+
+
+```{r}
+# FC mats with age effects overlaid instead of FC values
+library(corrplot)
+# going to use domnet vec to assign dominant yeo7 network as colnames
+for (K in 2:30){
+  # index where this K starts in domnetvec
+  K_start=((K-1)*(K))/2
+  K_end=(((K-1)*(K))/2)+K-1
+  Kind<-K_start:K_end
+  AgeEfMatFn=paste('/cbica/projects/pinesParcels/results/EffectMats/fc_ageMat_K',K,'.csv',sep='')
+  AgeEfMat=as.matrix(read.csv(AgeEfMatFn))
+  colnames(AgeEfMat)<-domnetvec[Kind]
+  rownames(AgeEfMat)<-domnetvec[Kind]
+  corrplot(AgeEfMat,is.corr = F)
+}
+
+```
