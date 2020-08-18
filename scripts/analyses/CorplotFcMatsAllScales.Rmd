@@ -31,7 +31,7 @@ for (K in 2:30){
   ReArAgeEfMat<-AgeEfMat[curTmRank,curTmRank]
   ReArAgeEfMatThresh<-ReArAgeEfMat
   ReArAgeEfMatThresh[ReArAgeEfMat > -.1 & ReArAgeEfMat < .1]=0
-  corrplot(AgeEfMat,is.corr = F)
+  corrplot(ReArAgeEfMat,is.corr = F,tl.cex = 2,cl.cex=2,cl.ratio = .3)
   
   chordDiagram(ReArAgeEfMat,grid.col = grid.col, col = col_fun,symmetric = "TRUE",annotationTrack=c("name","grid"),self.link = 1)
   title(paste(K))
@@ -66,7 +66,7 @@ ggraph(mygraph, layout = 'dendrogram', circular = TRUE) +
 
 # k number of factors for each df/plot, iterative over scales
 # SET K DONT TRY TO RUN THIS OVER ALL Ks AT ONCE
-K=13
+K=4
 
   
 
@@ -155,8 +155,8 @@ K=13
     
 
     
-    #UNCOMMENT TO INCLUDE SEG
-    segplot<-ggplot(LongAgeSpan_plotdf4,aes(Age,SegSplines)) +geom_line(size=8,color=gamcolor) +labs(title=paste('Seg. Scale',K,' Net',i,sep=''), x = 'Age') +theme_classic(base_size = 28)+ xlim(c(8,23))
+    # TO INCLUDE SEG
+    segplot<-ggplot(LongAgeSpan_plotdf4,aes(Age,SegSplines)) +geom_line(size=8,color=gamcolor) +labs(title=paste('Seg. Scale',K,' Net',i,sep=''), x = 'Age') +theme_classic(base_size = 28)+ xlim(c(8,23))+theme(axis.title.x=element_blank(), axis.text.x=element_blank(),axis.ticks.x=element_blank(),axis.title.y=element_blank(), axis.text.y=element_blank(),axis.ticks.y=element_blank())
     
     
     # fit Seg to Segvector of plot array
@@ -202,7 +202,9 @@ K=13
     # ports actual splines in
     LongAgeSpan_plotdf4$WinSplines<-forSpline[,3]+coef(igam)[1]
     # will need to change this to input ggplot as a plot within a ggplot vector
-    winplot<-ggplot(LongAgeSpan_plotdf4,aes(Age,WinSplines)) +geom_line(size=8,color=gamcolor) +labs(title=paste('Net. Win. Scale',K,' Net',i,sep=''), x = 'Age') +theme_classic(base_size = 28)+ xlim(c(8,23))
+    winplot<-ggplot(LongAgeSpan_plotdf4,aes(Age,WinSplines)) +geom_line(size=8,color=gamcolor) +labs(title='', x = 'Age') +theme_classic(base_size = 28)+ xlim(c(8,23))+theme(axis.title.x=element_blank(), axis.text.x=element_blank(),axis.ticks.x=element_blank(),axis.title.y=element_blank(), axis.text.y=element_blank(),axis.ticks.y=element_blank())
+    
+    # plot specifying title code: title=paste('Net. Win. Scale',K,' Net',i,sep='')
     
     # fit WITHIN to diagonals of plot array
     plotarraywin<-diag(plotarray)
@@ -254,7 +256,7 @@ K=13
     # ports actual splines in
     LongAgeSpan_plotdf4$BwSplines<-forSpline[,3]+coef(igam)[1]
     # will need to change this to input ggplot as a plot within a ggplot vector
-    bwplot<-ggplot(LongAgeSpan_plotdf4,aes(Age,BwSplines)) +geom_line(size=8,color=gamcolor) +labs(title=x, x = 'Age') +theme_classic(base_size = 28)+ xlim(c(8,23))     
+    bwplot<-ggplot(LongAgeSpan_plotdf4,aes(Age,BwSplines)) +geom_line(size=8,color=gamcolor) +labs(title='', x = 'Age') +theme_classic(base_size = 28)+ xlim(c(8,23))+theme(axis.title.x=element_blank(), axis.text.x=element_blank(),axis.ticks.x=element_blank(),axis.title.y=element_blank(), axis.text.y=element_blank(),axis.ticks.y=element_blank())   
     # fit BETWEEN to off-diagonals of plot array
     # get top triangle off diagonals
     assign(toptri[b],bwplot)
@@ -276,10 +278,12 @@ plotvec<-c(print(ReArAgeEfMat,quote = F))
 plotveccommas<-paste(plotvec,collapse=",")
 
 # Segregation values hopping on the tail end of this train
-SegStragglerscommas<-paste(ReArAgeSegVec,collapse=",")
-plotveccommas_seg<-paste(plotveccommas,',',SegStragglerscommas,sep='')
+#SegStragglerscommas<-paste(ReArAgeSegVec,collapse=",")
+#plotveccommas_seg<-paste(plotveccommas,',',SegStragglerscommas,sep='')
 
-ggarrangecommand<-paste('ggarrange(',plotveccommas_seg,',ncol=K,nrow=K+1)',sep='')
+#ggarrangecommand<-paste('ggarrange(',plotveccommas_seg,',ncol=K,nrow=K+1)',sep='')
+# without seg
+ggarrangecommand<-paste('ggarrange(',plotveccommas,',ncol=K,nrow=K)',sep='')
 #eval(parse(text=ggarrangecommand)) 
 
 ```

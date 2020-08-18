@@ -923,6 +923,17 @@ corEstVec_EF<-function(x){
 }
 
 
+### aaaand one version to just return the residuals
+corResidVec<-function(x){
+  # relevant df
+  scaledf<-cbind(as.numeric(masterdf$Age),as.numeric(masterdf$Sex),masterdf$Motion,x)
+  # partial spearmans to extrac age relation
+  pspear=pcor(scaledf,method='spearman')$estimate
+  corest<-pspear[5]
+  return(unlist(corest))
+}
+
+
 ###confvecupper<-as.numeric(lapply(masterdf[,indiv_wincols_ind],corconfinfvecupper))
 ###confveclower<-as.numeric(lapply(masterdf[,indiv_wincols_ind],corconfinfveclower))
 corVecEst<-as.numeric(lapply(masterdf[,indiv_wincols_ind],corEstVec))
@@ -1092,7 +1103,18 @@ LongAgeSpan_plotdf2<-data.frame(sapply(AgeSpan_plotdf2,rep.int,times=200))
 LongAgeSpan_plotdf2$agespans<-agerange200464
 LongAgeSpan_plotdf2$derivs<-deriv200464
 
-ggplot(LongAgeSpan_plotdf2,aes(agespans,tmvec,color=derivs,group=CIgroupingInd)) +geom_line(size=5,alpha=.8) +labs(title='Network Segregation Effect Manifestation', x = 'Age', y = 'Transmodality') +theme_classic(base_size = 28)+ xlim(c(8,23))+ scale_colour_gradientn(colours=c('#ffe900','#ddcd78','white','#888fac','#002a72'),values = c(0,.05,.265,.615,1),name="Change Per Year")
+breaks=c(-.02,-.01,0,0.01,0.02)
+
+
+# older version
+###ggplot(LongAgeSpan_plotdf2,aes(agespans,tmvec,color=derivs,group=CIgroupingInd)) +geom_line(size=10,alpha=.8) +labs(title='Network Segregation Effect Span', x = 'Age', y = 'Transmodality') +theme_classic(base_size = 58)+ xlim(c(8,23))+ scale_colour_gradientn(colours=c('#ff0a0a','#ff9191','white','#8585ff','#0b0bff'),values = c(0,.05,.265,.615,1),breaks=breaks, labels = breaks,name="Change Per Year")+theme(legend.position="top",legend.key.width = unit(4, "cm"))
+
+
+ggplot(LongAgeSpan_plotdf2,aes(agespans,tmvec,color=derivs,group=CIgroupingInd)) +geom_line(size=13,alpha=.8) +labs(title='Network Segregation Effect Span', x = 'Age', y = 'Transmodality') +theme_classic(base_size = 58)+ xlim(c(8,23))+ scale_colour_gradientn(colours=c('#0b0bff','#8585ff','white','#ff9191','#ff0a0a'),values = c(0,.25,.5,.75,1),breaks=breaks, labels = breaks,limits=c(-.02,0.02),name="Change Per Year")+theme(legend.position="top",legend.key.width = unit(5, "cm"))
+
+
+
+
 
 # with purple yellow black color scheme instead
 ggplot(LongAgeSpan_plotdf2,aes(agespans,tmvec,color=derivs,group=CIgroupingInd)) +geom_line(size=5,alpha=.8) +labs(title='Network Segregation Effect Manifestation', x = 'Age', y = 'Transmodality') +theme_classic(base_size = 28)+ xlim(c(8,23))+ scale_colour_gradientn(colours=c('purple','white','yellow'),values = c(0,.265,1),name="Change Per Year")
@@ -1159,11 +1181,11 @@ bwcolnames<-colnames(individ_scalebybw_df)
 # empty array to populate with b/w connectivity age cors (b/w to unimodal, b/w to transmodal, b/w to aggregate, and K and N and Modality just to confirm we are matching)
 bwAgeCorVecs<-matrix(0,464,6)
 
-# loop over connectivities to unimodal then to transmodal
+# loop over connectivities to-unimodal then to-transmodal
 modalloopvar=c('unimodal','transmodal')
 for (i in 1:2){
   print(modalloopvar[i])
-  # get "the other"
+  # index "the other" (dystopian)
   modalloopvar_other=modalloopvar[modalloopvar!=(modalloopvar[i])]
   # extract which of 1:464 network mappings match the modalitity of this loop
   modalindices=which(tmclass %in% modalloopvar[i])
@@ -1328,21 +1350,26 @@ colnames(bwAgeCorVecs)<-c('bw_to_unimodal','bw_to_transmodal','avg_bw','K','N')
 length(indiv_scalebynet_df)
 bwdf<-data.frame(tmvec,scalesvec,domnetvec,netpropvec,bwAgeCorVecs$avg_bw,bwAgeCorVecs$bw_to_unimodal,bwAgeCorVecs$bw_to_transmodal)
 
-
+####
 # avg b/w
-avgbw_age_tm<-ggplot(bwdf,aes(tmvec,bwAgeCorVecs.avg_bw,color=domnetvec,alpha=netpropvec^2)) + geom_point(size=6)+ scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068')) + xlab("Transmodality") + ylab("AgeBWCor") +theme_classic(base_size = 28) + ggtitle('Correlation of B/w con avg and Age over All Networks') + ylim(-.5,.5)
+avgbw_age_tm<-ggplot(bwdf,aes(tmvec,bwAgeCorVecs.avg_bw,color=domnetvec,alpha=netpropvec^2)) + geom_point(size=6)+ scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068')) + xlab("Transmodality") + ylab("AgeBWCor") +theme_classic(base_size = 28) + ggtitle('Correlation of Avg. Bw. Con. and Age') + ylim(-.5,.5)+guides(alpha=FALSE,color=guide_legend(title="Maximal Y7 Overlap"))+theme(legend.position="top")
 
-avgbw_age_scale<-ggplot(bwdf,aes(tmvec,bwAgeCorVecs.avg_bw,color=scalesvec)) + geom_point(size=6) + xlab("Transmodality") + ylab("AgeBWCor")+theme_classic(base_size = 28)+ ylim(-.5,.5)+ scale_colour_gradient(low="#55185D", high="#ECB602")
+avgbw_age_scale<-ggplot(bwdf,aes(tmvec,bwAgeCorVecs.avg_bw,color=scalesvec)) + geom_point(size=6) +labs(title='Correlation of Avg. Bw. Con. and Age ', x = 'Transmodality', y = "AgeBWCor", color="Topological \nScale")+theme_classic(base_size = 28)+ ylim(-.5,.5)+ scale_colour_gradient(low="#55185D", high="#ECB602")+theme(legend.position="top",legend.key.width = unit(2.5, "cm"))
+####
 
+####
 # b/w to unimodal
 unibw_age_tm<-ggplot(bwdf,aes(tmvec,bwAgeCorVecs.bw_to_unimodal,color=domnetvec,alpha=netpropvec^2)) + geom_point(size=6)+ scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068')) + xlab("Transmodality") + ylab("AgeBWUCor") +theme_classic(base_size = 28) + ggtitle('Correlation of B/w unimodal con and Age over All Networks')+ ylim(-.5,.5)
 
 unibw_age_scale<-ggplot(bwdf,aes(tmvec,bwAgeCorVecs.bw_to_unimodal,color=scalesvec)) + geom_point(size=6) + xlab("Transmodality") + ylab("AgeBWUCor")+theme_classic(base_size = 28)+ ylim(-.5,.5)
+####
 
+####
 # b/w to transmodal
 transbw_age_tm<-ggplot(bwdf,aes(tmvec,bwAgeCorVecs.bw_to_transmodal,color=domnetvec,alpha=netpropvec^2)) + geom_point(size=6)+ scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068')) + xlab("Transmodality") + ylab("AgeBWTCor") +theme_classic(base_size = 28) + ggtitle('Correlation of B/w transmodal con and Age over All Networks')+ ylim(-.5,.5)
 
 transbw_age_scale<-ggplot(bwdf,aes(tmvec,bwAgeCorVecs.bw_to_transmodal,color=scalesvec)) + geom_point(size=6) + xlab("Transmodality") + ylab("AgeBWTCor")+theme_classic(base_size = 28)+ ylim(-.5,.5)
+####
 
 ggarrange(avgbw_age_tm,unibw_age_tm,transbw_age_tm,avgbw_age_scale,unibw_age_scale,transbw_age_scale)
 
@@ -1351,6 +1378,51 @@ bwdf17<-data.frame(tmvec,scalesvec,domnetvec17,netpropvec17,bwAgeCorVecs$avg_bw,
 
 Segreg_age_tm17<-ggplot(bwdf17,aes(tmvec,bwAgeCorVecs.avg_bw,color=domnetvec17,alpha=netpropvec17^2)) + scale_color_manual(values=c('#dc8303','#8d2049','#596a85','#2d9a3d','#007938','#d9e200','#bc0943','#2b1f67','#48593a','#91a967','#4183a8','#00bb89','#3245a3','#9e3ca2','#eb75b3','#68126f','#d1001c')) + xlab("Transmodality") + ylab("AgeB/WCor") +theme_classic(base_size = 28) + geom_point(size=4,aes(tmvec,bwAgeCorVecs.avg_bw)) + ggtitle('Correlation of B/w Con Avg and Age over All Communities')+ ylim(-.5,.5)
 ```
+
+
+```{r}
+# attempt to regress out b/w effects from transmodal-segregation relation
+#### INCOMPLETE
+# multi-stage regression because segreg is built on between - take residuals from between modeling
+
+# get residuals of b/w-age relations 
+
+corEstVecBwRegr<-function(x,y){
+  # relevant df
+  scaledf<-cbind(as.numeric(masterdf$Age),as.numeric(masterdf$Sex),masterdf$Motion,y,x)
+  # partial spearmans to extrac age relation
+  pspear=pcor(scaledf,method='spearman')$estimate
+  corest<-pspear[5]
+  return(unlist(corest))
+}
+
+#bwdf$bwAgeCorVecs.avg_bw
+
+#corVecEstBwControl<-as.numeric(lapply(masterdf[,indiv_nsegcols_ind],corEstVecBwRegr))
+
+###confveclower_d<-data.frame(tmvec,confveclower,scalesvec,domnetvec,netpropvec,corVecEst)
+###confvecupper_d<-data.frame(tmvec,confvecupper,scalesvec,domnetvec,netpropvec,corVecEst)
+###confvecdf<-data.frame(confveclower_d = confveclower_d, confvecupper_d  = confvecupper_d)
+
+# augment dataframe for CI range plot
+#CIgroupingInd<-as.factor(1:464)
+###confveclower_d[,7]<-CIgroupingInd
+###confvecupper_d[,7]<-CIgroupingInd
+#corVecEst_d[,6]<-CIgroupingInd
+###colnames(confveclower_d)[2]<-"CIbounds"
+###colnames(confvecupper_d)[2]<-"CIbounds"
+###Seg_CIplotdf<-data.frame(rbind(confveclower_d,confvecupper_d))
+
+#Seg_plotdf<-data.frame(tmvec,scalesvec,domnetvec,netpropvec,corVecEst)
+
+#Segreg_age_tm<-ggplot(Seg_plotdf,aes(tmvec,corVecEst,color=domnetvec,alpha=netpropvec^2)) + scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068')) + xlab("Transmodality") + ylab("AgeSegregCor") +theme_classic(base_size = 45) + geom_point(size=7,aes(tmvec,corVecEst)) + ggtitle('Correlation of Net. Segreg. and Age')+ ylim(-.5,.5)+guides(alpha=FALSE,color=guide_legend(title="Maximal Y7 Overlap"))+theme(legend.position="top")
+
+
+```
+
+
+
+
 
 ```{r}
 #### now make it for group template-measured FC vaues, starting with within and segreg
@@ -1403,14 +1475,18 @@ f=read.csv('/cbica/projects/pinesParcels/results/aggregated_data/ScaleAgeWin_TM_
 library(ggpointdensity)
 ggplot(f,aes(x=CMTM,y=Var2)) + geom_pointdensity(adjust=.5) + scale_color_viridis_c() +xlab('Transmodality') + ylab('Change in Age-Within Relation (Slope) over Scales')
 
-ggplot(f,aes(x=CMTM,y=Var2)) + geom_point(alpha=.08,size=2) +xlab('Transmodality') + ylab('Change in Age-Within Relation (Slope) over Scales')
+within_verts<-ggplot(f,aes(x=CMTM,y=Var2,color=Var2)) + geom_point(alpha=.08,size=2) +xlab('Transmodality') + ylab('Coarse-to-fine Correlation Slope')+theme_classic(base_size=28)+scale_color_gradient2(low='blue',mid='gray',high='red',name='Change')+theme(legend.position="none",legend.key.width = unit(2.5, "cm"))
 
 # and for Between
 f2=read.csv('/cbica/projects/pinesParcels/results/aggregated_data/ScaleAgeBw_TM_interaction.csv')
 ggplot(f2,aes(x=CMTM,y=Var2)) + geom_pointdensity(adjust=.3) + scale_color_viridis_c() +xlab('Transmodality') + ylab('Change in Age-Between Relation (Slope) over Scales')
 
-ggplot(f2,aes(x=CMTM,y=Var2)) + geom_point(alpha=.08,size=2) +xlab('Transmodality') + ylab('Change in Age-Between Relation (Slope) over Scales')
 
+# modulated position = none in and out for legend grab
+between_verts<-ggplot(f2,aes(x=CMTM,y=Var2,color=Var2)) + geom_point(alpha=.1,size=1) +xlab('Transmodality') + ylab('Coarse-to-fine Correlation Slope')+theme_classic(base_size=28)+scale_color_gradient2(low='blue',mid='gray',high='red',name='Change')+theme(legend.position="none",legend.key.width = unit(2.5, "cm"))
+
+
+ggarrange(within_verts,between_verts)
 ```
 
 
@@ -1432,6 +1508,11 @@ ageEfvec=NULL
 # this is to look at how finer scales confer networks that are less different
 scalevec=NULL
 
+# make a vector of variables that can become plots
+pointwise_bwplotvec<-t(array(as.character(paste('plot_',seq(1:7),sep='')),c(1,7)))
+
+
+#### This measures all the pairwise distances for the plots
 ## for all b/w cols
 for (i in 1:length(colnames(individ_scalebybw_df))){
     #print(i)
@@ -1472,19 +1553,19 @@ for (i in 1:length(colnames(individ_scalebybw_df))){
 BwAgeCorTMDifDf<-data.frame(tmdifvec,ageEfvec)
 ggplot(BwAgeCorTMDifDf,aes(x=tmdifvec,y=ageEfvec)) + geom_point(alpha=.07,size=5) + xlab('Transmodality Difference') + ylab('Age #Correlation') + ggtitle('Pairwise Between-Network Age-FC Relations')
 #
-## combine scalevec and transmodality dif vec for transmodality difference #differences
-#ScaleTMDifDf<-data.frame(tmdifvec,scalevec)
-#ScaleTMDifMeanVec<-rep(0,29)
-#for (K in 2:30){
-#  # Pull out values at this scale
-#  ScaleDF<-ScaleTMDifDf[ScaleTMDifDf$scalevec==K,]
-#  # Average Values at this scale (K-1 because 1st scale is 2)
-#  ScaleTMDifMeanVec[K-1]=mean(ScaleDF$tmdifvec)
-#  }
-#    
-#plot(ScaleTMDifMeanVec)
-#
-#ggplot(ScaleTMDifDf,aes(x=scalevec,y=tmdifvec)) + geom_point(alpha=.1,size=2) #+xlab('Number of Communities') + ylab('B/W Transmodality Difference')
+# combine scalevec and transmodality dif vec for transmodality difference #differences
+ScaleTMDifDf<-data.frame(tmdifvec,scalevec)
+ScaleTMDifMeanVec<-rep(0,29)
+for (K in 2:30){
+  # Pull out values at this scale
+  ScaleDF<-ScaleTMDifDf[ScaleTMDifDf$scalevec==K,]
+  # Average Values at this scale (K-1 because 1st scale is 2)
+  ScaleTMDifMeanVec[K-1]=mean(ScaleDF$tmdifvec)
+  }
+    
+plot(ScaleTMDifMeanVec)
+
+ggplot(ScaleTMDifDf,aes(x=scalevec,y=tmdifvec)) + geom_point(alpha=.1,size=2) +xlab('Number of Communities') + ylab('B/W Transmodality Difference')
 
 
 
@@ -1577,7 +1658,7 @@ for (y in 1:7){
       K_start=((scale-1)*(scale))/2
       K_end=(((scale-1)*(scale))/2)+scale-1
       Kind<-K_start:K_end
-      # ONLY exclude if one network is equal to currently indexed Y7 network
+      # ONLY exclude if one network is equal to currently indexed Y7 network ( manipulate here to run on all)
       y7lab1=domnetvec[Kind[as.numeric(net1)]]
       y7lab2=domnetvec[Kind[as.numeric(net2)]]
       if (y7lab1 != Y7vec[y] && y7lab2 != Y7vec[y]){
@@ -1603,10 +1684,16 @@ for (y in 1:7){
   cor_of_int=round(correl$estimate,3)
   # merged vectors
   BwAgeCorTMDifDf<-data.frame(tmdifvec,ageEfvec)
-  print(ggplot(BwAgeCorTMDifDf,aes(x=tmdifvec,y=ageEfvec)) + geom_point(alpha=.17,size=5)+ 
-  geom_smooth(method='lm',linetype="dashed",color=itercolor,size=2) + xlab('Transmodality Difference') +  ylim(-.4,.4) +xlim(-.1,13)+ ylab('Age Correlation') + ggtitle(paste('Pairwise Between-Network Age-FC Relations - ',Y7vec[y], ' excluded',sep=''))+geom_text(x=11,y=.3,label=paste('r =', cor_of_int))) 
+  bwplot<-ggplot(BwAgeCorTMDifDf,aes(x=tmdifvec,y=ageEfvec)) + geom_point(alpha=.17,size=5)+ 
+  geom_smooth(method='lm',linetype="dashed",color=itercolor,size=2) + xlab('Transmodality Difference') +  ylim(-.4,.4) +xlim(-.1,13)+ ylab('Age Correlation') + ggtitle(paste('B/w-Network Age-FC Relations - ',Y7vec[y], ' excluded',sep=''))+geom_text(x=11,y=.3,label=paste('r =', cor_of_int))
+  
+assign(pointwise_bwplotvec[y],bwplot)
+
 }
 
+#ggarrange(plot_1,plot_2,plot_3,plot_4,plot_5,plot_6,plot_7)
+
+ggarrange(plot_1,plot_7)
 
 ```
 
@@ -1621,6 +1708,7 @@ wincolnames<-colnames(individ_scalebywin_df)
 
 # initialize empty age effect vector 
 ageEfvec=NULL
+
 
 # make a scale vector to match transmodality difference values
 # this is to look at how finer scales confer networks that are less different
