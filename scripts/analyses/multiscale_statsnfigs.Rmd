@@ -1475,7 +1475,7 @@ f=read.csv('/cbica/projects/pinesParcels/results/aggregated_data/ScaleAgeWin_TM_
 library(ggpointdensity)
 ggplot(f,aes(x=CMTM,y=Var2)) + geom_pointdensity(adjust=.5) + scale_color_viridis_c() +xlab('Transmodality') + ylab('Change in Age-Within Relation (Slope) over Scales')
 
-within_verts<-ggplot(f,aes(x=CMTM,y=Var2,color=Var2)) + geom_point(alpha=.08,size=2) +xlab('Transmodality') + ylab('Coarse-to-fine Correlation Slope')+theme_classic(base_size=28)+scale_color_gradient2(low='blue',mid='gray',high='red',name='Change')+theme(legend.position="none",legend.key.width = unit(2.5, "cm"))
+within_verts<-ggplot(f,aes(x=CMTM,y=Var2,color=Var2)) + geom_point(shape=4,alpha=.4,size=1) +xlab('Transmodality') + ylab('Coarse-to-fine Correlation Slope')+theme_classic(base_size=28)+scale_color_gradient2(low='blue',mid='gray',high='red',name='Change')+theme(legend.position="none",legend.key.width = unit(2.5, "cm"))
 
 # and for Between
 f2=read.csv('/cbica/projects/pinesParcels/results/aggregated_data/ScaleAgeBw_TM_interaction.csv')
@@ -1483,7 +1483,7 @@ ggplot(f2,aes(x=CMTM,y=Var2)) + geom_pointdensity(adjust=.3) + scale_color_virid
 
 
 # modulated position = none in and out for legend grab
-between_verts<-ggplot(f2,aes(x=CMTM,y=Var2,color=Var2)) + geom_point(alpha=.1,size=1) +xlab('Transmodality') + ylab('Coarse-to-fine Correlation Slope')+theme_classic(base_size=28)+scale_color_gradient2(low='blue',mid='gray',high='red',name='Change')+theme(legend.position="none",legend.key.width = unit(2.5, "cm"))
+between_verts<-ggplot(f2,aes(x=CMTM,y=Var2,color=Var2)) + geom_point(shape=4,alpha=.4,size=1) +xlab('Transmodality') + ylab('Coarse-to-fine Correlation Slope')+theme_classic(base_size=28)+scale_color_gradient2(low='blue',mid='gray',high='red',name='Change')+theme(legend.position="none",legend.key.width = unit(2.5, "cm"))
 
 
 ggarrange(within_verts,between_verts)

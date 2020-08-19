@@ -38,17 +38,24 @@ bblids<-read.delim('/cbica/projects/pinesParcels/data/bblids.txt',header=F)
 
 ```{r}
 # big info loads
-fc<-vroom('/cbica/projects/pinesParcels/results/aggregated_data/fc/master_fcfeats.csv')
+#fc<-vroom('/cbica/projects/pinesParcels/results/aggregated_data/fc/master_fcfeats.csv')
 
 # set colnames to matlab-printed colnames
-colnames(fc)<-fc[1,]
+#colnames(fc)<-fc[1,]
 # aaaand remove it
-fc<-fc[-c(1),]
+#fc<-fc[-c(1),]
 
 # round ridiculous number of decimal points
-fc[] <- lapply(fc, function(x) {
-  if(is.character(x)) round(as.numeric(as.character(x)),digits=3) else x
-})
+#fc[] <- lapply(fc, function(x) {
+#  if(is.character(x)) round(as.numeric(as.character(x)),digits=3) #else x
+#})
+
+### it's rounded now bb
+fc<-vroom('/cbica/projects/pinesParcels/results/aggregated_data/fc/master_fcfeats_rounded.csv')
+
+# take out row number row
+fc<-fc[-c(1)]
+
 
 # isolate shams (although merge should take them out later)
 shams<-fc[694:695,]
@@ -200,22 +207,21 @@ Seg_CIplotdf<-data.frame(rbind(confveclower_d,confvecupper_d))
 
 ```{r}
 
-## the slow
+## the slow (patch number plots)
 Seg_CIplotdf$LH_patchnum<-LHpi$patchnum_over_scalesL
 Seg_CIplotdf$RH_patchnum<-RHpi$patchnum_over_scalesR
 Seg_CIplotdf$Tot_patchnum<-Seg_CIplotdf$LH_patchnum+Seg_CIplotdf$RH_patchnum
 
-ggplot(Seg_CIplotdf,aes(tmvec,Tot_patchnum,color=domnetvec,alpha=netpropvec^2,group=V7))+ geom_point(size=4,aes(tmvec,Tot_patchnum)) + scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068')) + xlab("Transmodality") + ylab("Total Patch number") +theme_classic(base_size = 28)
+patchTM<-ggplot(Seg_CIplotdf,aes(Tot_patchnum,tmvec,color=domnetvec,alpha=netpropvec^2,group=V7))+ geom_point(size=5,aes(Tot_patchnum,tmvec)) + scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068')) + ylab("Transmodality") + xlab("Total Patch number") +theme_classic(base_size = 28)+guides(alpha=FALSE,color=FALSE)+theme(legend.position="top",legend.title = element_blank(),axis.title.x=element_blank(), axis.text.x=element_blank(),axis.title.y=element_blank(), axis.text.y=element_blank())
 
-ggplot(Seg_CIplotdf,aes(tmvec,Tot_patchnum,color=scalesvec,group=V7))+ geom_point(size=4,aes(tmvec,Tot_patchnum)) +theme_classic(base_size = 28)
+##ggplot(Seg_CIplotdf,aes(tmvec,Tot_patchnum,color=scalesvec,group=V7))+ geom_point(size=4,aes(tmvec,Tot_patchnum)) +theme_classic(base_size = 28)
 
-ggplot(Seg_CIplotdf,aes(Tot_patchnum,corVecEst,color=domnetvec,alpha=netpropvec^2,group=V7)) + geom_point(size=4,aes(Tot_patchnum,corVecEst))+ scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068')) + xlab("Total Number of Patches") + ylab("AgeSegregCor") +theme_classic(base_size = 28)+ ylim(-.5,.5)
+patchAgeSeg<-ggplot(Seg_CIplotdf,aes(Tot_patchnum,corVecEst,color=domnetvec,alpha=netpropvec^2,group=V7)) + geom_point(size=5,aes(Tot_patchnum,corVecEst))+ scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068')) + xlab("Total Number of Patches") + ylab("AgeSegregCor") +theme_classic(base_size = 28)+ ylim(-.5,.5)+guides(alpha=FALSE,color=FALSE)+theme(legend.position="top",legend.title = element_blank(),axis.title.x=element_blank(), axis.text.x=element_blank(),axis.title.y=element_blank(), axis.text.y=element_blank())
 
-ggplot(Seg_CIplotdf,aes(Tot_patchnum,corVecEst))+ geom_pointdensity(size=4)+ xlab("Transmodality") + ylab("Total Patch number")
 
-ggplot(Seg_CIplotdf,aes(tmvec,CIbounds,color=domnetvec,alpha=netpropvec^2,group=V7)) + geom_line(size=1) + scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068')) + xlab("Transmodality") + ylab("AgeSegregCor") +theme_classic(base_size = 28) + geom_point(size=4,aes(tmvec,corVecEst)) + ggtitle('Correlation of Network Segregation and Age over All Networks')+ ylim(-.5,.5)
+#ggplot(Seg_CIplotdf,aes(tmvec,CIbounds,color=domnetvec,alpha=netpropvec^2,group=V7)) + geom_line(size=1) + scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068')) + xlab("Transmodality") + ylab("AgeSegregCor") +theme_classic(base_size = 28) + geom_point(size=4,aes(tmvec,corVecEst)) + ggtitle('Correlation of Network Segregation and Age over All Networks')+ ylim(-.5,.5)
 
-ggplot(Seg_CIplotdf,aes(scalesvec,Tot_patchnum, color=domnetvec,alpha=netpropvec^2,group=V7)) + geom_point(size=4,aes(scalesvec,Tot_patchnum),position="jitter")+ scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068')) + ylab("Total Number of Patches") + xlab("Scale") +theme_classic(base_size = 28)
+###ggplot(Seg_CIplotdf,aes(scalesvec,Tot_patchnum, color=domnetvec,alpha=netpropvec^2,group=V7)) + geom_point(size=5,aes(scalesvec,Tot_patchnum),position="jitter")+ scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068')) + ylab("Total Number of Patches") + xlab("Scale") +theme_classic(base_size = 28)
 ```
 
 
@@ -225,16 +231,18 @@ Seg_CIplotdf$Patch_GeoDisperse<-piGD$nwise_geods
 Seg_CIplotdf$Patch_EucDisperse<-piED$nwise_eucs
 Seg_CIplotdf$Patch_Disperse<-Seg_CIplotdf$Patch_GeoDisperse+Seg_CIplotdf$Tot_patchnum
 
-ggplot(Seg_CIplotdf,aes(Patch_GeoDisperse,CIbounds,color=domnetvec,alpha=netpropvec^2,group=V7)) + scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068')) + xlab("Geodesic dispersion") + ylab("AgeSegregCor") +theme_classic(base_size = 28) + geom_point(size=6,aes(Patch_GeoDisperse,corVecEst)) + ggtitle('Correlation of Network Segregation and Age over All Networks')+ ylim(-.5,.5)
+geodAgeSeg<-ggplot(Seg_CIplotdf,aes(Patch_GeoDisperse,CIbounds,color=domnetvec,alpha=netpropvec^2,group=V7)) + scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068')) + xlab("Geodesic Dispersion") + ylab("AgeSegregCor") +theme_classic(base_size = 28) + geom_point(size=5,aes(Patch_GeoDisperse,corVecEst))+ ylim(-.5,.5)+guides(alpha=FALSE,color=FALSE)+theme(legend.position="top",legend.title = element_blank(),axis.title.x=element_blank(), axis.text.x=element_blank(),axis.title.y=element_blank(), axis.text.y=element_blank())
 
-ggplot(Seg_CIplotdf,aes(Tot_patchnum,Patch_GeoDisperse,color=domnetvec,alpha=netpropvec^2,group=V7)) + geom_point(size=4,aes(Tot_patchnum,Patch_GeoDisperse))+ scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068')) + xlab("Total Number of Patches") + ylab("Geodesic Dispersion") +theme_classic(base_size = 28)
+eucAgeSeg<-ggplot(Seg_CIplotdf,aes(Patch_EucDisperse,CIbounds,color=domnetvec,alpha=netpropvec^2,group=V7)) + scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068')) + xlab("Euclidean Dispersion") + ylab("AgeSegregCor") +theme_classic(base_size = 28) + geom_point(size=5,aes(Patch_EucDisperse,corVecEst)) + ylim(-.5,.5)+guides(alpha=FALSE,color=FALSE)+theme(legend.position="top",legend.title = element_blank(),axis.title.x=element_blank(), axis.text.x=element_blank(),axis.title.y=element_blank(), axis.text.y=element_blank())
 
-ggplot(Seg_CIplotdf,aes(Tot_patchnum,Patch_GeoDisperse)) + geom_point(size=4,aes(Tot_patchnum,Patch_GeoDisperse),color='purple',alpha=.1) + xlab("Total Number of Patches") + ylab("Geodesic Dispersion") +theme_classic(base_size = 28)
+##ggplot(Seg_CIplotdf,aes(Tot_patchnum,Patch_GeoDisperse,color=domnetvec,alpha=netpropvec^2,group=V7)) + geom_point(size=4,aes(Tot_patchnum,Patch_GeoDisperse))+ scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068')) + xlab("Total Number of Patches") + ylab("Geodesic Dispersion") +theme_classic(base_size = 28)
+
+##ggplot(Seg_CIplotdf,aes(Tot_patchnum,Patch_GeoDisperse)) + geom_point(size=4,aes(Tot_patchnum,Patch_GeoDisperse),color='purple',alpha=.1) + xlab("Total Number of Patches") + ylab("Geodesic Dispersion") +theme_classic(base_size = 28)
 
 
-ggplot(Seg_CIplotdf,aes(tmvec,Patch_GeoDisperse,color=domnetvec,alpha=netpropvec^2,group=V7))+ geom_point(size=8,aes(tmvec,Patch_GeoDisperse)) + scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068')) + xlab("Transmodality") + ylab("Geodesic Dispersion") +theme_classic(base_size = 28)
+geodTM<-ggplot(Seg_CIplotdf,aes(Patch_GeoDisperse,tmvec,color=domnetvec,alpha=netpropvec^2,group=V7))+ geom_point(size=5,aes(Patch_GeoDisperse,tmvec)) + scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068')) + ylab("Transmodality") + xlab("Geodesic Dispersion") +theme_classic(base_size = 28)+guides(alpha=FALSE,color=FALSE)+theme(legend.position="top",legend.title = element_blank(),axis.title.x=element_blank(), axis.text.x=element_blank(),axis.title.y=element_blank(), axis.text.y=element_blank())
 
-ggplot(Seg_CIplotdf,aes(tmvec,Patch_EucDisperse,color=domnetvec,alpha=netpropvec^2,group=V7))+ geom_point(size=8,aes(tmvec,Patch_EucDisperse)) + scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068')) + xlab("Transmodality") + ylab("Euclidean Dispersion") +theme_classic(base_size = 28)
+eucTM<-ggplot(Seg_CIplotdf,aes(Patch_EucDisperse,tmvec,color=domnetvec,alpha=netpropvec^2,group=V7))+ geom_point(size=5,aes(Patch_EucDisperse,tmvec)) + scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068')) + ylab("Transmodality") + xlab("Euclidean Dispersion") +theme_classic(base_size = 28)+guides(alpha=FALSE,color=FALSE)+theme(legend.position="top",legend.title = element_blank(),axis.title.x=element_blank(), axis.text.x=element_blank(),axis.title.y=element_blank(), axis.text.y=element_blank())
 ```
 
 ```{r}
