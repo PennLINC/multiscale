@@ -938,11 +938,12 @@ DeltaR2EstVec<-function(x){
   scaledf<-data.frame(cbind(as.numeric(masterdf$Age),as.numeric(masterdf$Sex),masterdf$Motion,x))
   colnames(scaledf)<-c('Age','Sex','Motion','varofint')
   # no-age model (segreg ~ sex + motion)
-  noAgeLm<-lm(varofint~Sex+Motion,data=scaledf)
+  noAgeLm<-gam(varofint~Sex+Motion,data=scaledf)
   # age-included model for measuring difference
   AgeGam<-gam(varofint~Sex+Motion+s(Age,k=3),data=scaledf)
   # get difference in r squared
-  dif<-summary(AgeGam)$r.sq-summary(noAgeLm)$r.squared
+  dif<-summary(AgeGam)$r.sq-summary(noAgeLm)$r.sq
+  f<-anova(AgeGam,noAgeLm)
   return(dif)
 }
 
@@ -1027,6 +1028,29 @@ Seg_plotdf_r2dif<-data.frame(tmvec,scalesvec,domnetvec,netpropvec,R2VecEst)
 
 
 Segreg_age_tm_rsqdif<-ggplot(Seg_plotdf_r2dif,aes(tmvec,R2VecEst,color=domnetvec,alpha=netpropvec^2)) + scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068')) + xlab("Transmodality") + ylab("Change in R^2") +theme_classic(base_size = 45) + geom_point(size=7,aes(tmvec,R2VecEst)) + ggtitle('Increase in R^2 with Age Term')+ ylim(-.25,.25)+guides(alpha=FALSE,color=guide_legend(title="Maximal Y7 Overlap"))+theme(legend.position="top")
+
+# add in directionality
+
+# get vector of -1 and +1 corresponding to corvecest
+corVecDirec<-NULL
+for (i in 1:length(corVecEst)){
+  if(corVecEst[i]>0){
+    corVecDirec[i]=1
+  }
+  if(corVecEst[i]<0){
+    corVecDirec[i]=-1
+  }
+}
+
+Seg_plotdf_r2dif$R2VecEstDirec<-R2VecEst*corVecDirec
+
+
+Segreg_age_tm_rsqdifDirec<-ggplot(Seg_plotdf_r2dif,aes(tmvec,R2VecEstDirec,color=domnetvec,alpha=netpropvec^2)) + scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068')) + xlab("Transmodality") + ylab("Change in R^2 * Directionality") +theme_classic(base_size = 45) + geom_point(size=7,aes(tmvec,R2VecEstDirec)) + ggtitle('Increase in R^2 with Age Term * Directionality')+guides(alpha=FALSE,color=guide_legend(title="Maximal Y7 Overlap"))+theme(legend.position="top")+ ylim(-.25,.25)
+
+ggarrange(Segreg_age_tm_rsqdifDirec,Segreg_age_tm_rsqdif,ncol=2)
+
+Seg_plotdf_r2dif$sqrtR2VecEstDirec<-(sqrt(R2VecEst))*corVecDirec
+Segreg_age_tm_rsqdifDirec_sqrt<-ggplot(Seg_plotdf_r2dif,aes(tmvec,sqrtR2VecEstDirec,color=domnetvec,alpha=netpropvec^2)) + scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068')) + xlab("Transmodality") + ylab("Change in R * Directionality") +theme_classic(base_size = 45) + geom_point(size=7,aes(tmvec,sqrtR2VecEstDirec)) + ggtitle('Increase in R with Age Term * Directionality')+guides(alpha=FALSE,color=guide_legend(title="Maximal Y7 Overlap"))+theme(legend.position="top")+ ylim(-.5,.5)
 ```
 
 ```{r}

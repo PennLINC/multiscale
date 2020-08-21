@@ -81,6 +81,7 @@ masterdf<-merge(masterdf,motiondf,by='bblid')
 
 ### isolate global segreg columns
 gsegcols<-grep("globseg",colnames(masterdf))
+
 ```
 
 ```{r}
@@ -187,22 +188,22 @@ indiv_scalebynet_df<-masterdf[,indiv_nsegcols_ind]
 # ensure 464 length (number of scale by net features)
 length(indiv_scalebynet_df)
 
-confvecupper<-as.numeric(lapply(masterdf[,indiv_nsegcols_ind],corconfinfvecupper))
-confveclower<-as.numeric(lapply(masterdf[,indiv_nsegcols_ind],corconfinfveclower))
-corVecEst<-as.numeric(lapply(masterdf[,indiv_nsegcols_ind],corEstVec))
+#confvecupper<-as.numeric(lapply(masterdf[,indiv_nsegcols_ind],corconfinfvecupper))
+#confveclower<-as.numeric(lapply(masterdf[,indiv_nsegcols_ind],corconfinfveclower))
+#corVecEst<-as.numeric(lapply(masterdf[,indiv_nsegcols_ind],corEstVec))
 
-confveclower_d<-data.frame(tmvec,confveclower,scalesvec,domnetvec,netpropvec,corVecEst)
-confvecupper_d<-data.frame(tmvec,confvecupper,scalesvec,domnetvec,netpropvec,corVecEst)
-confvecdf<-data.frame(confveclower_d = confveclower_d, confvecupper_d  = confvecupper_d)
+#confveclower_d<-data.frame(tmvec,confveclower,scalesvec,domnetvec,netpropvec,corVecEst)
+#confvecupper_d<-data.frame(tmvec,confvecupper,scalesvec,domnetvec,netpropvec,corVecEst)
+#confvecdf<-data.frame(confveclower_d = confveclower_d, confvecupper_d  = confvecupper_d)
 
 # augment dataframe for CI range plot
 CIgroupingInd<-as.factor(1:464)
-confveclower_d[,7]<-CIgroupingInd
-confvecupper_d[,7]<-CIgroupingInd
+#confveclower_d[,7]<-CIgroupingInd
+#confvecupper_d[,7]<-CIgroupingInd
 #corVecEst_d[,6]<-CIgroupingInd
-colnames(confveclower_d)[2]<-"CIbounds"
-colnames(confvecupper_d)[2]<-"CIbounds"
-Seg_CIplotdf<-data.frame(rbind(confveclower_d,confvecupper_d))
+#colnames(confveclower_d)[2]<-"CIbounds"
+#colnames(confvecupper_d)[2]<-"CIbounds"
+#Seg_CIplotdf<-data.frame(rbind(confveclower_d,confvecupper_d))
 ```
 
 ```{r}
@@ -265,6 +266,12 @@ ggplot(Seg_CIplotdf,aes(tmvec,Tot_patchnum,color=scalesvec,group=V7))+ geom_poin
 ggplot(Seg_CIplotdf,aes(tmvec,Tot_patchnum))+ geom_pointdensity(size=4, adjust = 3)+ xlab("Transmodality") + ylab("Total Patch number")
 
 ggplot(Seg_CIplotdf,aes(corVecEst,Tot_patchnum))+ geom_pointdensity(size=4)+ xlab("Transmodality") + ylab("Total Patch number")
+```
+
+```{r}
+# effects of transmodality above and beyond dispersion
+
+seg_tm_dispersion<-lm(corVecEst~tmvec+Patch_GeoDisperse+Tot_patchnum,data=Seg_CIplotdf)
 ```
 
 ```
