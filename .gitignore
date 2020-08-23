@@ -15,3 +15,4 @@ subj_vert_fc_vertexwise_output_matlab_compile
 Long_bblidAgeSexMotionSegreg
 scripts/derive_percygrads/fcmat_to_threshCosSim.py.o*
 scripts/derive_percygrads/fcmat_to_threshCosSim.py.e*
+matlab_avail.py
