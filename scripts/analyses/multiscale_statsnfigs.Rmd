@@ -644,8 +644,10 @@ ggarrange(indseg,indagecor,WinAll,WinCors,BwAll,BwCors,ncol = 2,nrow=3)
 ```{r}
 ### get global seg cors FOR EF
 # EF
-subjbehav<-read.csv("/cbica/projects/pinesParcels/data/n713_Behavior_20181219.csv")
-ef<-data.frame(subjbehav$F1_Exec_Comp_Cog_Accuracy,subjbehav$bblid)
+#subjbehav<-read.csv("/cbica/projects/pinesParcels/data/n713_Behavior_20181219.csv")
+subjbehav<-read.csv("~/Downloads/n9498_cnb_factor_scores_fr_20170202.csv")
+#ef<-data.frame(subjbehav$F1_Exec_Comp_Cog_Accuracy,subjbehav$bblid)
+ef<-data.frame(subjbehav$NAR_F1_Exec_Comp_Cog_Accuracy,subjbehav$bblid)
 colnames(ef)<-c('F1_Exec_Comp_Cog_Accuracy','bblid')
 # merge in
 masteref<-merge(masterdf,ef,by='bblid')
@@ -934,17 +936,53 @@ corResidVec<-function(x){
 }
 
 DeltaR2EstVec<-function(x){
+  
   # relevant df
   scaledf<-data.frame(cbind(as.numeric(masterdf$Age),as.numeric(masterdf$Sex),masterdf$Motion,x))
   colnames(scaledf)<-c('Age','Sex','Motion','varofint')
+  
   # no-age model (segreg ~ sex + motion)
-  noAgeLm<-gam(varofint~Sex+Motion,data=scaledf)
+  noAgeGam<-gam(varofint~Sex+Motion,data=scaledf)
   # age-included model for measuring difference
   AgeGam<-gam(varofint~Sex+Motion+s(Age,k=3),data=scaledf)
-  # get difference in r squared
-  dif<-summary(AgeGam)$r.sq-summary(noAgeLm)$r.sq
-  f<-anova(AgeGam,noAgeLm)
+  
+  # calculate residual sums of squares
+  noAgeRSS<-sum(noAgeGam$residuals^2)
+  AgeRSS<-sum(AgeGam$residuals^2)
+  
+  # calculate distance from mean (null w/o trends, same for both models since it is just based on mean)
+  MinusMeans<-(scaledf$varofint-mean(scaledf$varofint))^2
+  # sum em
+  SumMinusMeans<-sum(MinusMeans)
+  # convert to R^2
+  noAge_rsq<-1-(noAgeRSS/SumMinusMeans)
+  Age_rsq<-1-(AgeRSS/SumMinusMeans)
+  
+  # check to make sure that lm of linear gam RSS calculates
+  czechlm<-lm(varofint~Sex+Motion,data=scaledf)
+  czechsum<-summary(czechlm)
+  czech_rsq<-czechsum$r.squared
+  
+  print(paste(noAge_rsq,czech_rsq))
+  
+  
+  ## "un"square it, multiply by directionality
+  noAge_r<-sqrt(noAge_rsq)
+  Age_r<-sqrt(Age_rsq)
+  #noAge_r<-noAge_rsq
+  #Age_r<-Age_rsq
+  # get difference in r
+  dif<-Age_r-noAge_r
+  
+  # partial spearmans to extract age relation (for direction)
+  pspear=pcor(scaledf,method='spearman')$estimate
+  corest<-pspear[4]
+  if(corest<0){
+    dif=dif*-1
+  }
+  
   return(dif)
+  
 }
 
 ###confvecupper<-as.numeric(lapply(masterdf[,indiv_wincols_ind],corconfinfvecupper))
@@ -991,7 +1029,7 @@ corVecEst<-as.numeric(lapply(masterdf[,indiv_nsegcols_ind],corEstVec))
 
 R2VecEst<-as.numeric(lapply(masterdf[,indiv_nsegcols_ind],DeltaR2EstVec))
 
-###confveclower_d<-data.frame(tmvec,confveclower,scalesvec,domnetvec,netpropvec,corVecEst)
+ ###confveclower_d<-data.frame(tmvec,confveclower,scalesvec,domnetvec,netpropvec,corVecEst)
 ###confvecupper_d<-data.frame(tmvec,confvecupper,scalesvec,domnetvec,netpropvec,corVecEst)
 ###confvecdf<-data.frame(confveclower_d = confveclower_d, confvecupper_d  = confvecupper_d)
 
@@ -1026,31 +1064,9 @@ Segreg_age_tm<-ggplot(Seg_plotdf,aes(tmvec,corVecEst,color=domnetvec17,alpha=net
 
 Seg_plotdf_r2dif<-data.frame(tmvec,scalesvec,domnetvec,netpropvec,R2VecEst)
 
+# difference in R
+Segreg_age_tm_r2dif<-ggplot(Seg_plotdf_r2dif,aes(tmvec,R2VecEst,color=domnetvec,alpha=netpropvec^2)) + scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068')) + xlab("Transmodality") + ylab("Change in R^2 * Directionality") +theme_classic(base_size = 45) + geom_point(size=7,aes(tmvec,R2VecEst)) + ggtitle('Increase in R^2 with Age Term * Directionality')+guides(alpha=FALSE,color=guide_legend(title="Maximal Y7 Overlap"))+theme(legend.position="top")
 
-Segreg_age_tm_rsqdif<-ggplot(Seg_plotdf_r2dif,aes(tmvec,R2VecEst,color=domnetvec,alpha=netpropvec^2)) + scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068')) + xlab("Transmodality") + ylab("Change in R^2") +theme_classic(base_size = 45) + geom_point(size=7,aes(tmvec,R2VecEst)) + ggtitle('Increase in R^2 with Age Term')+ ylim(-.25,.25)+guides(alpha=FALSE,color=guide_legend(title="Maximal Y7 Overlap"))+theme(legend.position="top")
-
-# add in directionality
-
-# get vector of -1 and +1 corresponding to corvecest
-corVecDirec<-NULL
-for (i in 1:length(corVecEst)){
-  if(corVecEst[i]>0){
-    corVecDirec[i]=1
-  }
-  if(corVecEst[i]<0){
-    corVecDirec[i]=-1
-  }
-}
-
-Seg_plotdf_r2dif$R2VecEstDirec<-R2VecEst*corVecDirec
-
-
-Segreg_age_tm_rsqdifDirec<-ggplot(Seg_plotdf_r2dif,aes(tmvec,R2VecEstDirec,color=domnetvec,alpha=netpropvec^2)) + scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068')) + xlab("Transmodality") + ylab("Change in R^2 * Directionality") +theme_classic(base_size = 45) + geom_point(size=7,aes(tmvec,R2VecEstDirec)) + ggtitle('Increase in R^2 with Age Term * Directionality')+guides(alpha=FALSE,color=guide_legend(title="Maximal Y7 Overlap"))+theme(legend.position="top")+ ylim(-.25,.25)
-
-ggarrange(Segreg_age_tm_rsqdifDirec,Segreg_age_tm_rsqdif,ncol=2)
-
-Seg_plotdf_r2dif$sqrtR2VecEstDirec<-(sqrt(R2VecEst))*corVecDirec
-Segreg_age_tm_rsqdifDirec_sqrt<-ggplot(Seg_plotdf_r2dif,aes(tmvec,sqrtR2VecEstDirec,color=domnetvec,alpha=netpropvec^2)) + scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068')) + xlab("Transmodality") + ylab("Change in R * Directionality") +theme_classic(base_size = 45) + geom_point(size=7,aes(tmvec,sqrtR2VecEstDirec)) + ggtitle('Increase in R with Age Term * Directionality')+guides(alpha=FALSE,color=guide_legend(title="Maximal Y7 Overlap"))+theme(legend.position="top")+ ylim(-.5,.5)
 ```
 
 ```{r}
@@ -1160,8 +1176,13 @@ ggplot(LongAgeSpan_plotdf2,aes(agespans,tmvec,color=derivs,group=CIgroupingInd))
 
 
 
-# with purple yellow black color scheme instead
-ggplot(LongAgeSpan_plotdf2,aes(agespans,tmvec,color=derivs,group=CIgroupingInd)) +geom_line(size=5,alpha=.8) +labs(title='Network Segregation Effect Manifestation', x = 'Age', y = 'Transmodality') +theme_classic(base_size = 28)+ xlim(c(8,23))+ scale_colour_gradientn(colours=c('purple','white','yellow'),values = c(0,.265,1),name="Change Per Year")
+# with yeo color scheme instead
+LongAgeSpan_plotdf2$domnetvec<-as.factor(LongAgeSpan_plotdf2$domnetvec)
+#LongAgeSpan_plotdf2$derivs[abs(LongAgeSpan_plotdf2$derivs) < 0.002] <- 0
+
+
+y7ver<-ggplot(LongAgeSpan_plotdf2,aes(agespans,tmvec,color=domnetvec,group=CIgroupingInd,alpha=abs(derivs))) +geom_line(size=5,aes(agespans,tmvec)) +labs(title='Network Segregation Effect Manifestation', x = 'Age', y = 'Transmodality') +theme_classic(base_size = 28)+ xlim(c(8,23))+ scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068'),name="Maximal Y7 Overlap")+scale_alpha_continuous(range=c(0,1))
+
 ```
 
 ```{r}
@@ -1365,7 +1386,7 @@ for (i in 1:2){
     # get average bw network connectivty age correlation for this network at this scale
       both=cbind(masterdf[,match_NetN_scaleK_bw_indivi_cols_ind],masterdf[,unmatch_NetN_scaleK_bw_indivi_cols_ind, drop=F])
       avg_bw=rowMeans(both)
-      avg_bw_coarse_agecor<-corEstVec(avg_bw)
+      avg_bw_coarse_agecor<-DeltaR2EstVec(avg_bw)
       bwAgeCorVecs[Nind,3]=unlist(avg_bw_coarse_agecor)
     }
     # Print out ratio of transmodal to unimodal at this scale
@@ -1531,6 +1552,12 @@ between_verts<-ggplot(f2,aes(x=CMTM,y=Var2,color=Var2)) + geom_point(shape=4,alp
 
 
 ggarrange(within_verts,between_verts)
+
+
+# regress out tm effect
+plotLM<-gam(Var2~s(CMTM,k=3),data=f2)
+f2$resid<-plotLM$residuals
+ggplot(f2,aes(x=CMTM,y=resid,color=Var2)) + geom_point(shape=4,alpha=.4,size=1) +xlab('Transmodality') + ylab('Coarse-to-fine Correlation Slope')+theme_classic(base_size=28)+scale_color_gradient2(low='blue',mid='gray',high='red',name='Change')+theme(legend.position="none",legend.key.width = unit(2.5, "cm"))
 ```
 
 
@@ -1777,10 +1804,10 @@ pcorEstVecNsave<-function(x,K,vecIn){
 
 pcorEstVec_EFNsave<-function(x,K,vecIn){
   # relevant df
-  scaledf<-cbind(as.numeric(masteref$F1_Exec_Comp_Cog_Accuracy),as.numeric(masteref$Sex),masteref$Motion,x)
-  # partial spearmans to extrac age relation
+  scaledf<-cbind(as.numeric(masteref$F1_Exec_Comp_Cog_Accuracy),as.numeric(masteref$Sex),masteref$Motion,as.numeric(masteref$Age),as.numeric(x))
+  # partial spearmans to extract age relation
   pspear=pcor(scaledf,method='spearman')$estimate
-  corest<-unlist(pspear[4])
+  corest<-unlist(pspear[5])
   append(vecIn,corest)
 }
 
