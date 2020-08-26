@@ -653,14 +653,14 @@ colnames(ef)<-c('F1_Exec_Comp_Cog_Accuracy','bblid')
 masteref<-merge(masterdf,ef,by='bblid')
 ### plot mean global seg over scales by age
 # 2:30 is ind, 5455:5483 is group
-indglobseg<-cbind(masteref$bblid,masteref$F1_Exec_Comp_Cog_Accuracy,masteref$Sex,masteref$Motion,masteref[,2:30])
-groglobseg<-cbind(masteref$bblid,masteref$F1_Exec_Comp_Cog_Accuracy,masteref$Sex,masteref$Motion,masteref[,5455:5483])
+indglobseg<-cbind(masteref$bblid,masteref$F1_Exec_Comp_Cog_Accuracy,masteref$Age,masteref$Sex,masteref$Motion,masteref[,2:30])
+groglobseg<-cbind(masteref$bblid,masteref$F1_Exec_Comp_Cog_Accuracy,masteref$Age,masteref$Sex,masteref$Motion,masteref[,5455:5483])
 
 # set colnames
-colnames(indglobseg)[1:4]<-c("bblid", "EF","Sex","Motion")
-colnames(groglobseg)[1:4]<-c("bblid", "EF","Sex","Motion")
-colnames(indglobseg)[5:33]<-as.character(2:30)
-colnames(groglobseg)[5:33]<-as.character(2:30)
+colnames(indglobseg)[1:5]<-c("bblid", "EF","Age","Sex","Motion")
+colnames(groglobseg)[1:5]<-c("bblid", "EF","Age","Sex","Motion")
+colnames(indglobseg)[6:34]<-as.character(2:30)
+colnames(groglobseg)[6:34]<-as.character(2:30)
 indglobseg$Sex<-as.factor(indglobseg$Sex)
 groglobseg$Sex<-as.factor(groglobseg$Sex)
 
@@ -670,12 +670,11 @@ ind_segcors[,1]<-2:30
 #### repeated ggpplot uses residuals, NOT SIMULTANEOUSLY FITTED EF COEFFICIENT AT THE MOMENT ### 
 ### agebeta vec does use simulataneous fit (partial correlations)
 for (i in 1:29){
-  
   # relevant df
-  scaledf<-cbind(indglobseg$EF,indglobseg$Sex,indglobseg$Motion,indglobseg[,i+4])
+  scaledf<-cbind(indglobseg$EF,indglobseg$Age,indglobseg$Sex,indglobseg$Motion,indglobseg[,i+5])
   # partial spearmans to extrac age relation
   pspear=pcor(scaledf,method='spearman')$estimate
-  ind_segcors[i,2]<-pspear[4]
+  ind_segcors[i,2]<-pspear[5]
 }
 
 ## now group level
@@ -685,10 +684,10 @@ gro_segcors[,1]<-2:30
 for (i in 1:29){
 
   # relevant df
-  scaledf<-cbind(groglobseg$Age,groglobseg$Sex,groglobseg$Motion,groglobseg[,i+4])
+  scaledf<-cbind(groglobseg$EF,groglobseg$Age,groglobseg$Sex,groglobseg$Motion,groglobseg[,i+5])
   # partial spearmans to extrac age relation
   pspear=pcor(scaledf,method='spearman')$estimate
-  gro_segcors[i,2]<-pspear[4]
+  gro_segcors[i,2]<-pspear[5]
 }
 
 indEFcor<-correlations_over_scales(ind_segcors,"Global Segregation EF Correlation - Individ. Partitions")
@@ -771,81 +770,6 @@ ggplot(x,aes(X1,value,group=Partitioning,color=Partitioning)) + geom_step(size=3
     geom_hline(aes(yintercept=-.125), linetype="dashed", col='#ECB602',size=2.5) + scale_color_manual(values = c("black", "grey"))+ggtitle("Global Segregation and Motion Correlation Over Scales")
 ```
 
-
-```{r}
-
-# indicators of processing stream
-ind='ind'
-gro='gro'
-###bts='bts'
-###
-#### indicators of fc feature type
-bwi='_bw_FC_'
-wini='_win_FC_'
-nsegi='_seg_scale'
-###gsegi='_globseg_scale'
-###
-#### indices of said indicators
-indiv=grep(ind,colnames(masterdf))
-group=grep(gro,colnames(masterdf))
-###basists=grep(bts,colnames(df))
-bwcol=grep(bwi,colnames(masterdf))
-wincols=grep(wini,colnames(masterdf))
-nsegcols=grep(nsegi,colnames(masterdf))
-###gsegcols=grep(gsegi,colnames(df))
-###
-# Make motion-regressed version of everything
-
-
-
-###segdf<-merge(gseg,df,by="scanid")
-###
-###seg_cors<-matrix(0,length(community_vec),2)
-###seg_cors[,1]<-community_vec
-###
-###for (i in 1:length(community_vec)){
-###  # i+1 because first column is scanid
-###  seg_cors[i,2]<-cor.test(segdf[,i+1],segdf$Age)$estimate
-###}
-###
-###correlations_over_scalesplot(correlations=seg_cors,title="Segregation-Age correlations over Scales")
-
-# multi-scale patterning
-# shape analyses
-
-### 29 scales, 2 coordinates (x,y), and 693 subjs
-globalseg<-array(0,dim=c(29,2,693))
-
-# for each subject, fill in x and y coords. (x is constant, is scale)
-for (i in 1:693){
-  # 2-30 as x-axis (scales of obs.)
-  globalseg[,1,i]<-seq(2,30)
-  # y values as error/cost
-  # seems more matlabby than characteristic of R that I have to as.x(as.x(df)) for it to work, but here we are
-  globalseg[,2,i]<-as.array(as.matrix(indglobseg[i,5:33]))
-  
-  # scale SDs to be equiv in x and y dimensions (to enforce principled shape)
-  #sd1<-(sd(globalseg[,1,i]))
-  #sd2<-(sd(globalseg[,2,i]))
-  #globalseg[,1,i]<- globalseg[,1,i] * sd2
-  #globalseg[,2,i]<- globalseg[,2,i] * sd1
-  
-}
-
-seg_procrust<-procGPA(globalseg)
-
-shapepca(seg_procrust, pcno=1, type = "v", mag=16)
-
-# get individ. level pc scores into df
-indglobseg$pc1<-seg_procrust$scores[,1]
-
-# find dif b/w scale 2 and 30 for simpler description of shape pc
-indglobseg$dif<-indglobseg$`2` - indglobseg$`30`
-plot(indglobseg$Age,indglobseg$dif)
-## plot demonstrative subjs (highest and lowest PC loading)
-
-### note, shape is captured by dif b/w seg at scale 2 and 30
-```
 
 ```{r}
 ### analyze relation of transmodality to segregation over scales
@@ -935,7 +859,7 @@ corResidVec<-function(x){
   return(unlist(corest))
 }
 
-DeltaR2EstVec<-function(x){
+DeltaREstVec<-function(x){
   
   # relevant df
   scaledf<-data.frame(cbind(as.numeric(masterdf$Age),as.numeric(masterdf$Sex),masterdf$Motion,x))
@@ -945,34 +869,37 @@ DeltaR2EstVec<-function(x){
   noAgeGam<-gam(varofint~Sex+Motion,data=scaledf)
   # age-included model for measuring difference
   AgeGam<-gam(varofint~Sex+Motion+s(Age,k=3),data=scaledf)
+  AgeR<-sqrt(summary(AgeGam)$r.sq)
+  NoageR<-sqrt(summary(noAgeGam)$r.sq)
+  dif<-AgeR-NoageR
   
   # calculate residual sums of squares
-  noAgeRSS<-sum(noAgeGam$residuals^2)
-  AgeRSS<-sum(AgeGam$residuals^2)
+  #noAgeRSS<-sum(noAgeGam$residuals^2)
+  #AgeRSS<-sum(AgeGam$residuals^2)
   
   # calculate distance from mean (null w/o trends, same for both models since it is just based on mean)
-  MinusMeans<-(scaledf$varofint-mean(scaledf$varofint))^2
+  #MinusMeans<-(scaledf$varofint-mean(scaledf$varofint))^2
   # sum em
-  SumMinusMeans<-sum(MinusMeans)
+  #SumMinusMeans<-sum(MinusMeans)
   # convert to R^2
-  noAge_rsq<-1-(noAgeRSS/SumMinusMeans)
-  Age_rsq<-1-(AgeRSS/SumMinusMeans)
+  #noAge_rsq<-1-(noAgeRSS/SumMinusMeans)
+  #Age_rsq<-1-(AgeRSS/SumMinusMeans)
   
   # check to make sure that lm of linear gam RSS calculates
-  czechlm<-lm(varofint~Sex+Motion,data=scaledf)
-  czechsum<-summary(czechlm)
-  czech_rsq<-czechsum$r.squared
+  #czechlm<-lm(varofint~Sex+Motion,data=scaledf)
+  #czechsum<-summary(czechlm)
+  #czech_rsq<-czechsum$r.squared
   
-  print(paste(noAge_rsq,czech_rsq))
+  #print(paste(noAge_rsq,czech_rsq))
   
   
   ## "un"square it, multiply by directionality
-  noAge_r<-sqrt(noAge_rsq)
-  Age_r<-sqrt(Age_rsq)
+ #noAge_r<-sqrt(noAge_rsq)
+  #Age_r<-sqrt(Age_rsq)
   #noAge_r<-noAge_rsq
   #Age_r<-Age_rsq
   # get difference in r
-  dif<-Age_r-noAge_r
+  #dif<-Age_r-noAge_r
   
   # partial spearmans to extract age relation (for direction)
   pspear=pcor(scaledf,method='spearman')$estimate
@@ -1027,7 +954,7 @@ length(indiv_scalebynet_df)
 ###confveclower<-as.numeric(lapply(masterdf[,indiv_nsegcols_ind],corconfinfveclower))
 corVecEst<-as.numeric(lapply(masterdf[,indiv_nsegcols_ind],corEstVec))
 
-R2VecEst<-as.numeric(lapply(masterdf[,indiv_nsegcols_ind],DeltaR2EstVec))
+RVecEst<-as.numeric(lapply(masterdf[,indiv_nsegcols_ind],DeltaREstVec))
 
  ###confveclower_d<-data.frame(tmvec,confveclower,scalesvec,domnetvec,netpropvec,corVecEst)
 ###confvecupper_d<-data.frame(tmvec,confvecupper,scalesvec,domnetvec,netpropvec,corVecEst)
@@ -1059,14 +986,47 @@ ggarrange(Segreg_age_tm,Segreg_age_scale,Win_age_tm,Win_age_scale)
 
 #17 network version
 Seg_plotdf<-data.frame(tmvec,scalesvec,domnetvec17,netpropvec17,corVecEst)
-Segreg_age_tm<-ggplot(Seg_plotdf,aes(tmvec,corVecEst,color=domnetvec17,alpha=netpropvec17^2)) + scale_color_manual(values=c('#dc8303','#8d2049','#596a85','#2d9a3d','#007938','#d9e200','#bc0943','#2b1f67','#48593a','#91a967','#4183a8','#00bb89','#3245a3','#9e3ca2','#eb75b3','#68126f','#d1001c')) + xlab("Transmodality") + ylab("AgeSegregCor") +theme_classic(base_size = 28) + geom_point(size=4,aes(tmvec,corVecEst)) + ggtitle('Correlation of Network Segregation and Age over All Communities')+ ylim(-.5,.5)
+Segreg_age_tm<-ggplot(Seg_plotdf,aes(tmvec,corVecEst,color=domnetvec17,alpha=netpropvec17^2)) + scale_color_manual(values=c('#dc8303','#8d2049','#596a85','#2d9a3d','#007938','#d9e200','#bc0943','#2b1f67','#48593a','#91a967','#4183a8','#00bb89','#3245a3','#9e3ca2','#eb75b3','#68126f','#d1001c')) + xlab("Transmodality") + ylab(expression(paste(R[SegAge]))) +theme_classic(base_size = 45) + geom_point(size=7,aes(tmvec,corVecEst)) + ggtitle('Age Effect by Transmodality')+ ylim(-.5,.5)+guides(alpha=FALSE,color=guide_legend(title="Maximal Y17 Overlap"))+theme(legend.position="top")
 
 
-Seg_plotdf_r2dif<-data.frame(tmvec,scalesvec,domnetvec,netpropvec,R2VecEst)
+Seg_plotdf_rdif<-data.frame(tmvec,scalesvec,domnetvec,netpropvec,RVecEst)
 
 # difference in R
-Segreg_age_tm_r2dif<-ggplot(Seg_plotdf_r2dif,aes(tmvec,R2VecEst,color=domnetvec,alpha=netpropvec^2)) + scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068')) + xlab("Transmodality") + ylab("Change in R^2 * Directionality") +theme_classic(base_size = 45) + geom_point(size=7,aes(tmvec,R2VecEst)) + ggtitle('Increase in R^2 with Age Term * Directionality')+guides(alpha=FALSE,color=guide_legend(title="Maximal Y7 Overlap"))+theme(legend.position="top")
+Segreg_age_tm_rdif<-ggplot(Seg_plotdf_rdif,aes(tmvec,RVecEst,color=domnetvec,alpha=netpropvec^2)) + scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068')) + xlab("Transmodality") + ylab(expression(paste(Delta,sqrt(R^2[adj])))) +theme_classic(base_size = 45) + geom_point(size=7,aes(tmvec,RVecEst)) + ggtitle('Age Effect by Transmodality')+guides(alpha=FALSE,color=guide_legend(title="Maximal Y7 Overlap"))+theme(legend.position="top")
 
+# difference in R2
+DeltaR2EstVec<-function(x){
+  
+  # relevant df
+  scaledf<-data.frame(cbind(as.numeric(masterdf$Age),as.numeric(masterdf$Sex),masterdf$Motion,x))
+  colnames(scaledf)<-c('Age','Sex','Motion','varofint')
+  
+  # no-age model (segreg ~ sex + motion)
+  noAgeGam<-gam(varofint~Sex+Motion,data=scaledf)
+  noAgeSum<-summary(noAgeGam)
+  # age-included model for measuring difference
+  AgeGam<-gam(varofint~Sex+Motion+s(Age,k=3),data=scaledf)
+  AgeSum<-summary(AgeGam)
+  
+  dif<-AgeSum$r.sq-noAgeSum$r.sq
+  
+  # partial spearmans to extract age relation (for direction)
+  pspear=pcor(scaledf,method='spearman')$estimate
+  corest<-pspear[4]
+  if(corest<0){
+    dif=dif*-1
+  }
+  
+  return(dif)
+  
+}
+
+R2VecEst<-as.numeric(lapply(masterdf[,indiv_nsegcols_ind],DeltaR2EstVec))
+Seg_plotdf_r2dif<-data.frame(tmvec,scalesvec,domnetvec,netpropvec,R2VecEst)
+
+Segreg_age_tm_r2dif<-ggplot(Seg_plotdf_r2dif,aes(tmvec,R2VecEst,color=domnetvec,alpha=netpropvec^2)) + scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068')) + xlab("Transmodality") + ylab(expression(paste(Delta,R^2[adj]))) +theme_classic(base_size = 45) + geom_point(size=7,aes(tmvec,R2VecEst)) + ggtitle('Age Effect by Transmodality')+guides(alpha=FALSE,color=guide_legend(title="Maximal Y7 Overlap"))+theme(legend.position="top")
+
+AgeEff_TM<-ggarrange(Segreg_age_tm,Segreg_age_tm_rdif,Segreg_age_tm_r2dif,ncol=3)
 ```
 
 ```{r}
@@ -1824,9 +1784,13 @@ for (i in 2:30){
   vecfp_Age<-paste('/cbica/projects/pinesParcels/results/EffectVecs/',as.character(i),'_Age.csv',sep='')
   write.table(as.numeric(vec_age),vecfp_Age,row.names = F,col.names = F,sep = ',')
   vec_ef<-NULL
-  vec_ef<-lapply(masteref[,intersect(indiv_nsegcols_ind,scaleind)],pcorEstVec_EFNsave,K=i,vecIn=vec_ef)
-  vecfp_EF<-paste('/cbica/projects/pinesParcels/results/EffectVecs/',as.character(i),'_EF.csv',sep='')
-  write.table(as.numeric(vec_ef),vecfp_EF,row.names = F,col.names = F,sep = ',')
+  vec_efi<-lapply(masteref[,intersect(indiv_nsegcols_ind,scaleind)],pcorEstVec_EFNsave,K=i,vecIn=vec_ef)
+  vecfp_EFi<-paste('/cbica/projects/pinesParcels/results/EffectVecs/',as.character(i),'_EF_i.csv',sep='')
+  write.table(as.numeric(vec_efi),vecfp_EFi,row.names = F,col.names = F,sep = ',')
+  vec_ef<-NULL
+  vec_efg<-lapply(masteref[,intersect(gro_nsegcols_ind,scaleind)],pcorEstVec_EFNsave,K=i,vecIn=vec_ef)
+  vecfp_EFg<-paste('/cbica/projects/pinesParcels/results/EffectVecs/',as.character(i),'_EF_g.csv',sep='')
+  write.table(as.numeric(vec_efg),vecfp_EFg,row.names = F,col.names = F,sep = ',')
 }
 
 # Write em out as matlab readable vectors (K: N1est N2est ... Nnest)
@@ -1862,9 +1826,14 @@ for (i in 2:30){
 #h5 can support this file format, but this r does not support h5
 
 ### screw it we're regressing in matlab
-forMLpc<-cbind(df$bblid,df$Age,df$Motion,df$Sex)
+forMLpc<-cbind(masterdf$bblid,masterdf$Age,masterdf$Motion,masterdf$Sex)
 MPpcFN<-'/cbica/projects/pinesParcels/results/EffectVecs/forMLpc.csv'
-write.table(forMLpc,MPpcFN,,row.names = F,col.names = F,sep = ',')
+write.table(forMLpc,MPpcFN,row.names = F,col.names = F,sep = ',')
+
+### screw it we're regressing in matlab
+forML_EF<-cbind(masteref$bblid,masteref$F1_Exec_Comp_Cog_Accuracy,masteref$Age,masteref$Motion,masteref$Sex)
+MP_EFFN<-'/cbica/projects/pinesParcels/results/EffectVecs/forML_EF.csv'
+write.table(forML_EF,MP_EFFN,row.names = F,col.names = F,sep = ',')
 ```
 
 
