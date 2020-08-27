@@ -64,6 +64,56 @@ for (K in 2:30){
 ```
 
 ```{r}
+### For Motion
+for (K in 2:30){
+  K_start=((K-1)*(K))/2
+  K_end=(((K-1)*(K))/2)+K-1
+  Kind<-K_start:K_end
+  Mot_EfMatFn=paste('/cbica/projects/pinesParcels/results/EffectMats/fc_Mot_Mat_K',K,'.csv',sep='')
+  Mot_EfMat=as.matrix(read.csv(Mot_EfMatFn))
+  # requires domnetvec to be ran in other rmd
+  colnames(Mot_EfMat)=domnetvec[Kind]
+  rownames(Mot_EfMat)=domnetvec[Kind]
+  # get tmvec to arrange matrix by transmodality
+  curTmRank<-order(tmvec[Kind])
+  ReAr_Mot_EfMat<-Mot_EfMat[curTmRank,curTmRank]
+  ReAr_Mot_EfMatThresh<-ReAr_Mot_EfMat
+  ReAr_Mot_EfMatThresh[ReAr_Mot_EfMat > -.1 & ReAr_Mot_EfMat < .1]=0
+  corrplot(ReAr_Mot_EfMatThresh,is.corr = F,tl.cex = 2,cl.cex=2,cl.ratio = .3)
+  title(paste(K))
+  
+}
+
+```
+
+
+```{r}
+### For EF Group partition values
+for (K in 2:30){
+  K_start=((K-1)*(K))/2
+  K_end=(((K-1)*(K))/2)+K-1
+  Kind<-K_start:K_end
+  EF_EfMatFn=paste('/cbica/projects/pinesParcels/results/EffectMats/fc_EF_Mat_K',K,'_Gro.csv',sep='')
+  EF_EfMat=as.matrix(read.csv(EF_EfMatFn))
+  # requires domnetvec to be ran in other rmd
+  colnames(EF_EfMat)=domnetvec[Kind]
+  rownames(EF_EfMat)=domnetvec[Kind]
+  # get tmvec to arrange matrix by transmodality
+  curTmRank<-order(tmvec[Kind])
+  ReAr_EF_EfMat<-EF_EfMat[curTmRank,curTmRank]
+  ReAr_EF_EfMatThresh<-ReAr_EF_EfMat
+  ReAr_EF_EfMatThresh[ReAr_EF_EfMat > -.1 & ReAr_EF_EfMat < .1]=0
+  corrplot(ReAr_EF_EfMatThresh,is.corr = F,tl.cex = 2,cl.cex=2,cl.ratio = .3)
+  title(paste(K))
+  
+}
+  
+
+```
+
+```
+
+```{r}
 d1 <- data.frame(from="origin", to=paste("group", seq(1,10), sep=""))
 d2 <- data.frame(from=rep(d1$to, each=10), to=paste("subgroup", seq(1,100), sep="_"))
 hierarchy <- cbind.data.frame(domnetvec,scalesvec)

@@ -1027,6 +1027,16 @@ Seg_plotdf_r2dif<-data.frame(tmvec,scalesvec,domnetvec,netpropvec,R2VecEst)
 Segreg_age_tm_r2dif<-ggplot(Seg_plotdf_r2dif,aes(tmvec,R2VecEst,color=domnetvec,alpha=netpropvec^2)) + scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068')) + xlab("Transmodality") + ylab(expression(paste(Delta,R^2[adj]))) +theme_classic(base_size = 45) + geom_point(size=7,aes(tmvec,R2VecEst)) + ggtitle('Age Effect by Transmodality')+guides(alpha=FALSE,color=guide_legend(title="Maximal Y7 Overlap"))+theme(legend.position="top")
 
 AgeEff_TM<-ggarrange(Segreg_age_tm,Segreg_age_tm_rdif,Segreg_age_tm_r2dif,ncol=3)
+
+
+# smooths overlaid versions for residual comparison
+Segreg_age_tm_smooth<-ggplot(Seg_plotdf,aes(tmvec,corVecEst)) + xlab("Transmodality") + ylab("AgeSegregCor") +theme_classic(base_size = 45) + geom_point(size=7) + ggtitle('Correlation of Net. Segreg. and Age')+ ylim(-.5,.5)+guides(alpha=FALSE,color=guide_legend(title="Maximal Y7 Overlap"))+theme(legend.position="top") + geom_smooth(method='loess')
+
+Segreg_age_tm_rdif_smooth<-ggplot(Seg_plotdf_rdif,aes(tmvec,RVecEst))+ xlab("Transmodality") + ylab(expression(paste(Delta,sqrt(R^2[adj])))) +theme_classic(base_size = 45) + geom_point(size=7) + ggtitle('Age Effect by Transmodality')+guides(alpha=FALSE,color=guide_legend(title="Maximal Y7 Overlap"))+theme(legend.position="top") + geom_smooth(method='loess')
+
+Segreg_age_tm_r2dif_smooth<-ggplot(Seg_plotdf_r2dif,aes(tmvec,R2VecEst)) + xlab("Transmodality") + ylab(expression(paste(Delta,R^2[adj]))) +theme_classic(base_size = 45) + geom_point(size=7) + ggtitle('Age Effect by Transmodality')+guides(alpha=FALSE,color=guide_legend(title="Maximal Y7 Overlap"))+theme(legend.position="top")+ geom_smooth(method='loess')
+
+AgeEff_TM<-ggarrange(Segreg_age_tm,Segreg_age_tm_rdif,Segreg_age_tm_r2dif,Segreg_age_tm_smooth,Segreg_age_tm_rdif_smooth,Segreg_age_tm_r2dif_smooth,ncol=3,nrow=2)
 ```
 
 ```{r}
