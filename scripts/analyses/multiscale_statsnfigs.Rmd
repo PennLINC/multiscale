@@ -1844,6 +1844,14 @@ write.table(forMLpc,MPpcFN,row.names = F,col.names = F,sep = ',')
 forML_EF<-cbind(masteref$bblid,masteref$F1_Exec_Comp_Cog_Accuracy,masteref$Age,masteref$Motion,masteref$Sex)
 MP_EFFN<-'/cbica/projects/pinesParcels/results/EffectVecs/forML_EF.csv'
 write.table(forML_EF,MP_EFFN,row.names = F,col.names = F,sep = ',')
+
+# permuted version 1
+set.seed(1)
+permuted_ind<-sample(1:693)
+permuted_age<-masterdf$Age[permuted_ind]
+forMLpc_permut<-cbind(masterdf$bblid,permuted_age,masterdf$Motion,masterdf$Sex)
+MPpcFN_permut<-'/cbica/projects/pinesParcels/results/EffectVecs/forMLpc_permut.csv'
+write.table(forMLpc_permut,MPpcFN_permut,row.names = F,col.names = F,sep = ',')
 ```
 
 

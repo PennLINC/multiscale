@@ -15,3 +15,6 @@ derive_percygrads - 4 - Personalized gradients
 derive_spatialprops - 3 - Spatial properties of communities
 
 viz - 6 - Visualization scripts for figures outside of .rmd files 
+
+Python environment:
+source activate mv_preds
