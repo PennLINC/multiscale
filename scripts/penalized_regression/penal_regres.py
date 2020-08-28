@@ -58,7 +58,7 @@ for K in range(2,31):
 	# convert to numpy
 	np_data=np.array(data)
 	# need to reshape so that topography features are in a Kx17734 vector for each subject
-	resh_data=np_data.transpose(1,2,0).reshape(693,-1)
+	resh_data=np_data.transpose(1,2,0).reshape(693,-1,order='F')
 	# return an error if shape does not indicate Kx17734 as new dimension length in 2d matrix
 	if (resh_data.shape[1] == (K*17734)):
 		print ("Vectorized topographies seem to be the correct length")
