@@ -29,6 +29,9 @@ end
 % remove irrelevant EF column (column 2, irrel. for looking at this relation)
 parFCmat=table2array(nfc(:,3:5));
 
+% motion-only model for simplicity
+parFCmat=table2array(nfc(:,4));
+
 for K=Krange;
 K       
         % extract fc mats at this scale
@@ -42,10 +45,12 @@ K
                 % for each spot
                 for j=1:sizeFc(1);
                         % single element of fc matrices at this scale
-                        parFCmat(:,4)=fcmats(i,j,:);
+			% changed from 4 to 2 to have only dual regression for motion-only model
+                        parFCmat(:,2)=fcmats(i,j,:);
                         % partial spearmans
                         [Mot_Cor,p]=partialcorr(parFCmat,'Type','Spearman');
-                        Mot_EfMat(i,j)=Mot_Cor(2);
+                        % changed from 4 to only cor value (because we are pairwise in simple version)
+			Mot_EfMat(i,j)=Mot_Cor(2);
                 end
         end
         fn=['/cbica/projects/pinesParcels/results/EffectMats/fc_Mot_Mat_K' num2str(K) '.csv'];

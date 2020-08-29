@@ -1206,7 +1206,7 @@ ggplot(LongAgeSpan_plotdf3,aes(Age,Splines,color=Transmodality,group=Grouping)) 
 
 ```{r}
 
-### BY THE POWER OF OUR INDICES COMBINED! BETWEENWARD
+### Using a ton of index combinations 
 indiv_bwcols_ind<-intersect(bwcol,indiv)
 individ_scalebybw_df<-masterdf[,indiv_bwcols_ind]
 # to later use wincolname -> bwcolname mapping to extrapolate if if network is unimodal or transmodal along bwcol indices
@@ -1242,6 +1242,8 @@ for (i in 1:2){
     bwcolnames_thisScale_inds<-grep((paste('scale',K,'_',sep='')),bwcolnames)
     bwcolnames_thisScale=bwcolnames[bwcolnames_thisScale_inds]
     
+    # This was to double check that the "scale" grepping was selective enough
+    # print(paste(scaleStr,'number of features:',length(bwcolnames_thisScale)))
   # one weird trick to get binarized transmodality class vector for same scale (Doctors hate him!)
     # tm naming aligns with wincon naming
     tmclasses_thisScale<-tmclass[wincolnames_thisScale_inds]
@@ -1556,7 +1558,6 @@ pointwise_bwplotvec<-t(array(as.character(paste('plot_',seq(1:7),sep='')),c(1,7)
 #### This measures all the pairwise distances for the plots
 ## for all b/w cols
 for (i in 1:length(colnames(individ_scalebybw_df))){
-    #print(i)
     # extract column name. Will parse column name to determine nature of #connection
     curcolname<-colnames(individ_scalebybw_df)[i]
     splitname<-unlist(strsplit(curcolname,'_'))
@@ -1852,6 +1853,15 @@ permuted_age<-masterdf$Age[permuted_ind]
 forMLpc_permut<-cbind(masterdf$bblid,permuted_age,masterdf$Motion,masterdf$Sex)
 MPpcFN_permut<-'/cbica/projects/pinesParcels/results/EffectVecs/forMLpc_permut.csv'
 write.table(forMLpc_permut,MPpcFN_permut,row.names = F,col.names = F,sep = ',')
+
+# FC vecs
+for (i in 2:30){
+  scaleind<-grep((paste('scale',i,'_',sep='')),colnames(masterdf))
+  print(paste('scale',str(i),'number of fc features:',length(scaleind)))
+  forRRfc<-cbind(masterdf$Age,masterdf$Motion,masterdf[,scaleind])
+  RRfcFN<-paste('/cbica/projects/pinesParcels/results/EffectVecs/scale',i,'forRRfc.csv',sep='')
+  write.table(forRRfc,RRfcFN,row.names = F,col.names = F,sep = ',')
+}
 ```
 
 
