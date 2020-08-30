@@ -66,6 +66,7 @@ for (K in 2:30){
 ```{r}
 ### For Motion
 for (K in 2:30){
+  # current version is stripped motion model ordered by transmodality
   K_start=((K-1)*(K))/2
   K_end=(((K-1)*(K))/2)+K-1
   Kind<-K_start:K_end
@@ -75,7 +76,9 @@ for (K in 2:30){
   colnames(Mot_EfMat)=domnetvec[Kind]
   rownames(Mot_EfMat)=domnetvec[Kind]
   # get tmvec to arrange matrix by transmodality
-  curTmRank<-order(tmvec[Kind])
+  curTmRank<-order(Seg_CIplotdf$Patch_GeoDisperse[Kind])
+  
+  # by distance vector
   ReAr_Mot_EfMat<-Mot_EfMat[curTmRank,curTmRank]
   ReAr_Mot_EfMatThresh<-ReAr_Mot_EfMat
   ReAr_Mot_EfMatThresh[ReAr_Mot_EfMat > -.1 & ReAr_Mot_EfMat < .1]=0
