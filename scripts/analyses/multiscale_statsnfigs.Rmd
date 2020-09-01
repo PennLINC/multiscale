@@ -1555,6 +1555,20 @@ scalevec=NULL
 pointwise_bwplotvec<-t(array(as.character(paste('plot_',seq(1:7),sep='')),c(1,7)))
 
 
+# quick write of colnames for bw features for all scales as sep. files for matlab reading
+
+for (k in 2:30){
+    # index which values are at this scale
+    scaleStr=paste('scale',k,'_',sep='')
+    scaleCols_inds=grep(scaleStr,colnames(masterdf))
+    scaleK_bw_indivi_cols_inds<-intersect(indiv_bwcols_ind,scaleCols_inds)
+    # print colnames
+    scalebwcolnames<-colnames(masterdf[scaleK_bw_indivi_cols_inds])
+  # write list of b/w col names for matching in matlab
+    write.table(scalebwcolnames,paste('/cbica/projects/pinesParcels/results/aggregated_data/Scale',k,'_Ind_bwColnames.csv',sep=''),sep=',', col.names = F,quote = F,row.names=F)
+}    
+
+
 #### This measures all the pairwise distances for the plots
 ## for all b/w cols
 for (i in 1:length(colnames(individ_scalebybw_df))){
