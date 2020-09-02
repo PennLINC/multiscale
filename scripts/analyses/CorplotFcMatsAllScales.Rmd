@@ -28,7 +28,11 @@ for (K in 2:30){
   rownames(AgeEfMat)=domnetvec[Kind]
   # get tmvec to arrange matrix by transmodality
   curTmRank<-order(tmvec[Kind])
-  ReArAgeEfMat<-AgeEfMat[curTmRank,curTmRank]
+  
+  # TEMPORARY COMMENT OUT TO OBSERVE ORIGINAL ORDER
+  #ReArAgeEfMat<-AgeEfMat[curTmRank,curTmRank]
+  ReArAgeEfMat<-AgeEfMat
+  
   ReArAgeEfMatThresh<-ReArAgeEfMat
   ReArAgeEfMatThresh[ReArAgeEfMat > -.1 & ReArAgeEfMat < .1]=0
   corrplot(ReArAgeEfMat,is.corr = F,tl.cex = 2,cl.cex=2,cl.ratio = .3)
@@ -114,7 +118,50 @@ for (K in 2:30){
 
 ```
 
+```{r}
+# calc age thirds, get subject id's from oldest, middle, and youngest
+quantile(masterdf$Age, c(0,.33, .66, 1))
+youngids<-masterdf$bblid[masterdf$Age<177]
+oldids<-masterdf$bblid[masterdf$Age>212]
+
+# write to cluster for matlab to read
+write.table(oldids,paste('/cbica/projects/pinesParcels/results/aggregated_data/OldestThirdIDs.csv',sep=''),sep=',', col.names = F,quote = F,row.names=F)
+write.table(youngids,paste('/cbica/projects/pinesParcels/results/aggregated_data/YoungestThirdIDs.csv',sep=''),sep=',', col.names = F,quote = F,row.names=F)
+
+
+# after matlab processing in AgeThirds_FcMats.m script, load average FC matrices back in, and re-order by transmodality
+
+for (K in c(4,7,13,20)){
+  K_start=((K-1)*(K))/2
+  K_end=(((K-1)*(K))/2)+K-1
+  Kind<-K_start:K_end
+  curTmRank<-order(tmvec[Kind])
+  
+  oldfn=paste('/cbica/projects/pinesParcels/results/EffectMats/fc_oldMat_K',K,'.csv',sep='')
+  youngfn=paste('/cbica/projects/pinesParcels/results/EffectMats/fc_youngMat_K',K,'.csv',sep='')
+  old=as.matrix(read.csv(oldfn))
+  young=as.matrix(read.csv(youngfn))
+  
+  # Set names of rows and columns to y7 name
+  colnames(old)=domnetvec[Kind]
+  rownames(old)=domnetvec[Kind]
+  colnames(young)=domnetvec[Kind]
+  rownames(young)=domnetvec[Kind]
+  
+  # rearrange from unimodal to transmodal (perserve ordering with fc matrices)
+  tmrankedyoung<-young[curTmRank,curTmRank]
+  tmrankedold<-old[curTmRank,curTmRank]
+  
+  # write out averaged fc matrices (averaged across age tertiles)
+  write.csv(tmrankedyoung,paste('~/Desktop/multiscale/AvgFC_young_Scale',K,'.csv',sep=''))
+  write.csv(tmrankedold,paste('~/Desktop/multiscale/AvgFC_old_Scale',K,'.csv',sep=''))
+  
+  }
+
+
+
 ```
+
 
 ```{r}
 d1 <- data.frame(from="origin", to=paste("group", seq(1,10), sep=""))

@@ -1,3 +1,5 @@
+%vertex-wise age effects over subjects and scales
+%%%% Updates on 7/13/20 and 9/1/20
 
 Krange=2:30;
 
@@ -35,6 +37,17 @@ BwAgeEff=zeros(17734,29);
 
 %7/13/20 - used subj at index 542 to confirm alignment of ids - same 1st 10 vert pcs at scale 1 as from individual folder (individual pc_metrics.mat)
 parNetmat=table2array(nnet(:,2:4));
+
+%9/1/20 - pulled out example vertices
+% need a dataframe of subjects over scales for one vertex at a time
+
+%%%% NEED TO PULL VERTICES OF INTEREST FROM SURFVIEW VISUALLY
+
+
+
+
+
+
 
 for K=Krange
 	K

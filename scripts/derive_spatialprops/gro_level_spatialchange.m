@@ -59,7 +59,7 @@ for h=1:2;
 	if (h==1)
 		% Say it loud, say it proud
 		hemilist(h)
-		% Both is legacy name for xyz merged w/ loadings. was also transposed in old code	
+		%%% Both is legacy name %%% for xyz merged w/ loadings. was also transposed in old code	
 		both=loadings_lh';
 	elseif (h==2)
 		hemilist(h)
@@ -122,15 +122,3 @@ for h=1:2;
 	save(fn,'VertexChange');
 end
 
-
-% eval if it is border
-        if sum((dfpn(neighbindex,1))-(dfpn(L,1))) ~= 0;
-            dfpn(L,6)=1;
-        else
-            dfpn(L,6)=0;
-        end
-end
-% print out border size (after a bunch of fucking dumb variable conversions
-% because it's matlab)
-subjects(s).name
-sum(dfpn(:,6))

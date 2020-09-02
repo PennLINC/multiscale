@@ -1546,6 +1546,8 @@ bwcolnames<-colnames(individ_scalebybw_df)
 # initialize empty tm difference vector and age effect vector 
 tmdifvec=NULL
 ageEfvec=NULL
+motionEfvec=NULL
+motioncorvec<-NULL
 
 # make a scale vector to match transmodality difference values
 # this is to look at how finer scales confer networks that are less different
@@ -1601,14 +1603,17 @@ for (i in 1:length(colnames(individ_scalebybw_df))){
     # save both to respective vectors
     tmdifvec<-append(tmdifvec,tmdif)
     ageEfvec<-append(ageEfvec,pspear[4])
+    motionEfvec<-append(motionEfvec,pspear[3,4])
+    motioncorvec<-append(motioncorvec,cor.test(masterdf[,colindex],masterdf$Motion)$estimate)
     # accompanying scalevec so we can look at the typical transmodality #difference at each scale
     scalevec=append(scalevec,scale)
 }
 
 ## merged vectors
 BwAgeCorTMDifDf<-data.frame(tmdifvec,ageEfvec)
+
 ggplot(BwAgeCorTMDifDf,aes(x=tmdifvec,y=ageEfvec)) + geom_point(alpha=.07,size=5) + xlab('Transmodality Difference') + ylab('Age #Correlation') + ggtitle('Pairwise Between-Network Age-FC Relations')
-#
+
 # combine scalevec and transmodality dif vec for transmodality difference #differences
 ScaleTMDifDf<-data.frame(tmdifvec,scalevec)
 ScaleTMDifMeanVec<-rep(0,29)
@@ -1623,10 +1628,57 @@ plot(ScaleTMDifMeanVec)
 
 ggplot(ScaleTMDifDf,aes(x=scalevec,y=tmdifvec)) + geom_point(alpha=.1,size=2) +xlab('Number of Communities') + ylab('B/W Transmodality Difference')
 
+######### Look at between-distance relations
+
+## grab matlab-generated euclidean distance vector, match to age effect vector
+distance_array=array(dim=c(length(colnames(individ_scalebybw_df)),2))
+
+# make a between over scales vector to keep track of where each between feature sits in the whole multiscale combination
+bw_over_scales=NULL
+bw_start=0
+bw_end=0
 
 
+for (k in 2:30){
+    # index which values are at this scale
+    scaleStr=paste('scale',k,'_',sep='')
+    scaleCols_inds=grep(scaleStr,colnames(masterdf))
+    scaleK_bw_indivi_cols_inds<-intersect(indiv_bwcols_ind,scaleCols_inds)
 
+    # load in distance file for this scale
+    disfp=paste('/cbica/projects/pinesParcels/results/aggregated_data/Scale',k,'_Ind_bwColnames_andDist.csv',sep='')
+    distancedf<-read.csv(disfp)
+    # check to make sure name in file is the same as the corresponding bw col from masterdf
+    if (identical((colnames(masterdf)[scaleK_bw_indivi_cols_inds]),distancedf$bwcolscell_1)){
+      print('bw column names match')}
+    print(k)
+    
+    # helping phriendly index ## NEED TO MAKE B/W INDEX
+    bw_start=bw_end+1
+    bw_end=bw_start+((k)*(k-1)/2)-1
+    Bwind<-bw_start:bw_end
+    
+    distance_array[Bwind,1]<-colnames(masterdf)[scaleK_bw_indivi_cols_inds]
+    distance_array[Bwind,2]<-distancedf$bwcolscell_2
+    
+}  
 
+# Add in pairwise distance between communities, motion-FC relation
+BwAgeCorTMDifDf<-data.frame(tmdifvec,ageEfvec,as.numeric(distance_array[,2]),motionEfvec,motioncorvec)
+
+colnames(BwAgeCorTMDifDf)<-c('TMDif','AgeEf','EucDist','MotionEf','MotionCor')
+
+# Artificial 0s exist where 2 communities do not exist on the same hemisphere, mask em out
+BwAgeCorDistance_nonZero<-BwAgeCorTMDifDf[BwAgeCorTMDifDf$EucDist!=0,]
+
+ggplot(data=BwAgeCorDistance_nonZero,aes(x=EucDist,y=AgeEf)) + geom_point(alpha=.07,size=5) + xlab('Euclid. Dist.') + ylab('Age #Correlation') + ggtitle('Pairwise Between-Network Age-FC Relations')
+
+ggplot(data=BwAgeCorDistance_nonZero,aes(x=EucDist,y=MotionEf)) + geom_point(alpha=.07,size=5) + xlab('Euclid. Dist.') + ylab('Motion Partial Correlation') + ggtitle('Pairwise Between-Network Motion-FC Relations')
+
+ggplot(data=BwAgeCorDistance_nonZero,aes(x=EucDist,y=MotionCor)) + geom_point(alpha=.07,size=5) + xlab('Euclid. Dist.') + ylab('Motion  Correlation') + ggtitle('Pairwise Between-Network Motion-FC Relations')
+```
+
+```{r}
 # seperate out types of pairwise connections to see if unimodal networks reach out over larger transmodality gaps to integrate over age (if transmodality is a measure of how "DMN" a region is, it will underestimate intrinsic differences between things like motor and visual if they are equally "non-dmn" )
 
 # make a vector of each y7 network so i can loop over it instead of makingn 7 different loops
