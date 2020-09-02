@@ -1,4 +1,5 @@
 %vertex-wise age effects over subjects and scales
+
 %%%% Updates on 7/13/20 and 9/1/20
 
 Krange=2:30;
@@ -38,14 +39,36 @@ BwAgeEff=zeros(17734,29);
 %7/13/20 - used subj at index 542 to confirm alignment of ids - same 1st 10 vert pcs at scale 1 as from individual folder (individual pc_metrics.mat)
 parNetmat=table2array(nnet(:,2:4));
 
-%9/1/20 - pulled out example vertices
+%%%%%%%%%%%%%%%%%%%% %9/1/20 - pulled out example vertices
 % need a dataframe of subjects over scales for one vertex at a time
 
-%%%% NEED TO PULL VERTICES OF INTEREST FROM SURFVIEW VISUALLY
+% use vertex 40 for left motor, vertex 50 for left pfc,  vertexi 30 for vertex superior to left occipital pole
 
+% Read in subjects list
+subjs=load('/cbica/projects/pinesParcels/data/bblids.txt');
 
+SVIS_v=squeeze(bwstruct.dfbw(30,:,:));
+LMOT_v=squeeze(bwstruct.dfbw(40,:,:));
+LPFC_v=squeeze(bwstruct.dfbw(50,:,:));
 
+% slap on subject list to first column for matching in r
+SVIS_v(30,:)=subjs;
+LMOT_v(30,:)=subjs;
+LPFC_v(30,:)=subjs;
 
+% transpose so subjects are rows (column will be subject ID)
+SVIS_vt=SVIS_v.';
+LMOT_vt=LMOT_v.';
+LPFC_vt=LPFC_v.';
+
+fnVis=['/cbica/projects/pinesParcels/results/exampleVertVisbw.csv'];
+fnMot=['/cbica/projects/pinesParcels/results/exampleVertMotbw.csv'];
+fnPFC=['/cbica/projects/pinesParcels/results/exampleVertPFCbw.csv'];
+writetable(table(SVIS_vt),fnVis);
+writetable(table(LMOT_vt),fnMot);
+writetable(table(LPFC_vt),fnPFC);
+
+%%%%%%%%%%%%%%% End of example vertices across subjects and scales sidecar
 
 
 

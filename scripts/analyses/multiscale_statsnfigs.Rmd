@@ -230,6 +230,19 @@ gsegcols<-grep("globseg",colnames(masterdf))
 indglobseg<-cbind(masterdf$bblid,masterdf$Age/12,masterdf$Sex,masterdf$Motion,masterdf[,2:30])
 groglobseg<-cbind(masterdf$bblid,masterdf$Age/12,masterdf$Sex,masterdf$Motion,masterdf[,5455:5483])
 
+# 9/2/20 - global b/w for comparison
+# extract mean b/w as well
+# 693 by 29 array for mean b/w values at each scale
+
+
+
+# index b/w value colum
+scaleStr=paste('scale',k,'_',sep='')
+scaleCols_inds=grep(scaleStr,colnames(masterdf))
+scaleK_bw_indivi_cols_inds<-intersect(indiv_bwcols_ind,scaleCols_inds)
+
+
+
 # set colnames
 colnames(indglobseg)[1:4]<-c("bblid", "Age","Sex","Motion")
 colnames(groglobseg)[1:4]<-c("bblid", "Age","Sex","Motion")
