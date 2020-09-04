@@ -16,3 +16,4 @@ Long_bblidAgeSexMotionSegreg
 scripts/derive_percygrads/fcmat_to_threshCosSim.py.o*
 scripts/derive_percygrads/fcmat_to_threshCosSim.py.e*
 matlab_avail.py
+gg*.png

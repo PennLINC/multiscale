@@ -230,19 +230,6 @@ gsegcols<-grep("globseg",colnames(masterdf))
 indglobseg<-cbind(masterdf$bblid,masterdf$Age/12,masterdf$Sex,masterdf$Motion,masterdf[,2:30])
 groglobseg<-cbind(masterdf$bblid,masterdf$Age/12,masterdf$Sex,masterdf$Motion,masterdf[,5455:5483])
 
-# 9/2/20 - global b/w for comparison
-# extract mean b/w as well
-# 693 by 29 array for mean b/w values at each scale
-
-
-
-# index b/w value colum
-scaleStr=paste('scale',k,'_',sep='')
-scaleCols_inds=grep(scaleStr,colnames(masterdf))
-scaleK_bw_indivi_cols_inds<-intersect(indiv_bwcols_ind,scaleCols_inds)
-
-
-
 # set colnames
 colnames(indglobseg)[1:4]<-c("bblid", "Age","Sex","Motion")
 colnames(groglobseg)[1:4]<-c("bblid", "Age","Sex","Motion")
@@ -1933,6 +1920,15 @@ forMLpc_permut<-cbind(masterdf$bblid,permuted_age,masterdf$Motion,masterdf$Sex)
 MPpcFN_permut<-'/cbica/projects/pinesParcels/results/EffectVecs/forMLpc_permut.csv'
 write.table(forMLpc_permut,MPpcFN_permut,row.names = F,col.names = F,sep = ',')
 
+
+# permuted version 1 - EF
+set.seed(1)
+permuted_ind<-sample(1:693)
+permuted_ef<-masteref$F1_Exec_Comp_Cog_Accuracy[permuted_ind]
+forML_EFpermut<-cbind(masteref$bblid,permuted_ef,masteref$Age,masteref$Motion,masteref$Sex)
+MP_EF_FN_permut<-'/cbica/projects/pinesParcels/results/EffectVecs/forML_EF_permut.csv'
+write.table(forML_EFpermut,MP_EF_FN_permut,row.names = F,col.names = F,sep = ',')
+
 # FC vecs
 for (i in 2:30){
   scaleind<-grep((paste('scale',i,'_',sep='')),colnames(masterdf))
@@ -1941,6 +1937,38 @@ for (i in 2:30){
   RRfcFN<-paste('/cbica/projects/pinesParcels/results/EffectVecs/scale',i,'forRRfc.csv',sep='')
   write.table(forRRfc,RRfcFN,row.names = F,col.names = F,sep = ',')
 }
+```
+
+```{r}
+# global b/w network trend over scales for comparison to global seg
+##### MAY BE REDUNDANT - MAINTAIN IF YOU WANT MORE R CONTROL OVER DATA SUBSETTING
+# 9/2/20 - global b/w for comparison
+# extract mean b/w as well
+# 693 by 29 array for mean b/w values at each scale
+gbw<-array(0,dim=c(693,29))
+
+indiv_bwcols_ind<-intersect(bwcol,indiv)
+individ_scalebybw_df<-masterdf[,indiv_bwcols_ind]
+
+# seperate run for K=2 to avoid rowMeans error message on single row
+K=2
+scaleStr=paste('scale',K,'_',sep='')
+scaleCols_inds=grep(scaleStr,colnames(masterdf))
+scaleK_bw_indivi_cols_inds<-intersect(indiv_bwcols_ind,scaleCols_inds)
+# put within subject average into global array. K=1 because scales start at 2
+gbw[,(K-1)]=masterdf[,scaleK_bw_indivi_cols_inds]
+  
+for (K in 3:30){
+# index b/w value colum
+  scaleStr=paste('scale',K,'_',sep='')
+  scaleCols_inds=grep(scaleStr,colnames(masterdf))
+  scaleK_bw_indivi_cols_inds<-intersect(indiv_bwcols_ind,scaleCols_inds)
+  # put within subject average into global array. K=1 because scales start at 2
+  gbw[,(K-1)]=rowMeans(masterdf[,scaleK_bw_indivi_cols_inds])
+}
+
+# merge it all together
+indglobbw<-cbind(masterdf$bblid,masterdf$Age/12,masterdf$Sex,masterdf$Motion,gbw)
 ```
 
 

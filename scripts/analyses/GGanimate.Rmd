@@ -1,0 +1,25 @@
+---
+title: "gganimate"
+author: "Adam"
+date: "9/2/2020"
+output: html_document
+---
+
+```{r}
+library(ggplot2)
+library(gganimate)
+library(reshape)
+library(gapminder)
+library(gifski)
+
+# r^2s over scales
+preds<-data.frame(read.csv('~/Desktop/multiscale/predrsquared.csv'))
+
+test<-melt(preds,id.var='scale')
+test$variable<-as.numeric(test$variable)
+colnames(test)<-c('Prediction','Scale','RSquared')
+
+testplot<-ggplot(data=test,aes(x=Scale,y=RSquared,group=Prediction,color=Prediction)) + geom_step()+theme_classic() +transition_reveal(Scale)
+animate(testplot,duration=5, fps=10, width=500, height=150, renderer=gifski_renderer())
+anim_save("~/test_animation.gif")
+```
