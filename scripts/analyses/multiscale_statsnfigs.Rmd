@@ -444,6 +444,48 @@ ggarrange(WinAll,WinCors,BwAll,BwCors)
 
 
 ```{r}
+# multi-scale patterning
+# shape analyses
+
+### 29 scales, 2 coordinates (x,y), and 693 subjs
+globalbw<-array(0,dim=c(29,2,693))
+
+# for each subject, fill in x and y coords. (x is constant, is scale)
+for (i in 1:693){
+  # 2-30 as x-axis (scales of obs.)
+  globalbw[,1,i]<-seq(2,30)
+  # y values as error/cost
+  # seems more matlabby than characteristic of R that I have to as.x(as.x(df)) for it to work, but here we are
+  globalbw[,2,i]<-as.array(as.matrix(indglobBw_motSexC[i,5:33]))
+  
+  # scale SDs to be equiv in x and y dimensions (to enforce principled shape)
+  sd1<-(sd(globalbw[,1,i]))
+  sd2<-(sd(globalbw[,2,i]))
+  globalbw[,1,i]<- globalbw[,1,i] * sd2
+  globalbw[,2,i]<- globalbw[,2,i] * sd1
+  
+}
+
+bw_procrust<-procGPA(globalbw)
+
+shapepca(bw_procrust, pcno=1, type = "v", mag=3)
+
+# get individ. level pc scores into df
+indglobseg$pc1<-seg_procrust$scores[,1]
+
+# find dif b/w scale 2 and 30 for simpler description of shape pc
+indglobseg$dif<-indglobseg$`2` - indglobseg$`30`
+plot(indglobseg$dif,indglobseg$Age)
+```
+
+
+
+
+
+
+
+
+```{r}
 ### get global seg cors
 ### Now with motion + sex control
 # 29 for scales studied
