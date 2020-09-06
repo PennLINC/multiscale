@@ -458,24 +458,29 @@ for (i in 1:693){
   # seems more matlabby than characteristic of R that I have to as.x(as.x(df)) for it to work, but here we are
   globalbw[,2,i]<-as.array(as.matrix(indglobBw_motSexC[i,5:33]))
   
-  # scale SDs to be equiv in x and y dimensions (to enforce principled shape)
-  sd1<-(sd(globalbw[,1,i]))
-  sd2<-(sd(globalbw[,2,i]))
-  globalbw[,1,i]<- globalbw[,1,i] * sd2
-  globalbw[,2,i]<- globalbw[,2,i] * sd1
-  
 }
 
 bw_procrust<-procGPA(globalbw)
 
-shapepca(bw_procrust, pcno=1, type = "v", mag=3)
+shapepca(bw_procrust, pcno=1, type = "v", mag=300)
 
 # get individ. level pc scores into df
-indglobseg$pc1<-seg_procrust$scores[,1]
+indglobseg$pc1<-bw_procrust$scores[,1]
 
 # find dif b/w scale 2 and 30 for simpler description of shape pc
-indglobseg$dif<-indglobseg$`2` - indglobseg$`30`
-plot(indglobseg$dif,indglobseg$Age)
+#indglobseg$dif<-indglobseg$`2` - indglobseg$`30`
+#plot(indglobseg$dif,indglobseg$Age)
+```
+
+```{r}
+# model each global b/w as a log function over scales
+
+# b/w = log_randomeffect_(scale)
+
+# first model log(scale) to linearize age effects on global b/w
+for (i in 1:693){
+  globalbw[,1,i]<-log(seq(2,30))
+}
 ```
 
 

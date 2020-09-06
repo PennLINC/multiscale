@@ -2,10 +2,11 @@
 title: "ExampleVerts"
 author: "Adam"
 date: "9/2/2020"
-output: html_document
+output: github_document
 ---
 
 ```{r}
+library(rmarkdown)
 library(reshape)
 library(ggplot2)
 library(ggpubr)
@@ -14,6 +15,23 @@ demo<-read.csv('/cbica/projects/pinesParcels/data/pnc_demo.csv')
 ageSex<-data.frame(demo$ageAtScan1,as.factor(demo$sex),demo$scanid,demo$bblid)
 colnames(ageSex)[4]<-'bblid'
 colnames(ageSex)[1]<-'Age'
+#### MOTION METRIC ###
+# Load in motion data
+Rest_Motion_Data <- read.csv("/cbica/projects/pinesParcels/data/n1601_RestQAData_20170714.csv")
+NBack_Motion_Data <- read.csv("/cbica/projects/pinesParcels/data/n1601_NBACKQAData_20181001.csv")
+Idemo_Motion_Data <- read.csv("/cbica/projects/pinesParcels/data/n1601_idemo_FinalQA_092817.csv")
+
+# Merge in motion data, average of relRMS for each scan for interpretation
+motmerge<-merge(Rest_Motion_Data,NBack_Motion_Data,by='bblid')
+motmerge<-merge(motmerge,Idemo_Motion_Data,by='bblid')
+motmerge$Motion <- (motmerge$restRelMeanRMSMotion + motmerge$nbackRelMeanRMSMotion + motmerge$idemoRelMeanRMSMotion)/3;
+motiondf<-data.frame(motmerge$bblid,motmerge$Motion)
+colnames(motiondf)<-c('bblid','Motion')
+colnames(subjects)<-c("scanid")
+colnames(ageSex)<-c("Age","Sex","scanid","bblid")
+df<-merge(subjects,ageSex,by="scanid")
+df<-merge(df,motiondf,by='bblid')
+
 
 SupVisVert<-read.csv('/cbica/projects/pinesParcels/results/exampleVertVisbw.csv')
 MotVert<-read.csv('/cbica/projects/pinesParcels/results/exampleVertMotbw.csv')
@@ -23,13 +41,13 @@ colnames(SupVisVert)[30]<-'bblid'
 colnames(MotVert)[30]<-'bblid'
 colnames(PFCVert)[30]<-'bblid'
 
-df_SupVisVert<-merge(ageSex,SupVisVert,by="bblid")
-df_MotVert<-merge(ageSex,MotVert,by="bblid")
-df_PFCVert<-merge(ageSex,PFCVert,by="bblid")
+df_SupVisVert<-merge(df,SupVisVert,by="bblid")
+df_MotVert<-merge(df,MotVert,by="bblid")
+df_PFCVert<-merge(df,PFCVert,by="bblid")
 
-mdf_SupVisVert<-melt(df_SupVisVert,id=c(1,2,3,4))
-mdf_MotVert<-melt(df_MotVert,id=c(1,2,3,4))
-mdf_PFCVert<-melt(df_PFCVert,id=c(1,2,3,4))
+mdf_SupVisVert<-melt(df_SupVisVert,id=c(1,2,3,4,5))
+mdf_MotVert<-melt(df_MotVert,id=c(1,2,3,4,5))
+mdf_PFCVert<-melt(df_PFCVert,id=c(1,2,3,4,5))
 
 
 
@@ -42,4 +60,45 @@ motplot<-ggplot(data=mdf_MotVert,aes(x=variable,y=value,group=bblid,color=Age)) 
 pfcplot<-ggplot(data=mdf_PFCVert,aes(x=variable,y=value,group=bblid,color=Age)) +geom_line(alpha = 0.3,size=1)+ scale_color_gradient2(low = "green", mid = 'green', high = "red") + theme_minimal()+labs(title="Avg B/w Con over scales - Single Vertex - PFC ")
 
 ggarrange(visplot,motplot,pfcplot,ncol=1,nrow=3)
+
+write.csv(mdf_SupVisVert,'~/Desktop/multiscale/long_upperVisVert.csv')
+write.csv(mdf_MotVert,'~/Desktop/multiscale/long_MotVert.csv')
+write.csv(mdf_PFCVert,'~/Desktop/multiscale/long_PFCVert.csv')
+
+####### LAST PLOT REQUIRES MASTER RMD TO HAVE RAN THRU CORRESPONDING SECTION
+BwAll<-ggplot(data=mgroglobbw,aes(x=as.numeric(as.character(variable)),y=value,group=bblid,color=Age)) +geom_line(alpha = 0.12)+scale_color_gradientn(colors=c("yellow","purple")) + theme_minimal(base_size = 28)+labs(title="M/S-Regressed Glob. Bw - Individ. Partitions") + scale_x_continuous(name ="# of Communitites",  breaks=seq(2, 30, 4))+ylab("Global Between")
+
+
+ggarrange(BwAll,visplot,motplot,pfcplot,ncol=1,nrow=4)
+```
+
+
+```{r}
+# fit logscale random effects - goal is one for each vertex, (out of community con ~ 1+logRE(scale)|subj)+Motion+Sex+s(age))
+library(lme4)
+library(gamm4)
+
+# setting scale to integer was key
+mdf_MotVert$bblid<-as.factor(mdf_MotVert$bblid)
+#colnames(mdf_MotVert)[1]<-c('id')
+colnames(mdf_MotVert)[6]<-c('Scale')
+mdf_MotVert$Scale<-as.integer(mdf_MotVert$Scale)
+mdf_MotVert$Age<-as.numeric(mdf_MotVert$Age)
+
+
+
+## R aborts every time i run this
+##model=lme(value~Age+Scale,random=~1+Scale | bblid,mdf_MotVert)
+
+
+# best fit so far
+model=lmer(value~Age+Motion+Scale+Sex+(1+Scale|bblid),data=mdf_MotVert)
+#visreg random effects
+v<-visreg(model,"Scale",by="bblid",re.form=~(Scale|bblid),plot=F)
+
+# add complexity - nonlinear age term
+gmod <- gamm4(value~s(value,by=bblid)+Age+Motion+Scale,random=~(1+Scale|bblid),data = mdf_MotVert,family=gaussian(link="log"),REML = T)
+
+# add complexity - sex (factor) term addition
+
 ```
