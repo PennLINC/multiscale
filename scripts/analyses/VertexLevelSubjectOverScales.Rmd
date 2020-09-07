@@ -10,6 +10,7 @@ library(rmarkdown)
 library(reshape)
 library(ggplot2)
 library(ggpubr)
+library(sjPlot)
 # load in demographic data
 demo<-read.csv('/cbica/projects/pinesParcels/data/pnc_demo.csv')
 ageSex<-data.frame(demo$ageAtScan1,as.factor(demo$sex),demo$scanid,demo$bblid)
@@ -44,11 +45,11 @@ colnames(PFCVert)[30]<-'bblid'
 df_SupVisVert<-merge(df,SupVisVert,by="bblid")
 df_MotVert<-merge(df,MotVert,by="bblid")
 df_PFCVert<-merge(df,PFCVert,by="bblid")
-
 mdf_SupVisVert<-melt(df_SupVisVert,id=c(1,2,3,4,5))
 mdf_MotVert<-melt(df_MotVert,id=c(1,2,3,4,5))
 mdf_PFCVert<-melt(df_PFCVert,id=c(1,2,3,4,5))
-
+# no scanid in indgloBw, no id var 5
+mdf_globalVerts<-melt(indglobBw,id=c(1,2,3,4))
 
 
 # create plots
@@ -92,13 +93,53 @@ mdf_MotVert$Age<-as.numeric(mdf_MotVert$Age)
 
 
 # best fit so far
-model=lmer(value~Age+Motion+Scale+Sex+(1+Scale|bblid),data=mdf_MotVert)
+model=glmer(value~Age+Motion+Scale+Sex+(1 + log(Scale)|bblid),data=mdf_MotVert)
+model_ageout=glmer(value~Motion+Scale+Sex+(1 + log(Scale)|bblid),data=mdf_MotVert)
+
 #visreg random effects
-v<-visreg(model,"Scale",by="bblid",re.form=~(Scale|bblid),plot=F)
+v<-visreg(model,"Scale",by="bblid",re.form=~(log(Scale)|bblid),plot=F)
 
-# add complexity - nonlinear age term
-gmod <- gamm4(value~s(value,by=bblid)+Age+Motion+Scale,random=~(1+Scale|bblid),data = mdf_MotVert,family=gaussian(link="log"),REML = T)
+######## with PFC now
 
-# add complexity - sex (factor) term addition
+# setting scale to integer was key
+mdf_PFCVert$bblid<-as.factor(mdf_PFCVert$bblid)
+#colnames(mdf_MotVert)[1]<-c('id')
+colnames(mdf_PFCVert)[6]<-c('Scale')
+mdf_PFCVert$Scale<-as.integer(mdf_PFCVert$Scale)
+mdf_PFCVert$Age<-as.numeric(mdf_PFCVert$Age)
 
+# best fit so far
+model=glmer(value~Age+Motion+Sex+Age*log(Scale)+(1 + log(Scale)|bblid),data=mdf_PFCVert)
+model_ageout=glmer(value~Motion+Scale+Sex+(1 + log(Scale)|bblid),data=mdf_PFCVert)
+#visreg random effects
+v<-visreg(model,"Scale",by="bblid",re.form=~(1 + log(Scale)|bblid),plot=F)
+
+plot_model(model,type="int")
+
+tab_model(model)
+
+### using link function
+model=glmer(value~Age+Motion+Sex+Age*Scale+(1+Scale|bblid),data=mdf_PFCVert,family = gaussian(link = "log"))
+tab_model(model)
+
+# check out interecepts and slopes for age*scale and without age*scale and with just scale, correlations of intercepts
+random.effects(model)
+
+# compare variable transformation approach with link functions
+
+# starting values for log link to help it find the solution?
+
+### two problems - glm for fitting, link vs variable transformation
+## second is inclusion of slopes and intercepts
+
+
+### more immediately, fit model on average b.w.
+# setting scale to integer was key
+mdf_globalVerts$bblid<-as.factor(mdf_globalVerts$bblid)
+colnames(mdf_globalVerts)[5]<-c('Scale')
+mdf_globalVerts$Scale<-as.integer(mdf_globalVerts$Scale)
+mdf_globalVerts$Age<-as.numeric(mdf_globalVerts$Age)
+
+model=glmer(value~Age+Motion+Sex+(1 + log(Scale)|bblid),data=mdf_globalVerts)
+v<-visreg(model,"Scale",by="bblid",re.form=~(1 + log(Scale)|bblid),plot=F)
 ```
