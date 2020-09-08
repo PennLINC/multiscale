@@ -427,7 +427,7 @@ ind_GBwcors[,1]<-2:30
 for (i in 1:29){
   # i+4 because first column is scanid, second is age, third is sex, 4th is motion
   print(ggplot(indglobWin_motSexC,aes(Age,indglobWin_motSexC[,i+4])) + geom_point() + geom_smooth() +ylab(paste("Ind Global Win at Scale", i+1)))
-    print(ggplot(indglobBw_motSexC,aes(Age,indglobBw_motSexC[,i+4])) + geom_point() + geom_smooth() +ylab(paste("Ind Global BW at Scale", i+1)))
+   # print(ggplot(indglobBw_motSexC,aes(Age,indglobBw_motSexC[,i+4])) + geom_point() + geom_smooth() +ylab(paste("Ind Global BW at Scale", i+1)))
   
 # relevant df
   Winscaledf<-cbind(indglobWin$Age,indglobWin$Sex,indglobWin$Motion,indglobWin[,i+4])
@@ -556,131 +556,22 @@ for (i in 1:29){
 
 ![](BwRsqCentricOverview_files/figure-markdown_github/unnamed-chunk-4-29.png)
 
-    ## `geom_smooth()` using method = 'loess' and formula 'y ~ x'
-
-![](BwRsqCentricOverview_files/figure-markdown_github/unnamed-chunk-4-30.png)
-
-    ## `geom_smooth()` using method = 'loess' and formula 'y ~ x'
-
-![](BwRsqCentricOverview_files/figure-markdown_github/unnamed-chunk-4-31.png)
-
-    ## `geom_smooth()` using method = 'loess' and formula 'y ~ x'
-
-![](BwRsqCentricOverview_files/figure-markdown_github/unnamed-chunk-4-32.png)
-
-    ## `geom_smooth()` using method = 'loess' and formula 'y ~ x'
-
-![](BwRsqCentricOverview_files/figure-markdown_github/unnamed-chunk-4-33.png)
-
-    ## `geom_smooth()` using method = 'loess' and formula 'y ~ x'
-
-![](BwRsqCentricOverview_files/figure-markdown_github/unnamed-chunk-4-34.png)
-
-    ## `geom_smooth()` using method = 'loess' and formula 'y ~ x'
-
-![](BwRsqCentricOverview_files/figure-markdown_github/unnamed-chunk-4-35.png)
-
-    ## `geom_smooth()` using method = 'loess' and formula 'y ~ x'
-
-![](BwRsqCentricOverview_files/figure-markdown_github/unnamed-chunk-4-36.png)
-
-    ## `geom_smooth()` using method = 'loess' and formula 'y ~ x'
-
-![](BwRsqCentricOverview_files/figure-markdown_github/unnamed-chunk-4-37.png)
-
-    ## `geom_smooth()` using method = 'loess' and formula 'y ~ x'
-
-![](BwRsqCentricOverview_files/figure-markdown_github/unnamed-chunk-4-38.png)
-
-    ## `geom_smooth()` using method = 'loess' and formula 'y ~ x'
-
-![](BwRsqCentricOverview_files/figure-markdown_github/unnamed-chunk-4-39.png)
-
-    ## `geom_smooth()` using method = 'loess' and formula 'y ~ x'
-
-![](BwRsqCentricOverview_files/figure-markdown_github/unnamed-chunk-4-40.png)
-
-    ## `geom_smooth()` using method = 'loess' and formula 'y ~ x'
-
-![](BwRsqCentricOverview_files/figure-markdown_github/unnamed-chunk-4-41.png)
-
-    ## `geom_smooth()` using method = 'loess' and formula 'y ~ x'
-
-![](BwRsqCentricOverview_files/figure-markdown_github/unnamed-chunk-4-42.png)
-
-    ## `geom_smooth()` using method = 'loess' and formula 'y ~ x'
-
-![](BwRsqCentricOverview_files/figure-markdown_github/unnamed-chunk-4-43.png)
-
-    ## `geom_smooth()` using method = 'loess' and formula 'y ~ x'
-
-![](BwRsqCentricOverview_files/figure-markdown_github/unnamed-chunk-4-44.png)
-
-    ## `geom_smooth()` using method = 'loess' and formula 'y ~ x'
-
-![](BwRsqCentricOverview_files/figure-markdown_github/unnamed-chunk-4-45.png)
-
-    ## `geom_smooth()` using method = 'loess' and formula 'y ~ x'
-
-![](BwRsqCentricOverview_files/figure-markdown_github/unnamed-chunk-4-46.png)
-
-    ## `geom_smooth()` using method = 'loess' and formula 'y ~ x'
-
-![](BwRsqCentricOverview_files/figure-markdown_github/unnamed-chunk-4-47.png)
-
-    ## `geom_smooth()` using method = 'loess' and formula 'y ~ x'
-
-![](BwRsqCentricOverview_files/figure-markdown_github/unnamed-chunk-4-48.png)
-
-    ## `geom_smooth()` using method = 'loess' and formula 'y ~ x'
-
-![](BwRsqCentricOverview_files/figure-markdown_github/unnamed-chunk-4-49.png)
-
-    ## `geom_smooth()` using method = 'loess' and formula 'y ~ x'
-
-![](BwRsqCentricOverview_files/figure-markdown_github/unnamed-chunk-4-50.png)
-
-    ## `geom_smooth()` using method = 'loess' and formula 'y ~ x'
-
-![](BwRsqCentricOverview_files/figure-markdown_github/unnamed-chunk-4-51.png)
-
-    ## `geom_smooth()` using method = 'loess' and formula 'y ~ x'
-
-![](BwRsqCentricOverview_files/figure-markdown_github/unnamed-chunk-4-52.png)
-
-    ## `geom_smooth()` using method = 'loess' and formula 'y ~ x'
-
-![](BwRsqCentricOverview_files/figure-markdown_github/unnamed-chunk-4-53.png)
-
-    ## `geom_smooth()` using method = 'loess' and formula 'y ~ x'
-
-![](BwRsqCentricOverview_files/figure-markdown_github/unnamed-chunk-4-54.png)
-
-    ## `geom_smooth()` using method = 'loess' and formula 'y ~ x'
-
-![](BwRsqCentricOverview_files/figure-markdown_github/unnamed-chunk-4-55.png)
-
-    ## `geom_smooth()` using method = 'loess' and formula 'y ~ x'
-
-![](BwRsqCentricOverview_files/figure-markdown_github/unnamed-chunk-4-56.png)
-
-    ## `geom_smooth()` using method = 'loess' and formula 'y ~ x'
-
-![](BwRsqCentricOverview_files/figure-markdown_github/unnamed-chunk-4-57.png)
-
-    ## `geom_smooth()` using method = 'loess' and formula 'y ~ x'
-
-![](BwRsqCentricOverview_files/figure-markdown_github/unnamed-chunk-4-58.png)
-
 ``` r
 WinCors<-correlations_over_scales(ind_GWincors,"Global WithinCon Age Correlation")
 
 BwCors<-correlations_over_scales(ind_GBwcors,"Global BetweenCon Age Correlation")
 
-ggarrange(WinAll,WinCors,BwAll,BwCors)
+#ggarrange(WinAll,WinCors,BwAll,BwCors)
+BwAll
 ```
 
-![](BwRsqCentricOverview_files/figure-markdown_github/unnamed-chunk-4-59.png)
+![](BwRsqCentricOverview_files/figure-markdown_github/unnamed-chunk-4-30.png)
+
+``` r
+BwCors
+```
+
+![](BwRsqCentricOverview_files/figure-markdown_github/unnamed-chunk-4-31.png)
 
 ``` r
 ### Get in Consensus-reference atlas correspondence
@@ -984,22 +875,57 @@ transbw_age_tm<-ggplot(bwdf,aes(tmvec,bwAgeCorVecs.bw_to_transmodal,color=domnet
 transbw_age_scale<-ggplot(bwdf,aes(tmvec,bwAgeCorVecs.bw_to_transmodal,color=scalesvec)) + geom_point(size=6) + xlab("Transmodality") + ylab("AgeBWTCor")+theme_classic(base_size = 28)+ ylim(-.5,.5)
 ####
 
-ggarrange(avgbw_age_tm,unibw_age_tm,transbw_age_tm,avgbw_age_scale,unibw_age_scale,transbw_age_scale)
+#ggarrange(avgbw_age_tm,unibw_age_tm,transbw_age_tm,avgbw_age_scale,unibw_age_scale,transbw_age_scale)
+avgbw_age_tm
+```
+
+![](BwRsqCentricOverview_files/figure-markdown_github/unnamed-chunk-7-1.png)
+
+``` r
+unibw_age_tm
 ```
 
     ## Warning: Removed 1 rows containing missing values (geom_point).
 
+![](BwRsqCentricOverview_files/figure-markdown_github/unnamed-chunk-7-2.png)
+
+``` r
+transbw_age_tm
+```
+
     ## Warning: Removed 2 rows containing missing values (geom_point).
+
+![](BwRsqCentricOverview_files/figure-markdown_github/unnamed-chunk-7-3.png)
+
+``` r
+avgbw_age_scale
+```
+
+![](BwRsqCentricOverview_files/figure-markdown_github/unnamed-chunk-7-4.png)
+
+``` r
+unibw_age_scale
+```
 
     ## Warning: Removed 1 rows containing missing values (geom_point).
 
+![](BwRsqCentricOverview_files/figure-markdown_github/unnamed-chunk-7-5.png)
+
+``` r
+transbw_age_scale
+```
+
     ## Warning: Removed 2 rows containing missing values (geom_point).
 
-![](BwRsqCentricOverview_files/figure-markdown_github/unnamed-chunk-7-1.png)
+![](BwRsqCentricOverview_files/figure-markdown_github/unnamed-chunk-7-6.png)
 
 ``` r
 #17 network version
 bwdf17<-data.frame(tmvec,scalesvec,domnetvec17,netpropvec17,bwAgeCorVecs$avg_bw,bwAgeCorVecs$bw_to_unimodal,bwAgeCorVecs$bw_to_transmodal)
 
 Segreg_age_tm17<-ggplot(bwdf17,aes(tmvec,bwAgeCorVecs.avg_bw,color=domnetvec17,alpha=netpropvec17^2)) + scale_color_manual(values=c('#dc8303','#8d2049','#596a85','#2d9a3d','#007938','#d9e200','#bc0943','#2b1f67','#48593a','#91a967','#4183a8','#00bb89','#3245a3','#9e3ca2','#eb75b3','#68126f','#d1001c')) + xlab("Transmodality") + ylab("AgeB/WCor") +theme_classic(base_size = 28) + geom_point(size=4,aes(tmvec,bwAgeCorVecs.avg_bw)) + ggtitle('Correlation of B/w Con Avg and Age over All Communities')
+
+Segreg_age_tm17
 ```
+
+![](BwRsqCentricOverview_files/figure-markdown_github/unnamed-chunk-7-7.png)

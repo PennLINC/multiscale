@@ -63,34 +63,6 @@ DeltaREstVec<-function(x){
   NoageR<-sqrt(summary(noAgeGam)$r.sq)
   dif<-AgeR-NoageR
   
-  # calculate residual sums of squares
-  #noAgeRSS<-sum(noAgeGam$residuals^2)
-  #AgeRSS<-sum(AgeGam$residuals^2)
-  
-  # calculate distance from mean (null w/o trends, same for both models since it is just based on mean)
-  #MinusMeans<-(scaledf$varofint-mean(scaledf$varofint))^2
-  # sum em
-  #SumMinusMeans<-sum(MinusMeans)
-  # convert to R^2
-  #noAge_rsq<-1-(noAgeRSS/SumMinusMeans)
-  #Age_rsq<-1-(AgeRSS/SumMinusMeans)
-  
-  # check to make sure that lm of linear gam RSS calculates
-  #czechlm<-lm(varofint~Sex+Motion,data=scaledf)
-  #czechsum<-summary(czechlm)
-  #czech_rsq<-czechsum$r.squared
-  
-  #print(paste(noAge_rsq,czech_rsq))
-  
-  
-  ## "un"square it, multiply by directionality
- #noAge_r<-sqrt(noAge_rsq)
-  #Age_r<-sqrt(Age_rsq)
-  #noAge_r<-noAge_rsq
-  #Age_r<-Age_rsq
-  # get difference in r
-  #dif<-Age_r-noAge_r
-  
   # partial spearmans to extract age relation (for direction)
   pspear=pcor(scaledf,method='spearman')$estimate
   corest<-pspear[4]
@@ -288,7 +260,7 @@ ind_GBwcors[,1]<-2:30
 for (i in 1:29){
   # i+4 because first column is scanid, second is age, third is sex, 4th is motion
   print(ggplot(indglobWin_motSexC,aes(Age,indglobWin_motSexC[,i+4])) + geom_point() + geom_smooth() +ylab(paste("Ind Global Win at Scale", i+1)))
-    print(ggplot(indglobBw_motSexC,aes(Age,indglobBw_motSexC[,i+4])) + geom_point() + geom_smooth() +ylab(paste("Ind Global BW at Scale", i+1)))
+   # print(ggplot(indglobBw_motSexC,aes(Age,indglobBw_motSexC[,i+4])) + geom_point() + geom_smooth() +ylab(paste("Ind Global BW at Scale", i+1)))
   
 # relevant df
   Winscaledf<-cbind(indglobWin$Age,indglobWin$Sex,indglobWin$Motion,indglobWin[,i+4])
@@ -305,7 +277,9 @@ WinCors<-correlations_over_scales(ind_GWincors,"Global WithinCon Age Correlation
 
 BwCors<-correlations_over_scales(ind_GBwcors,"Global BetweenCon Age Correlation")
 
-ggarrange(WinAll,WinCors,BwAll,BwCors)
+#ggarrange(WinAll,WinCors,BwAll,BwCors)
+BwAll
+BwCors
 ```
 ```{r}
 ### Get in Consensus-reference atlas correspondence
@@ -545,10 +519,18 @@ transbw_age_tm<-ggplot(bwdf,aes(tmvec,bwAgeCorVecs.bw_to_transmodal,color=domnet
 transbw_age_scale<-ggplot(bwdf,aes(tmvec,bwAgeCorVecs.bw_to_transmodal,color=scalesvec)) + geom_point(size=6) + xlab("Transmodality") + ylab("AgeBWTCor")+theme_classic(base_size = 28)+ ylim(-.5,.5)
 ####
 
-ggarrange(avgbw_age_tm,unibw_age_tm,transbw_age_tm,avgbw_age_scale,unibw_age_scale,transbw_age_scale)
+#ggarrange(avgbw_age_tm,unibw_age_tm,transbw_age_tm,avgbw_age_scale,unibw_age_scale,transbw_age_scale)
+avgbw_age_tm
+unibw_age_tm
+transbw_age_tm
+avgbw_age_scale
+unibw_age_scale
+transbw_age_scale
 
 #17 network version
 bwdf17<-data.frame(tmvec,scalesvec,domnetvec17,netpropvec17,bwAgeCorVecs$avg_bw,bwAgeCorVecs$bw_to_unimodal,bwAgeCorVecs$bw_to_transmodal)
 
 Segreg_age_tm17<-ggplot(bwdf17,aes(tmvec,bwAgeCorVecs.avg_bw,color=domnetvec17,alpha=netpropvec17^2)) + scale_color_manual(values=c('#dc8303','#8d2049','#596a85','#2d9a3d','#007938','#d9e200','#bc0943','#2b1f67','#48593a','#91a967','#4183a8','#00bb89','#3245a3','#9e3ca2','#eb75b3','#68126f','#d1001c')) + xlab("Transmodality") + ylab("AgeB/WCor") +theme_classic(base_size = 28) + geom_point(size=4,aes(tmvec,bwAgeCorVecs.avg_bw)) + ggtitle('Correlation of B/w Con Avg and Age over All Communities')
+
+Segreg_age_tm17
 ```
