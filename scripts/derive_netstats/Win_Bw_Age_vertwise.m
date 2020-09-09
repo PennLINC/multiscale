@@ -40,6 +40,7 @@ BwAgeEff=zeros(17734,29);
 parNetmat=table2array(nnet(:,2:4));
 
 %%%%%%%%%%%%%%%%%%%% %9/1/20 - pulled out example vertices
+% 9/8 - adapted to sample all vertices
 % need a dataframe of subjects over scales for one vertex at a time
 
 % use vertex 40 for left motor, vertex 50 for left pfc,  vertexi 30 for vertex superior to left occipital pole
@@ -47,28 +48,25 @@ parNetmat=table2array(nnet(:,2:4));
 % Read in subjects list
 subjs=load('/cbica/projects/pinesParcels/data/bblids.txt');
 
-SVIS_v=squeeze(bwstruct.dfbw(30,:,:));
-LMOT_v=squeeze(bwstruct.dfbw(40,:,:));
-LPFC_v=squeeze(bwstruct.dfbw(50,:,:));
+for v=1:17734
+	
+	% just to track loop progress
+	v=v
+	
+	% extract between values across scales for this vertex
+	Vertices_bwvals=squeeze(bwstruct.dfbw(v,:,:));
 
-% slap on subject list to first column for matching in r
-SVIS_v(30,:)=subjs;
-LMOT_v(30,:)=subjs;
-LPFC_v(30,:)=subjs;
+	% slap on subject list to first column for matching in r
+	Vertices_bwvals(30,:)=subjs;
 
-% transpose so subjects are rows (column will be subject ID)
-SVIS_vt=SVIS_v.';
-LMOT_vt=LMOT_v.';
-LPFC_vt=LPFC_v.';
+	% transpose so subjects are rows (column will be subject ID)
+	Vertices_bwvals=Vertices_bwvals.';
 
-fnVis=['/cbica/projects/pinesParcels/results/exampleVertVisbw.csv'];
-fnMot=['/cbica/projects/pinesParcels/results/exampleVertMotbw.csv'];
-fnPFC=['/cbica/projects/pinesParcels/results/exampleVertPFCbw.csv'];
-writetable(table(SVIS_vt),fnVis);
-writetable(table(LMOT_vt),fnMot);
-writetable(table(LPFC_vt),fnPFC);
+	fnV=strjoin(['/cbica/projects/pinesParcels/results/mixedEffectModels/v' string(v) '_bwVals_overScales.csv'],'');
+	writetable(table(Vertices_bwvals),fnV);
+end
 
-%%%%%%%%%%%%%%% End of example vertices across subjects and scales sidecar
+%%%%%%%%%%%%%%% End of vertices across subjects and scales sidecar
 
 
 

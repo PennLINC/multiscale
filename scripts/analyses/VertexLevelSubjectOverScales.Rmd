@@ -78,6 +78,7 @@ ggarrange(BwAll,visplot,motplot,pfcplot,ncol=1,nrow=4)
 # fit logscale random effects - goal is one for each vertex, (out of community con ~ 1+logRE(scale)|subj)+Motion+Sex+s(age))
 library(lme4)
 library(gamm4)
+library(visreg)
 
 # setting scale to integer was key
 mdf_MotVert$bblid<-as.factor(mdf_MotVert$bblid)
@@ -93,8 +94,8 @@ mdf_MotVert$Age<-as.numeric(mdf_MotVert$Age)
 
 
 # best fit so far
-model=glmer(value~Age+Motion+Scale+Sex+(1 + log(Scale)|bblid),data=mdf_MotVert)
-model_ageout=glmer(value~Motion+Scale+Sex+(1 + log(Scale)|bblid),data=mdf_MotVert)
+model=glmer(value~Age+Motion+Sex+(1 + log(Scale)|bblid),data=mdf_MotVert)
+model_ageout=glmer(value~Motion+Sex+(1 + log(Scale)|bblid),data=mdf_MotVert)
 
 #visreg random effects
 v<-visreg(model,"Scale",by="bblid",re.form=~(log(Scale)|bblid),plot=F)
@@ -112,18 +113,15 @@ mdf_PFCVert$Age<-as.numeric(mdf_PFCVert$Age)
 model=glmer(value~Age+Motion+Sex+Age*log(Scale)+(1 + log(Scale)|bblid),data=mdf_PFCVert)
 model_ageout=glmer(value~Motion+Scale+Sex+(1 + log(Scale)|bblid),data=mdf_PFCVert)
 #visreg random effects
-v<-visreg(model,"Scale",by="bblid",re.form=~(1 + log(Scale)|bblid),plot=F)
+###v<-visreg(model,"Scale",by="bblid",re.form=~(1 + log(Scale)|bblid),plot=F)
 
-plot_model(model,type="int")
+#plot_model(model,type="int")
 
 tab_model(model)
 
 ### using link function
 model=glmer(value~Age+Motion+Sex+Age*Scale+(1+Scale|bblid),data=mdf_PFCVert,family = gaussian(link = "log"))
 tab_model(model)
-
-# check out interecepts and slopes for age*scale and without age*scale and with just scale, correlations of intercepts
-random.effects(model)
 
 # compare variable transformation approach with link functions
 
@@ -140,6 +138,59 @@ colnames(mdf_globalVerts)[5]<-c('Scale')
 mdf_globalVerts$Scale<-as.integer(mdf_globalVerts$Scale)
 mdf_globalVerts$Age<-as.numeric(mdf_globalVerts$Age)
 
-model=glmer(value~Age+Motion+Sex+(1 + log(Scale)|bblid),data=mdf_globalVerts)
-v<-visreg(model,"Scale",by="bblid",re.form=~(1 + log(Scale)|bblid),plot=F)
+model=glmer(value~Age+Motion+Sex+log(Scale)+(1 + log(Scale)|bblid),data=mdf_globalVerts)
+###v<-visreg(model,"Scale",by="bblid",re.form=~(1 + log(Scale)|bblid),plot=F)
+```
+
+```{r}
+# pretty computationally intensive chunk to run locally - done so to deal with cubic pushing against installation of "melt"
+library(reshape2)
+library(lme4)
+demo<-read.csv('/cbica/projects/pinesParcels/data/pnc_demo.csv')
+ageSex<-data.frame(demo$ageAtScan1,as.factor(demo$sex),demo$scanid,demo$bblid)
+colnames(ageSex)[4]<-'bblid'
+colnames(ageSex)[1]<-'Age'
+Rest_Motion_Data <- read.csv("/cbica/projects/pinesParcels/data/n1601_RestQAData_20170714.csv")
+NBack_Motion_Data <- read.csv("/cbica/projects/pinesParcels/data/n1601_NBACKQAData_20181001.csv")
+Idemo_Motion_Data <- read.csv("/cbica/projects/pinesParcels/data/n1601_idemo_FinalQA_092817.csv")
+motmerge<-merge(Rest_Motion_Data,NBack_Motion_Data,by='bblid')
+motmerge<-merge(motmerge,Idemo_Motion_Data,by='bblid')
+motmerge$Motion <- (motmerge$restRelMeanRMSMotion + motmerge$nbackRelMeanRMSMotion + motmerge$idemoRelMeanRMSMotion)/3;
+motiondf<-data.frame(motmerge$bblid,motmerge$Motion)
+colnames(motiondf)<-c('bblid','Motion')
+colnames(subjects)<-c("scanid")
+colnames(ageSex)<-c("Age","Sex","scanid","bblid")
+df<-merge(subjects,ageSex,by="scanid")
+df<-merge(df,motiondf,by='bblid')
+
+outputcolnames=c('avgSlope','avgInt','ageSlope','ageInt')
+outarray=matrix(1,nrow=1,ncol=4)
+colnames(outarray)=outputcolnames
+
+for (v in 1:17734){
+  print(v)
+  vFP=paste('/cbica/projects/pinesParcels/results/mixedEffectModels/v',v,'_bwVals_overScales.csv',sep='')
+  verts=read.csv(vFP)
+  colnames(verts)[30]<-'bblid'
+  df_verts<-merge(df,verts,by="bblid")
+  mdf_verts<-melt(df_verts,id=c(1,2,3,4,5))
+  mdf_verts$bblid<-as.factor(mdf_verts$bblid)
+  colnames(mdf_verts)[6]<-c('Scale')
+  mdf_verts$Scale<-as.integer(mdf_verts$Scale)
+  mdf_verts$Age<-as.numeric(mdf_verts$Age)
+  model=glmer(value~Motion+log(Scale)+(1 + log(Scale)|bblid),data=mdf_verts)
+  fe=fixed.effects(model)
+  re=random.effects(model)
+  re=re$bblid
+  avgSlope=fe['log(Scale)']
+  avgInt=fe['(Intercept)']
+  ageSlope=cor.test(re$`log(Scale)`,df$Age,method='spearman')$estimate
+  ageInt=cor.test(re$`(Intercept)`,df$Age,method='spearman')$estimate
+  outarray[1]=avgSlope
+  outarray[2]=avgInt
+  outarray[3]=ageSlope
+  outarray[4]=ageInt
+  write.csv(outarray,file=paste('/cbica/projects/pinesParcels/results/mixedEffectModels/Modeled_v',v,'_bwVals_overScales.csv',sep=''))
+  }
+
 ```
