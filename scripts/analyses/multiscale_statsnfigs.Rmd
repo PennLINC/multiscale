@@ -1187,7 +1187,7 @@ breaks=c(-.02,-.01,0,0.01,0.02)
 ###ggplot(LongAgeSpan_plotdf2,aes(agespans,tmvec,color=derivs,group=CIgroupingInd)) +geom_line(size=10,alpha=.8) +labs(title='Network Segregation Effect Span', x = 'Age', y = 'Transmodality') +theme_classic(base_size = 58)+ xlim(c(8,23))+ scale_colour_gradientn(colours=c('#ff0a0a','#ff9191','white','#8585ff','#0b0bff'),values = c(0,.05,.265,.615,1),breaks=breaks, labels = breaks,name="Change Per Year")+theme(legend.position="top",legend.key.width = unit(4, "cm"))
 
 
-ggplot(LongAgeSpan_plotdf2,aes(agespans,tmvec,color=derivs,group=CIgroupingInd)) +geom_line(size=13,alpha=.8) +labs(title='Network Segregation Effect Span', x = 'Age', y = 'Transmodality') +theme_classic(base_size = 58)+ xlim(c(8,23))+ scale_colour_gradientn(colours=c('#0b0bff','#8585ff','white','#ff9191','#ff0a0a'),values = c(0,.25,.5,.75,1),breaks=breaks, labels = breaks,limits=c(-.02,0.02),name="Change Per Year")+theme(legend.position="top",legend.key.width = unit(5, "cm"))
+segspan<-ggplot(LongAgeSpan_plotdf2,aes(agespans,tmvec,color=derivs,group=CIgroupingInd)) +geom_line(size=13,alpha=.8) +labs(title='Network Segregation Effect Span', x = 'Age', y = 'Transmodality') +theme_classic(base_size = 58)+ xlim(c(8,23))+ scale_colour_gradientn(colours=c('#0b0bff','#8585ff','white','#ff9191','#ff0a0a'),values = c(0,.25,.5,.75,1),breaks=breaks, labels = breaks,limits=c(-.02,0.02),name="Change Per Year")+theme(legend.position="top",legend.key.width = unit(5, "cm"))
 
 
 

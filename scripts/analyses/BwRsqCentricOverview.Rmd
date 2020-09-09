@@ -63,6 +63,11 @@ DeltaREstVec<-function(x){
   NoageR<-sqrt(summary(noAgeGam)$r.sq)
   dif<-AgeR-NoageR
   
+  # flag negative r^2s (possible because adjusted R^2)
+  if(dif<0){
+    print(paste('negative delta adjusted r^2'))
+  }
+  
   # partial spearmans to extract age relation (for direction)
   pspear=pcor(scaledf,method='spearman')$estimate
   corest<-pspear[4]
@@ -119,6 +124,7 @@ library(mgcv)
 library(ggpointdensity)
 library(ppcor)
 library(viridis)
+library(vroom)
 # load in demo
 demo<-read.csv('/cbica/projects/pinesParcels/data/pnc_demo.csv')
 ageSex<-data.frame(demo$ageAtScan1,as.factor(demo$sex),demo$scanid,demo$bblid)
@@ -259,9 +265,8 @@ ind_GBwcors[,1]<-2:30
 
 for (i in 1:29){
   # i+4 because first column is scanid, second is age, third is sex, 4th is motion
-  print(ggplot(indglobWin_motSexC,aes(Age,indglobWin_motSexC[,i+4])) + geom_point() + geom_smooth() +ylab(paste("Ind Global Win at Scale", i+1)))
-   # print(ggplot(indglobBw_motSexC,aes(Age,indglobBw_motSexC[,i+4])) + geom_point() + geom_smooth() +ylab(paste("Ind Global BW at Scale", i+1)))
-  
+  #print(ggplot(indglobWin_motSexC,aes(Age,indglobWin_motSexC[,i+4])) + geom_point() + geom_smooth() +ylab(paste("Ind Global Win at Scale", i+1)))
+  #print(ggplot(indglobBw_motSexC,aes(Age,indglobBw_motSexC[,i+4])) + geom_point() + geom_smooth() +ylab(paste("Ind Global BW at Scale", i+1)))
 # relevant df
   Winscaledf<-cbind(indglobWin$Age,indglobWin$Sex,indglobWin$Motion,indglobWin[,i+4])
   Bwscaledf<-cbind(indglobBw$Age,indglobBw$Sex,indglobBw$Motion,indglobBw[,i+4])
@@ -333,6 +338,8 @@ bwcolnames<-colnames(individ_scalebybw_df)
 
 # empty array to populate with b/w connectivity age cors (b/w to unimodal, b/w to transmodal, b/w to aggregate, and K and N and Modality just to confirm we are matching)
 bwAgeCorVecs<-matrix(0,464,6)
+# empty array for each nets average b/w con across subjects
+bwAvgCon<-matrix(0,693,464)
 
 # loop over connectivities to-unimodal then to-transmodal
 modalloopvar=c('unimodal','transmodal')
@@ -476,6 +483,8 @@ for (i in 1:2){
     # get average bw network connectivty age correlation for this network at this scale
       both=cbind(masterdf[,match_NetN_scaleK_bw_indivi_cols_ind],masterdf[,unmatch_NetN_scaleK_bw_indivi_cols_ind, drop=F])
       avg_bw=rowMeans(both)
+      # for bw-based gams later - convert all b/w cons for a net to avg b/w for each subj
+      bwAvgCon[,Nind]=avg_bw
       avg_bw_coarse_agecor<-DeltaR2EstVec(avg_bw)
       bwAgeCorVecs[Nind,3]=unlist(avg_bw_coarse_agecor)
     }
@@ -500,7 +509,7 @@ bwdf<-data.frame(tmvec,scalesvec,domnetvec,netpropvec,bwAgeCorVecs$avg_bw,bwAgeC
 
 ####
 # avg b/w
-avgbw_age_tm<-ggplot(bwdf,aes(tmvec,bwAgeCorVecs.avg_bw,color=domnetvec,alpha=netpropvec^2)) + geom_point(size=6)+ scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068')) + xlab("Transmodality") + ylab("AgeBWCor") +theme_classic(base_size = 28) + ggtitle('Correlation of Avg. Bw. Con. and Age') + ylim(-.5,.5)+guides(alpha=FALSE,color=guide_legend(title="Maximal Y7 Overlap"))+theme(legend.position="top")
+avgbw_age_tm<-ggplot(bwdf,aes(tmvec,bwAgeCorVecs.avg_bw,color=domnetvec,alpha=netpropvec^2)) + geom_point(size=6)+ scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068')) + xlab("Transmodality") + ylab("AgeBWCor") +theme_classic(base_size = 28) + ggtitle('Correlation of Avg. Bw. Con. and Age') +guides(alpha=FALSE,color=guide_legend(title="Maximal Y7 Overlap"))+theme(legend.position="top")
 
 avgbw_age_scale<-ggplot(bwdf,aes(tmvec,bwAgeCorVecs.avg_bw,color=scalesvec)) + geom_point(size=6) +labs(title='Correlation of Avg. Bw. Con. and Age ', x = 'Transmodality', y = "AgeBWCor", color="Topological \nScale")+theme_classic(base_size = 28)+ ylim(-.5,.5)+ scale_colour_gradient(low="#55185D", high="#ECB602")+theme(legend.position="top",legend.key.width = unit(2.5, "cm"))
 ####
@@ -530,7 +539,134 @@ transbw_age_scale
 #17 network version
 bwdf17<-data.frame(tmvec,scalesvec,domnetvec17,netpropvec17,bwAgeCorVecs$avg_bw,bwAgeCorVecs$bw_to_unimodal,bwAgeCorVecs$bw_to_transmodal)
 
-Segreg_age_tm17<-ggplot(bwdf17,aes(tmvec,bwAgeCorVecs.avg_bw,color=domnetvec17,alpha=netpropvec17^2)) + scale_color_manual(values=c('#dc8303','#8d2049','#596a85','#2d9a3d','#007938','#d9e200','#bc0943','#2b1f67','#48593a','#91a967','#4183a8','#00bb89','#3245a3','#9e3ca2','#eb75b3','#68126f','#d1001c')) + xlab("Transmodality") + ylab("AgeB/WCor") +theme_classic(base_size = 28) + geom_point(size=4,aes(tmvec,bwAgeCorVecs.avg_bw)) + ggtitle('Correlation of B/w Con Avg and Age over All Communities')
+Segreg_age_tm17<-ggplot(bwdf17,aes(tmvec,bwAgeCorVecs.avg_bw,color=domnetvec17,alpha=netpropvec17^2)) + scale_color_manual(values=c('#dc8303','#8d2049','#596a85','#2d9a3d','#007938','#d9e200','#bc0943','#2b1f67','#48593a','#91a967','#4183a8','#00bb89','#3245a3','#9e3ca2','#eb75b3','#68126f','#d1001c')) + xlab("Transmodality") + ylab(expression(paste(Delta,R^2[adj]))) +theme_classic(base_size = 28) + geom_point(size=4,aes(tmvec,bwAgeCorVecs.avg_bw)) + ggtitle('Age Effect by Transmodality')
 
 Segreg_age_tm17
+```
+
+```{r}
+# age effect duration w/ b/w
+# long df - replaced indexed master df with bwAvgCon, because bwAvgCon yields network-wise measures vs. pairwise
+long_precursor<-data.frame(masterdf$bblid,masterdf$Age,masterdf$Sex,masterdf$Motion,bwAvgCon)
+melt_long<-melt(long_precursor,id=c(1,2,3,4))
+tmvecRepped<-rep(tmvec,each=693)
+domnetvecRepped<-rep(domnetvec,each=693)
+melt_long$transmodality<-tmvecRepped
+melt_long$dominantYeo<-domnetvecRepped
+saveRDS(melt_long,file = '~/Desktop/Long_bblidAgeSexMotionAvgBw.rds')
+```
+
+
+```{r}
+# delineate age trajectories of every net.
+library(gratia)
+library(dplyr)
+library(svglite)
+library(cowplot)
+library(mgcv)
+library(viridis)
+
+covariates=" ~s(Age,k=3)+Sex+Motion"   
+
+minAgeEst<-rep(0,length=length(masterdf[,indiv_nsegcols_ind]))
+maxAgeEst<-rep(0,length=length(masterdf[,indiv_nsegcols_ind]))
+
+derivInfo<-array(0,dim=c(464,200))
+NetSplines<-array(0,dim=c(464,693))                  
+
+# borrowing colnames from indiv_nsegcols to keep network/scale ordering/mappings
+colnames(bwAvgCon)<-colnames(masterdf[,indiv_nsegcols_ind])
+bwAvgCondf<-data.frame(bwAvgCon)
+#add on covariate columns
+bwAvgCondf$Age<-masterdf$Age
+bwAvgCondf$Sex<-masterdf$Sex
+bwAvgCondf$Motion<-masterdf$Motion
+
+#for i in 464, -3 because age sex and motion columns sit at the end
+for (i in 1:(length(bwAvgCondf)-3)){
+  # borrowing colnames from indiv_nsegcols to keep network mappings
+  x<-colnames(bwAvgCondf[i])
+  form<-as.formula(paste("",x,"", covariates, sep=""))
+  igam<-gam(formula = form,data=bwAvgCondf)
+  derv<-derivatives(igam,term='Age')
+  derv<- derv %>%
+  mutate(sig = !(0 >lower & 0 < upper))
+  derv$sig_deriv = derv$derivative*derv$sig
+  if (all(derv$sig==FALSE)){minAgeEst[i]=0; maxAgeEst[i]=0
+  } else {
+  minAgeEst[i]<-min(derv$data[derv$sig==T])
+  maxAgeEst[i]<-max(derv$data[derv$sig==T])
+  # changed to sig deriv only 7/10/20
+  derivInfo[i,]=derv$sig_deriv
+  forSpline<-predict(igam, data = masterdf, type = "terms")
+  # adding mean val because output values are centered
+  colOfInt<-unlist(bwAvgCondf[,i])
+  NetSplines[i,]<-forSpline[,3]+coef(igam)[1]
+  if (mean(colOfInt)>0){
+    print(paste(x,mean(colOfInt)))
+  }
+  }
+  ###cat(sprintf("\nSig change: %1.2f - %1.2f\n",minAgeEst[i],maxAgeEst[i]))
+}
+
+```
+
+```{r}
+# years format
+minAgeEst<-minAgeEst/12
+maxAgeEst<-maxAgeEst/12
+
+CIgroupingInd<-as.factor(1:464)
+
+#convert to years for more interpretable slope
+derivInfo<-derivInfo*12
+
+
+
+
+
+# get a vector of the agespan split into 200 to match the deriv vals
+agerange<-range(masterdf$Age)/12
+agerange200<-seq(agerange[1],agerange[2],length.out = 200)
+
+AgeSpan_plotdf2<-data.frame(tmvec,scalesvec,domnetvec,corVecEst,netpropvec,CIgroupingInd)
+
+
+
+# needs to be converted to repeat 464 times before progressing to next age bracket
+agerange200464<-array(dim=c(200*464,1))
+for (i in 1:length(agerange200)){
+agerange200464[((464*i)-463):(464*i)]<-rep(agerange200[i],464)
+}
+
+# now we need deriv vals of same format, but they will change for every network at every age bracket. Using sig change should take care of whitening out zeros
+deriv200464<-array(dim=c(200*464,1))
+for (i in 1:length(agerange200)){
+deriv200464[((464*i)-463):(464*i)]<-derivInfo[,i]
+}
+
+LongAgeSpan_plotdf2<-data.frame(sapply(AgeSpan_plotdf2,rep.int,times=200))
+LongAgeSpan_plotdf2$agespans<-agerange200464
+LongAgeSpan_plotdf2$derivs<-deriv200464
+
+breaks=c(-.02,-.01,0,0.01,0.02)
+
+
+# older version
+###ggplot(LongAgeSpan_plotdf2,aes(agespans,tmvec,color=derivs,group=CIgroupingInd)) +geom_line(size=10,alpha=.8) +labs(title='Network Segregation Effect Span', x = 'Age', y = 'Transmodality') +theme_classic(base_size = 58)+ xlim(c(8,23))+ scale_colour_gradientn(colours=c('#ff0a0a','#ff9191','white','#8585ff','#0b0bff'),values = c(0,.05,.265,.615,1),breaks=breaks, labels = breaks,name="Change Per Year")+theme(legend.position="top",legend.key.width = unit(4, "cm"))
+
+
+bwspan<-ggplot(LongAgeSpan_plotdf2,aes(agespans,tmvec,color=derivs,group=CIgroupingInd)) +geom_line(size=13,alpha=.8) +labs(title='External Connectivity Age Effect Span', x = 'Age', y = 'Transmodality') +theme_classic(base_size = 58)+ xlim(c(8,23))+ scale_colour_gradientn(colours=c('#0b0bff','#8585ff','white','#ff9191','#ff0a0a'),values = c(0,.25,.5,.75,1),breaks=breaks, labels = breaks,limits=c(-.005,0.005),name="Change Per Year")+theme(legend.position="top",legend.key.width = unit(5, "cm"))
+
+
+
+
+
+# with yeo color scheme instead
+LongAgeSpan_plotdf2$domnetvec<-as.factor(LongAgeSpan_plotdf2$domnetvec)
+#LongAgeSpan_plotdf2$derivs[abs(LongAgeSpan_plotdf2$derivs) < 0.002] <- 0
+
+
+y7ver<-ggplot(LongAgeSpan_plotdf2,aes(agespans,tmvec,color=domnetvec,group=CIgroupingInd,alpha=abs(derivs))) +geom_line(size=5,aes(agespans,tmvec)) +labs(title='Network Segregation Effect Manifestation', x = 'Age', y = 'Transmodality') +theme_classic(base_size = 28)+ xlim(c(8,23))+ scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068'),name="Maximal Y7 Overlap")+scale_alpha_continuous(range=c(0,1))
+
 ```
