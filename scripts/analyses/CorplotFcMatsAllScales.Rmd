@@ -29,9 +29,9 @@ for (K in 2:30){
   # get tmvec to arrange matrix by transmodality
   curTmRank<-order(tmvec[Kind])
   
-  # TEMPORARY COMMENT OUT TO OBSERVE ORIGINAL ORDER
-  #ReArAgeEfMat<-AgeEfMat[curTmRank,curTmRank]
-  ReArAgeEfMat<-AgeEfMat
+  # if desired, COMMENT OUT TO OBSERVE ORIGINAL ORDER
+  ReArAgeEfMat<-AgeEfMat[curTmRank,curTmRank]
+  #ReArAgeEfMat<-AgeEfMat
   
   ReArAgeEfMatThresh<-ReArAgeEfMat
   ReArAgeEfMatThresh[ReArAgeEfMat > -.1 & ReArAgeEfMat < .1]=0
