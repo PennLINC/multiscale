@@ -49,6 +49,8 @@ mdf_SupVisVert<-melt(df_SupVisVert,id=c(1,2,3,4,5))
 mdf_MotVert<-melt(df_MotVert,id=c(1,2,3,4,5))
 mdf_PFCVert<-melt(df_PFCVert,id=c(1,2,3,4,5))
 # no scanid in indgloBw, no id var 5
+
+### NEED ACCESS TO indglobBw from MASTER multiscale_statsnfigs OR BwRqCent
 mdf_globalVerts<-melt(indglobBw,id=c(1,2,3,4))
 
 
@@ -71,6 +73,7 @@ BwAll<-ggplot(data=mgroglobbw,aes(x=as.numeric(as.character(variable)),y=value,g
 
 
 ggarrange(BwAll,visplot,motplot,pfcplot,ncol=1,nrow=4)
+
 ```
 
 
@@ -94,7 +97,7 @@ mdf_MotVert$Age<-as.numeric(mdf_MotVert$Age)
 
 
 # best fit so far
-model=glmer(value~Age+Motion+Sex+(1 + log(Scale)|bblid),data=mdf_MotVert)
+model=glmer(value~Age*log(Scale)+Motion+Sex+(1 + log(Scale)|bblid),data=mdf_MotVert)
 model_ageout=glmer(value~Motion+Sex+(1 + log(Scale)|bblid),data=mdf_MotVert)
 
 #visreg random effects

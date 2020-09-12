@@ -61,7 +61,8 @@ for (K in 2:30){
   ReAr_EF_EfMatThresh[ReAr_EF_EfMat > -.1 & ReAr_EF_EfMat < .1]=0
   corrplot(ReAr_EF_EfMatThresh,is.corr = F,tl.cex = 2,cl.cex=2,cl.ratio = .3)
   title(paste(K))
-  
+  chordDiagram(ReAr_EF_EfMatThresh,grid.col = grid.col, col = col_fun,symmetric = "TRUE",annotationTrack=c("name","grid"),self.link = 1)
+  title(paste(K))
 }
   
 

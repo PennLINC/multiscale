@@ -559,7 +559,7 @@ piED<-read.csv('/cbica/projects/pinesParcels/results/aggregated_data/NetworkEucD
 # bwAgeCorVecs is starting point, length 464 for each network
 bwdf$LH_patchnum<-LHpi$patchnum_over_scalesL
 bwdf$RH_patchnum<-RHpi$patchnum_over_scalesR
-bwdf$Tot_patchnum<-bwAgeCorVecs$LH_patchnum+bwAgeCorVecs$RH_patchnum
+bwdf$Tot_patchnum<-bwdf$LH_patchnum+bwdf$RH_patchnum
 bwdf$Transmodality<-tmvec
 bwdf$bw_avg<-bwdf$bwAgeCorVecs.avg_bw
 
