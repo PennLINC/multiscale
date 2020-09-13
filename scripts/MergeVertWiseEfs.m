@@ -15,32 +15,35 @@ rInt=zeros(693,17734);
 for v=1:17734
 v=v
 % read csv
-vfn=[efdir,'Modeled_fS_fI_raS_raI_fM_v',string(v),'_bwVals_overScales.csv'];
+vfn=[efdir,'Scales2thru10_Modeled_fS_fI_raS_raI_fM_v',string(v),'_bwVals_overScales.csv'];
 vfnjoined=join(vfn,'');
 vtab=readtable(vfnjoined);
 fSlope(v)=vtab.(1);
 fInt(v)=vtab.(2);
 rSlopeAge(v)=vtab.(3);
-rIntAge(v)=vtab.(4);
+%rIntAge(v)=vtab.(4);
 fMotion(v)=vtab.(5);
 
 %subject level measures
-slvfn=['/gpfs/fs001/cbica/projects/pinesParcels/results/mixedEffectModels/subj_level_Modeled_fS_fI_raS_raI_fM_v',string(v),'_bwVals_overScales.csv'];
-slvfnjoined=join(slvfn,'');
-slvtab=readtable(slvfnjoined);
-rSlope(:,v)=slvtab{:,3};
-rInt(:,v)=slvtab{:,2};
+%slvfn=['/gpfs/fs001/cbica/projects/pinesParcels/results/mixedEffectModels/subj_level_Modeled_fS_fI_raS_raI_fM_v',string(v),'_bwVals_overScales.csv'];
+%slvfnjoined=join(slvfn,'');
+%slvtab=readtable(slvfnjoined);
+%rSlope(:,v)=slvtab{:,3};
+%rInt(:,v)=slvtab{:,2};
 end
 
-save('/cbica/projects/pinesParcels/results/EffectVecs/fSlope.mat','fSlope');
-save('/cbica/projects/pinesParcels/results/EffectVecs/fInt.mat','fInt');
-save('/cbica/projects/pinesParcels/results/EffectVecs/rSlopeAge.mat','rSlopeAge');
-save('/cbica/projects/pinesParcels/results/EffectVecs/rIntAge.mat','rIntAge');
-save('/cbica/projects/pinesParcels/results/EffectVecs/fMotion.mat','fMotion');
+save('/cbica/projects/pinesParcels/results/EffectVecs/fSlope_Sc2_10.mat','fSlope');
 
-save('/cbica/projects/pinesParcels/results/EffectVecs/rSlopes.mat','rSlope');
-save('/cbica/projects/pinesParcels/results/EffectVecs/rInts.mat','rInt');
+% saved to original model parameters
+%save('/cbica/projects/pinesParcels/results/EffectVecs/fSlope.mat','fSlope');
+%save('/cbica/projects/pinesParcels/results/EffectVecs/fInt2.mat','fInt');
+%save('/cbica/projects/pinesParcels/results/EffectVecs/rSlopeAge.mat','rSlopeAge');
+%save('/cbica/projects/pinesParcels/results/EffectVecs/rIntAge.mat','rIntAge');
+%save('/cbica/projects/pinesParcels/results/EffectVecs/fMotion.mat','fMotion');
+
+%save('/cbica/projects/pinesParcels/results/EffectVecs/rSlopes.mat','rSlope');
+%save('/cbica/projects/pinesParcels/results/EffectVecs/rInts.mat','rInt');
 
 % subj order used for random slope vertex mapping
-subjorder=slvtab{:,1};
-save('/cbica/projects/pinesParcels/results/EffectVecs/SubjOrder_InVert_rEffects.mat','subjorder');
+%subjorder=slvtab{:,1};
+%save('/cbica/projects/pinesParcels/results/EffectVecs/SubjOrder_InVert_rEffects.mat','subjorder');

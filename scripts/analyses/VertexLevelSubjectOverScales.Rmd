@@ -103,6 +103,13 @@ model_ageout=glmer(value~Motion+Sex+(1 + log(Scale)|bblid),data=mdf_MotVert)
 #visreg random effects
 v<-visreg(model,"Scale",by="bblid",re.form=~(log(Scale)|bblid),plot=F)
 
+
+# more plotting
+modelsum<-summary(model)
+a=rep(seq(2:30),each=693)
+a=data.frame(modelsum$residuals,a,seq(1:20097))
+motvert<-ggplot(a,aes(x=seq.1.20097.,y=modelsum.residuals,col=a))+geom_point()+scale_color_gradientn(colours = rainbow(5))+theme_classic2()
+
 ######## with PFC now
 
 # setting scale to integer was key
@@ -113,17 +120,56 @@ mdf_PFCVert$Scale<-as.integer(mdf_PFCVert$Scale)
 mdf_PFCVert$Age<-as.numeric(mdf_PFCVert$Age)
 
 # best fit so far
-model=glmer(value~Age+Motion+Sex+Age*log(Scale)+(1 + log(Scale)|bblid),data=mdf_PFCVert)
+model=glmer(value~Age*log(Scale)+Motion+Sex+(1 + log(Scale)|bblid),data=mdf_PFCVert)
 model_ageout=glmer(value~Motion+Scale+Sex+(1 + log(Scale)|bblid),data=mdf_PFCVert)
 #visreg random effects
 ###v<-visreg(model,"Scale",by="bblid",re.form=~(1 + log(Scale)|bblid),plot=F)
-
+# more plotting
+modelsum<-summary(model)
+a=rep(seq(2:30),each=693)
+a=data.frame(modelsum$residuals,a,seq(1:20097))
+PFCvert<-ggplot(a,aes(x=seq.1.20097.,y=modelsum.residuals,col=a))+geom_point()+scale_color_gradientn(colours = rainbow(5))+theme_classic2()
 #plot_model(model,type="int")
 
 tab_model(model)
 
+
+
+### with sup vis now
+# setting scale to integer was key
+mdf_SupVisVert$bblid<-as.factor(mdf_SupVisVert$bblid)
+#colnames(mdf_MotVert)[1]<-c('id')
+colnames(mdf_SupVisVert)[6]<-c('Scale')
+mdf_SupVisVert$Scale<-as.integer(mdf_SupVisVert$Scale)
+mdf_SupVisVert$Age<-as.numeric(mdf_SupVisVert$Age)
+
+# best fit so far
+model=glmer(value~Age*log(Scale)+Motion+Sex+(1 + log(Scale)|bblid),data=mdf_SupVisVert)
+#visreg random effects
+###v<-visreg(model,"Scale",by="bblid",re.form=~(1 + log(Scale)|bblid),plot=F)
+```
+
+```{r}
+# more plotting
+modelsum<-summary(model)
+a=rep(seq(2:30),each=693)
+a=data.frame(modelsum$residuals,a,seq(1:20097))
+SVISvert<-ggplot(a,aes(x=seq.1.20097.,y=modelsum.residuals,col=a))+geom_point()+scale_color_gradientn(colours = rainbow(5))+theme_classic2()
+
+#### on avg. real quick
+mdf_globalVerts$bblid<-as.factor(mdf_globalVerts$bblid)
+colnames(mdf_globalVerts)[5]<-c('Scale')
+mdf_globalVerts$Scale<-as.integer(mdf_globalVerts$Scale)
+mdf_globalVerts$Age<-as.numeric(mdf_globalVerts$Age)
+
+model=glmer(value~Age*log(Scale)+Motion+Sex+(1 + log(Scale)|bblid),data=mdf_globalVerts)
+modelsum<-summary(model)
+a=rep(seq(2:30),each=693)
+a=data.frame(modelsum$residuals,a,seq(1:20097))
+AvgVert<-ggplot(a,aes(x=seq.1.20097.,y=modelsum.residuals,col=a))+geom_point()+scale_color_gradientn(colours = rainbow(5))+theme_classic2()
+
 ### using link function
-#model=glmer(value~Age+Motion+Sex+Age*Scale+(1+Scale|bblid),data=mdf_PFCVert,family = gaussian(link = "log"))
+model=glmer((value+1)~Motion+Age*Scale+(1+Scale|bblid),data=mdf_globalVerts,family = Gamma(link = "log"))
 #tab_model(model)
 
 # compare variable transformation approach with link functions
