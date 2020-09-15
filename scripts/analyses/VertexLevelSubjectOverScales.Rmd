@@ -90,12 +90,6 @@ colnames(mdf_MotVert)[6]<-c('Scale')
 mdf_MotVert$Scale<-as.integer(mdf_MotVert$Scale)
 mdf_MotVert$Age<-as.numeric(mdf_MotVert$Age)
 
-
-
-## R aborts every time i run this
-##model=lme(value~Age+Scale,random=~1+Scale | bblid,mdf_MotVert)
-
-
 # best fit so far
 model=glmer(value~Age*log(Scale)+Motion+Sex+(1 + log(Scale)|bblid),data=mdf_MotVert)
 model_ageout=glmer(value~Motion+Sex+(1 + log(Scale)|bblid),data=mdf_MotVert)
@@ -169,16 +163,11 @@ a=data.frame(modelsum$residuals,a,seq(1:20097))
 AvgVert<-ggplot(a,aes(x=seq.1.20097.,y=modelsum.residuals,col=a))+geom_point()+scale_color_gradientn(colours = rainbow(5))+theme_classic2()
 
 ### using link function
-model=glmer((value+1)~Motion+Age*Scale+(1+Scale|bblid),data=mdf_globalVerts,family = Gamma(link = "log"))
+#model=glmer((value+1)~Motion+Age*Scale+(1+Scale|bblid),data=mdf_globalVerts,family = Gamma(link = "log"))
 #tab_model(model)
 
-# compare variable transformation approach with link functions
-
-# starting values for log link to help it find the solution?
-
-### two problems - glm for fitting, link vs variable transformation
-## second is inclusion of slopes and intercepts
-
+# fit as linear model
+model=lm(value~Motion+log(Scale),data=mdf_globalVerts)
 
 ### more immediately, fit model on average b.w.
 # setting scale to integer was key

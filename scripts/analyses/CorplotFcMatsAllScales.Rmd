@@ -65,7 +65,21 @@ for (K in 2:30){
   title(paste(K))
 }
   
+# IN ORIG PARCEL ORDER 
+for (K in 2:30){
+  K_start=((K-1)*(K))/2
+  K_end=(((K-1)*(K))/2)+K-1
+  Kind<-K_start:K_end
+  EF_EfMatFn=paste('/cbica/projects/pinesParcels/results/EffectMats/fc_EF_Mat_K',K,'.csv',sep='')
+  EF_EfMat=as.matrix(read.csv(EF_EfMatFn))
 
+  # more stringent threshold
+  EF_EfMat[EF_EfMat > -.2 & EF_EfMat < .2]=0
+  corrplot(EF_EfMat,is.corr = F,tl.cex = 2,cl.cex=2,cl.ratio = .3)
+  title(paste(K))
+  #chordDiagram(ReAr_EF_EfMatThresh,grid.col = grid.col, col = col_fun,symmetric = "TRUE",annotationTrack=c("name","grid"),self.link = 1)
+  #title(paste(K))
+}
 ```
 
 ```{r}
