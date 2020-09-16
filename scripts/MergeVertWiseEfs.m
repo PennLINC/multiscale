@@ -15,14 +15,12 @@ rInt=zeros(693,17734);
 for v=1:17734
 v=v
 % read csv
-vfn=[efdir,'Modeled_fAge_flSc_fMot_fSex_fMot_v',string(v),'_bwVals_overScales.csv'];
+vfn=[efdir,'Modeledc_flSc_fMot_fAge_v',string(v),'_bwVals_overScales.csv'];
 vfnjoined=join(vfn,'');
 vtab=readtable(vfnjoined);
-ageCoef(v)=vtab.(1);
+ageCoef(v)=vtab.(6);
 logScaleCoef(v)=vtab.(2);
-ageScaleIntCoef(v)=vtab.(3);
 motionCoef(v)=vtab.(4);
-sexCoef(v)=vtab.(5);
 
 %subject level measures
 %slvfn=['/gpfs/fs001/cbica/projects/pinesParcels/results/mixedEffectModels/subj_level_Modeled_fS_fI_raS_raI_fM_v',string(v),'_bwVals_overScales.csv'];
@@ -35,9 +33,9 @@ end
 % saved to original model parameters
 save('/cbica/projects/pinesParcels/results/EffectVecs/ageCoef.mat','ageCoef');
 save('/cbica/projects/pinesParcels/results/EffectVecs/logScaleCoef.mat','logScaleCoef');
-save('/cbica/projects/pinesParcels/results/EffectVecs/agelogScaleIntCoef.mat','ageScaleIntCoef');
+%save('/cbica/projects/pinesParcels/results/EffectVecs/agelogScaleIntCoef.mat','ageScaleIntCoef');
 save('/cbica/projects/pinesParcels/results/EffectVecs/motionCoef.mat','motionCoef');
-save('/cbica/projects/pinesParcels/results/EffectVecs/sexCoef.mat','sexCoef');
+%save('/cbica/projects/pinesParcels/results/EffectVecs/sexCoef.mat','sexCoef');
 
 %save('/cbica/projects/pinesParcels/results/EffectVecs/rSlopes.mat','rSlope');
 %save('/cbica/projects/pinesParcels/results/EffectVecs/rInts.mat','rInt');

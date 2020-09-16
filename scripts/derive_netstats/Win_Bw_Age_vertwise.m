@@ -96,9 +96,16 @@ for K=Krange
 	%PC
 end
 
+% fdr correct each pvalue (each scale sep for now)
+for K=Krange
+	corrected_ps_K=mafdr(BwAgeSig(:,K-1));
+	BwAgeSig(:,K-1)=corrected_ps_K;
+end
+
 % write out ageCors
 fn=['/cbica/projects/pinesParcels/results/EffectVecs/ageWinspear.mat'];
 save(fn,'WinAgeEff');
+
 
 % repeat for Bw, add in fdr corrected pvals
 pfn=['/cbica/projects/pinesParcels/results/EffectVecs/ageBwspearSig.mat'];

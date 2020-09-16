@@ -407,7 +407,7 @@ individ_scalebywin_df<-masterdf[,indiv_wincols_ind]
 wincolnames<-colnames(individ_scalebywin_df)
 bwcolnames<-colnames(individ_scalebybw_df)
 
-# empty array to populate with b/w connectivity age cors (b/w to unimodal, b/w to transmodal, b/w to aggregate, and K and N and Modality just to confirm we are matching)
+# empty array to populate with b/w connectivity age cors (b/w to unimodal, b/w to transmodal, b/w to aggregate, b/w to aggregate p values, and K and N and Modality just to confirm we are matching)
 bwAgeCorVecs<-matrix(0,464,6)
 # empty array for each nets average b/w con across subjects
 bwAvgCon<-matrix(0,693,464)
@@ -557,7 +557,9 @@ for (i in 1:2){
       # for bw-based gams later - convert all b/w cons for a net to avg b/w for each subj
       bwAvgCon[,Nind]=avg_bw
       avg_bw_coarse_agecor<-DeltaR2EstVec(avg_bw)
+      avg_bw_coarse_agecorP<-DeltaPEstVec(avg_bw)
       bwAgeCorVecs[Nind,3]=unlist(avg_bw_coarse_agecor)
+      bwAgeCorVecs[Nind,4]=unlist(avg_bw_coarse_agecorP)
     }
     # Print out ratio of transmodal to unimodal at this scale
     unilength=length(tmclasses_thisScale[tmclasses_thisScale=='unimodal'])
@@ -573,16 +575,19 @@ bwAgeCorVecs<-data.frame(bwAgeCorVecs)
 
 
 # analyze between network connectivities' couplings with age by transmodality
-colnames(bwAgeCorVecs)<-c('bw_to_unimodal','bw_to_transmodal','avg_bw','K','N')
+colnames(bwAgeCorVecs)<-c('bw_to_unimodal','bw_to_transmodal','avg_bw','avg_bwP','K','N')
 ############ analyze contribution of avg b/w network connectivities' age couplings by scale and transmodality #############
 
-bwdf<-data.frame(tmvec,scalesvec,domnetvec,netpropvec,bwAgeCorVecs$avg_bw,bwAgeCorVecs$bw_to_unimodal,bwAgeCorVecs$bw_to_transmodal)
+#fdr correct p vals
+bwAgeCorVecs$avg_bwP<-p.adjust(bwAgeCorVecs$avg_bwP,method='fdr')
+
+bwdf<-data.frame(tmvec,scalesvec,domnetvec,netpropvec,bwAgeCorVecs$avg_bw,bwAgeCorVecs$bw_to_unimodal,bwAgeCorVecs$bw_to_transmodal,bwAgeCorVecs$avg_bwP)
 
 ####
 # avg b/w
-avgbw_age_tm<-ggplot(bwdf,aes(tmvec,bwAgeCorVecs.avg_bw,color=domnetvec,alpha=netpropvec^2)) + geom_point(size=6)+ scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068')) + xlab("Transmodality") + ylab("AgeBWCor") +theme_classic(base_size = 28) + ggtitle('Correlation of Avg. Bw. Con. and Age') +guides(alpha=FALSE,color=guide_legend(title="Maximal Y7 Overlap"))+theme(legend.position="top")
+avgbw_age_tm<-ggplot(bwdf,aes(tmvec,bwAgeCorVecs.avg_bw,color=domnetvec,alpha=netpropvec^2)) + geom_point(size=6)+ scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068')) + xlab("Transmodality") + ylab(expression(paste(Delta,R^2[adj]))) +theme_classic(base_size = 28) + ggtitle('B/w Variance Captured by Age') +guides(alpha=FALSE,color=guide_legend(title="Maximal Y7 Overlap"))+theme(legend.position="top")
 
-avgbw_age_scale<-ggplot(bwdf,aes(tmvec,bwAgeCorVecs.avg_bw,color=scalesvec)) + geom_point(size=6) +labs(title='Correlation of Avg. Bw. Con. and Age ', x = 'Transmodality', y = "AgeBWCor", color="Topological \nScale")+theme_classic(base_size = 28)+ ylim(-.5,.5)+ scale_colour_gradient(low="#55185D", high="#ECB602")+theme(legend.position="top",legend.key.width = unit(2.5, "cm"))
+avgbw_age_scale<-ggplot(bwdf,aes(tmvec,bwAgeCorVecs.avg_bw,color=scalesvec)) + geom_point(size=6) +labs(title='B/w Variance Captured by Age', x = 'Transmodality', y = expression(paste(Delta,R^2[adj])), color="Topological \nScale")+theme_classic(base_size = 28)+ ylim(-.5,.5)+ scale_colour_gradient(low="#55185D", high="#ECB602")+theme(legend.position="top",legend.key.width = unit(2.5, "cm"))
 ####
 
 ####
@@ -612,6 +617,11 @@ bwdf17<-data.frame(tmvec,scalesvec,domnetvec17,netpropvec17,bwAgeCorVecs$avg_bw,
 
 ggplot(bwdf17,aes(tmvec,bwAgeCorVecs.avg_bw,color=domnetvec17,alpha=netpropvec17^2)) + scale_color_manual(values=c('#dc8303','#8d2049','#596a85','#2d9a3d','#007938','#d9e200','#bc0943','#2b1f67','#48593a','#91a967','#4183a8','#00bb89','#3245a3','#9e3ca2','#eb75b3','#68126f','#d1001c')) + xlab("Transmodality") + ylab(expression(paste(Delta,R^2[adj]))) +theme_classic(base_size = 28) + geom_point(size=4,aes(tmvec,bwAgeCorVecs.avg_bw)) + ggtitle('Age Effect by Transmodality')
 
+# version with fdr p > 0.05 removed
+bwdf$bwAgeCorVecs.cavg_bw<-bwdf$bwAgeCorVecs.avg_bw
+bwdf$bwAgeCorVecs.cavg_bw[bwdf$bwAgeCorVecs.avg_bwP>0.05]=0
+
+Corrected_avgbw_age_tm<-ggplot(bwdf,aes(tmvec,bwAgeCorVecs.cavg_bw,color=domnetvec,alpha=netpropvec^2)) + geom_point(size=6)+ scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068')) + xlab("Transmodality") + ylab(expression(paste(Delta,R^2[adj]))) +theme_classic(base_size = 28) + ggtitle('B/w Variance Captured by Age') +guides(alpha=FALSE,color=guide_legend(title="Maximal Y7 Overlap"))+theme(legend.position="top")
 ```
 
 ```{r}
@@ -754,7 +764,7 @@ fdrzeroed<-ggplot(cbwR2EFdf,aes(tmvec,cBW_R2VecEst,color=domnetvec,alpha=netprop
 # without FDR corrections zeroed
 bwR2EFdf<-data.frame(tmvec,scalesvec,domnetvec,netpropvec,BW_R2VecEst)
 
-raw<-ggplot(bwR2EFdf,aes(tmvec,BW_R2VecEst,color=domnetvec,alpha=netpropvec^2)) + scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068')) + xlab("Transmodality") + ylab(expression(paste(Delta,R^2[adj]))) +theme_classic(base_size = 45) + geom_point(size=7,aes(tmvec,BW_R2VecEst)) + ggtitle('EF Effect by Transmodality')+guides(alpha=FALSE,color=guide_legend(title="Maximal Y7 Overlap"))+theme(legend.position="top")
+raw<-ggplot(bwR2EFdf,aes(tmvec,BW_R2VecEst,color=domnetvec,alpha=netpropvec^2)) + scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068')) + xlab("Transmodality") + ylab(expression(paste(Delta,R^2[adj]))) +theme_classic(base_size = 45) + geom_point(size=7,aes(tmvec,BW_R2VecEst)) + ggtitle('EF Effect by PG2')+guides(alpha=FALSE,color=guide_legend(title="Maximal Y7 Overlap"))+theme(legend.position="top")
 
 ggplot(bwR2EFdf,aes(tmvec,BW_R2VecEst,color=scalesvec,alpha=netpropvec^2)) + xlab("Transmodality") + ylab(expression(paste(Delta,R^2[adj]))) +theme_classic(base_size = 45) + geom_point(size=7,aes(tmvec,BW_R2VecEst)) + ggtitle('EF Effect by Transmodality')+guides(alpha=FALSE,color=guide_legend(title="Maximal Y7 Overlap"))+theme(legend.position="top")
 
@@ -768,7 +778,7 @@ fdrzeroed<-ggplot(cbwR2EFdf,aes(occvec,cBW_R2VecEst,color=domnetvec,alpha=netpro
 # without FDR corrections zeroed
 bwR2EFdf<-data.frame(occvec,scalesvec,domnetvec,netpropvec,BW_R2VecEst)
 
-raw<-ggplot(bwR2EFdf,aes(occvec,BW_R2VecEst,color=domnetvec,alpha=netpropvec^2)) + scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068')) + xlab("PG2") + ylab(expression(paste(Delta,R^2[adj]))) +theme_classic(base_size = 45) + geom_point(size=7,aes(occvec,BW_R2VecEst)) + ggtitle('EF Effect by Transmodality')+guides(alpha=FALSE,color=guide_legend(title="Maximal Y7 Overlap"))+theme(legend.position="top")
+raw<-ggplot(bwR2EFdf,aes(occvec,BW_R2VecEst,color=domnetvec,alpha=netpropvec^2)) + scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068')) + xlab("PG2") + ylab(expression(paste(Delta,R^2[adj]))) +theme_classic(base_size = 45) + geom_point(size=7,aes(occvec,BW_R2VecEst)) + ggtitle('EF Effect by PG2')+guides(alpha=FALSE,color=guide_legend(title="Maximal Y7 Overlap"))+theme(legend.position="top")
 
 ggplot(bwR2EFdf,aes(occvec,BW_R2VecEst,color=scalesvec,alpha=netpropvec^2)) + xlab("Transmodality") + ylab(expression(paste(Delta,R^2[adj]))) +theme_classic(base_size = 45) + geom_point(size=7,aes(tmvec,BW_R2VecEst)) + ggtitle('EF Effect by PG2')+guides(alpha=FALSE,color=guide_legend(title="Maximal Y7 Overlap"))+theme(legend.position="top")
 ```
@@ -811,7 +821,7 @@ LongAgeSpan_plotdf2<-data.frame(sapply(AgeSpan_plotdf2,rep.int,times=200))
 LongAgeSpan_plotdf2$agespans<-agerange200464
 LongAgeSpan_plotdf2$derivs<-deriv200464
 
-breaks=c(-.02,-.01,0,0.01,0.02)
+breaks=c(-.005,0.005)
 
 
 # older version
@@ -829,6 +839,18 @@ LongAgeSpan_plotdf2$domnetvec<-as.factor(LongAgeSpan_plotdf2$domnetvec)
 #LongAgeSpan_plotdf2$derivs[abs(LongAgeSpan_plotdf2$derivs) < 0.002] <- 0
 
 
-y7ver<-ggplot(LongAgeSpan_plotdf2,aes(agespans,tmvec,color=domnetvec,group=CIgroupingInd,alpha=abs(derivs))) +geom_line(size=5,aes(agespans,tmvec)) +labs(title='Network Segregation Effect Manifestation', x = 'Age', y = 'Transmodality') +theme_classic(base_size = 28)+ xlim(c(8,23))+ scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068'),name="Maximal Y7 Overlap")+scale_alpha_continuous(range=c(0,1))
+y7ver<-ggplot(LongAgeSpan_plotdf2,aes(agespans,tmvec,color=domnetvec,group=CIgroupingInd,alpha=abs(derivs))) +geom_line(size=13,aes(agespans,tmvec)) +labs(title='Network Segregation Effect Manifestation', x = 'Age', y = 'Transmodality') +theme_classic(base_size = 58)+ xlim(c(8,23))+ scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068'),name="Maximal Y7 Overlap")+scale_alpha_continuous(range=c(0,1))+theme(legend.position="none",legend.key.width = unit(5, "cm"))
 
+```
+
+```{r}
+# summary models for global level
+Gbw~Age+Motion+scale+Age*log(scale) # is scale*age sig? yes
+Gbw~EF+Motion+scale+Age*log(scale)
+# summary models for community level
+Cbw~Age+Motion+log(scale)+Age*log(scale)+PG1
+Cbw~Age+Motion+log(scale)+Age*log(scale)+PG2
+# summary models for nodal level
+Nbw~Age+Motion+log(scale)+Age*log(Scale)+PG1
+Nbw~Age+Motion+log(scale)+Age*log(scale)+PG2
 ```
