@@ -74,6 +74,8 @@ BwAll<-ggplot(data=mgroglobbw,aes(x=as.numeric(as.character(variable)),y=value,g
 
 ggarrange(BwAll,visplot,motplot,pfcplot,ncol=1,nrow=4)
 
+
+
 ```
 
 
@@ -141,6 +143,9 @@ mdf_SupVisVert$Age<-as.numeric(mdf_SupVisVert$Age)
 model=glmer(value~Age*log(Scale)+Motion+Sex+(1 + log(Scale)|bblid),data=mdf_SupVisVert)
 #visreg random effects
 ###v<-visreg(model,"Scale",by="bblid",re.form=~(1 + log(Scale)|bblid),plot=F)
+
+
+
 ```
 
 ```{r}
@@ -236,3 +241,30 @@ for (v in 1:17734){
   write.table(outarray,file=paste('~/mixedEffectModels/Modeled_fS_fI_raS_raI_fM_v',v,'_bwVals_overScales.csv',sep=''),sep=',',row.names=F,quote=F)
 }
 ```
+
+```{r}
+# residuals grouped by subject for a few example areas (last is average)
+m1 <- lmer(value ~ log(Scale)*Age + (1|bblid),mdf_MotVert) 
+model1_data<-m1@frame
+model1_data$resids = resid(m1)
+motor<-ggplot(model1_data,aes(y=resids,x=`log(Scale)`,group=bblid,color=bblid))+geom_point(alpha=.1,show.legend=F)+geom_line(alpha=.5,show.legend=F)+ggtitle('motor')
+
+p1 <- lmer(value ~ log(Scale)*Age + (1|bblid),mdf_PFCVert) 
+model1_data<-p1@frame
+model1_data$resids = resid(p1)
+pfc<-ggplot(model1_data,aes(y=resids,x=`log(Scale)`,group=bblid,color=bblid))+geom_point(alpha=.1,show.legend=F)+geom_line(alpha=.5,show.legend=F)+ggtitle('pfc')
+
+o1 <- lmer(value ~ log(Scale)*Age + (1|bblid),mdf_SupVisVert) 
+model1_data<-o1@frame
+model1_data$resids = resid(o1)
+occip<-ggplot(model1_data,aes(y=resids,x=`log(Scale)`,group=bblid,color=bblid))+geom_point(alpha=.1,show.legend=F)+geom_line(alpha=.5,show.legend=F)+ggtitle('occip.')
+
+avg1 <- lmer(value ~ log(Scale)*Age + (1|bblid),mdf_globalVerts) 
+model1_data<-avg1@frame
+model1_data$resids = resid(avg1)
+avg<-ggplot(model1_data,aes(y=resids,x=`log(Scale)`,group=bblid,color=bblid))+geom_point(alpha=.1,show.legend=F)+geom_line(alpha=.5,show.legend=F)+ggtitle('avg.')
+
+ggarrange(avg,pfc,motor,occip)
+```
+
+

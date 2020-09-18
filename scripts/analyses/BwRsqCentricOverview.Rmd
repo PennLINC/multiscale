@@ -189,6 +189,7 @@ library(ggpointdensity)
 library(ppcor)
 library(viridis)
 library(vroom)
+library(boot)
 # load in demo
 demo<-read.csv('/cbica/projects/pinesParcels/data/pnc_demo.csv')
 ageSex<-data.frame(demo$ageAtScan1,as.factor(demo$sex),demo$scanid,demo$bblid)
@@ -349,7 +350,46 @@ BwCors<-correlations_over_scales(ind_GBwcors,"Global BetweenCon Age Correlation"
 #ggarrange(WinAll,WinCors,BwAll,BwCors)
 BwAll
 BwCors
+
+#### bootstrapping section
+# intialize bootstrap CI upper and lower bounds
+ind_GBwcors_highCI<-matrix(0,29,2)
+ind_GBwcors_highCI[,1]<-2:30
+ind_GBwcors_lowCI<-matrix(0,29,2)
+ind_GBwcors_lowCI[,1]<-2:30
+
+
+
+ind_GBwcors<-matrix(0,29,2)
+ind_GBwcors[,1]<-2:30
+
+# write function to return cor - d is combined dataframe (age, sex, motion and glob b/w at one particular scale)
+returnCor<-function(d,i){
+  # i guess this sets I to the bootstrapped sample 
+  d2<-d[i,]
+  pspear=pcor(d2,method='spearman')$estimate
+  return(pspear[4])
+}
+
+set.seed(1)
+for (i in 1:29){
+  print(i)
+  Bwscaledf<-cbind(indglobBw$Age,indglobBw$Sex,indglobBw$Motion,indglobBw[,i+4])
+  bootparcor<-boot(Bwscaledf,returnCor,R=10000)
+  bootCIs<-boot.ci(bootparcor,type='norm')
+  ind_GBwcors_highCI[i,2]<-bootCIs$normal[3]
+  ind_GBwcors_lowCI[i,2]<-bootCIs$normal[2]
+}
+correlations_over_scales(ind_GBwcors_highCI,"Global BetweenCon Age Correlation")
+correlations_over_scales(ind_GBwcors_lowCI,"Global BetweenCon Age Correlation")
+
+# merge em together for plot
+estAndBootStrapped<-data.frame(ind_GBwcors[,1],ind_GBwcors[,2],ind_GBwcors_highCI[,2],ind_GBwcors_lowCI[,2])
+colnames(estAndBootStrapped)<-c('Scale','AgeCor','upperCI','lowerCI')
+ggplot(data=estAndBootStrapped,aes(x=Scale,y=AgeCor))+geom_line()+geom_line(aes(x=Scale,y=upperCI,color='UpperCI'))+geom_line(aes(x=Scale,y=lowerCI,color='LowerCI'))+theme_classic()+ggtitle('Age x Global B/w Con')
 ```
+
+
 ```{r}
 ### Get in Consensus-reference atlas correspondence
 rac<-read.csv('/cbica/projects/pinesParcels/results/aggregated_data/fc/network_yCorrespondence_overscales.csv',stringsAsFactors = F)
