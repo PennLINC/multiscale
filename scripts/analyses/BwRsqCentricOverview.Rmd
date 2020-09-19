@@ -174,7 +174,7 @@ EFDeltaPEstVec<-function(x){
 
 ```
 
-```{r}
+```{r include=FALSE}
 # need to 
 source('~/cbica/projects/pinesParcels/multiscale/scripts/analyses/correlations_over_scalesplot_minor.R')
 library(shapes)
@@ -190,6 +190,7 @@ library(ppcor)
 library(viridis)
 library(vroom)
 library(boot)
+library(sjPlot)
 # load in demo
 demo<-read.csv('/cbica/projects/pinesParcels/data/pnc_demo.csv')
 ageSex<-data.frame(demo$ageAtScan1,as.factor(demo$sex),demo$scanid,demo$bblid)
@@ -215,7 +216,7 @@ df<-merge(df,motiondf,by='bblid')
 community_vec<-seq(2,30)
 ```
 
-```{r}
+```{r include=FALSE}
 ### it's rounded now bb
 fc<-vroom('/cbica/projects/pinesParcels/results/aggregated_data/fc/master_fcfeats_rounded.csv')
 
@@ -249,7 +250,7 @@ nsegcols=grep(nsegi,colnames(masterdf))
 gsegcols=grep(gsegi,colnames(masterdf))
 ```
 
-```{r}
+```{r include=FALSE}
 
 GBw=vroom('/cbica/projects/pinesParcels/results/aggregated_data/fc/globalBw_fcfeats.csv')
 GWin=vroom('/cbica/projects/pinesParcels/results/aggregated_data/fc/globalWin_fcfeats.csv')
@@ -346,7 +347,11 @@ for (i in 1:29){
 WinCors<-correlations_over_scales(ind_GWincors,"Global WithinCon Age Correlation")
 
 BwCors<-correlations_over_scales(ind_GBwcors,"Global BetweenCon Age Correlation")
+```
 
+```{r}
+
+# global average network property relationship to age
 #ggarrange(WinAll,WinCors,BwAll,BwCors)
 BwAll
 BwCors
@@ -375,6 +380,7 @@ set.seed(1)
 for (i in 1:29){
   print(i)
   Bwscaledf<-cbind(indglobBw$Age,indglobBw$Sex,indglobBw$Motion,indglobBw[,i+4])
+  # change to back to 10K for more thorough resamp.
   bootparcor<-boot(Bwscaledf,returnCor,R=10000)
   bootCIs<-boot.ci(bootparcor,type='norm')
   ind_GBwcors_highCI[i,2]<-bootCIs$normal[3]
@@ -390,7 +396,7 @@ ggplot(data=estAndBootStrapped,aes(x=Scale,y=AgeCor))+geom_line()+geom_line(aes(
 ```
 
 
-```{r}
+```{r include=FALSE}
 ### Get in Consensus-reference atlas correspondence
 rac<-read.csv('/cbica/projects/pinesParcels/results/aggregated_data/fc/network_yCorrespondence_overscales.csv',stringsAsFactors = F)
 scalesvec<-as.numeric(rac[2,])
@@ -436,7 +442,7 @@ for (i in 1:length(tmclass)){
 ```
 
 
-```{r}
+```{r include=FALSE}
 
 ### Using a ton of index combinations 
 indiv_bwcols_ind<-intersect(bwcol,indiv)
@@ -623,6 +629,8 @@ bwAgeCorVecs$avg_bwP<-p.adjust(bwAgeCorVecs$avg_bwP,method='fdr')
 
 bwdf<-data.frame(tmvec,scalesvec,domnetvec,netpropvec,bwAgeCorVecs$avg_bw,bwAgeCorVecs$bw_to_unimodal,bwAgeCorVecs$bw_to_transmodal,bwAgeCorVecs$avg_bwP)
 
+netLM<-lm(bwAgeCorVecs.avg_bw~tmvec+scalesvec,bwdf)
+
 ####
 # avg b/w
 avgbw_age_tm<-ggplot(bwdf,aes(tmvec,bwAgeCorVecs.avg_bw,color=domnetvec,alpha=netpropvec^2)) + geom_point(size=6)+ scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068')) + xlab("Transmodality") + ylab(expression(paste(Delta,R^2[adj]))) +theme_classic(base_size = 28) + ggtitle('B/w Variance Captured by Age') +guides(alpha=FALSE,color=guide_legend(title="Maximal Y7 Overlap"))+theme(legend.position="top")
@@ -645,17 +653,17 @@ transbw_age_scale<-ggplot(bwdf,aes(tmvec,bwAgeCorVecs.bw_to_transmodal,color=sca
 ####
 
 #ggarrange(avgbw_age_tm,unibw_age_tm,transbw_age_tm,avgbw_age_scale,unibw_age_scale,transbw_age_scale)
-avgbw_age_tm
-unibw_age_tm
-transbw_age_tm
+#avgbw_age_tm
+#unibw_age_tm
+#transbw_age_tm
 avgbw_age_scale
 unibw_age_scale
 transbw_age_scale
 
 #17 network version
-bwdf17<-data.frame(tmvec,scalesvec,domnetvec17,netpropvec17,bwAgeCorVecs$avg_bw,bwAgeCorVecs$bw_to_unimodal,bwAgeCorVecs$bw_to_transmodal)
+#bwdf17<-data.frame(tmvec,scalesvec,domnetvec17,netpropvec17,bwAgeCorVecs$avg_bw,bwAgeCorVecs$bw_to_unimodal,bwAgeCorVecs$bw_to_transmodal)
 
-ggplot(bwdf17,aes(tmvec,bwAgeCorVecs.avg_bw,color=domnetvec17,alpha=netpropvec17^2)) + scale_color_manual(values=c('#dc8303','#8d2049','#596a85','#2d9a3d','#007938','#d9e200','#bc0943','#2b1f67','#48593a','#91a967','#4183a8','#00bb89','#3245a3','#9e3ca2','#eb75b3','#68126f','#d1001c')) + xlab("Transmodality") + ylab(expression(paste(Delta,R^2[adj]))) +theme_classic(base_size = 28) + geom_point(size=4,aes(tmvec,bwAgeCorVecs.avg_bw)) + ggtitle('Age Effect by Transmodality')
+#ggplot(bwdf17,aes(tmvec,bwAgeCorVecs.avg_bw,color=domnetvec17,alpha=netpropvec17^2)) + scale_color_manual(values=c('#dc8303','#8d2049','#596a85','#2d9a3d','#007938','#d9e200','#bc0943','#2b1f67','#48593a','#91a967','#4183a8','#00bb89','#3245a3','#9e3ca2','#eb75b3','#68126f','#d1001c')) + xlab("Transmodality") + ylab(expression(paste(Delta,R^2[adj]))) +theme_classic(base_size = 28) + geom_point(size=4,aes(tmvec,bwAgeCorVecs.avg_bw)) + ggtitle('Age Effect by Transmodality')
 
 # version with fdr p > 0.05 removed
 bwdf$bwAgeCorVecs.cavg_bw<-bwdf$bwAgeCorVecs.avg_bw
@@ -664,51 +672,8 @@ bwdf$bwAgeCorVecs.cavg_bw[bwdf$bwAgeCorVecs.avg_bwP>0.05]=0
 Corrected_avgbw_age_tm<-ggplot(bwdf,aes(tmvec,bwAgeCorVecs.cavg_bw,color=domnetvec,alpha=netpropvec^2)) + geom_point(size=6)+ scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068')) + xlab("Transmodality") + ylab(expression(paste(Delta,R^2[adj]))) +theme_classic(base_size = 28) + ggtitle('B/w Variance Captured by Age') +guides(alpha=FALSE,color=guide_legend(title="Maximal Y7 Overlap"))+theme(legend.position="top")
 ```
 
-```{r}
-#### spatial props
-# Both patch inf
-LHpi<-read.csv('/cbica/projects/pinesParcels/results/aggregated_data/numPatches_LH_allscales.csv')
-RHpi<-read.csv('/cbica/projects/pinesParcels/results/aggregated_data/numPatches_RH_allscales.csv')
 
-# Both Patch distance info (Geodesic)
-piGD<-read.csv('/cbica/projects/pinesParcels/results/aggregated_data/NetworkGeoDistr.csv')
-# Euclidean distance info
-piED<-read.csv('/cbica/projects/pinesParcels/results/aggregated_data/NetworkEucDistr.csv')
-
-
-# bwAgeCorVecs is starting point, length 464 for each network
-bwdf$LH_patchnum<-LHpi$patchnum_over_scalesL
-bwdf$RH_patchnum<-RHpi$patchnum_over_scalesR
-bwdf$Tot_patchnum<-bwdf$LH_patchnum+bwdf$RH_patchnum
-bwdf$Transmodality<-tmvec
-bwdf$bw_avg<-bwdf$bwAgeCorVecs.avg_bw
-
-patchTM<-ggplot(bwdf,aes(Tot_patchnum,Transmodality,color=domnetvec,alpha=netpropvec^2))+ geom_point(size=5,aes(Tot_patchnum,Transmodality)) + scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068')) + ylab("Transmodality") + xlab("Total Patch number") +theme_classic(base_size = 28)+guides(alpha=FALSE,color=FALSE)+theme(legend.position="top",legend.title = element_blank(),axis.title.x=element_blank(), axis.text.x=element_blank(),axis.title.y=element_blank(), axis.text.y=element_blank())
-
-patchAgeBw<-ggplot(bwdf,aes(Tot_patchnum,bw_avg,color=domnetvec,alpha=netpropvec^2)) + geom_point(size=5,aes(Tot_patchnum,bw_avg))+ scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068')) + xlab("Total Number of Patches") + ylab("AgeBwDeltaR") +theme_classic(base_size = 28)+ ylim(-.2,.2)+guides(alpha=FALSE,color=FALSE)+theme(legend.position="top",legend.title = element_blank(),axis.title.x=element_blank(), axis.text.x=element_blank(),axis.title.y=element_blank(), axis.text.y=element_blank())
-```
-
-
-```{r}
-# the distance duo
-bwdf$Patch_GeoDisperse<-piGD$nwise_geods
-bwdf$Patch_EucDisperse<-piED$nwise_eucs
-
-geodAgeBw<-ggplot(bwdf,aes(Patch_GeoDisperse,bw_avg,color=domnetvec,alpha=netpropvec^2)) + scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068')) + xlab("Geodesic Dispersion") + ylab("AgeBwDeltaR^2") +theme_classic(base_size = 28) + geom_point(size=5,aes(Patch_GeoDisperse,bw_avg))+guides(alpha=FALSE,color=FALSE)+theme(legend.position="top",legend.title = element_blank(),axis.title.x=element_blank(), axis.text.x=element_blank(),axis.title.y=element_blank(), axis.text.y=element_blank())
-
-eucAgeBw<-ggplot(bwdf,aes(Patch_EucDisperse,bw_avg,color=domnetvec,alpha=netpropvec^2)) + scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068')) + xlab("Euclidean Dispersion") + ylab("AgeBwDeltaR") +theme_classic(base_size = 28) + geom_point(size=5,aes(Patch_EucDisperse,bw_avg)) +guides(alpha=FALSE,color=FALSE)+theme(legend.position="top",legend.title = element_blank(),axis.title.x=element_blank(), axis.text.x=element_blank(),axis.title.y=element_blank(), axis.text.y=element_blank())
-
-geodTM<-ggplot(bwdf,aes(Patch_GeoDisperse,Transmodality,color=domnetvec,alpha=netpropvec^2))+ geom_point(size=5,aes(Patch_GeoDisperse,Transmodality)) + scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068')) + ylab("Transmodality") + xlab("Geodesic Dispersion") +theme_classic(base_size = 28)+guides(alpha=FALSE,color=FALSE)+theme(legend.position="top",legend.title = element_blank(),axis.title.x=element_blank(), axis.text.x=element_blank(),axis.title.y=element_blank(), axis.text.y=element_blank())
-
-eucTM<-ggplot(bwdf,aes(Patch_EucDisperse,Transmodality,color=domnetvec,alpha=netpropvec^2))+ geom_point(size=5,aes(Patch_EucDisperse,Transmodality)) + scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068')) + ylab("Transmodality") + xlab("Euclidean Dispersion") +theme_classic(base_size = 28)+guides(alpha=FALSE,color=FALSE)+theme(legend.position="top",legend.title = element_blank(),axis.title.x=element_blank(), axis.text.x=element_blank(),axis.title.y=element_blank(), axis.text.y=element_blank())
-```
-
-```{r}
-# effects of transmodality above and beyond dispersion
-bw_tm_dispersion<-lm(bw_avg~Transmodality+Patch_GeoDisperse+Patch_EucDisperse+Tot_patchnum,data=bwdf)
-```
-
-```{r}
+```{r include=FALSE}
 # age effect duration w/ b/w
 # long df - replaced indexed master df with bwAvgCon, because bwAvgCon yields network-wise measures vs. pairwise
 long_precursor<-data.frame(masterdf$bblid,masterdf$Age,masterdf$Sex,masterdf$Motion,bwAvgCon)
@@ -766,10 +731,14 @@ for (i in 1:(length(bwAvgCondf)-3)){
   # adding mean val because output values are centered
   colOfInt<-unlist(bwAvgCondf[,i])
   NetSplines[i,]<-forSpline[,3]+coef(igam)[1]
-  if (mean(colOfInt)>0){
-    print(paste(x,mean(colOfInt)))
+  
+  # set to just print out networks that have an average b/w con of over 0
+  #if (mean(colOfInt)>0){
+  #  print(paste(x,mean(colOfInt)))
+  #}
   }
-  }
+  
+  # set to print deriv duration
   ###cat(sprintf("\nSig change: %1.2f - %1.2f\n",minAgeEst[i],maxAgeEst[i]))
 }
 
@@ -821,6 +790,28 @@ bwR2EFdf<-data.frame(occvec,scalesvec,domnetvec,netpropvec,BW_R2VecEst)
 raw<-ggplot(bwR2EFdf,aes(occvec,BW_R2VecEst,color=domnetvec,alpha=netpropvec^2)) + scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068')) + xlab("PG2") + ylab(expression(paste(Delta,R^2[adj]))) +theme_classic(base_size = 45) + geom_point(size=7,aes(occvec,BW_R2VecEst)) + ggtitle('EF Effect by PG2')+guides(alpha=FALSE,color=guide_legend(title="Maximal Y7 Overlap"))+theme(legend.position="top")
 
 ggplot(bwR2EFdf,aes(occvec,BW_R2VecEst,color=scalesvec,alpha=netpropvec^2)) + xlab("Transmodality") + ylab(expression(paste(Delta,R^2[adj]))) +theme_classic(base_size = 45) + geom_point(size=7,aes(tmvec,BW_R2VecEst)) + ggtitle('EF Effect by PG2')+guides(alpha=FALSE,color=guide_legend(title="Maximal Y7 Overlap"))+theme(legend.position="top")
+
+# scale by pg2 interaction in EF relation
+netLM<-lm(BW_R2VecEst~scalesvec*occvec,bwR2EFdf)
+plot_model(netLM,type='int')
+tab_model(netLM)
+```
+
+```{r}
+#EF for global level
+# pull out EF aligned with bblid for merging into indglobBw
+EFmerger<-data.frame(masteref$F1_Exec_Comp_Cog_Accuracy,masteref$bblid)
+colnames(EFmerger)<-c('EF','bblid')
+indglobBw_EF<-merge(EFmerger,indglobBw,by='bblid')
+# melt df to get model of global seg as function of scale
+to_be_melteddf<-data.frame(cbind(indglobBw_EF$EF,indglobBw_EF$Age,indglobBw_EF$Sex,indglobBw_EF$Motion,indglobBw_EF[,6:34]))
+melteddf<-melt(to_be_melteddf,id=c('indglobBw_EF.EF','indglobBw_EF.Age','indglobBw_EF.Sex','indglobBw_EF.Motion'))
+# replace x2...x30 with appropriate length scalesvec
+scalesvec_20097<-rep(seq(2:30),each=693)
+melteddf$variable<-log(scalesvec_20097)
+a<-lm(value~indglobBw_EF.EF+indglobBw_EF.Sex+variable*indglobBw_EF.Age,melteddf)
+plot_model(a,type='int')
+
 ```
 
 ```{r}
@@ -893,4 +884,45 @@ Cbw~Age+Motion+log(scale)+Age*log(scale)+PG2
 # summary models for nodal level
 Nbw~Age+Motion+log(scale)+Age*log(Scale)+PG1
 Nbw~Age+Motion+log(scale)+Age*log(scale)+PG2
+```
+
+```{r}
+#### spatial props
+# Both patch inf
+LHpi<-read.csv('/cbica/projects/pinesParcels/results/aggregated_data/numPatches_LH_allscales.csv')
+RHpi<-read.csv('/cbica/projects/pinesParcels/results/aggregated_data/numPatches_RH_allscales.csv')
+
+# Both Patch distance info (Geodesic)
+piGD<-read.csv('/cbica/projects/pinesParcels/results/aggregated_data/NetworkGeoDistr.csv')
+# Euclidean distance info
+piED<-read.csv('/cbica/projects/pinesParcels/results/aggregated_data/NetworkEucDistr.csv')
+
+
+# bwAgeCorVecs is starting point, length 464 for each network
+bwdf$LH_patchnum<-LHpi$patchnum_over_scalesL
+bwdf$RH_patchnum<-RHpi$patchnum_over_scalesR
+bwdf$Tot_patchnum<-bwdf$LH_patchnum+bwdf$RH_patchnum
+bwdf$Transmodality<-tmvec
+bwdf$bw_avg<-bwdf$bwAgeCorVecs.avg_bw
+
+patchTM<-ggplot(bwdf,aes(Tot_patchnum,Transmodality,color=domnetvec,alpha=netpropvec^2))+ geom_point(size=5,aes(Tot_patchnum,Transmodality)) + scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068')) + ylab("Transmodality") + xlab("Total Patch number") +theme_classic(base_size = 28)+guides(alpha=FALSE,color=FALSE)+theme(legend.position="top",legend.title = element_blank(),axis.title.x=element_blank(), axis.text.x=element_blank(),axis.title.y=element_blank(), axis.text.y=element_blank())
+
+patchAgeBw<-ggplot(bwdf,aes(Tot_patchnum,bw_avg,color=domnetvec,alpha=netpropvec^2)) + geom_point(size=5,aes(Tot_patchnum,bw_avg))+ scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068')) + xlab("Total Number of Patches") + ylab("AgeBwDeltaR") +theme_classic(base_size = 28)+ ylim(-.2,.2)+guides(alpha=FALSE,color=FALSE)+theme(legend.position="top",legend.title = element_blank(),axis.title.x=element_blank(), axis.text.x=element_blank(),axis.title.y=element_blank(), axis.text.y=element_blank())
+
+# the distance duo
+bwdf$Patch_GeoDisperse<-piGD$nwise_geods
+bwdf$Patch_EucDisperse<-piED$nwise_eucs
+
+geodAgeBw<-ggplot(bwdf,aes(Patch_GeoDisperse,bw_avg,color=domnetvec,alpha=netpropvec^2)) + scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068')) + xlab("Geodesic Dispersion") + ylab("AgeBwDeltaR^2") +theme_classic(base_size = 28) + geom_point(size=5,aes(Patch_GeoDisperse,bw_avg))+guides(alpha=FALSE,color=FALSE)+theme(legend.position="top",legend.title = element_blank(),axis.title.x=element_blank(), axis.text.x=element_blank(),axis.title.y=element_blank(), axis.text.y=element_blank())
+
+eucAgeBw<-ggplot(bwdf,aes(Patch_EucDisperse,bw_avg,color=domnetvec,alpha=netpropvec^2)) + scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068')) + xlab("Euclidean Dispersion") + ylab("AgeBwDeltaR") +theme_classic(base_size = 28) + geom_point(size=5,aes(Patch_EucDisperse,bw_avg)) +guides(alpha=FALSE,color=FALSE)+theme(legend.position="top",legend.title = element_blank(),axis.title.x=element_blank(), axis.text.x=element_blank(),axis.title.y=element_blank(), axis.text.y=element_blank())
+
+geodTM<-ggplot(bwdf,aes(Patch_GeoDisperse,Transmodality,color=domnetvec,alpha=netpropvec^2))+ geom_point(size=5,aes(Patch_GeoDisperse,Transmodality)) + scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068')) + ylab("Transmodality") + xlab("Geodesic Dispersion") +theme_classic(base_size = 28)+guides(alpha=FALSE,color=FALSE)+theme(legend.position="top",legend.title = element_blank(),axis.title.x=element_blank(), axis.text.x=element_blank(),axis.title.y=element_blank(), axis.text.y=element_blank())
+
+eucTM<-ggplot(bwdf,aes(Patch_EucDisperse,Transmodality,color=domnetvec,alpha=netpropvec^2))+ geom_point(size=5,aes(Patch_EucDisperse,Transmodality)) + scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068')) + ylab("Transmodality") + xlab("Euclidean Dispersion") +theme_classic(base_size = 28)+guides(alpha=FALSE,color=FALSE)+theme(legend.position="top",legend.title = element_blank(),axis.title.x=element_blank(), axis.text.x=element_blank(),axis.title.y=element_blank(), axis.text.y=element_blank())
+```
+
+```{r}
+# effects of transmodality above and beyond dispersion
+bw_tm_dispersion<-lm(bw_avg~Transmodality+Patch_GeoDisperse+Patch_EucDisperse+Tot_patchnum,data=bwdf)
 ```
