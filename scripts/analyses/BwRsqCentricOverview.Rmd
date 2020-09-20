@@ -768,12 +768,12 @@ cBW_R2VecEst[corrected>0.05]=0
 # with FDR corrections zeroed
 cbwR2EFdf<-data.frame(tmvec,scalesvec,domnetvec,netpropvec,cBW_R2VecEst)
 
-fdrzeroed<-ggplot(cbwR2EFdf,aes(tmvec,cBW_R2VecEst,color=domnetvec,alpha=netpropvec^2)) + scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068')) + xlab("Transmodality") + ylab(expression(paste(Delta,R^2[adj]))) +theme_classic(base_size = 45) + geom_point(size=7,aes(tmvec,cBW_R2VecEst)) + ggtitle('EF Effect by Transmodality')+guides(alpha=FALSE,color=guide_legend(title="Maximal Y7 Overlap"))+theme(legend.position="top")
+fdrzeroed<-ggplot(cbwR2EFdf,aes(tmvec,cBW_R2VecEst,color=domnetvec,alpha=netpropvec^2)) + scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068')) + xlab("Transmodality") + ylab(expression(paste(Delta,R^2[adj]))) +theme_classic(base_size = 40) + geom_point(size=7,aes(tmvec,cBW_R2VecEst)) + ggtitle('EF Effect by Transmodality')+guides(alpha=FALSE,color=guide_legend(title="Maximal Y7 Overlap"))+theme(legend.position="top")
 
 # without FDR corrections zeroed
 bwR2EFdf<-data.frame(tmvec,scalesvec,domnetvec,netpropvec,BW_R2VecEst)
 
-raw<-ggplot(bwR2EFdf,aes(tmvec,BW_R2VecEst,color=domnetvec,alpha=netpropvec^2)) + scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068')) + xlab("Transmodality") + ylab(expression(paste(Delta,R^2[adj]))) +theme_classic(base_size = 45) + geom_point(size=7,aes(tmvec,BW_R2VecEst)) + ggtitle('EF Effect by PG2')+guides(alpha=FALSE,color=guide_legend(title="Maximal Y7 Overlap"))+theme(legend.position="top")
+raw<-ggplot(bwR2EFdf,aes(tmvec,BW_R2VecEst,color=domnetvec,alpha=netpropvec^2)) + scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068')) + xlab("Transmodality") + ylab(expression(paste(Delta,R^2[adj]))) +theme_classic(base_size = 40) + geom_point(size=7,aes(tmvec,BW_R2VecEst)) + ggtitle('EF Effect by PG1')+guides(alpha=FALSE,color=guide_legend(title="Maximal Y7 Overlap"))+theme(legend.position="top")
 
 ggplot(bwR2EFdf,aes(tmvec,BW_R2VecEst,color=scalesvec,alpha=netpropvec^2)) + xlab("Transmodality") + ylab(expression(paste(Delta,R^2[adj]))) +theme_classic(base_size = 45) + geom_point(size=7,aes(tmvec,BW_R2VecEst)) + ggtitle('EF Effect by Transmodality')+guides(alpha=FALSE,color=guide_legend(title="Maximal Y7 Overlap"))+theme(legend.position="top")
 
@@ -787,12 +787,12 @@ fdrzeroed<-ggplot(cbwR2EFdf,aes(occvec,cBW_R2VecEst,color=domnetvec,alpha=netpro
 # without FDR corrections zeroed
 bwR2EFdf<-data.frame(occvec,scalesvec,domnetvec,netpropvec,BW_R2VecEst)
 
-raw<-ggplot(bwR2EFdf,aes(occvec,BW_R2VecEst,color=domnetvec,alpha=netpropvec^2)) + scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068')) + xlab("PG2") + ylab(expression(paste(Delta,R^2[adj]))) +theme_classic(base_size = 45) + geom_point(size=7,aes(occvec,BW_R2VecEst)) + ggtitle('EF Effect by PG2')+guides(alpha=FALSE,color=guide_legend(title="Maximal Y7 Overlap"))+theme(legend.position="top")
+raw<-ggplot(bwR2EFdf,aes(occvec,BW_R2VecEst,color=domnetvec,alpha=netpropvec^2)) + scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068')) + xlab("PG2") + ylab(expression(paste(Delta,R^2[adj]))) +theme_classic(base_size = 40) + geom_point(size=7,aes(occvec,BW_R2VecEst)) + ggtitle('EF Effect by PG2')+guides(alpha=FALSE,color=guide_legend(title="Maximal Y7 Overlap"))+theme(legend.position="top")
 
-ggplot(bwR2EFdf,aes(occvec,BW_R2VecEst,color=scalesvec,alpha=netpropvec^2)) + xlab("Transmodality") + ylab(expression(paste(Delta,R^2[adj]))) +theme_classic(base_size = 45) + geom_point(size=7,aes(tmvec,BW_R2VecEst)) + ggtitle('EF Effect by PG2')+guides(alpha=FALSE,color=guide_legend(title="Maximal Y7 Overlap"))+theme(legend.position="top")
+ggplot(bwR2EFdf,aes(occvec,BW_R2VecEst,color=scalesvec,alpha=netpropvec^2)) + xlab("PG2") + ylab(expression(paste(Delta,R^2[adj]))) +theme_classic(base_size = 45) + geom_point(size=7,aes(occvec,BW_R2VecEst)) + ggtitle('EF Effect by PG2')+guides(alpha=FALSE,color=guide_legend(title="Partition Resolution"))+theme(legend.position="top")
 
 # scale by pg2 interaction in EF relation
-netLM<-lm(BW_R2VecEst~scalesvec*occvec,bwR2EFdf)
+netLM<-lm(BW_R2VecEst~occvec*scalesvec,bwR2EFdf)
 plot_model(netLM,type='int')
 tab_model(netLM)
 ```
