@@ -1959,6 +1959,10 @@ forML_EF<-cbind(masteref$bblid,masteref$F1_Exec_Comp_Cog_Accuracy,masteref$Age,m
 MP_EFFN<-'/cbica/projects/pinesParcels/results/EffectVecs/forML_EF.csv'
 write.table(forML_EF,MP_EFFN,row.names = F,col.names = F,sep = ',')
 
+forPMACS_EF<-cbind(masteref$sc,masteref$bblid,masteref$F1_Exec_Comp_Cog_Accuracy,masteref$Age,masteref$Motion,masteref$Sex)
+MP_EFFN<-'/cbica/projects/pinesParcels/results/EffectVecs/forML_EF.csv'
+write.table(forML_EF,MP_EFFN,row.names = F,col.names = F,sep = ',')
+
 # permuted version 1
 set.seed(1)
 permuted_ind<-sample(1:693)

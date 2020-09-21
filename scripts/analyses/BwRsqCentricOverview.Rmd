@@ -365,8 +365,8 @@ ind_GBwcors_lowCI[,1]<-2:30
 
 
 
-ind_GBwcors<-matrix(0,29,2)
 ind_GBwcors[,1]<-2:30
+
 
 # write function to return cor - d is combined dataframe (age, sex, motion and glob b/w at one particular scale)
 returnCor<-function(d,i){
@@ -376,12 +376,19 @@ returnCor<-function(d,i){
   return(pspear[4])
 }
 
+returnLmCoef<-function(d,i){
+  # i guess this sets I to the bootstrapped sample 
+  d2<-d[i,]
+  pspear=lm(X1~X2,d2)
+  return(coef(pspear))
+}
+
 set.seed(1)
 for (i in 1:29){
   print(i)
   Bwscaledf<-cbind(indglobBw$Age,indglobBw$Sex,indglobBw$Motion,indglobBw[,i+4])
   # change to back to 10K for more thorough resamp.
-  bootparcor<-boot(Bwscaledf,returnCor,R=10000)
+  bootparcor<-boot(Bwscaledf,returnCor,R=10)
   bootCIs<-boot.ci(bootparcor,type='norm')
   ind_GBwcors_highCI[i,2]<-bootCIs$normal[3]
   ind_GBwcors_lowCI[i,2]<-bootCIs$normal[2]
@@ -393,6 +400,17 @@ correlations_over_scales(ind_GBwcors_lowCI,"Global BetweenCon Age Correlation")
 estAndBootStrapped<-data.frame(ind_GBwcors[,1],ind_GBwcors[,2],ind_GBwcors_highCI[,2],ind_GBwcors_lowCI[,2])
 colnames(estAndBootStrapped)<-c('Scale','AgeCor','upperCI','lowerCI')
 ggplot(data=estAndBootStrapped,aes(x=Scale,y=AgeCor))+geom_line()+geom_line(aes(x=Scale,y=upperCI,color='UpperCI'))+geom_line(aes(x=Scale,y=lowerCI,color='LowerCI'))+theme_classic()+ggtitle('Age x Global B/w Con')
+
+# full model with subj intercept
+long_Bwscaledf<-data.frame(indglobBw$bblid,indglobBw$Age,indglobBw$Sex,indglobBw$Motion,indglobBw[,5:33])
+melted_Bwscaledf<-melt(long_Bwscaledf,id=c(1,2,3,4))
+colnames(melted_Bwscaledf)<-c('bblid','Age','Sex','Motion','Scale','value')
+melted_Bwscaledf$Scale<-rep(seq(from=2,to=30),each=693)
+
+globModAge<-lm(value~Age*log(Scale)+Motion+Sex+(1|bblid),melted_Bwscaledf)
+
+
+
 ```
 
 
@@ -795,6 +813,7 @@ ggplot(bwR2EFdf,aes(occvec,BW_R2VecEst,color=scalesvec,alpha=netpropvec^2)) + xl
 netLM<-lm(BW_R2VecEst~occvec*scalesvec,bwR2EFdf)
 plot_model(netLM,type='int')
 tab_model(netLM)
+
 ```
 
 ```{r}
@@ -804,14 +823,18 @@ EFmerger<-data.frame(masteref$F1_Exec_Comp_Cog_Accuracy,masteref$bblid)
 colnames(EFmerger)<-c('EF','bblid')
 indglobBw_EF<-merge(EFmerger,indglobBw,by='bblid')
 # melt df to get model of global seg as function of scale
-to_be_melteddf<-data.frame(cbind(indglobBw_EF$EF,indglobBw_EF$Age,indglobBw_EF$Sex,indglobBw_EF$Motion,indglobBw_EF[,6:34]))
-melteddf<-melt(to_be_melteddf,id=c('indglobBw_EF.EF','indglobBw_EF.Age','indglobBw_EF.Sex','indglobBw_EF.Motion'))
+to_be_melteddf<-data.frame(cbind(indglobBw_EF$bblid,indglobBw_EF$EF,indglobBw_EF$Age,indglobBw_EF$Sex,indglobBw_EF$Motion,indglobBw_EF[,6:34]))
+melteddf<-melt(to_be_melteddf,id=c('indglobBw_EF.bblid','indglobBw_EF.EF','indglobBw_EF.Age','indglobBw_EF.Sex','indglobBw_EF.Motion'))
 # replace x2...x30 with appropriate length scalesvec
-scalesvec_20097<-rep(seq(2:30),each=693)
-melteddf$variable<-log(scalesvec_20097)
-a<-lm(value~indglobBw_EF.EF+indglobBw_EF.Sex+variable*indglobBw_EF.Age,melteddf)
-plot_model(a,type='int')
+colnames(melteddf)<-c('bblid','EF','Age','Sex','Motion','Scale','value')
+melteddf$Scale<-as.numeric(rep(seq(from=2,to=30),each=693))
+melteddf$bblid<-as.factor(melteddf$bblid)
+# manually log transform scale
+melteddf$Scale<-log(melteddf$Scale)
 
+# fit model across scales
+GlobalBwEF_model<-glmer(value~Scale*Age*EF+Sex+Motion+(1|bblid),melteddf)
+plot_model(GlobalBwEF_model,type='int')
 ```
 
 ```{r}
