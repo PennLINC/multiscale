@@ -379,8 +379,8 @@ returnCor<-function(d,i){
 returnLmCoef<-function(d,i){
   # i guess this sets I to the bootstrapped sample 
   d2<-d[i,]
-  pspear=lm(X1~X2,d2)
-  return(coef(pspear))
+  pspear=lm(X1~X2*X3,d2)
+  coef(pspear)
 }
 
 set.seed(1)
@@ -814,6 +814,50 @@ netLM<-lm(BW_R2VecEst~occvec*scalesvec,bwR2EFdf)
 plot_model(netLM,type='int')
 tab_model(netLM)
 
+```
+
+```{r}
+library(gamm4)
+
+# unitary model of community-level EF and b/w con
+# melt bwAvgCondf[,1:464] with idcols for age, sex, motion, scale, and bblid (for random intercept)
+to_be_melted<-data.frame(cbind(masteref$bblid,as.numeric(masteref$F1_Exec_Comp_Cog_Accuracy),as.numeric(masteref$Age),as.numeric(masteref$Sex),masteref$Motion,bwAvgCondf[,1:464]))
+
+# get the long format
+Melted_clevel_ef<-melt(to_be_melted,id=c(1,2,3,4,5))
+colnames(Melted_clevel_ef)<-c('bblid','EF','Age','Sex','Motion','ObsoleteColName','AvgBetweenCon')
+
+
+### create vector of scales using colnames from ,bwAvgCondf[,1:464]
+# initialize
+scalesvector<-vector()
+
+# use the column names to determine the scale each b/w network con feature is at
+for (cn in 1:length(colnames(bwAvgCondf[,1:464]))){
+  splitColName<-strsplit((colnames(bwAvgCondf[,1:464]))[cn],split='scale')
+  ScaleNet<-strsplit(unlist(splitColName)[2],split='_net')
+  scale<-as.numeric(unlist(ScaleNet)[1])
+  scalesvector[cn]<-scale
+}
+
+# each value needs to be repeated 693 times 
+repScalesVector=rep(scalesvector,each=693)
+
+# tag onto long format df
+Melted_clevel_ef$Scale<-repScalesVector
+
+
+# get non-numeric variables into proper format
+Melted_clevel_ef$bblid<-as.factor(Melted_clevel_ef$bblid)
+Melted_clevel_ef$Sex<-as.factor(Melted_clevel_ef$Sex)
+
+# finally, run the model with GAMM
+simplif_EF_mod<-gamm(AvgBetweenCon~s(Age,k=3)+Sex+Motion+log(Scale)+EF*log(Scale), random=list(bblid=~1),data=Melted_clevel_ef,REML=T)
+summary(simplif_EF_mod$lme)
+summary(simplif_EF_mod$gam)
+# run it with gamm4 for checkin
+simplif_EF_mod4<-gamm4(AvgBetweenCon~s(Age)+Sex+Motion+log(Scale)+EF*log(Scale),data=Melted_clevel_ef,random=~(1|bblid),REML=T)
+summary(simplif_EF_mod4$gam)
 ```
 
 ```{r}

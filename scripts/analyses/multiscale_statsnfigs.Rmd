@@ -1263,11 +1263,13 @@ bwcolnames<-colnames(individ_scalebybw_df)
 # empty array to populate with b/w connectivity age cors (b/w to unimodal, b/w to transmodal, b/w to aggregate, and K and N and Modality just to confirm we are matching)
 bwAgeCorVecs<-matrix(0,464,6)
 
+withinBetweenClassConVec<-vector()
+
 # loop over connectivities to-unimodal then to-transmodal
 modalloopvar=c('unimodal','transmodal')
 for (i in 1:2){
   print(modalloopvar[i])
-  # index "the other" (dystopian)
+  # index "the other" 
   modalloopvar_other=modalloopvar[modalloopvar!=(modalloopvar[i])]
   # extract which of 1:464 network mappings match the modalitity of this loop
   modalindices=which(tmclass %in% modalloopvar[i])
@@ -1411,17 +1413,26 @@ for (i in 1:2){
     # Print out ratio of transmodal to unimodal at this scale
     unilength=length(tmclasses_thisScale[tmclasses_thisScale=='unimodal'])
     translength=length(tmclasses_thisScale[tmclasses_thisScale=='transmodal'])
-    print(paste('uni to trans ratio:', unilength/translength))
+    print(paste('# of unimodal to transmodal community ratio:', unilength/translength))
+    
+    # use triangular numbers to derive number of cross-modal and within-modal connections at this scale
+    unimodal2unimodalCons=((unilength-1)*unilength)/2
+    transmodal2transmodalCons=((translength-1)*translength)/2
+    # cross modal as the remaining b/w cons
+    crossmodal=(((K-1)*K)/2)-unimodal2unimodalCons-transmodal2transmodalCons
+    withinmodal=unimodal2unimodalCons+transmodal2transmodalCons
+    print(paste('# of within-tm class connections vs between tm-class connections:', withinmodal/crossmodal,K,sep='|'))
+    withinBetweenClassConVec[K]<-withinmodal/crossmodal
   }
   
 }
 bwAgeCorVecs<-data.frame(bwAgeCorVecs)
 ```
+
 ```{r}
 # temp version
 tmumRatVec<-c(1,2,1,0.666666666666667,1,.75,1.6667,1.25,1,0.833333,1.4,1.1667,1,1.5,1.2857,1.125,1,1.375,1.222,1.1,1,.9166667,.846,1.0833,.8571,.8,1,.8125,.6666)
 ```
-
 
 ```{r}
 
@@ -2020,6 +2031,11 @@ for (K in 3:30){
 
 # merge it all together
 indglobbw<-cbind(masterdf$bblid,masterdf$Age/12,masterdf$Sex,masterdf$Motion,gbw)
+```
+
+```{r}
+ggplot(ind_GBwcors,aes(x=ind_GBwcors$X1,y=ind_GBwcors$X2))+geom_line()+geom_line(aes(ind_GBwcors$X1,ind_GBwcors$X3,col='red'))+xlab('Scale')+ylab('Global B/w x Age correlation')
+
 ```
 
 
