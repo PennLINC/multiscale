@@ -1971,8 +1971,8 @@ MP_EFFN<-'/cbica/projects/pinesParcels/results/EffectVecs/forML_EF.csv'
 write.table(forML_EF,MP_EFFN,row.names = F,col.names = F,sep = ',')
 
 forPMACS_EF<-cbind(masteref$sc,masteref$bblid,masteref$F1_Exec_Comp_Cog_Accuracy,masteref$Age,masteref$Motion,masteref$Sex)
-MP_EFFN<-'/cbica/projects/pinesParcels/results/EffectVecs/forML_EF.csv'
-write.table(forML_EF,MP_EFFN,row.names = F,col.names = F,sep = ',')
+MP_EFFN<-'/cbica/projects/pinesParcels/results/EffectVecs/forPMACS_EF.csv'
+write.table(forPMACS_EF,MP_EFFN,row.names = F,col.names = F,sep = ',')
 
 # permuted version 1
 set.seed(1)
@@ -2034,7 +2034,7 @@ indglobbw<-cbind(masterdf$bblid,masterdf$Age/12,masterdf$Sex,masterdf$Motion,gbw
 ```
 
 ```{r}
-ggplot(ind_GBwcors,aes(x=ind_GBwcors$X1,y=ind_GBwcors$X2))+geom_line()+geom_line(aes(ind_GBwcors$X1,ind_GBwcors$X3,col='red'))+xlab('Scale')+ylab('Global B/w x Age correlation')
+ggplot(ind_GBwcors,aes(x=ind_GBwcors$X1,y=ind_GBwcors$X2,col='blue'))+geom_line()+geom_line(aes(ind_GBwcors$X1,ind_GBwcors$X3,col='red'))+xlab('Scale')+ylab('Value')+scale_color_hue(labels=c('WithinClass:Cross Class B/w connections','B/w x Age Correlation'))
 
 ```
 
