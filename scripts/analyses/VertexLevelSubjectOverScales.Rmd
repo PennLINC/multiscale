@@ -161,11 +161,14 @@ colnames(mdf_globalVerts)[5]<-c('Scale')
 mdf_globalVerts$Scale<-as.integer(mdf_globalVerts$Scale)
 mdf_globalVerts$Age<-as.numeric(mdf_globalVerts$Age)
 
-model=glmer(value~Age*log(Scale)+Motion+Sex+(1 + log(Scale)|bblid),data=mdf_globalVerts)
+model=glmer(value~Age*log(Scale)+Motion+Sex+(1|bblid),data=mdf_globalVerts)
 modelsum<-summary(model)
 a=rep(seq(2:30),each=693)
 a=data.frame(modelsum$residuals,a,seq(1:20097))
 AvgVert<-ggplot(a,aes(x=seq.1.20097.,y=modelsum.residuals,col=a))+geom_point()+scale_color_gradientn(colours = rainbow(5))+theme_classic2()
+
+# using many splines
+model=gamm(value~ti(Age) + ti(Scale) + ti(Age,Scale) + Motion + Sex,random=list(bblid=~1),data=mdf_globalVerts)
 
 ### using link function
 #model=glmer((value+1)~Motion+Age*Scale+(1+Scale|bblid),data=mdf_globalVerts,family = Gamma(link = "log"))

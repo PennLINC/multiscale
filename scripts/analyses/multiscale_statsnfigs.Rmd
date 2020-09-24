@@ -76,7 +76,7 @@ mdatani<-melt(df_ni,id=c(1,2,3,4,5))
 mdatarc<-melt(df_rc,id=c(1,2,3,4,5))
 mdatadif<-melt(df_dif,id=c(1,2,3,4,5))
 
-tc<-ggplot(data=mdata[1:5000,],aes(x=variable,y=value,group=bblid,color=Age)) +geom_step(alpha = 0.15,size=10)+ scale_color_gradient2(low = "green", mid = 'red', high = "green") + theme_minimal()+labs(title="Total cost over scales")
+tc<-ggplot(data=mdata,aes(x=variable,y=value,group=bblid,color=Age)) +geom_line(alpha = 0.25,size=1)+ scale_color_gradientn(colors=c("yellow","purple")) + theme_minimal()+labs(title="Total cost over scales")
 ni<-ggplot(data=mdatani,aes(x=variable,y=value,group=bblid,color=Age)) +geom_line(alpha = 0.15)+scale_color_gradientn(colors=c("yellow","purple")) + theme_minimal()+labs(title="Number of iterations over scales")
 rc<-ggplot(data=mdatarc,aes(x=variable,y=value,group=bblid,color=Age)) +geom_line(alpha = 0.15)+scale_color_gradientn(colors=c("yellow","purple")) + theme_minimal()+labs(title="Reconstruction error over scales")
 dif<-ggplot(data=mdatadif,aes(x=variable,y=value,group=bblid,color=Age)) +geom_line(alpha = 0.15)+scale_color_gradientn(colors=c("yellow","purple")) + theme_minimal()+labs(title="Non-recon error over scales")
