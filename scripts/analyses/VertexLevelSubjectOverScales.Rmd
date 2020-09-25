@@ -6,6 +6,7 @@ output: github_document
 ---
 
 ```{r}
+library(mgcViz)
 library(rmarkdown)
 library(reshape)
 library(ggplot2)
@@ -268,6 +269,16 @@ model1_data$resids = resid(avg1)
 avg<-ggplot(model1_data,aes(y=resids,x=`log(Scale)`,group=bblid,color=bblid))+geom_point(alpha=.1,show.legend=F)+geom_line(alpha=.5,show.legend=F)+ggtitle('avg.')
 
 ggarrange(avg,pfc,motor,occip)
+```
+
+```{r}
+# gammode
+model=gammV(value~ti(Age) + ti(Scale) + ti(Age,Scale) + Motion + Sex,random=list(bblid=~1),data=mdf_globalVerts)
+
+model_pfc=gammV(value~ti(Age) + ti(Scale) + ti(Age,Scale) + Motion + Sex,random=list(bblid=~1),data=mdf_PFCVert)
+
+fit<-plot(sm(model_pfc, 3)) + l_fitRaster() + l_fitContour() + l_points()
+pv<-plot(sm(model_pfc, 3)) + l_pvRaster() + l_pvContour() + l_points()
 ```
 
 
