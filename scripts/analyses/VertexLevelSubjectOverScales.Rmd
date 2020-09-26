@@ -281,4 +281,59 @@ fit<-plot(sm(model_pfc, 3)) + l_fitRaster() + l_fitContour() + l_points()
 pv<-plot(sm(model_pfc, 3)) + l_pvRaster() + l_pvContour() + l_points()
 ```
 
+```{r}
+##### EF pilot vertices - contigent on masterEF being assembled in longer RMD
+
+#isolate EF and bblids
+EFmerger<-data.frame(masteref$bblid,masteref$F1_Exec_Comp_Cog_Accuracy)
+colnames(EFmerger)<-c('bblid','EF')
+
+# merge EF into indglobBw
+EF_indglobBw<-merge(EFmerger,indglobBw,by='bblid')
+mEFdf_globalVerts<-melt(EF_indglobBw,id=c(1,2,3,4,5))
+colnames(mEFdf_globalVerts)<-c('bblid','EF','Age','Sex','Motion','Scale','value')
+# change variable classes to approp. type
+mEFdf_globalVerts$bblid<-as.factor(mEFdf_globalVerts$bblid)
+mEFdf_globalVerts$Scale<-as.numeric(mEFdf_globalVerts$Scale)+1
+mEFdf_globalVerts$Age<-as.numeric(mEFdf_globalVerts$Age)
+
+### model
+model=gammV(value~ti(EF) + ti(Age) + ti(Scale) + ti(Age,Scale) +ti(EF,Scale) + Motion + Sex,random=list(bblid=~1),data=mEFdf_globalVerts)
+
+
+# test out on other vertices, motor, PFC, supVis
+# merge EF into MOTOR
+EF_indMotBw<-merge(EFmerger,df_MotVert,by='bblid')
+mEFdf_MotVert<-melt(EF_indMotBw,id=c(1,2,3,4,5,6))
+colnames(mEFdf_MotVert)<-c('bblid','EF','scanid','Age','Sex','Motion','Scale','value')
+# clean scale vector from global vertex melted df
+mEFdf_MotVert$Scale<-mEFdf_globalVerts$Scale
+
+# change variable classes to approp. type
+mEFdf_MotVert$bblid<-as.factor(mEFdf_globalVerts$bblid)
+mEFdf_MotVert$Age<-as.numeric(mEFdf_globalVerts$Age)
+
+### model
+model=gammV(value~ti(EF) + ti(Age) + ti(Scale) + ti(Age,Scale) +ti(EF,Scale) + Motion + Sex,random=list(bblid=~1),data=mEFdf_MotVert)
+
+# merge EF into PFC
+EF_indPFCBw<-merge(EFmerger,df_PFCVert,by='bblid')
+mEFdf_PFCVert<-melt(EF_indPFCBw,id=c(1,2,3,4,5,6))
+colnames(mEFdf_PFCVert)<-c('bblid','EF','scanid','Age','Sex','Motion','Scale','value')
+# clean scale vector from global vertex melted df
+mEFdf_PFCVert$Scale<-mEFdf_globalVerts$Scale
+
+# change variable classes to approp. type
+mEFdf_PFCVert$bblid<-as.factor(mEFdf_PFCVert$bblid)
+mEFdf_PFCVert$Age<-as.numeric(mEFdf_PFCVert$Age)
+
+### model
+model=gammV(value~ti(EF) + ti(Age) + ti(Scale) + ti(Age,Scale) +ti(EF,Scale) + Motion + Sex,random=list(bblid=~1),data=mEFdf_PFCVert)
+
+
+df_SupVisVert
+df_MotVert
+df_PFCVert
+```
+
 
