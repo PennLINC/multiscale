@@ -347,6 +347,29 @@ for (i in 1:29){
 WinCors<-correlations_over_scales(ind_GWincors,"Global WithinCon Age Correlation")
 
 BwCors<-correlations_over_scales(ind_GBwcors,"Global BetweenCon Age Correlation")
+
+### compare explanatory power of scales vs. ratio
+
+# melt dataframe
+melted_gBw<-melt(indglobBw,id=c(1,2,3,4))
+# factor resets 2 to first factor and so forth, plus 1 to correct
+melted_gBw$Scale<-as.numeric(melted_gBw$variable)+1
+melted_gBw$bblid<-as.factor(melted_gBw$bblid)
+modelr<-gamm(value~Motion+Sex+ti(Age,k=4)+ti(Scale,k=4)+ti(Age,Scale,k=4),random=list(bblid=~1),data=melted_gBw)
+model<-gam(value~Motion+Sex+ti(Age,k=4)+ti(Scale,k=4)+ti(Age,Scale,k=4),data=melted_gBw)
+# port in this ratio from longer statsnfigs calc.
+ratvec<-withinBetweenClassConVec[2:30]
+#make a long format vector for the long format dataframe
+# model for age*scale
+ratvec_long<-rep(ratvec,each=693)
+melted_gBw$ratvec<-ratvec_long
+
+# model for age*ratio
+model2r<-gamm(value~Motion+Sex+ti(Age,k=4)+ti(ratvec,k=4)+ti(Age,ratvec,k=4),random=list(bblid=~1),data=melted_gBw)
+model2<-gam(value~Motion+Sex+ti(Age,k=4)+ti(ratvec,k=4)+ti(Age,ratvec,k=4),data=melted_gBw)
+
+# complete model
+model3r<-gamm(value~Motion+Sex+ti(Age,k=4)+ti(ratvec,k=4)+ti(Scale,k=4)+ti(Age,ratvec,k=4)+ti(Age,Scale),random=list(bblid=~1),data=melted_gBw)
 ```
 
 ```{r}
