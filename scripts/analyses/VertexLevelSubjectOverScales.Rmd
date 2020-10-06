@@ -328,7 +328,7 @@ mEFdf_PFCVert$bblid<-as.factor(mEFdf_PFCVert$bblid)
 mEFdf_PFCVert$Age<-as.numeric(mEFdf_PFCVert$Age)
 
 ### model
-model=gammV(value~ti(EF) + ti(Age) + ti(Scale) + ti(Age,Scale) +ti(EF,Scale) + Motion + Sex,random=list(bblid=~1),data=mEFdf_PFCVert)
+model=gammV(value~ti(EF,k=4) + ti(Age,k=4) + ti(Scale,k=4) + ti(Age,Scale,k=4) +ti(EF,Scale,k=4) + Motion + Sex,random=list(bblid=~1),data=mEFdf_PFCVert)
 
 
 df_SupVisVert

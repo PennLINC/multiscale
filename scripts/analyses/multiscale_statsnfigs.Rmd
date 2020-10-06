@@ -1758,6 +1758,7 @@ for (k in 2:30){
 # isolate rows from this K
 scaleSubset<-ScaleTMDifDf[ScaleTMDifDf$scalevec==k,]
 avgDifVec[k]<-mean(scaleSubset$tmdifvec)
+
 }
 ```
 

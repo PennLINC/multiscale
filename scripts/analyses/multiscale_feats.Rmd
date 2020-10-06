@@ -1,0 +1,47 @@
+---
+title: "Untitled"
+author: "Adam"
+date: "10/5/2020"
+output: html_document
+---
+```{r}
+#ms feat. planning
+
+# number of b/w features over scales
+
+Numfeatvec<-vector()
+NumMotvec<-vector()
+NumMotFeatVec<-vector()
+
+for (K in 2:30){
+  # number of b/w feats at each scale
+  Numfeatvec[K]<-(K*(K+1))/2
+  # for indexing into domnetvec
+  K_start=((K-1)*(K))/2
+  K_end=(((K-1)*(K))/2)+K-1
+  Kind<-K_start:K_end
+  # get network "labels" at this scale
+  corres_domnetvec<-domnetvec[Kind]
+  # get number of motor labels
+  numMotNets<-length(corres_domnetvec[corres_domnetvec=='Motor'])
+  NumMotvec[K]<-numMotNets
+  # Each motor network has K cells, K-1 connections
+  EachMotCnxn<-((numMotNets*K)-numMotNets)
+  # still need to account for motor-motor redundancies
+  NumMotFeatVec[K]<-EachMotCnxn-((numMotNets-1)*2)
+  #print mot redund. number for sanity check
+  print(((numMotNets-1)*2))
+}
+
+# number of features
+
+plot(featvec)
+
+# get number of motor features at each scale, requires domnetvec to have been calculated
+
+plot(NumMotvec)
+
+# number of motor connections
+
+plot(NumMotFeatVec)
+```
