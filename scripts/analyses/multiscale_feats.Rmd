@@ -15,7 +15,8 @@ NumMotFeatVec<-vector()
 
 for (K in 2:30){
   # number of b/w feats at each scale
-  Numfeatvec[K]<-(K*(K+1))/2
+  Kadapted<-K-1
+  Numfeatvec[K]<-(Kadapted*(Kadapted+1))/2
   # for indexing into domnetvec
   K_start=((K-1)*(K))/2
   K_end=(((K-1)*(K))/2)+K-1
@@ -44,4 +45,207 @@ plot(NumMotvec)
 # number of motor connections
 
 plot(NumMotFeatVec)
+```
+
+```{r}
+### extract between features from each scale and save - requires statsNfigs to have been run
+
+for (i in 2:30){
+  # just extract individualized b/w feats at this scale
+  scaleind<-grep((paste('ind_bw_FC_scale',i,'_',sep='')),colnames(masterdf))
+  print(paste('scale',str(i),'number of fc features:',length(scaleind)))
+  forRRfc<-cbind(masterdf$Age,masterdf$Motion,masterdf[,scaleind])
+  RRfcFN<-paste('/cbica/projects/pinesParcels/results/EffectVecs/scale',i,'for_bw_RRfc.csv',sep='')
+  write.table(forRRfc,RRfcFN,row.names = F,col.names = F,sep = ',')
+}
+```
+
+```{r}
+### extract 30 versions of the equivalent number of features across scales for comparison
+
+# make a 2 column df (scalesvec, feature number)
+bwFeatVecInd<-grep((paste('ind_bw_FC_scale')),colnames(masterdf))
+corresp_scalesvec<-vector()
+# get corresp. scale of each in index
+for (i in 1:length(bwFeatVecInd)){
+  bwFeatVecInd_ofInt<-bwFeatVecInd[i]
+  colnameOfInt<-colnames(masterdf)[bwFeatVecInd_ofInt]
+  # get scale name from here
+  stringsofInt<-strsplit(colnameOfInt,split='scale')
+  stringofInt<-strsplit(unlist(stringsofInt)[2],split='_')
+  scale<-unlist(stringofInt)[1]
+  corresp_scalesvec[i]<-as.numeric(scale)
+}
+
+featDf<-data.frame(corresp_scalesvec,bwFeatVecInd)
+
+# in order to extract the most "multiscale" assortment of psueodrandom b/w features
+# we are going to give each scale an equal chance of being repr, to the maximum extent
+# possible. For example, K=2 can only be represented once, so if we need 435 multiscale
+# features for equivalence, it will neccess. be underrepresented.
+# Consequently, for many scales, coarse scales will be exhaustively sampled for features
+# Operationally, this takes the form of sampling all scales the same amount of times possible: only the odd number of features needed after doing so will be selected through sampling w/o replacement of the unselected features.
+# within scales, features will be selected without replacement as well
+
+# for each scale
+for (i in 2:30){
+  # get number of features to match
+  scaleind<-grep((paste('ind_bw_FC_scale',i,'_',sep='')),colnames(masterdf))
+  print(paste('scale',i,'number of fc features:',length(scaleind)))
+  
+  # for 30 different iterations per scale
+  #for (s in 1:30){
+    set.seed(s)
+    
+    # if equiv. feat number is small enough that K=2 doesn't get oversampled
+    if (i<=8){
+      c_scalesSamp<-sample(seq(2,30),replace=F,size=length(scaleind))
+    }
+    
+    # if num. feats > 29, can only sample K=2 once. Corresp. to K>8
+    if (i>8 && i<=13){
+      # defacto sampling of each scale once
+      defac_scalesSamp<-seq(2,30)
+      # remaining places to be pseudorandom sampled
+      remaining_tbS<-length(scaleind)-length(defac_scalesSamp)
+      # if remaining to-be-sampled exceeds one copy of 3-30, more copies of 3-30 are also defacto included (all scales sampled equally WHERE POSSIBLE)
+      if (remaining_tbS>length(seq(3,30))){
+        # in this case, another set of every scale non-exhaustively sampled becomes defacto
+        defac_scalesSamp<-c(defac_scalesSamp,seq(3,30))
+        remaining_tbS<-length(scaleind)-length(defac_scalesSamp)
+      }
+      scalesSamp<-sample(seq(3,30),replace=F,size=remaining_tbS)
+      # total combined vector of scales to be represented in features
+      c_scalesSamp<-c(defac_scalesSamp,scalesSamp)
+      
+    }
+    # if num. feats > 85, can only sample K=3 3x. Corresp. to K>13
+    if (i>13 && i<=18){
+      # defacto sampling of each scale once
+      defac_scalesSamp<-seq(2,30)
+      # defacto sampling of scales 3-30 3x minus prev.  all-scale vec
+      defac_scalesSamp2<-rep(seq(3,30),2)
+      # remaining places to be pseudorandom sampled
+      remaining_tbS<-length(scaleind)-length(defac_scalesSamp)-length(defac_scalesSamp2)
+      # if remaining to-be-sampled exceeds one copy of 3-30, more copies of 4-30 are also defacto included (all scales sampled equally WHERE POSSIBLE)
+      if (remaining_tbS>length(seq(4,30))){
+        # in this case, another set of every scale non-exhaustively sampled becomes defacto
+        defac_scalesSamp<-c(defac_scalesSamp,seq(4,30))
+        remaining_tbS<-length(scaleind)-length(defac_scalesSamp)-length(defac_scalesSamp2)
+        # need to add another iteration of this to catch instances where 2 copies of 4-30 needed
+        if (remaining_tbS>length(seq(4,30))){
+                defac_scalesSamp<-c(defac_scalesSamp,seq(4,30))
+                remaining_tbS<-length(scaleind)-length(defac_scalesSamp)-length(defac_scalesSamp2)
+          }
+      }
+      scalesSamp<-sample(seq(4,30),replace=F,size=remaining_tbS)
+      # total combined vector of scales to be represented in features
+      c_scalesSamp<-c(defac_scalesSamp, defac_scalesSamp2,scalesSamp)
+      
+    }
+    # if num. feats > 166, can only sample K=4 6x. Corresp. to K>18
+    if (i>18 && i<=23){
+      # defacto sampling of each scale once
+      defac_scalesSamp<-seq(2,30)
+      # defacto sampling of scales 3-30 3x minus prev.  all-scale vec
+      defac_scalesSamp2<-rep(seq(3,30),2)
+      # defacto sampling of scales 4-30 6x minus prev. all-scale vecs
+      defac_scalesSamp3<-rep(seq(4,30),3)
+      # remaining places to be pseudorandom sampled
+      remaining_tbS<-length(scaleind)-length(defac_scalesSamp)-length(defac_scalesSamp2)-length(defac_scalesSamp3)
+        if (remaining_tbS>length(seq(5,30))){
+        # in this case, another set of every scale non-exhaustively sampled becomes defacto
+        defac_scalesSamp<-c(defac_scalesSamp,seq(5,30))
+        remaining_tbS<-length(scaleind)-length(defac_scalesSamp)-length(defac_scalesSamp2)-length(defac_scalesSamp3)
+        # need to add another iteration of this to catch instances where 2 copies of 5-30 needed
+        if (remaining_tbS>length(seq(5,30))){
+                defac_scalesSamp<-c(defac_scalesSamp,seq(5,30))
+                remaining_tbS<-length(scaleind)-length(defac_scalesSamp)-length(defac_scalesSamp2)-length(defac_scalesSamp3)
+        # need to add another iteration of this to catch instances where 3 copies of 5-30 needed
+                if (remaining_tbS>length(seq(5,30))){
+                defac_scalesSamp<-c(defac_scalesSamp,seq(5,30))
+                remaining_tbS<-length(scaleind)-length(defac_scalesSamp)-length(defac_scalesSamp2)-length(defac_scalesSamp3)
+          }
+        }
+        }
+      
+      scalesSamp<-sample(seq(5,30),replace=F,size=remaining_tbS)
+      # total combined vector of scales to be represented in features
+      c_scalesSamp<-c(defac_scalesSamp, defac_scalesSamp2,defac_scalesSamp3,scalesSamp)
+      
+    }
+    # if num. feats > 270, can only sample K=5 10x. Corresp. to K>23
+    if (i>23 && i<=28){
+      # defacto sampling of each scale once
+      defac_scalesSamp<-seq(2,30)
+      # defacto sampling of scales 3-30 3x minus prev.  all-scale vec
+      defac_scalesSamp2<-rep(seq(3,30),2)
+      # defacto sampling of scales 4-30 6x minus prev. all-scale vecs
+      defac_scalesSamp3<-rep(seq(4,30),3)
+      # defacto sampling of scales 5-30 10x minus prev. all-scale vecs
+      defac_scalesSamp4<-rep(seq(5,30),4)
+      # remaining places to be pseudorandom sampled
+      remaining_tbS<-length(scaleind)-length(defac_scalesSamp)-length(defac_scalesSamp2)-length(defac_scalesSamp3)-length(defac_scalesSamp4)
+      
+        if (remaining_tbS>length(seq(6,30))){
+        # in this case, another set of every scale non-exhaustively sampled becomes defacto
+        defac_scalesSamp<-c(defac_scalesSamp,seq(6,30))
+        remaining_tbS<-length(scaleind)-length(defac_scalesSamp)-length(defac_scalesSamp2)-length(defac_scalesSamp3)-length(defac_scalesSamp4)
+        # need to add another iteration of this to catch instances where 2 copies of 6-30 needed
+        if (remaining_tbS>length(seq(6,30))){
+                defac_scalesSamp<-c(defac_scalesSamp,seq(6,30))
+                remaining_tbS<-length(scaleind)-length(defac_scalesSamp)-length(defac_scalesSamp2)-length(defac_scalesSamp3)-length(defac_scalesSamp4)
+        # need to add another iteration of this to catch instances where 3 copies of 6-30 needed
+                if (remaining_tbS>length(seq(6,30))){
+                defac_scalesSamp<-c(defac_scalesSamp,seq(6,30))
+                remaining_tbS<-length(scaleind)-length(defac_scalesSamp)-length(defac_scalesSamp2)-length(defac_scalesSamp3)-length(defac_scalesSamp4)
+                # need to add another iteration of this to catch instances where 4 copies of 6-30 needed
+                  if (remaining_tbS>length(seq(6,30))){
+                  defac_scalesSamp<-c(defac_scalesSamp,seq(6,30))
+                  remaining_tbS<-length(scaleind)-length(defac_scalesSamp)-length(defac_scalesSamp2)-length(defac_scalesSamp3)-length(defac_scalesSamp4)
+          }
+        }
+        }
+        }
+      scalesSamp<-sample(seq(6,30),replace=F,size=remaining_tbS)
+      # total combined vector of scales to be represented in features
+      c_scalesSamp<-c(defac_scalesSamp, defac_scalesSamp2,defac_scalesSamp3,defac_scalesSamp4,scalesSamp)
+      
+    }    
+    # if num. feats > 395, can only sample K=6 15x. Corresp. to K>28
+    if (i>28){
+      # defacto sampling of each scale once
+      defac_scalesSamp<-seq(2,30)
+      # defacto sampling of scales 3-30 3x minus prev.  all-scale vec
+      defac_scalesSamp2<-rep(seq(3,30),2)
+      # defacto sampling of scales 4-30 6x minus prev. all-scale vecs
+      defac_scalesSamp3<-rep(seq(4,30),3)
+      # defacto sampling of scales 5-30 10x minus prev. all-scale vecs
+      defac_scalesSamp4<-rep(seq(5,30),4)
+      # defacto sampling of scales 6-30 15x minus prev. all-scale vecs
+      defac_scalesSamp5<-rep(seq(6,30),5)
+      # remaining places to be pseudorandom sampled
+      remaining_tbS<-length(scaleind)-length(defac_scalesSamp)-length(defac_scalesSamp2)-length(defac_scalesSamp3)-length(defac_scalesSamp4)-length(defac_scalesSamp5)
+      
+      if (remaining_tbS>length(seq(7,30))){
+        # in this case, another set of every scale non-exhaustively sampled becomes defacto
+        defac_scalesSamp<-c(defac_scalesSamp,seq(7,30))
+        remaining_tbS<-length(scaleind)-length(defac_scalesSamp)-length(defac_scalesSamp2)-length(defac_scalesSamp3)-length(defac_scalesSamp4)-length(defac_scalesSamp5)
+      
+      scalesSamp<-sample(seq(7,30),replace=F,size=remaining_tbS)
+      # total combined vector of scales to be represented in features
+      c_scalesSamp<-c(defac_scalesSamp, defac_scalesSamp2,defac_scalesSamp3,defac_scalesSamp4,defac_scalesSamp5,scalesSamp)
+      }
+    }
+    
+    
+    # sample each scale according to how many times it appears in scalesSamp
+  #}
+    
+  #  scalesSamp<-sample(featDf$corresp_scalesvec,replace=F,size=)
+    # sample from featVec wtihout replacement until scalesvec is gone 
+    print(length(c_scalesSamp))
+}
+
+
 ```
