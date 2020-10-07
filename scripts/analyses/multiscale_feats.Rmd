@@ -94,9 +94,11 @@ for (i in 2:30){
   print(paste('scale',i,'number of fc features:',length(scaleind)))
   
   # for 30 different iterations per scale
-  #for (s in 1:30){
+  for (s in 1:30){
     set.seed(s)
-    
+      # initialize vector of features to be used 
+      featureIndexVec<-vector()
+  
     # if equiv. feat number is small enough that K=2 doesn't get oversampled
     if (i<=8){
       c_scalesSamp<-sample(seq(2,30),replace=F,size=length(scaleind))
@@ -238,13 +240,33 @@ for (i in 2:30){
       }
     }
     
-    
-    # sample each scale according to how many times it appears in scalesSamp
-  #}
-    
-  #  scalesSamp<-sample(featDf$corresp_scalesvec,replace=F,size=)
-    # sample from featVec wtihout replacement until scalesvec is gone 
     print(length(c_scalesSamp))
+    
+    
+    # cripes. now that we have the scales we should sample from in each instance, we will use the scale-feature dataframe to extract a random set of features from each scale for each time the scale is supposed to be represented. As above, exceptions apply for coarser scales where we are limited in the number of features we can extract (K < 7, but mostly the coarsest)
+    
+    
+    # get length of unique networks we need to sample for this scale
+    lenUnique<-length(unique(c_scalesSamp))
+    # go in and randomly select and extract the masterdf column indices for each scale
+    for (u in 1:lenUnique){
+      # scale to be sampled from in this iteration
+      sc<-unique(c_scalesSamp)[u]
+      # number of times to sample from it
+      numTimes<-length(c_scalesSamp[c_scalesSamp==sc])
+      # subset of dataframe that corresponds to this scale
+      featDfSc<-featDf[featDf$corresp_scalesvec==sc,]
+      # and get those samples without replacement
+      ScFeatIndices<-sample(featDfSc$bwFeatVecInd,replace=F,size=numTimes)
+      featureIndexVec<-append(featureIndexVec,ScFeatIndices)
+    }
+    # extract samples from master df to mirror the scale-specific features
+    forRRfc<-cbind(masterdf$Age,masterdf$Motion,masterdf[,featureIndexVec])
+    RRfcFN<-paste('/cbica/projects/pinesParcels/results/EffectVecs/scale',i,'_equivFeatNum_randomSamp_',s,'_for_bw_RRfc.csv',sep='')
+    write.table(forRRfc,RRfcFN,row.names = F,col.names = F,sep = ',')
+    # finally. Save it out! On to some nice ez sklearn.
+    write.table(forRRfc,RRfcFN,row.names = F,col.names = F,sep = ',')
+    }
 }
 
 
