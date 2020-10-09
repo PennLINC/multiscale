@@ -483,7 +483,7 @@ for (i in 1:length(tmclass)){
 ```
 
 
-```{r include=FALSE}
+```{r}
 
 ### Using a ton of index combinations 
 indiv_bwcols_ind<-intersect(bwcol,indiv)
@@ -745,8 +745,9 @@ derivInfo<-array(0,dim=c(464,200))
 NetSplines<-array(0,dim=c(464,693))                  
 
 # borrowing colnames from indiv_nsegcols to keep network/scale ordering/mappings
-colnames(bwAvgCon)<-colnames(masterdf[,indiv_nsegcols_ind])
+colnames(bwAvgCon)<-gsub("_seg_","_avgBw_",colnames(masterdf[,indiv_nsegcols_ind]))
 bwAvgCondf<-data.frame(bwAvgCon)
+
 #add on covariate columns
 bwAvgCondf$Age<-masterdf$Age
 bwAvgCondf$Sex<-masterdf$Sex

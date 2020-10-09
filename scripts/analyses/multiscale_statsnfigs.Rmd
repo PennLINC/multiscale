@@ -1672,7 +1672,7 @@ BwAgeCorTMDifDf<-data.frame(tmdifvec,ageEfvec)
 
 ggplot(BwAgeCorTMDifDf,aes(x=tmdifvec,y=ageEfvec)) + geom_point(alpha=.07,size=5) + xlab('Transmodality Difference') + ylab('Age #Correlation') + ggtitle('Pairwise Between-Network Age-FC Relations')
 
-# combine scalevec and transmodality dif vec for transmodality difference
+# combine scalevec and transmodality dif vec for transmodality difference #differences
 ScaleTMDifDf<-data.frame(tmdifvec,scalevec)
 ScaleTMDifMeanVec<-rep(0,29)
 for (K in 2:30){
@@ -1734,32 +1734,6 @@ ggplot(data=BwAgeCorDistance_nonZero,aes(x=EucDist,y=AgeEf)) + geom_point(alpha=
 ggplot(data=BwAgeCorDistance_nonZero,aes(x=EucDist,y=MotionEf)) + geom_point(alpha=.07,size=5) + xlab('Euclid. Dist.') + ylab('Motion Partial Correlation') + ggtitle('Pairwise Between-Network Motion-FC Relations')
 
 ggplot(data=BwAgeCorDistance_nonZero,aes(x=EucDist,y=MotionCor)) + geom_point(alpha=.07,size=5) + xlab('Euclid. Dist.') + ylab('Motion  Correlation') + ggtitle('Pairwise Between-Network Motion-FC Relations')
-
-### plot just coarse scales
-sc2<-ggplot(BwAgeCorTMDifDf[1,],aes(x=TMDif,y=AgeEf)) + geom_point(alpha=1,size=5) + xlab('Transmodality Difference') + ylab('Age #Correlation') + ggtitle('Pairwise Between-Network Age-FC Relations')+xlim(0,10)+ylim(-.3,.3)
-
-sc3<-ggplot(BwAgeCorTMDifDf[2:4,],aes(x=TMDif,y=AgeEf)) + geom_point(alpha=1,size=5) + xlab('Transmodality Difference') + ylab('Age #Correlation') + ggtitle('Pairwise Between-Network Age-FC Relations')+xlim(0,10)+ylim(-.3,.3)
-
-sc4<-ggplot(BwAgeCorTMDifDf[5:10,],aes(x=TMDif,y=AgeEf)) + geom_point(alpha=1,size=5) + xlab('Transmodality Difference') + ylab('Age #Correlation') + ggtitle('Pairwise Between-Network Age-FC Relations')+xlim(0,10)+ylim(-.3,.3)
-
-sc5<-ggplot(BwAgeCorTMDifDf[11:20,],aes(x=TMDif,y=AgeEf)) + geom_point(alpha=1,size=5) + xlab('Transmodality Difference') + ylab('Age #Correlation') + ggtitle('Pairwise Between-Network Age-FC Relations')+xlim(0,10)+ylim(-.3,.3)
-
-sc6<-ggplot(BwAgeCorTMDifDf[21:35,],aes(x=TMDif,y=AgeEf)) + geom_point(alpha=1,size=5) + xlab('Transmodality Difference') + ylab('Age #Correlation') + ggtitle('Pairwise Between-Network Age-FC Relations')+xlim(0,10)+ylim(-.3,.3)
-
-sc7<-ggplot(BwAgeCorTMDifDf[36:56,],aes(x=TMDif,y=AgeEf)) + geom_point(alpha=1,size=5) + xlab('Transmodality Difference') + ylab('Age #Correlation') + ggtitle('Pairwise Between-Network Age-FC Relations')+xlim(0,10)+ylim(-.3,.3)
-
-ggarrange(sc2,sc3,sc4,sc5,sc6,sc7)
-
-
-### use ScaleTMDifDf to extract avg. dif for each scale
-# initialize avg dif vec for single value for each scale
-avgDifVec<-vector()
-for (k in 2:30){
-# isolate rows from this K
-scaleSubset<-ScaleTMDifDf[ScaleTMDifDf$scalevec==k,]
-avgDifVec[k]<-mean(scaleSubset$tmdifvec)
-
-}
 ```
 
 ```{r}
