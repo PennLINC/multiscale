@@ -1601,15 +1601,18 @@ individ_scalebybw_df<-masterdf[,indiv_bwcols_ind]
 wincolnames<-colnames(individ_scalebywin_df)
 bwcolnames<-colnames(individ_scalebybw_df)
 
-# initialize empty tm difference vector and age effect vector 
-tmdifvec=NULL
-ageEfvec=NULL
-motionEfvec=NULL
-motioncorvec<-NULL
+# initialize empty tm difference vector and age effect vector - 10/9/20: EF vector 
+# I guess append is just terribly slow. replace these with proper-length initializations
+tmdifvec=rep(0,length(colnames(individ_scalebybw_df)))
+ageEfvec=rep(0,length(colnames(individ_scalebybw_df)))
+motionEfvec=rep(0,length(colnames(individ_scalebybw_df)))
+motioncorvec<-rep(0,length(colnames(individ_scalebybw_df)))
+EFEfvec=rep(0,length(colnames(individ_scalebybw_df)))
+noAge_EFEfVec=rep(0,length(colnames(individ_scalebybw_df)))
 
 # make a scale vector to match transmodality difference values
 # this is to look at how finer scales confer networks that are less different
-scalevec=NULL
+scalevec=rep(0,length(colnames(individ_scalebybw_df)))
 
 # make a vector of variables that can become plots
 pointwise_bwplotvec<-t(array(as.character(paste('plot_',seq(1:7),sep='')),c(1,7)))
@@ -1630,8 +1633,9 @@ for (k in 2:30){
 
 
 #### This measures all the pairwise distances for the plots
-## for all b/w cols
+## for all b/w cols - 10/9/20: EF added in.
 for (i in 1:length(colnames(individ_scalebybw_df))){
+    print(i)
     # extract column name. Will parse column name to determine nature of #connection
     curcolname<-colnames(individ_scalebybw_df)[i]
     splitname<-unlist(strsplit(curcolname,'_'))
@@ -1656,15 +1660,31 @@ for (i in 1:length(colnames(individ_scalebybw_df))){
     colindex<-grep(curcolnameexact,colnames(masterdf))
     # get Age relation controlling for sex and motion
     pcordf<-cbind(masterdf$Age,masterdf$Sex,masterdf$Motion,masterdf[,colindex])
+    
+    # additional section for EF. col index should not change as EF is tagged onto end
+    # get EF relation controlling for sex and motion and age
+    EFpcordf<-cbind(masteref$F1_Exec_Comp_Cog_Accuracy,masteref$Age,masteref$Sex,masteref$Motion,masterdf[,colindex])
+    # get EF relation controlling for sex and motion
+    EFpcordf2<-cbind(masteref$F1_Exec_Comp_Cog_Accuracy,masteref$Sex,masteref$Motion,masteref[,colindex])
+    
     # partial spearmans to extrac age relation
     pspear=pcor(pcordf,method='spearman')$estimate
     # save both to respective vectors
-    tmdifvec<-append(tmdifvec,tmdif)
-    ageEfvec<-append(ageEfvec,pspear[4])
-    motionEfvec<-append(motionEfvec,pspear[3,4])
-    motioncorvec<-append(motioncorvec,cor.test(masterdf[,colindex],masterdf$Motion)$estimate)
+    tmdifvec[i]<-tmdif
+    ageEfvec[i]<-pspear[4]
+    motionEfvec[i]<-pspear[3,4]
+    motioncorvec[i]<-cor.test(masterdf[,colindex],masterdf$Motion)$estimate
     # accompanying scalevec so we can look at the typical transmodality #difference at each scale
-    scalevec=append(scalevec,scale)
+    scalevec[i]=scale
+    
+    # additional section for EF
+    # partial spearmans to extrac age relation
+    pspear=pcor(EFpcordf,method='spearman')$estimate
+    EFEfvec[i]<-pspear[5]
+    
+    pspear=pcor(EFpcordf2,method='spearman')$estimate
+    noAge_EFEfVec[i]<-pspear[4]
+  
 }
 
 ## merged vectors
@@ -1685,6 +1705,22 @@ for (K in 2:30){
 plot(ScaleTMDifMeanVec)
 
 ggplot(ScaleTMDifDf,aes(x=scalevec,y=tmdifvec)) + geom_point(alpha=.1,size=2) +xlab('Number of Communities') + ylab('B/W Transmodality Difference')
+
+
+### scratch paper sections ###
+### indices ofsegregators from integrators
+BwAgeCorTMDifDf_segregs<-which(BwAgeCorTMDifDf$ageEfvec < 0)
+BwAgeCorTMDifDf_integrs<-which(BwAgeCorTMDifDf$ageEfvec > 0)
+
+BwAgeCorTMDifDf_EF<-data.frame(tmdifvec,noAge_EFEfVec)
+
+segregdf<-BwAgeCorTMDifDf_EF[BwAgeCorTMDifDf_segregs,]
+integrgdf<-BwAgeCorTMDifDf_EF[BwAgeCorTMDifDf_integrs,]
+
+a=gam(noAge_EFEfVec~s(tmdifvec,k=4),data=segregdf)
+b=gam(noAge_EFEfVec~s(tmdifvec,k=4),data=integrgdf)
+### end of scratch paper section
+
 
 ######### Look at between-distance relations
 
@@ -1734,6 +1770,7 @@ ggplot(data=BwAgeCorDistance_nonZero,aes(x=EucDist,y=AgeEf)) + geom_point(alpha=
 ggplot(data=BwAgeCorDistance_nonZero,aes(x=EucDist,y=MotionEf)) + geom_point(alpha=.07,size=5) + xlab('Euclid. Dist.') + ylab('Motion Partial Correlation') + ggtitle('Pairwise Between-Network Motion-FC Relations')
 
 ggplot(data=BwAgeCorDistance_nonZero,aes(x=EucDist,y=MotionCor)) + geom_point(alpha=.07,size=5) + xlab('Euclid. Dist.') + ylab('Motion  Correlation') + ggtitle('Pairwise Between-Network Motion-FC Relations')
+
 ```
 
 ```{r}
