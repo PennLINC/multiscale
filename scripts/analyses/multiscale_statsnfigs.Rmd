@@ -1614,9 +1614,6 @@ noAge_EFEfVec=rep(0,length(colnames(individ_scalebybw_df)))
 # this is to look at how finer scales confer networks that are less different
 scalevec=rep(0,length(colnames(individ_scalebybw_df)))
 
-# make a vector of variables that can become plots
-pointwise_bwplotvec<-t(array(as.character(paste('plot_',seq(1:7),sep='')),c(1,7)))
-
 
 # quick write of colnames for bw features for all scales as sep. files for matlab reading
 
@@ -1690,7 +1687,7 @@ for (i in 1:length(colnames(individ_scalebybw_df))){
 ## merged vectors
 BwAgeCorTMDifDf<-data.frame(tmdifvec,ageEfvec)
 
-ggplot(BwAgeCorTMDifDf,aes(x=tmdifvec,y=ageEfvec)) + geom_point(alpha=.07,size=5) + xlab('Transmodality Difference') + ylab('Age #Correlation') + ggtitle('Pairwise Between-Network Age-FC Relations')
+ggplot(BwAgeCorTMDifDf,aes(x=tmdifvec,y=ageEfvec)) + geom_point(alpha=.07,size=5,shape="\u25d6") + xlab('Transmodality Difference') + ylab('Age Partial Correlation') + ggtitle('Pairwise Between-Network Age-FC Relations')
 
 # combine scalevec and transmodality dif vec for transmodality difference #differences
 ScaleTMDifDf<-data.frame(tmdifvec,scalevec)
@@ -1709,16 +1706,13 @@ ggplot(ScaleTMDifDf,aes(x=scalevec,y=tmdifvec)) + geom_point(alpha=.1,size=2) +x
 
 ### scratch paper sections ###
 ### indices ofsegregators from integrators
-BwAgeCorTMDifDf_segregs<-which(BwAgeCorTMDifDf$ageEfvec < 0)
-BwAgeCorTMDifDf_integrs<-which(BwAgeCorTMDifDf$ageEfvec > 0)
-
-BwAgeCorTMDifDf_EF<-data.frame(tmdifvec,noAge_EFEfVec)
-
-segregdf<-BwAgeCorTMDifDf_EF[BwAgeCorTMDifDf_segregs,]
-integrgdf<-BwAgeCorTMDifDf_EF[BwAgeCorTMDifDf_integrs,]
-
-a=gam(noAge_EFEfVec~s(tmdifvec,k=4),data=segregdf)
-b=gam(noAge_EFEfVec~s(tmdifvec,k=4),data=integrgdf)
+#BwAgeCorTMDifDf_segregs<-which(BwAgeCorTMDifDf$ageEfvec < 0)
+#BwAgeCorTMDifDf_integrs<-which(BwAgeCorTMDifDf$ageEfvec > 0)
+#BwAgeCorTMDifDf_EF<-data.frame(tmdifvec,noAge_EFEfVec)
+#segregdf<-BwAgeCorTMDifDf_EF[BwAgeCorTMDifDf_segregs,]
+#integrgdf<-BwAgeCorTMDifDf_EF[BwAgeCorTMDifDf_integrs,]
+#a=gam(noAge_EFEfVec~s(tmdifvec,k=4),data=segregdf)
+#b=gam(noAge_EFEfVec~s(tmdifvec,k=4),data=integrgdf)
 ### end of scratch paper section
 
 
@@ -1834,7 +1828,8 @@ ycolors=c('#3281ab','#670068','#007500','#b61ad0','#b8cf86','#d77d00','#c1253c')
 #}
 
 # for all y7 nets (EXCLUSIVE VERSION)
-
+# make a vector of variables that can become plots
+pointwise_bwplotvec<-t(array(as.character(paste('plot_',seq(1:7),sep='')),c(1,7)))
 for (y in 1:7){
   # net looked at in this iteration
   print(Y7vec[y])
@@ -1897,6 +1892,79 @@ assign(pointwise_bwplotvec[y],bwplot)
 #ggarrange(plot_1,plot_2,plot_3,plot_4,plot_5,plot_6,plot_7)
 
 ggarrange(plot_1,plot_7)
+
+```
+
+```{r}
+# Section to do this with half circles. corresp. to colors of involved y7 nets
+# get vector of net1 membership
+# get vector of net2 membership
+
+# for all y7 nets
+for (y in 1:7){
+  # net looked at in this iteration
+  print(Y7vec[y])
+  # isolate this net by getting indices of where it is in the 464 vector
+  curY7NetInd<-grep(Y7vec[y],domnetvec)
+  # initialize vectors
+  tmdifvec=NULL
+  ageEfvec=NULL
+  Net2Memb=NULL
+  # for all b/w cols
+  for (i in 1:length(colnames(individ_scalebybw_df))){
+      #print(i)
+      # extract column name. Will parse column name to determine nature of #connection
+      curcolname<-colnames(individ_scalebybw_df)[i]
+      splitname<-unlist(strsplit(curcolname,'_'))
+      scalefield=splitname[4]
+      net1field=splitname[5]
+      net2field=splitname[7]
+      # doctor up scale and net1field so they are exclusively the value of #interestx
+      scale=as.numeric(unlist(strsplit(scalefield,'e'))[2])
+      net1=unlist(strsplit(net1field,'s'))[2]
+      net2=net2field 
+      # helping phriendly index
+      K_start=((scale-1)*(scale))/2
+      K_end=(((scale-1)*(scale))/2)+scale-1
+      Kind<-K_start:K_end
+      # ONLY include if one network is equal to currently indexed Y7 network
+      y7lab1=domnetvec[Kind[as.numeric(net1)]]
+      y7lab2=domnetvec[Kind[as.numeric(net2)]]
+      if (y7lab1 == Y7vec[y] || y7lab2 == Y7vec[y]){
+      # get TM values of both nets at this scale
+      tm1=tmvec[Kind[as.numeric(net1)]]
+      tm2=tmvec[Kind[as.numeric(net2)]]
+      # absolute value as directionality is meaningless here
+      tmdif=abs(tm1-tm2)
+     # get position in master df of this column (need to use \b for exact #matches only)
+      curcolnameexact<-paste('\\',curcolname,'\\b',sep='')
+      colindex<-grep(curcolnameexact,colnames(masterdf))
+      # get Age relation controlling for sex and motion
+      pcordf<-cbind(masterdf$Age,masterdf$Sex,masterdf$Motion,masterdf[,colindex])
+      # partial spearmans to extrac age relation
+      pspear=pcor(pcordf,method='spearman')$estimate
+      # save both to respective vectors
+      tmdifvec<-append(tmdifvec,tmdif)
+      ageEfvec<-append(ageEfvec,pspear[4])
+      if (Y7vec[y]==y7lab1){
+        Net2Memb<-append(Net2Memb,as.character(y7lab2))
+      }else{
+          Net2Memb<-append(Net2Memb,as.character(y7lab1))
+        }
+      }
+  } 
+  
+  # merged vectors
+  BwAgeCorTMDifDf<-data.frame(tmdifvec,ageEfvec,factor(Net2Memb,levels=c("Motor","Visual","DA","VA","Limbic","FP","DM")))
+  colnames(BwAgeCorTMDifDf)<-c('tmdifvec','ageEfVec','Net2Memb')
+  print(ggplot(BwAgeCorTMDifDf,aes(x=tmdifvec,y=ageEfvec,color=Net2Memb)) + geom_point(alpha=.27,size=3)+ scale_color_manual(values=ycolors) + xlab('Transmodality Difference') +  ylim(-.4,.4) +xlim(-.1,13)+ ylab('Age Correlation') + ggtitle(paste('Pairwise Between-Network Age-FC Relations - ',Y7vec[y]))+theme_minimal())
+  
+}
+
+
+# can use this unicode half circle thing to get each dot on one plot with dual-colored halves
+
+#ggplot(BwAgeCorTMDifDf[1:10,],aes(x=tmdifvec,y=ageEfvec)) + geom_text(size=5,label="\u25D6",family="Arial Unicode MS") + xlab('Transmodality Difference') + ylab('Age Partial Correlation') + ggtitle('Pairwise Between-Network Age-FC Relations')+geom_text(size=5,label="\u25D7",family="Arial Unicode MS",color='blue')
 
 ```
 

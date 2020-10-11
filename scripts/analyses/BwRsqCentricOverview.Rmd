@@ -784,6 +784,62 @@ for (i in 1:(length(bwAvgCondf)-3)){
   ###cat(sprintf("\nSig change: %1.2f - %1.2f\n",minAgeEst[i],maxAgeEst[i]))
 }
 
+# years format
+minAgeEst<-minAgeEst/12
+maxAgeEst<-maxAgeEst/12
+
+CIgroupingInd<-as.factor(1:464)
+
+#convert to years for more interpretable slope
+derivInfo<-derivInfo*12
+
+
+
+
+
+# get a vector of the agespan split into 200 to match the deriv vals
+agerange<-range(masterdf$Age)/12
+agerange200<-seq(agerange[1],agerange[2],length.out = 200)
+
+AgeSpan_plotdf2<-data.frame(tmvec,scalesvec,domnetvec,corVecEst,netpropvec,CIgroupingInd)
+
+
+
+# needs to be converted to repeat 464 times before progressing to next age bracket
+agerange200464<-array(dim=c(200*464,1))
+for (i in 1:length(agerange200)){
+agerange200464[((464*i)-463):(464*i)]<-rep(agerange200[i],464)
+}
+
+# now we need deriv vals of same format, but they will change for every network at every age bracket. Using sig change should take care of whitening out zeros
+deriv200464<-array(dim=c(200*464,1))
+for (i in 1:length(agerange200)){
+deriv200464[((464*i)-463):(464*i)]<-derivInfo[,i]
+}
+
+LongAgeSpan_plotdf2<-data.frame(sapply(AgeSpan_plotdf2,rep.int,times=200))
+LongAgeSpan_plotdf2$agespans<-agerange200464
+LongAgeSpan_plotdf2$derivs<-deriv200464
+
+breaks=c(-.02,-.01,0,0.01,0.02)
+
+
+# older version
+###ggplot(LongAgeSpan_plotdf2,aes(agespans,tmvec,color=derivs,group=CIgroupingInd)) +geom_line(size=10,alpha=.8) +labs(title='Network Segregation Effect Span', x = 'Age', y = 'Transmodality') +theme_classic(base_size = 58)+ xlim(c(8,23))+ scale_colour_gradientn(colours=c('#ff0a0a','#ff9191','white','#8585ff','#0b0bff'),values = c(0,.05,.265,.615,1),breaks=breaks, labels = breaks,name="Change Per Year")+theme(legend.position="top",legend.key.width = unit(4, "cm"))
+
+
+Bwspan<-ggplot(LongAgeSpan_plotdf2,aes(agespans,tmvec,color=derivs,group=CIgroupingInd)) +geom_line(size=10) +labs(title='External Connectivity Effect Span', x = 'Age', y = 'Transmodality') +theme_classic(base_size = 58)+ xlim(c(8,23))+ scale_colour_gradientn(colours=c('#0b0bff','#8585ff','white','#ff9191','#ff0a0a'),values = c(0,.25,.5,.75,1),breaks=breaks, labels = breaks,limits=c(-.005,0.005),name="Change Per Year")+theme(legend.position="top",legend.key.width = unit(5, "cm"))+ylim(c(min(tmvec),max(tmvec)))
+
+
+
+
+
+# with yeo color scheme instead
+LongAgeSpan_plotdf2$domnetvec<-as.factor(LongAgeSpan_plotdf2$domnetvec)
+#LongAgeSpan_plotdf2$derivs[abs(LongAgeSpan_plotdf2$derivs) < 0.002] <- 0
+
+
+y7ver<-ggplot(LongAgeSpan_plotdf2,aes(agespans,tmvec,color=domnetvec,group=CIgroupingInd,alpha=abs(derivs))) +geom_line(size=10,aes(agespans,tmvec)) +labs(title='External Connectivity Effect Span', x = 'Age', y = 'Transmodality') +theme_classic(base_size = 58)+ xlim(c(8,23))+ scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068'),name="Maximal Y7 Overlap")+scale_alpha_continuous(range=c(0,1))+theme(legend.position="top",legend.key.width = unit(5, "cm"))+ylim(c(min(tmvec),max(tmvec)))
 ```
 
 ```{r}
