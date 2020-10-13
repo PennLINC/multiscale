@@ -1069,6 +1069,54 @@ plot(both_corvec)
 ```
 
 ```{r}
+### control for covariates prior to feature writeout for python
+
+# intialize feature matrix for age-facil
+ageFacilFeats<-matrix(0,693,dim(ageAligneddf)[1])
+# for age-mitig
+ageMitigFeats<-matrix(0,693,dim(ageMitigateddf)[1])
+# for age-combined
+bothFeats<-matrix(0,693,dim(individ_scalebybw_df)[2])
+
+# for each b/w feature
+for (featNum in 1:dim(individ_scalebybw_df)[2]){
+  # if age-facil, no control for age
+  if (ageAligned[featNum]==1){
+    # make dataframe for gamming, b/w feature sex motion and scale
+    tempDf<-data.frame(individ_scalebybw_df[,featNum],masterdf$Sex,masterdf$Motion,scalevec[featNum])
+    colnames(tempDf)<-c('bwFeature','Sex','Motion','Scale')
+    # not using scale for now
+    tempLm<-lm(bwFeature~Sex+Motion,data=tempDf)
+    # plug residuals into feature matrix
+    bothFeats[,featNum]<-tempLm$residuals
+  # if age-mitig, control for age
+  } else if (ageAligned[featNum]==0){
+    # make dataframe for gamming, b/w feature sex motion and scale
+    tempDf<-data.frame(individ_scalebybw_df[,featNum],masterdf$Age,masterdf$Sex,masterdf$Motion,scalevec[featNum])
+    colnames(tempDf)<-c('bwFeature','Age','Sex','Motion','Scale')
+    # not using scale for now
+    tempGam<-gam(bwFeature~s(Age,k=4)+Sex+Motion,data=tempDf)
+    # plug residuals into feature matrix
+    bothFeats[,featNum]<-tempLm$residuals
+  }
+}
+
+# sep out ageFacil and ageMitig
+ageFacilFeats<-bothFeats[,ageAligned]
+ageMitigFeats<-bothFeats[,ageMitigated]
+
+# combine feature matrices with EF scores
+ageFacilFeats<-cbind(ageFacilFeats,masteref$F1_Exec_Comp_Cog_Accuracy)
+ageMitigFeats<-cbind(ageMitigFeats,masteref$F1_Exec_Comp_Cog_Accuracy)
+bothFeats<-cbind(bothFeats,masteref$F1_Exec_Comp_Cog_Accuracy)
+
+# write em out to cubic
+write.table(ageFacilFeats,'/cbica/projects/pinesParcels/results/EffectVecs/AgeFacilFeats',sep=',', col.names = F,quote = F,row.names=F)
+write.table(ageMitigFeats,'/cbica/projects/pinesParcels/results/EffectVecs/AgeMitigFeats',sep=',', col.names = F,quote = F,row.names=F)
+write.table(bothFeats,'/cbica/projects/pinesParcels/results/EffectVecs/AgeFacilAndMitigFeats',sep=',', col.names = F,quote = F,row.names=F)
+```
+
+```{r}
 ### scratch paper sections ###
 ### indices ofsegregators from integrators
 #BwAgeCorTMDifDf_segregs<-which(BwAgeCorTMDifDf$ageEfvec < 0)
