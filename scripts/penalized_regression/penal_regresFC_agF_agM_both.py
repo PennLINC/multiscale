@@ -22,7 +22,10 @@ summary_preds=np.empty([3,2])
 # summary_topo_preds_permut=np.empty([2,2])
 
 # need a different, subject-level prediction DF so we can unpack predicted EF in R
+# first column is additive predicted EF, second column is number of times it was added
 subject_preds=np.empty([693,2])
+subject_preds_agF=np.empty([693,2])
+subject_preds_agM=np.empty([693,2])
 
 # bring in the variables we care about (bblid,age,motion,sex)
 df=np.loadtxt('/cbica/projects/pinesParcels/results/EffectVecs/forMLpc.csv',delimiter=',')
@@ -47,25 +50,27 @@ varofint=data[:,data.shape[1]-1]
 # set alphas for gcv
 # use Zaixu's alpha range
 alphas = np.exp2(np.arange(16) - 10)
+# set subject indices for recoring train test splits
+indices = range(693)
 
 # outcome predictions will be in these 2d arrays (finally back to 2d!)
 # needs to be 12 x 3, 12 rows for each split and each column for each feature vector
-all_preds=np.empty([12,3])
+all_preds=np.empty([100,3])
 #all_permut_preds=np.empty([12,1])
-all_preds_alphas=np.empty([12,3])
+all_preds_alphas=np.empty([100,3])
 #all_permut_preds_alphas=np.empty([12,1])
 
 # feature weights
-featureWeights=np.empty([12,data.shape[1]-1])
-featureWeights_agF=np.empty([12,data_agF.shape[1]-1])
-featureWeights_agM=np.empty([12,data_agM.shape[1]-1])
+featureWeights=np.empty([100,data.shape[1]-1])
+featureWeights_agF=np.empty([100,data_agF.shape[1]-1])
+featureWeights_agM=np.empty([100,data_agM.shape[1]-1])
 
-for split in range(0,12):
+for split in range(0,100):
 # for a few different train and test splits
 	# Train and test split from data frame
-	xtrain,xtest,ytrain,ytest=train_test_split(Featvecs,varofint,test_size=0.33,random_state=(split))
-	xtrain_agF,xtest_agF,ytrain_agF,ytest_agF=train_test_split(Featvecs_agF,varofint,test_size=0.33,random_state=(split))
-	xtrain_agM,xtest_agM,ytrain_agM,ytest_agM=train_test_split(Featvecs_agM,varofint,test_size=0.33,random_state=(split))
+	xtrain,xtest,ytrain,ytest,indices_train,indices_test=train_test_split(Featvecs,varofint,indices,test_size=0.33,random_state=(split))
+	xtrain_agF,xtest_agF,ytrain_agF,ytest_agF,indices_train_agF,indices_test_agF=train_test_split(Featvecs_agF,varofint,indices,test_size=0.33,random_state=(split))
+	xtrain_agM,xtest_agM,ytrain_agM,ytest_agM,indices_train_agM,indices_test_agM=train_test_split(Featvecs_agM,varofint,indices,test_size=0.33,random_state=(split))
 	# same for permuted data
 	#xtrain_p,xtest_p,ytrain_p,ytest_p=train_test_split(topogvecs,varofint_permut,test_size=0.33,random_state=(split))
 	# outcome vector for this split, different vec for permuted and real data
@@ -95,13 +100,16 @@ for split in range(0,12):
 	featureWeights_agM[split,:]=lm_agM.coef_
 	# get predicted EF values
 	predEF=lm.predict(xtest)
-	predEF_agF=lm.predict(xtest_agF)
-	predEF_agM=lm.predict(xtest_agM)
-	#
-	#########################
-	# NEED TO GET INDICES OF TRAIN TEST SPLIT TO MAP PREDICTED EF BACK ON TO INDIVID. SUBJS	
-	#########################
-	#
+	predEF_agF=lm_agF.predict(xtest_agF)
+	predEF_agM=lm_agM.predict(xtest_agM)
+	# add predicted EF to indices this iteration was not trained on, add another number 
+	subject_preds[indices_test,0]=subject_preds[indices_test,0]+predEF
+	subject_preds_agF[indices_test_agF,0]=subject_preds_agF[indices_test_agF,0]+predEF_agF
+	subject_preds_agM[indices_test_agM,0]=subject_preds_agM[indices_test_agM,0]+predEF_agM
+	subject_preds[indices_test,1]=subject_preds[indices_test,1]+1
+	subject_preds_agF[indices_test_agF,1]=subject_preds_agF[indices_test_agF,1]+1
+	subject_preds_agM[indices_test_agM,1]=subject_preds_agM[indices_test_agM,1]+1
+	
 	# test prediction on left out sample
 	pred_obs_r2 = sklearn.linear_model.Ridge(alpha=alpha).fit(xtrain,ytrain).score(xtest,ytest)
 	pred_obs_r2_agF = sklearn.linear_model.Ridge(alpha=alpha_agF).fit(xtrain_agF,ytrain_agF).score(xtest_agF,ytest_agF)
@@ -158,7 +166,13 @@ featureweightsFN='/cbica/projects/pinesParcels/data/aggregated_data/FeatureWeigh
 np.savetxt(featureweightsFN,mean_featureWeights_agF,delimiter=",")
 featureweightsFN='/cbica/projects/pinesParcels/data/aggregated_data/FeatureWeights_agM.csv'
 np.savetxt(featureweightsFN,mean_featureWeights_agM,delimiter=",")
-
+# save predicted subject info
+subjpredsFN='/cbica/projects/pinesParcels/data/aggregated_data/SubjPreds_agFagM.csv'
+np.savetxt(subjpredsFN,subject_preds,delimiter=",")
+subjpredsFN='/cbica/projects/pinesParcels/data/aggregated_data/SubjPreds_agF.csv'
+np.savetxt(subjpredsFN,subject_preds_agF,delimiter=",")
+subjpredsFN='/cbica/projects/pinesParcels/data/aggregated_data/SubjPreds_agM.csv'
+np.savetxt(subjpredsFN,subject_preds_agM,delimiter=",")
 #np.savetxt('topo_preds_ridge',summary_topo_preds)
 #np.savetxt('master_rot_preds_ridge',master_rot_preds)
 
