@@ -909,10 +909,12 @@ bwcolnames<-colnames(individ_scalebybw_df)
 # I guess append is just terribly slow. replace these with proper-length initializations
 tmdifvec=rep(0,length(colnames(individ_scalebybw_df)))
 ageEfvec=rep(0,length(colnames(individ_scalebybw_df)))
+ageEfPvec=rep(0,length(colnames(individ_scalebybw_df)))
 motionEfvec=rep(0,length(colnames(individ_scalebybw_df)))
 motioncorvec<-rep(0,length(colnames(individ_scalebybw_df)))
-EFEfvec=rep(0,length(colnames(individ_scalebybw_df)))
+EFEfPvec=rep(0,length(colnames(individ_scalebybw_df)))
 noAge_EFEfVec=rep(0,length(colnames(individ_scalebybw_df)))
+noAge_EFEfPVec=rep(0,length(colnames(individ_scalebybw_df)))
 Net1Vec=rep(0,length(colnames(individ_scalebybw_df)))
 Net2Vec=rep(0,length(colnames(individ_scalebybw_df)))
 Net1Vec17=rep(0,length(colnames(individ_scalebybw_df)))
@@ -972,11 +974,13 @@ for (i in 1:length(colnames(individ_scalebybw_df))){
     # get EF relation controlling for sex and motion
     EFpcordf2<-cbind(masteref$F1_Exec_Comp_Cog_Accuracy,masteref$Sex,masteref$Motion,masteref[,colindex])
     
-    # partial spearmans to extrac age relation
+    # partial spearmans to extract age relation
     pspear=pcor(pcordf,method='spearman')$estimate
-    # save both to respective vectors
+    pspearval=pcor(pcordf,method='spearman')$p.value
+    # save to respective vectors
     tmdifvec[i]<-tmdif
     ageEfvec[i]<-pspear[4]
+    ageEfPvec[i]<-pspearval[4]
     motionEfvec[i]<-pspear[3,4]
     motioncorvec[i]<-cor.test(masterdf[,colindex],masterdf$Motion)$estimate
     # accompanying scalevec so we can look at the typical transmodality #difference at each scale
@@ -985,11 +989,15 @@ for (i in 1:length(colnames(individ_scalebybw_df))){
     # additional section for EF
     # partial spearmans to extrac age relation
     pspear=pcor(EFpcordf,method='spearman')$estimate
+    pspearval=pcor(EFpcordf,method='spearman')$p.value
     EFEfvec[i]<-pspear[5]
+    EFEfPvec[i]<-pspearval[5]
     
     pspear=pcor(EFpcordf2,method='spearman')$estimate
     noAge_EFEfVec[i]<-pspear[4]
-  
+    pspearval=pcor(EFpcordf2,method='spearman')$p.value
+    noAge_EFEfPVec[i]<-pspearval[4]
+    
     # record communities assayed in terms of yeo7
     y7lab1=domnetvec[Kind[as.numeric(net1)]]
     y7lab2=domnetvec[Kind[as.numeric(net2)]]
@@ -1000,6 +1008,15 @@ for (i in 1:length(colnames(individ_scalebybw_df))){
     Net1Vec17[i]<-as.character(y17lab1)
     Net2Vec17[i]<-as.character(y17lab2)
 }
+
+# fdr correct pvectors, together
+concatpvecs<-c(ageEfPvec,EFEfPvec,noAge_EFEfPVec)
+correctconcatpvecs<-p.adjust(concatpvecs,method='fdr')
+chunksize=length(correctconcatpvecs/3)
+fdr_ageEfPvec<-correctconcatpvecs[1:chunksize]
+fdr_EFEfPvec<-correctconcatpvecs[chunksize+1,(2*chunksize)]
+fdr_noAge_EFEfPVec<-correctconcatpvecs[(2*chunksize)+1,(3*chunksize)]
+########### USE THESE AS MASKS FOR DEVELOPMENTALLY FACILITATED VS. CONFLICTED
 
 ## merged vectors
 BwAgeCorTMDifDf<-data.frame(tmdifvec,ageEfvec,noAge_EFEfVec,scalevec,Net1Vec,Net2Vec,Net1Vec17,Net2Vec17)
@@ -1164,6 +1181,9 @@ predEF_agMcsv<-read.csv('/cbica/projects/pinesParcels/data/aggregated_data/SubjP
 predEF<-predEFcsv[,1]/predEFcsv[,2]
 predEF_agF<-predEF_agFcsv[,1]/predEF_agFcsv[,2]
 predEF_agM<-predEF_agMcsv[,1]/predEF_agMcsv[,2]
+
+plot(masteref$Age,predEF_agM)
+cor.test(masteref$Age,predEF_agM,method='spearman')
 ```
 
 ```{r}

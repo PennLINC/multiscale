@@ -1,0 +1,30 @@
+---
+title: "Untitled"
+author: "Adam"
+date: "10/16/2020"
+output: html_document
+---
+
+```{r}
+library(ggplot2)
+library(ggpointdensity)
+
+L=read.csv('/cbica/projects/pinesParcels/results/aggregated_data/vertexWiseChange_LH.csv')
+R=read.csv('/cbica/projects/pinesParcels/results/aggregated_data/vertexWiseChange_RH.csv')
+
+for (K in 2:30){
+  x=data.frame(R[,K],R[,1])
+  colnames(x)<-c('LoadingChange','GradChange')
+  ggplot(x,aes(x=LoadingChange,y=GradChange)) + geom_pointdensity(adjust=.001) + scale_color_viridis_c()
+  # definitely not normally distr.
+  print(cor.test(R[,K],R[,1],method='spearman'))
+}
+for (K in 2:30){
+  x=data.frame(L[,K],L[,1])
+  colnames(x)<-c('LoadingChange','GradChange')
+  ggplot(x,aes(x=LoadingChange,y=GradChange)) + geom_pointdensity(adjust=.001) + scale_color_viridis_c()
+  plot(L[,K],L[,1],ylim=c(0,4))
+  # definitely not normally distr.
+  print(cor.test(L[,K],L[,1],method='spearman'))
+}
+```
