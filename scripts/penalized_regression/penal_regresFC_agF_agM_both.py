@@ -23,9 +23,9 @@ summary_preds=np.empty([3,2])
 
 # need a different, subject-level prediction DF so we can unpack predicted EF in R
 # first column is additive predicted EF, second column is number of times it was added
-subject_preds=np.empty([693,2])
-subject_preds_agF=np.empty([693,2])
-subject_preds_agM=np.empty([693,2])
+subject_preds=np.zeros([693,2])
+subject_preds_agF=np.zeros([693,2])
+subject_preds_agM=np.zeros([693,2])
 
 # bring in the variables we care about (bblid,age,motion,sex)
 df=np.loadtxt('/cbica/projects/pinesParcels/results/EffectVecs/forMLpc.csv',delimiter=',')
