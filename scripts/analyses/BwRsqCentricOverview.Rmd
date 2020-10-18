@@ -912,6 +912,7 @@ ageEfvec=rep(0,length(colnames(individ_scalebybw_df)))
 ageEfPvec=rep(0,length(colnames(individ_scalebybw_df)))
 motionEfvec=rep(0,length(colnames(individ_scalebybw_df)))
 motioncorvec<-rep(0,length(colnames(individ_scalebybw_df)))
+EFEfvec=rep(0,length(colnames(individ_scalebybw_df)))
 EFEfPvec=rep(0,length(colnames(individ_scalebybw_df)))
 noAge_EFEfVec=rep(0,length(colnames(individ_scalebybw_df)))
 noAge_EFEfPVec=rep(0,length(colnames(individ_scalebybw_df)))
@@ -942,7 +943,7 @@ for (k in 2:30){
 #### This measures all the pairwise distances for the plots
 ## for all b/w cols - 10/9/20: EF added in.
 for (i in 1:length(colnames(individ_scalebybw_df))){
-    print(i)
+    #print(i)
     # extract column name. Will parse column name to determine nature of #connection
     curcolname<-colnames(individ_scalebybw_df)[i]
     splitname<-unlist(strsplit(curcolname,'_'))
@@ -1012,16 +1013,22 @@ for (i in 1:length(colnames(individ_scalebybw_df))){
 # fdr correct pvectors, together
 concatpvecs<-c(ageEfPvec,EFEfPvec,noAge_EFEfPVec)
 correctconcatpvecs<-p.adjust(concatpvecs,method='fdr')
-chunksize=length(correctconcatpvecs/3)
+chunksize=length(correctconcatpvecs)/3
 fdr_ageEfPvec<-correctconcatpvecs[1:chunksize]
-fdr_EFEfPvec<-correctconcatpvecs[chunksize+1,(2*chunksize)]
-fdr_noAge_EFEfPVec<-correctconcatpvecs[(2*chunksize)+1,(3*chunksize)]
+fdr_EFEfPvec<-correctconcatpvecs[(chunksize+1):(2*chunksize)]
+fdr_noAge_EFEfPVec<-correctconcatpvecs[((2*chunksize)+1):(3*chunksize)]
 ########### USE THESE AS MASKS FOR DEVELOPMENTALLY FACILITATED VS. CONFLICTED
 
-## merged vectors
-BwAgeCorTMDifDf<-data.frame(tmdifvec,ageEfvec,noAge_EFEfVec,scalevec,Net1Vec,Net2Vec,Net1Vec17,Net2Vec17)
 
-ggplot(BwAgeCorTMDifDf,aes(x=tmdifvec,y=ageEfvec)) + geom_point(alpha=.07,size=5) + xlab('Transmodality Difference') + ylab('Age Partial Correlation') + ggtitle('Pairwise Between-Network Age-FC Relations')
+## merged vectors
+BwAgeCorTMDifDf<-data.frame(tmdifvec,ageEfvec,noAge_EFEfVec,EFEfvec,scalevec,Net1Vec,Net2Vec,Net1Vec17,Net2Vec17,fdr_ageEfPvec,fdr_EFEfPvec,fdr_noAge_EFEfPVec)
+
+nonthresh<-ggplot(BwAgeCorTMDifDf,aes(x=tmdifvec,y=ageEfvec)) + geom_point(alpha=.07,size=5) + xlab('Transmodality Difference') + ylab('Age Partial Correlation') + ggtitle('Pairwise Between-Network Age-FC Relations')
+
+
+thresh<-ggplot(BwAgeCorTMDifDf[fdr_ageEfPvec<0.05,],aes(x=tmdifvec,y=ageEfvec)) + geom_point(alpha=.07,size=5) + xlab('Transmodality Difference') + ylab('Age Partial Correlation') + ggtitle('Pairwise Between-Network Age-FC Relations: FDR Thresh.')
+
+ggarrange(nonthresh,thresh)
 
 # combine scalevec and transmodality dif vec for transmodality difference
 ScaleTMDifDf<-data.frame(tmdifvec,scalevec)
@@ -1048,22 +1055,33 @@ ageMitigated_stringent<-as.matrix(rep(999,dim(BwAgeCorTMDifDf)[1]))
 
 
 for (feat in 1:dim(BwAgeCorTMDifDf)[1]){
-  # if age and EF trend are aligned (- - or + +)
+  # if age and EF trend are aligned (- - or + +) and EF effect survives FDR
   if (BwAgeCorTMDifDf$ageEfvec[feat]*BwAgeCorTMDifDf$noAge_EFEfVec[feat] > 0){
     ageAligned[feat]=1
-    ageAligned_stringent[feat]=1
     ageMitigated[feat]=0
     ageMitigated_stringent[feat]=0
+    # if the no-age-control EF effect survives FDR, stringent gets a boolean "yes"
+    # no-age-control chosen because age-facilitated should show EF sig w/o reger. out age
+    if (BwAgeCorTMDifDf$fdr_noAge_EFEfPVec[feat] < 0.05 ){
+      ageAligned_stringent[feat]=1
+    } else {
+      ageAligned_stringent[feat]=0
+    }
   } else if (BwAgeCorTMDifDf$ageEfvec[feat]*BwAgeCorTMDifDf$noAge_EFEfVec[feat] < 0) {
     # if age and EF trend are opposed
     ageAligned[feat]=0
     ageAligned_stringent[feat]=0
     ageMitigated[feat]=1
-    ageMitigated_stringent[feat]=1
+    # if the EF effect survives FDR, stringent gets a boolean "yes"
+    # age-control chosen because age-mitigated only vis. after reger. out age
+    if (BwAgeCorTMDifDf$fdr_EFEfPvec[feat] < 0.05 ){
+      ageMitigated_stringent[feat]=1
+    } else {
+      ageMitigated_stringent[feat]=0
+    }
   }
-  # if either effect size is smaller than .1, might be hard to concretely dissociate
-  # extra threshold for stringent
-  if (abs(BwAgeCorTMDifDf$ageEfvec[feat]) < .1 || abs(BwAgeCorTMDifDf$noAge_EFEfVec[feat]) < .1){
+  # if pure age effect did not survive FDR, exclude from stringent logical masks
+  if (BwAgeCorTMDifDf$fdr_ageEfPvec[feat] > 0.05){
     ageMitigated_stringent[feat]=0
     ageAligned_stringent[feat]=0
   }
@@ -1089,9 +1107,10 @@ ageMitigated_stringent<-as.logical(ageMitigated_stringent)
 ageAligneddf_stringent<-BwAgeCorTMDifDf[c(ageAligned_stringent),]
 ageMitigateddf_stringent<-BwAgeCorTMDifDf[c(ageMitigated_stringent),]
 
+
 agF_y7<-ggplot(ageAligneddf,aes(x=tmdifvec,y=noAge_EFEfVec,color=Net1Vec)) + geom_text(size=10,label="\u25D6",family="Arial Unicode MS") + xlab('Transmodality Difference') + ylab('EF Partial Correlation') + ggtitle('Pairwise Between-Network Age-aligned EF-FC Relations')+scale_color_manual(values=ycolors,limits=Y7vec)+geom_text(aes(x=tmdifvec,y=noAge_EFEfVec,color=Net2Vec),size=10,label="\u25D7",family="Arial Unicode MS")+theme_classic()+xlim(0,12)+ylim(-.3,.3)
 
-agM_y7<-ggplot(ageMitigateddf,aes(x=tmdifvec,y=noAge_EFEfVec,color=Net1Vec)) + geom_text(size=10,label="\u25D6",family="Arial Unicode MS") + xlab('Transmodality Difference') + ylab('EF Partial Correlation') + ggtitle('Pairwise Between-Network Age-mitigated EF-FC Relations')+scale_color_manual(values=ycolors,limits=Y7vec)+geom_text(aes(x=tmdifvec,y=noAge_EFEfVec,color=Net2Vec),size=10,label="\u25D7",family="Arial Unicode MS")+theme_classic()+xlim(0,12)+ylim(-.3,.3)
+agM_y7<-ggplot(ageMitigateddf,aes(x=tmdifvec,y=EFEfvec,color=Net1Vec)) + geom_text(size=10,label="\u25D6",family="Arial Unicode MS") + xlab('Transmodality Difference') + ylab('EF Partial Correlation') + ggtitle('Pairwise Between-Network Age-mitigated EF-FC Relations')+scale_color_manual(values=ycolors,limits=Y7vec)+geom_text(aes(x=tmdifvec,y=EFEfvec,color=Net2Vec),size=10,label="\u25D7",family="Arial Unicode MS")+theme_classic()+xlim(0,12)+ylim(-.3,.3)
 
 # plot average at each scale
 AA_corvec<-rep(0,29)
@@ -1112,15 +1131,49 @@ plot(both_corvec)
 # more thresholding
 agF_y7_thresh<-ggplot(ageAligneddf_stringent,aes(x=tmdifvec,y=noAge_EFEfVec,color=Net1Vec)) + geom_text(size=10,label="\u25D6",family="Arial Unicode MS") + xlab('Transmodality Difference') + ylab('EF Partial Correlation') + ggtitle('Pairwise Between-Network Age-aligned EF-FC Relations')+scale_color_manual(values=ycolors,limits=Y7vec)+geom_text(aes(x=tmdifvec,y=noAge_EFEfVec,color=Net2Vec),size=10,label="\u25D7",family="Arial Unicode MS")+theme_classic()+xlim(0,12)+ylim(-.3,.3)
 
-agM_y7_thresh<-ggplot(ageMitigateddf_stringent,aes(x=tmdifvec,y=noAge_EFEfVec,color=Net1Vec)) + geom_text(size=10,label="\u25D6",family="Arial Unicode MS") + xlab('Transmodality Difference') + ylab('EF Partial Correlation') + ggtitle('Pairwise Between-Network Age-mitigated EF-FC Relations')+scale_color_manual(values=ycolors,limits=Y7vec)+geom_text(aes(x=tmdifvec,y=noAge_EFEfVec,color=Net2Vec),size=10,label="\u25D7",family="Arial Unicode MS")+theme_classic()+xlim(0,12)+ylim(-.3,.3)
+agM_y7_thresh<-ggplot(ageMitigateddf_stringent,aes(x=tmdifvec,y=EFEfvec,color=Net1Vec)) + geom_text(size=10,label="\u25D6",family="Arial Unicode MS") + xlab('Transmodality Difference') + ylab('EF Partial Correlation') + ggtitle('Pairwise Between-Network Age-mitigated EF-FC Relations')+scale_color_manual(values=ycolors,limits=Y7vec)+geom_text(aes(x=tmdifvec,y=EFEfvec,color=Net2Vec),size=10,label="\u25D7",family="Arial Unicode MS")+theme_classic()+xlim(0,12)+ylim(-.3,.3)
 
 # yeo17
 
 agF_y17<-ggplot(ageAligneddf_stringent,aes(x=tmdifvec,y=noAge_EFEfVec,color=Net1Vec17)) + geom_text(size=10,label="\u25D6",family="Arial Unicode MS") + xlab('Transmodality Difference') + ylab('EF Partial Correlation') + ggtitle('Pairwise Between-Network Age-aligned EF-FC RelationsL: Yeo17')+scale_color_manual(values=y17colors,limits=y17vec)+geom_text(aes(x=tmdifvec,y=noAge_EFEfVec,color=Net2Vec17),size=10,label="\u25D7",family="Arial Unicode MS")+theme_classic()+xlim(0,12)+ylim(-.3,.3)
 
-agM_y17<-ggplot(ageMitigateddf_stringent,aes(x=tmdifvec,y=noAge_EFEfVec,color=Net1Vec17)) + geom_text(size=10,label="\u25D6",family="Arial Unicode MS") + xlab('Transmodality Difference') + ylab('EF Partial Correlation') + ggtitle('Pairwise Between-Network Age-mitigated EF-FC Relations: Yeo17')+scale_color_manual(values=y17colors,limits=y17vec)+geom_text(aes(x=tmdifvec,y=noAge_EFEfVec,color=Net2Vec17),size=10,label="\u25D7",family="Arial Unicode MS")+theme_classic()+xlim(0,12)+ylim(-.3,.3)
+agM_y17<-ggplot(ageMitigateddf_stringent,aes(x=tmdifvec,y=EFEfvec,color=Net1Vec17)) + geom_text(size=10,label="\u25D6",family="Arial Unicode MS") + xlab('Transmodality Difference') + ylab('EF Partial Correlation') + ggtitle('Pairwise Between-Network Age-mitigated EF-FC Relations: Yeo17')+scale_color_manual(values=y17colors,limits=y17vec)+geom_text(aes(x=tmdifvec,y=EFEfvec,color=Net2Vec17),size=10,label="\u25D7",family="Arial Unicode MS")+theme_classic()+xlim(0,12)+ylim(-.3,.3)
 
-#ggarrange(agF_y7,agM_y7,agF_y7_thresh,agM_y7_thresh,agF_y17,agM_y17,nrow=3,ncol=2)
+ggarrange(agF_y7,agM_y7,agF_y7_thresh,agM_y7_thresh,agF_y17,agM_y17,nrow=3,ncol=2)
+```
+
+```{r}
+# make scale-specific plots
+# scale ordering for visibility of coarse scales
+BwAgeCorTMDifDf_rev<- BwAgeCorTMDifDf[seq(dim(BwAgeCorTMDifDf)[1],1),]
+
+ggplot(BwAgeCorTMDifDf_rev,aes(x=tmdifvec,y=ageEfvec,color=scalevec)) + geom_point(size=3)+scale_color_viridis(option='inferno') + xlab('Transmodality Difference') + ylab('Age Partial Correlation') + ggtitle('Pairwise Between-Network Age FC Relations: Scale')+theme_classic()
+
+ggplot(BwAgeCorTMDifDf,aes(x=tmdifvec,y=ageEfvec,color=scalevec)) + geom_point(size=3)+scale_color_viridis(option='inferno') + xlab('Transmodality Difference') + ylab('Age Partial Correlation')  + ggtitle('Pairwise Between-Network Age FC Relations: Scale')+theme_classic()
+
+ggplot(BwAgeCorTMDifDf,aes(x=tmdifvec,y=EFEfvec,color=scalevec)) + geom_text(size=10,alpha=.4,label="\u25D6",family="Arial Unicode MS") + xlab('Transmodality Difference') + ylab('EF Partial Correlation') + ggtitle('Pairwise Between-Network Age-mitigated EF-FC Relations')+scale_color_manual(values=ycolors,limits=Y7vec)+geom_text(aes(x=tmdifvec,y=EFEfvec,color=Net2Vec),size=10,alpha=.4,label="\u25D7",family="Arial Unicode MS")+theme_classic()+xlim(0,12)+ylim(-.3,.3)
+
+# scale-colored plots
+agF_sc<-ggplot(BwAgeCorTMDifDf_rev,aes(x=tmdifvec,y=noAge_EFEfVec,color=scalevec)) + geom_point(size=10) + xlab('Transmodality Difference') + ylab('EF Partial Correlation') + ggtitle('Pairwise Between-Network Age-aligned EF-FC Relations: Yeo17')+scale_color_viridis(option='inferno')+theme_classic()
+
+agM_sc<-ggplot(BwAgeCorTMDifDf_rev,aes(x=tmdifvec,y=EFEfvec,color=scalevec)) + geom_point(size=10) + xlab('Transmodality Difference') + ylab('EF Partial Correlation') + ggtitle('Pairwise Between-Network Age-controlled EF-FC Relations: Yeo17')+scale_color_viridis(option='inferno')+theme_classic()
+
+ggarrange(agF_sc,agM_sc)
+
+```
+
+```{r}
+library(gganimate)
+agF_sc2<-ggplot(BwAgeCorTMDifDf[1:50,],aes(x=tmdifvec,y=noAge_EFEfVec,color=scalevec)) + geom_point(size=10) + xlab('Transmodality Difference') + ylab('EF Partial Correlation') + ggtitle('Pairwise Between-Network Age-aligned EF-FC Relations: Yeo17')+scale_color_viridis(option='inferno')+theme_classic()
+
+agF_anim<-agF_sc2 + transition_states(as.integer(scalevec), state_length = 3)
+
+agM_sc2<-ggplot(BwAgeCorTMDifDf[1:50,],aes(x=tmdifvec,y=EFEfvec,color=scalevec)) + geom_point(size=10) + xlab('Transmodality Difference') + ylab('EF Partial Correlation') + ggtitle('Pairwise Between-Network Age-mitigated EF-FC Relations: Yeo17')+scale_color_viridis(option='inferno')+theme_classic()
+
+agM_anim<-agM_sc2 + transition_states(as.integer(scalevec), state_length = 3)
+
+agF_anim
+
 ```
 
 ```{r}
