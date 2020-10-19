@@ -45,8 +45,9 @@ for (K in 2:30){
 
 ```{r}
 ### For EF
-#for (K in 2:30){
-for (K in 3:30){
+for (K in 2:30){
+# go to 3:30 when thresholding to avoid thrown error for no subthresh @k2
+#for (K in 3:30){
   K_start=((K-1)*(K))/2
   K_end=(((K-1)*(K))/2)+K-1
   Kind<-K_start:K_end
@@ -59,7 +60,8 @@ for (K in 3:30){
   curTmRank<-order(tmvec[Kind])
   ReAr_EF_EfMat<-EF_EfMat[curTmRank,curTmRank]
   ReAr_EF_EfMatThresh<-ReAr_EF_EfMat
-  ReAr_EF_EfMatThresh[ReAr_EF_EfMat > -.13 & ReAr_EF_EfMat < .13]=0
+  # COMMENTED out thresholding for now
+  #ReAr_EF_EfMatThresh[ReAr_EF_EfMat > -.13 & ReAr_EF_EfMat < .13]=0
   corrplot(ReAr_EF_EfMatThresh,is.corr = F,tl.cex = 2,cl.cex=2,cl.ratio = .3)
   title(paste(K))
   chordDiagram(ReAr_EF_EfMatThresh,grid.col = grid.col, col = col_fun,symmetric = "TRUE",annotationTrack=c("name","grid"),self.link = 1)

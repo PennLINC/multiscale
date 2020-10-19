@@ -2135,13 +2135,34 @@ for (K in 3:30){
 }
 
 # merge it all together
-indglobbw<-cbind(masterdf$bblid,masterdf$Age/12,masterdf$Sex,masterdf$Motion,gbw)
+indglobbw<-data.frame(cbind(masteref$bblid,masteref$Age/12,masteref$Sex,masteref$Motion,masteref$F1_Exec_Comp_Cog_Accuracy,gbw))
+colnames(indglobbw)[1:5]<-c('bblid','Age','Sex','Motion','EF')
+
+ind_bwcors<-matrix(0,29,2)
+ind_bwcors[,1]<-2:30
+for (i in 1:29){
+
+  # relevant df
+  scaledf<-cbind(indglobbw$EF,indglobbw$Age,indglobbw$Sex,indglobbw$Motion,indglobbw[,i+5])
+  # partial spearmans to extrac age relation
+  pspear=pcor(scaledf,method='spearman')$estimate
+  ind_bwcors[i,2]<-pspear[5]
+}
+
+indEFcor<-correlations_over_scales(ind_bwcors,"Global B/w-EF Correlation - Individ. Partitions")
+
+ggplot(x,aes(X1,value,group=Partitioning,color=Partitioning)) + geom_step(size=3)+ylab('Segregation-EF Correlation')+
+    theme_minimal(base_size = 28)+
+    theme(axis.text=element_text(), axis.title = element_text(),panel.grid.minor = element_blank(), plot.title = element_text())+
+    xlab("# of Communities") + scale_x_continuous(breaks=seq(2, 30, 4)) +
+    geom_hline(aes(yintercept=.098), linetype="dashed", col='#55185D',size=2.5) +
+    geom_hline(aes(yintercept=-.098), linetype="dashed", col='#55185D',size=2.5) +
+    geom_hline(aes(yintercept=.125), linetype="dashed", col='#ECB602',size=2.5) +
+    geom_hline(aes(yintercept=-.125), linetype="dashed", col='#ECB602',size=2.5) + scale_color_manual(values = c("black", "grey"))+ggtitle("Global Segregation and EF Correlation Over Scales")
+
+#ggplot(ind_GBwcors,aes(x=ind_GBwcors$X1,y=ind_GBwcors$X2,col='blue'))+geom_line()+geom_line(aes(ind_GBwcors$X1,ind_GBwcors$X3,col='red'))+xlab('Scale')+ylab('Value')+scale_color_hue(labels=c('WithinClass:Cross Class B/w connections','B/w x Age Correlation'))
 ```
 
-```{r}
-ggplot(ind_GBwcors,aes(x=ind_GBwcors$X1,y=ind_GBwcors$X2,col='blue'))+geom_line()+geom_line(aes(ind_GBwcors$X1,ind_GBwcors$X3,col='red'))+xlab('Scale')+ylab('Value')+scale_color_hue(labels=c('WithinClass:Cross Class B/w connections','B/w x Age Correlation'))
-
-```
 
 
 
