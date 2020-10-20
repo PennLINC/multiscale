@@ -5,40 +5,6 @@ date: "10/5/2020"
 output: html_document
 ---
 ```{r}
-# divide and conquer. Split the two maturational patterns into constitutive feature vectors. Requires BwCentricOverview to be run through community-level trajectory estimates.
-
-
-
-# indices of features inc. in b/w w/ age
-inc_w_age<-which(bwdf$bwAgeCorVecs.avg_bw>0)
-
-# indices of features dec. in b/w w/ age
-dec_w_age<-which(bwdf$bwAgeCorVecs.avg_bw<0)
-
-# uses indices to extract the features from bwAvgCon
-inc_feats<-bwAvgCon[,inc_w_age]
-dec_feats<-bwAvgCon[,dec_w_age]
-
-# remove scale 2 (no possibility of differentiation here)
-dec_feats<-dec_feats[,-seq_len(2)]
-
-# for increasing b/ws (integraters)
-#combine features with Age, EF, Motion, Sex
-forRRfc<-cbind(masteref$Age,masteref$Motion,masteref$F1_Exec_Comp_Cog_Accuracy,masteref$Sex,inc_feats)
-RRfcFN<-paste('/cbica/projects/pinesParcels/results/EffectVecs/Integrative_Comms_for_bw_RRfc.csv',sep='')
-# save it out
-write.table(forRRfc,RRfcFN,row.names = F,col.names = F,sep = ',')
-
-# for decreasing b/ws (segregators)
-#combine features with Age, EF, Motion, Sex
-forRRfc<-cbind(masteref$Age,masteref$Motion,masteref$F1_Exec_Comp_Cog_Accuracy,masteref$Sex,inc_feats)
-RRfcFN<-paste('/cbica/projects/pinesParcels/results/EffectVecs/Segregrative_Comms_for_bw_RRfc.csv',sep='')
-# save it out
-write.table(forRRfc,RRfcFN,row.names = F,col.names = F,sep = ',')
-```
-
-
-```{r}
 #ms feat. planning
 
 # number of b/w features over scales
@@ -297,6 +263,7 @@ for (i in 2:30){
     # extract samples from master df to mirror the scale-specific features
     forRRfc<-cbind(masterdf$Age,masterdf$Motion,masterdf[,featureIndexVec])
     RRfcFN<-paste('/cbica/projects/pinesParcels/results/EffectVecs/scale',i,'_equivFeatNum_randomSamp_',s,'_for_bw_RRfc.csv',sep='')
+    write.table(forRRfc,RRfcFN,row.names = F,col.names = F,sep = ',')
     # finally. Save it out! On to some nice ez sklearn.
     write.table(forRRfc,RRfcFN,row.names = F,col.names = F,sep = ',')
     }

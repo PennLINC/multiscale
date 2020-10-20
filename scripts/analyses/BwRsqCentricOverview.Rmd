@@ -896,6 +896,7 @@ plot_model(netLM,type='int')
 tab_model(netLM)
 
 ```
+
 ```{r}
 # Framework for pairwise age patterns
 # Transmodality Dif and Age-relation
@@ -1047,9 +1048,9 @@ ggplot(ScaleTMDifDf,aes(x=scalevec,y=tmdifvec)) + geom_point(alpha=.1,size=2) +x
 # big violin plot
 ggplot(data = BwAgeCorTMDifDf, aes(x = factor(scalevec), y = tmdifvec)) +
   geom_violin(alpha = .8) +
-  geom_boxplot(width=0.1)+
-  geom_point(size = 1, alpha = 0.8) +
-  raincloud_theme+theme_classic()
+  geom_boxplot(width=0.2)+
+  geom_point(size = 1, alpha = 0.8,color='blue') +
+  raincloud_theme+theme_classic()+ylab('Modal Dissimilarity')
 ```
 
 ```{r}
@@ -1111,7 +1112,7 @@ ageMitigateddf_stringent<-BwAgeCorTMDifDf[c(ageMitigated_stringent),]
 
 agF_y7<-ggplot(ageAligneddf,aes(x=tmdifvec,y=noAge_EFEfVec,color=Net1Vec)) + geom_text(size=10,label="\u25D6",family="Arial Unicode MS") + xlab('Transmodality Difference') + ylab('EF Partial Correlation') + ggtitle('Pairwise Between-Network Age-aligned EF-FC Relations')+scale_color_manual(values=ycolors,limits=Y7vec)+geom_text(aes(x=tmdifvec,y=noAge_EFEfVec,color=Net2Vec),size=10,label="\u25D7",family="Arial Unicode MS")+theme_classic()+xlim(0,12)+ylim(-.3,.3)+geom_smooth(method='lm', formula= y~x,color='gray82',size=2)
 
-agM_y7<-ggplot(ageMitigateddf,aes(x=tmdifvec,y=EFEfvec,color=Net1Vec)) + geom_text(size=10,label="\u25D6",family="Arial Unicode MS") + xlab('Transmodality Difference') + ylab('EF Partial Correlation') + ggtitle('Pairwise Between-Network Age-mitigated EF-FC Relations')+scale_color_manual(values=ycolors,limits=Y7vec)+geom_text(aes(x=tmdifvec,y=EFEfvec,color=Net2Vec),size=10,label="\u25D7",family="Arial Unicode MS")+theme_classic()+xlim(0,12)+ylim(-.4,.4)+geom_smooth(method='lm', formula= y~x,color='gray82',size=2)
+agM_y7<-ggplot(ageMitigateddf,aes(x=tmdifvec,y=EFEfvec,color=Net1Vec)) + geom_text(size=10,label="\u25D6",family="Arial Unicode MS") + xlab('Transmodality Difference') + ylab('EF Partial Correlation') + ggtitle('Pairwise Between-Network Age-mitigated EF-FC Relations')+scale_color_manual(values=ycolors,limits=Y7vec)+geom_text(aes(x=tmdifvec,y=EFEfvec,color=Net2Vec),size=10,label="\u25D7",family="Arial Unicode MS")+theme_classic()+xlim(0,12)+ylim(-.3,.3)+geom_smooth(method='lm', formula= y~x,color='gray82',size=2)
 
 agM_y7_age_relations<-ggplot(ageMitigateddf,aes(x=tmdifvec,y=ageEfvec,color=Net1Vec)) + geom_text(size=10,label="\u25D6",family="Arial Unicode MS") + xlab('Transmodality Difference') + ylab('Age Partial Correlation') + ggtitle('Pairwise Between-Network EF-Age-mitigated Age-FC Relations')+scale_color_manual(values=ycolors,limits=Y7vec)+geom_text(aes(x=tmdifvec,y=ageEfvec,color=Net2Vec),size=10,label="\u25D7",family="Arial Unicode MS")+theme_classic()+xlim(0,12)+ylim(-.4,.4)+geom_smooth(method='lm', formula= y~x,color='gray82',size=2)
 
@@ -1151,9 +1152,104 @@ aa_plotCols<-cbind(seq(2:30),c(AA_corvec))
 am_plotCols<-cbind(seq(2:30),c(AM_corvec))
 both_plotCols<-cbind(seq(2:30),c(both_corvec))
 
-correlations_over_scales(aa_plotCols,"G-b/w EF: Age-Aligned")
-correlations_over_scales(am_plotCols,"G-b/w EF: Age-Mitigated")
-correlations_over_scales(both_plotCols,"G-b/w EF")
+# average correlations
+correlations_over_scales(aa_plotCols,"Average b/w EF Cor: Age-Aligned")
+correlations_over_scales(am_plotCols,"Average b/w EF Cor: Age-Mitigated")
+correlations_over_scales(both_plotCols,"Average b/w EF Cor")
+
+### now do with average value for parallelism
+
+#use age mitig. and age facilitated indices to extract corresp. values from indiv_bwcols_ind
+
+# initialize 
+winScaleAvgbwVal_agF<-matrix(0,693,29)
+winScaleAvgbwVal_agM<-matrix(0,693,29)
+winScaleAvgbwVal<-matrix(0,693,29)
+
+# for each scale
+for (K in 2:30){
+  # use logical indices of age aligned and age mitigated in tandem with scale index
+  AgeAli_K<- scalevec==K & ageAligned=='TRUE'
+  AgeMit_K<- scalevec==K & ageMitigated=='TRUE'
+  both<-scalevec==K
+  
+  # annoying tidbit to deal with thrown error on K=2 (can't rowmean on 1 column)
+  if (K==2){
+    winScaleAvgbwVal[,K-1]<-masterdf[,indiv_bwcols_ind[both]]
+    winScaleAvgbwVal_agF[,K-1]<-masterdf[,indiv_bwcols_ind[AgeAli_K]]
+    # another annoying bit of logic to deal with age-mitig. not being present at all scales
+    if (sum(AgeMit_K[scalevec==K] != 0)){
+      winScaleAvgbwVal_agM[,K-1]<-masterdf[,indiv_bwcols_ind[AgeMit_K]]
+    } else {
+      winScaleAvgbwVal_agM[,K-1]=rep(0,693)
+    }
+  # if K not equal to 2
+  } else {
+  # use bwcol ind to get corresponding positions in masterdf
+  # extract matrix of b/w conns for everyone at this scale, rowmean it
+  winScaleAvgbwVal_agF[,K-1]<-rowMeans(masterdf[,indiv_bwcols_ind[AgeAli_K]])
+  winScaleAvgbwVal[,K-1]<-rowMeans(masterdf[,indiv_bwcols_ind[both]])
+  # another annoying bit of logic to deal with age-mitig. not being present at all scales
+    if (sum(AgeMit_K[scalevec==K] != 0)){
+      # if there is only one feature, no row meaning
+      if (sum(AgeMit_K[scalevec==K]) == 1){
+      winScaleAvgbwVal_agM[,K-1]<-masterdf[,indiv_bwcols_ind[AgeMit_K]]
+      } else {
+      # row means if there are multiple columns
+        winScaleAvgbwVal_agM[,K-1]<-winScaleAvgbwVal_agM[,K-1]<-rowMeans(masterdf[,indiv_bwcols_ind[AgeMit_K]])
+      }
+    # if there are no mitig. features at this scale, fill in with 0
+    } else {
+      winScaleAvgbwVal_agM[,K-1]=rep(0,693)
+    }
+  }
+}
+
+# there's gotta be a more efficient way to do that. Anyways, now repeat correlation analyses on "global" b/w values
+
+### use the "global" b/w values to evaluate global scale-dependency
+# global
+indglobbw<-data.frame(cbind(masteref$bblid,masteref$Age/12,masteref$Sex,masteref$Motion,masteref$F1_Exec_Comp_Cog_Accuracy,winScaleAvgbwVal))
+colnames(indglobbw)[1:5]<-c('bblid','Age','Sex','Motion','EF')
+ind_bwcors<-matrix(0,29,2)
+ind_bwcors[,1]<-2:30
+for (i in 1:29){
+  # relevant df
+  scaledf<-cbind(indglobbw$EF,indglobbw$Age,indglobbw$Sex,indglobbw$Motion,indglobbw[,i+5])
+  # partial spearmans to extrac age relation
+  pspear=pcor(scaledf,method='spearman')$estimate
+  ind_bwcors[i,2]<-pspear[5]
+}
+indEFcor2<-correlations_over_scales(ind_bwcors,"Global B/w-EF Correlation")
+### age facilitated
+indglobbw<-data.frame(cbind(masteref$bblid,masteref$Age/12,masteref$Sex,masteref$Motion,masteref$F1_Exec_Comp_Cog_Accuracy,winScaleAvgbwVal_agF))
+colnames(indglobbw)[1:5]<-c('bblid','Age','Sex','Motion','EF')
+ind_bwcors<-matrix(0,29,2)
+ind_bwcors[,1]<-2:30
+for (i in 1:29){
+  # relevant df, age removed here (age facilitated while controlling for age doesn't make sense)
+  scaledf<-cbind(indglobbw$EF,indglobbw$Sex,indglobbw$Motion,indglobbw[,i+5])
+  # partial spearmans to extrac age relation
+  pspear=pcor(scaledf,method='spearman')$estimate
+  ind_bwcors[i,2]<-pspear[4]
+}
+indEFcor_agF<-correlations_over_scales(ind_bwcors,"Global B/w-EF: Age-Facil.")
+### age mitigated
+indglobbw<-data.frame(cbind(masteref$bblid,masteref$Age/12,masteref$Sex,masteref$Motion,masteref$F1_Exec_Comp_Cog_Accuracy,winScaleAvgbwVal_agM))
+colnames(indglobbw)[1:5]<-c('bblid','Age','Sex','Motion','EF')
+ind_bwcors<-matrix(0,29,2)
+ind_bwcors[,1]<-2:30
+for (i in 1:29){
+  # relevant df
+  scaledf<-cbind(indglobbw$EF,indglobbw$Age,indglobbw$Sex,indglobbw$Motion,indglobbw[,i+5])
+  # partial spearmans to extrac age relation
+  pspear=pcor(scaledf,method='spearman')$estimate
+  ind_bwcors[i,2]<-pspear[5]
+}
+indEFcor_agM<-correlations_over_scales(ind_bwcors,"Global B/w-EF: Age-Mitig.")
+
+
+
 ```
 
 ```{r}
@@ -1215,8 +1311,9 @@ for (featNum in 1:dim(individ_scalebybw_df)[2]){
     tempLm<-lm(bwFeature~Sex+Motion,data=tempDf)
     # plug residuals into feature matrix
     bothFeats[,featNum]<-tempLm$residuals
-  # if age-mitig, control for age
-  } else if (ageAligned[featNum]==0){
+  }
+    # if age-mitig, control for age
+    if (ageMitigated[featNum]==1){
     # make dataframe for gamming, b/w feature sex motion and scale
     tempDf<-data.frame(individ_scalebybw_df[,featNum],masterdf$Age,masterdf$Sex,masterdf$Motion,scalevec[featNum])
     colnames(tempDf)<-c('bwFeature','Age','Sex','Motion','Scale')
@@ -1240,6 +1337,18 @@ bothFeats<-cbind(bothFeats,masteref$F1_Exec_Comp_Cog_Accuracy)
 #write.table(ageFacilFeats,'/cbica/projects/pinesParcels/results/EffectVecs/AgeFacilFeats',sep=',', col.names = F,quote = F,row.names=F)
 #write.table(ageMitigFeats,'/cbica/projects/pinesParcels/results/EffectVecs/AgeMitigFeats',sep=',', col.names = F,quote = F,row.names=F)
 #write.table(bothFeats,'/cbica/projects/pinesParcels/results/EffectVecs/AgeFacilAndMitigFeats',sep=',', col.names = F,quote = F,row.names=F)
+
+# write out motion-regressed version 
+MotRegrEF<-gam(F1_Exec_Comp_Cog_Accuracy~s(Age,k=4)+Motion,data=masteref)$residuals
+# write out age and motion-regressed version
+AgeMotRegrEF<-gam(F1_Exec_Comp_Cog_Accuracy~s(Age,k=4)+Motion,data=masteref)$residuals
+
+AgeDepEF<-cbind(masterdf[,indiv_bwcols_ind],MotRegrEF)
+AgeIndepEF<-cbind(masterdf[,indiv_bwcols_ind],AgeMotRegrEF)
+
+write.table(ageFacilFeats,'/cbica/projects/pinesParcels/results/EffectVecs/AgeDepEF',sep=',', col.names = F,quote = F,row.names=F)
+write.table(ageMitigFeats,'/cbica/projects/pinesParcels/results/EffectVecs/AgeIndepEF',sep=',', col.names = F,quote = F,row.names=F)
+
 ```
 
 ```{r}
