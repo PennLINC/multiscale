@@ -1339,31 +1339,43 @@ bothFeats<-cbind(bothFeats,masteref$F1_Exec_Comp_Cog_Accuracy)
 #write.table(bothFeats,'/cbica/projects/pinesParcels/results/EffectVecs/AgeFacilAndMitigFeats',sep=',', col.names = F,quote = F,row.names=F)
 
 # write out motion-regressed version 
-MotRegrEF<-gam(F1_Exec_Comp_Cog_Accuracy~s(Age,k=4)+Motion,data=masteref)$residuals
+MotRegrEF<-gam(F1_Exec_Comp_Cog_Accuracy~Motion,data=masteref)$residuals
 # write out age and motion-regressed version
 AgeMotRegrEF<-gam(F1_Exec_Comp_Cog_Accuracy~s(Age,k=4)+Motion,data=masteref)$residuals
 
 AgeDepEF<-cbind(masterdf[,indiv_bwcols_ind],MotRegrEF)
 AgeIndepEF<-cbind(masterdf[,indiv_bwcols_ind],AgeMotRegrEF)
 
-write.table(ageFacilFeats,'/cbica/projects/pinesParcels/results/EffectVecs/AgeDepEF',sep=',', col.names = F,quote = F,row.names=F)
-write.table(ageMitigFeats,'/cbica/projects/pinesParcels/results/EffectVecs/AgeIndepEF',sep=',', col.names = F,quote = F,row.names=F)
+write.table(AgeDepEF,'/cbica/projects/pinesParcels/results/EffectVecs/AgeDepEF',sep=',', col.names = F,quote = F,row.names=F)
+write.table(AgeIndepEF,'/cbica/projects/pinesParcels/results/EffectVecs/AgeIndepEF',sep=',', col.names = F,quote = F,row.names=F)
 
 ```
 
 ```{r}
 # czech out the predicted EF values
-predEFcsv<-read.csv('/cbica/projects/pinesParcels/data/aggregated_data/SubjPreds_agFagM.csv',header=F)
-predEF_agFcsv<-read.csv('/cbica/projects/pinesParcels/data/aggregated_data/SubjPreds_agF.csv',header=F)
-predEF_agMcsv<-read.csv('/cbica/projects/pinesParcels/data/aggregated_data/SubjPreds_agM.csv',header=F)
+#predEFcsv<-read.csv('/cbica/projects/pinesParcels/data/aggregated_data/SubjPreds_agFagM.csv',header=F)
+#predEF_agFcsv<-read.csv('/cbica/projects/pinesParcels/data/aggregated_data/SubjPreds_agF.csv',header=F)
+#predEF_agMcsv<-read.csv('/cbica/projects/pinesParcels/data/aggregated_data/SubjPreds_agM.csv',header=F)
+
+
+predEF_ADcsv<-read.csv('/cbica/projects/pinesParcels/data/aggregated_data/SubjPreds_AD.csv',header=F)
+predEF_AIcsv<-read.csv('/cbica/projects/pinesParcels/data/aggregated_data/SubjPreds_AI.csv',header=F)
 
 # convert to average predicted EF over all folds
-predEF<-predEFcsv[,1]/predEFcsv[,2]
-predEF_agF<-predEF_agFcsv[,1]/predEF_agFcsv[,2]
-predEF_agM<-predEF_agMcsv[,1]/predEF_agMcsv[,2]
+#predEF_ADcsv<-predEFcsv[,1]/predEFcsv[,2]
+predEF_AD<-predEF_ADcsv[,1]/predEF_ADcsv[,2]
+predEF_AI<-predEF_AIcsv[,1]/predEF_AIcsv[,2]
 
-plot(masteref$Age,predEF_agM)
-cor.test(masteref$Age,predEF_agM,method='spearman')
+# pred ef vs. age
+plot(masteref$Age,predEF_AD)
+cor.test(masteref$Age,predEF_AD,method='spearman')
+plot(masteref$Age,predEF_AI)
+cor.test(masteref$Age,predEF_AI,method='spearman')
+# pred ef vs. ef
+plot(MotRegrEF,predEF_AD)
+cor.test(MotRegrEF,predEF_AD,method='spearman')
+plot(AgeMotRegrEF,predEF_AI)
+cor.test(AgeMotRegrEF,predEF_AI,method='spearman')
 ```
 
 ```{r}
