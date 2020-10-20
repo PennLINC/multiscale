@@ -1026,7 +1026,6 @@ BwAgeCorTMDifDf<-data.frame(tmdifvec,ageEfvec,noAge_EFEfVec,EFEfvec,scalevec,Net
 
 nonthresh<-ggplot(BwAgeCorTMDifDf,aes(x=tmdifvec,y=ageEfvec)) + geom_point(alpha=.07,size=5) + xlab('Transmodality Difference') + ylab('Age Partial Correlation') + ggtitle('Pairwise Between-Network Age-FC Relations')
 
-
 thresh<-ggplot(BwAgeCorTMDifDf[fdr_ageEfPvec<0.05,],aes(x=tmdifvec,y=ageEfvec)) + geom_point(alpha=.07,size=5) + xlab('Transmodality Difference') + ylab('Age Partial Correlation') + ggtitle('Pairwise Between-Network Age-FC Relations: FDR Thresh.')
 
 ggarrange(nonthresh,thresh)
@@ -1045,6 +1044,12 @@ plot(ScaleTMDifMeanVec)
 
 ggplot(ScaleTMDifDf,aes(x=scalevec,y=tmdifvec)) + geom_point(alpha=.1,size=2) +xlab('Number of Communities') + ylab('B/W Transmodality Difference')
 
+# big violin plot
+ggplot(data = BwAgeCorTMDifDf, aes(x = factor(scalevec), y = tmdifvec)) +
+  geom_violin(alpha = .8) +
+  geom_boxplot(width=0.1)+
+  geom_point(size = 1, alpha = 0.8) +
+  raincloud_theme+theme_classic()
 ```
 
 ```{r}
@@ -1182,11 +1187,11 @@ agM_sc2<-ggplot(ageMitigateddf[1:50,],aes(x=tmdifvec,y=EFEfvec,color=scalevec)) 
 
 agM_anim<-agM_sc2 + transition_states(as.integer(scalevec), state_length = 3)
 
-agF_anim
-agM_anim
+#agF_anim
+#agM_anim
 
-anim_save('~/multiscale/age-facilitated_scaleEffect_EF.gif',animation=agF_anim)
-anim_save('~/multiscale/age-mitigated_scaleEffect_EF.gif',animation=agF_anim)
+#anim_save('~/multiscale/age-facilitated_scaleEffect_EF.gif',animation=agF_anim)
+#anim_save('~/multiscale/age-mitigated_scaleEffect_EF.gif',animation=agF_anim)
 ```
 
 ```{r}
@@ -1232,9 +1237,9 @@ ageMitigFeats<-cbind(ageMitigFeats,masteref$F1_Exec_Comp_Cog_Accuracy)
 bothFeats<-cbind(bothFeats,masteref$F1_Exec_Comp_Cog_Accuracy)
 
 # write em out to cubic
-write.table(ageFacilFeats,'/cbica/projects/pinesParcels/results/EffectVecs/AgeFacilFeats',sep=',', col.names = F,quote = F,row.names=F)
-write.table(ageMitigFeats,'/cbica/projects/pinesParcels/results/EffectVecs/AgeMitigFeats',sep=',', col.names = F,quote = F,row.names=F)
-write.table(bothFeats,'/cbica/projects/pinesParcels/results/EffectVecs/AgeFacilAndMitigFeats',sep=',', col.names = F,quote = F,row.names=F)
+#write.table(ageFacilFeats,'/cbica/projects/pinesParcels/results/EffectVecs/AgeFacilFeats',sep=',', col.names = F,quote = F,row.names=F)
+#write.table(ageMitigFeats,'/cbica/projects/pinesParcels/results/EffectVecs/AgeMitigFeats',sep=',', col.names = F,quote = F,row.names=F)
+#write.table(bothFeats,'/cbica/projects/pinesParcels/results/EffectVecs/AgeFacilAndMitigFeats',sep=',', col.names = F,quote = F,row.names=F)
 ```
 
 ```{r}
@@ -1527,7 +1532,6 @@ for (y in 1:7){
 # can use this unicode half circle thing to get each dot on one plot with dual-colored halves
 
 #ggplot(BwAgeCorTMDifDf[1:10,],aes(x=tmdifvec,y=ageEfvec)) + geom_text(size=5,label="\u25D6",family="Arial Unicode MS") + xlab('Transmodality Difference') + ylab('Age Partial Correlation') + ggtitle('Pairwise Between-Network Age-FC Relations')+geom_text(size=5,label="\u25D7",family="Arial Unicode MS",color='blue')
-
 ```
 
 
