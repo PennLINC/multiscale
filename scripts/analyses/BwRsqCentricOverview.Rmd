@@ -1350,12 +1350,16 @@ bothFeats<-cbind(bothFeats,masteref$F1_Exec_Comp_Cog_Accuracy)
 MotRegrEF<-gam(F1_Exec_Comp_Cog_Accuracy~Motion,data=masteref)$residuals
 # write out age and motion-regressed version
 AgeMotRegrEF<-gam(F1_Exec_Comp_Cog_Accuracy~s(Age,k=4)+Motion,data=masteref)$residuals
+# pure age prediction version for comparison
+MotRegrAge<-lm(Age~Motion,data=masteref)$residuals
 
 AgeDepEF<-cbind(masterdf[,indiv_bwcols_ind],MotRegrEF)
 AgeIndepEF<-cbind(masterdf[,indiv_bwcols_ind],AgeMotRegrEF)
+AgeOnly<-cbind(masterdf[,indiv_bwcols_ind],MotRegrAge)
 
 write.table(AgeDepEF,'/cbica/projects/pinesParcels/results/EffectVecs/AgeDepEF',sep=',', col.names = F,quote = F,row.names=F)
 write.table(AgeIndepEF,'/cbica/projects/pinesParcels/results/EffectVecs/AgeIndepEF',sep=',', col.names = F,quote = F,row.names=F)
+write.table(AgeOnly,'/cbica/projects/pinesParcels/results/EffectVecs/AgeOnly',sep=',', col.names = F,quote = F,row.names=F)
 ```
 
 ```{r}
