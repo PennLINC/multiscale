@@ -1348,7 +1348,6 @@ AgeIndepEF<-cbind(masterdf[,indiv_bwcols_ind],AgeMotRegrEF)
 
 write.table(AgeDepEF,'/cbica/projects/pinesParcels/results/EffectVecs/AgeDepEF',sep=',', col.names = F,quote = F,row.names=F)
 write.table(AgeIndepEF,'/cbica/projects/pinesParcels/results/EffectVecs/AgeIndepEF',sep=',', col.names = F,quote = F,row.names=F)
-
 ```
 
 ```{r}
@@ -1371,11 +1370,29 @@ plot(masteref$Age,predEF_AD)
 cor.test(masteref$Age,predEF_AD,method='spearman')
 plot(masteref$Age,predEF_AI)
 cor.test(masteref$Age,predEF_AI,method='spearman')
+
 # pred ef vs. ef
 plot(MotRegrEF,predEF_AD)
 cor.test(MotRegrEF,predEF_AD,method='spearman')
 plot(AgeMotRegrEF,predEF_AI)
 cor.test(AgeMotRegrEF,predEF_AI,method='spearman')
+
+# read in feature weights
+featWeightsAD<-read.csv('/cbica/projects/pinesParcels/data/aggregated_data/FeatureWeights_AD.csv',header=F)
+featWeightsAI<-read.csv('/cbica/projects/pinesParcels/data/aggregated_data/FeatureWeights_AI.csv',header=F)
+
+# Use feature weight vectors to show kinds of networks that are weighted
+BwAgeCorTMDifDf_rrWeights<-data.frame(tmdifvec,ageEfvec,noAge_EFEfVec,EFEfvec,scalevec,Net1Vec,Net2Vec,Net1Vec17,Net2Vec17,fdr_ageEfPvec,fdr_EFEfPvec,fdr_noAge_EFEfPVec,as.numeric(featWeightsAD$V1),as.numeric(featWeightsAI$V1))
+# fix last two colnames
+colnames(BwAgeCorTMDifDf_rrWeights)[13:14]<-c('AgeDependentWeights','AgeIndependentWeights')
+#y7ver
+y7RidgeWeights<-ggplot(BwAgeCorTMDifDf_rrWeights,aes(x=AgeDependentWeights,y=AgeIndependentWeights,color=Net1Vec)) + geom_text(size=10,label="\u25D6",family="Arial Unicode MS") + xlab('Age-Dep. EF Weight') + ylab('Age-Indep. EF Weight') + ggtitle('EF-prediction weights:Ridge')+scale_color_manual(values=ycolors,limits=Y7vec)+geom_text(aes(x=AgeDependentWeights,y=AgeIndependentWeights,color=Net2Vec),size=10,label="\u25D7",family="Arial Unicode MS")+theme_classic()
+#y17ver
+y17RidgeWeights<-ggplot(BwAgeCorTMDifDf_rrWeights,aes(x=AgeDependentWeights,y=AgeIndependentWeights,color=Net1Vec17)) + geom_text(size=10,label="\u25D6",family="Arial Unicode MS") + xlab('Age-Dep. EF Weight') + ylab('Age-Indep. EF Weight') + ggtitle('EF-prediction weights:Ridge')+scale_color_manual(values=y17colors,limits=y17vec)+geom_text(aes(x=AgeDependentWeights,y=AgeIndependentWeights,color=Net2Vec17),size=10,label="\u25D7",family="Arial Unicode MS")+theme_minimal()
+
+# write feature weightS with colname labels as matrices for brain mapping viz
+featWeightsAD_lab<-cbind(colnames(masterdf)[indiv_bwcols_ind],featWeightsAD$V1)
+featWeightsAI_lab<-cbind(colnames(masterdf)[indiv_bwcols_ind],featWeightsAI$V1)
 ```
 
 ```{r}
