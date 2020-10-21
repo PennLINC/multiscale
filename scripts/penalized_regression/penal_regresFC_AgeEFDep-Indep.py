@@ -42,7 +42,9 @@ varofintAI=data_AI[:,-1]
 varofintAD=data_AD[:,-1]
 #varofint_permut=masterdf_permut[:,varofintnum]
 # set alphas for gcv
-alphas = np.exp2(np.arange(-6,16,.3) - 10)
+#alphas = np.exp2(np.arange(-6,16,.3))
+# fewer alphas for lasso to run thru
+alphas = np.exp2(np.arange(16)-10)
 # set subject indices for recoring train test splits
 indices = range(693)
 
@@ -98,16 +100,16 @@ for split in range(0,100):
 	predEF_AD=lm_AD.predict(xtest_AD)
 	predEF_AI=lm_AI.predict(xtest_AI)
 	predEF_ADL=lm_ADL.predict(xtest_AD)
-	predEF_AIL=lm_AIL.predict(xtest_AIL)
+	predEF_AIL=lm_AIL.predict(xtest_AI)
 	# add predicted EF to indices this iteration was not trained on, add another number 
 	subject_preds_AD[indices_test_AD,0]=subject_preds_AD[indices_test_AD,0]+predEF_AD
 	subject_preds_AI[indices_test_AI,0]=subject_preds_AI[indices_test_AI,0]+predEF_AI
 	subject_preds_AD[indices_test_AD,1]=subject_preds_AD[indices_test_AD,1]+1
 	subject_preds_AI[indices_test_AI,1]=subject_preds_AI[indices_test_AI,1]+1
-	subject_preds_ADL[indices_test_ADL,0]=subject_preds_ADL[indices_test_ADL,0]+predEF_ADL
-	subject_preds_AIL[indices_test_AIL,0]=subject_preds_AIL[indices_test_AIL,0]+predEF_AIL
-	subject_preds_ADL[indices_test_ADL,1]=subject_preds_ADL[indices_test_ADL,1]+1
-	subject_preds_AIL[indices_test_AIL,1]=subject_preds_AIL[indices_test_AIL,1]+1
+	subject_preds_ADL[indices_test_AD,0]=subject_preds_ADL[indices_test_AD,0]+predEF_ADL
+	subject_preds_AIL[indices_test_AI,0]=subject_preds_AIL[indices_test_AI,0]+predEF_AIL
+	subject_preds_ADL[indices_test_AD,1]=subject_preds_ADL[indices_test_AD,1]+1
+	subject_preds_AIL[indices_test_AI,1]=subject_preds_AIL[indices_test_AI,1]+1
 	# test prediction on left out sample
 	pred_obs_r2_AD = sklearn.linear_model.Ridge(alpha=alpha_AD).fit(xtrain_AD,ytrain_AD).score(xtest_AD,ytest_AD)
 	pred_obs_r2_AI = sklearn.linear_model.Ridge(alpha=alpha_AI).fit(xtrain_AI,ytrain_AI).score(xtest_AI,ytest_AI)
@@ -137,8 +139,8 @@ mean_alphas_AIL=np.average(all_preds_alphas[:,3])
 # mean feature weights
 mean_featureWeights_AD=np.average(featureWeights_AD,axis=0)
 mean_featureWeights_AI=np.average(featureWeights_AI,axis=0)
-mean_featureWeights_AD=np.average(featureWeights_ADL,axis=0)
-mean_featureWeights_AI=np.average(featureWeights_AIL,axis=0)
+mean_featureWeights_ADL=np.average(featureWeights_ADL,axis=0)
+mean_featureWeights_AIL=np.average(featureWeights_AIL,axis=0)
 ##mean_permut_preds.append(np.average(all_rot_preds[:,0]))
 # mean EF predictions
 #mean_louv_preds.append(np.average(all_louv_preds[:,1]))

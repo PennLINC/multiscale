@@ -1128,6 +1128,10 @@ agF_y17<-ggplot(ageAligneddf_stringent,aes(x=tmdifvec,y=noAge_EFEfVec,color=Net1
 agM_y17<-ggplot(ageMitigateddf_stringent,aes(x=tmdifvec,y=EFEfvec,color=Net1Vec17)) + geom_text(size=10,label="\u25D6",family="Arial Unicode MS") + xlab('Transmodality Difference') + ylab('EF Partial Correlation') + ggtitle('Pairwise Between-Network Age-mitigated EF-FC Relations: Yeo17')+scale_color_manual(values=y17colors,limits=y17vec)+geom_text(aes(x=tmdifvec,y=EFEfvec,color=Net2Vec17),size=10,label="\u25D7",family="Arial Unicode MS")+theme_classic()+xlim(0,12)+ylim(-.3,.3)
 
 ggarrange(agF_y7,agM_y7,agF_y7_thresh,agM_y7_thresh,agF_y17,agM_y17,nrow=3,ncol=2)
+
+AgeVsEFEffects_agF<-ggplot(BwAgeCorTMDifDf,aes(x=noAge_EFEfVec,y=ageEfvec,color=Net1Vec)) + geom_text(size=7,label="\u25D6",family="Arial Unicode MS") + xlab('EF Partial Correlation') + ylab('Age Partial Correlation') + ggtitle('Age vs. EF effects - no age control')+scale_color_manual(values=ycolors,limits=Y7vec)+geom_text(aes(x=noAge_EFEfVec,y=ageEfvec,color=Net2Vec),size=7,label="\u25D7",family="Arial Unicode MS")+theme_minimal()+theme(legend.position = "none")
+
+AgeVsEFEffects_agM<-ggplot(BwAgeCorTMDifDf,aes(x=EFEfvec,y=ageEfvec,color=Net1Vec)) + geom_text(size=7,label="\u25D6",family="Arial Unicode MS") + xlab('EF Partial Correlation') + ylab('Age Partial Correlation') + ggtitle('Age vs. Age-controlled EF effects')+scale_color_manual(values=ycolors,limits=Y7vec)+geom_text(aes(x=EFEfvec,y=ageEfvec,color=Net2Vec),size=7,label="\u25D7",family="Arial Unicode MS")+theme_minimal()+theme(legend.position = "none")
 ```
 
 ```{r}
@@ -1158,6 +1162,7 @@ correlations_over_scales(am_plotCols,"Average b/w EF Cor: Age-Mitigated")
 correlations_over_scales(both_plotCols,"Average b/w EF Cor")
 
 ### now do with average value for parallelism
+### note - bottom section of this chunk is the valid one: averaging correlations of all nets within scales != averaging b/w cons within scales and correlating
 
 #use age mitig. and age facilitated indices to extract corresp. values from indiv_bwcols_ind
 
@@ -1338,6 +1343,9 @@ bothFeats<-cbind(bothFeats,masteref$F1_Exec_Comp_Cog_Accuracy)
 #write.table(ageMitigFeats,'/cbica/projects/pinesParcels/results/EffectVecs/AgeMitigFeats',sep=',', col.names = F,quote = F,row.names=F)
 #write.table(bothFeats,'/cbica/projects/pinesParcels/results/EffectVecs/AgeFacilAndMitigFeats',sep=',', col.names = F,quote = F,row.names=F)
 
+
+### bottom section is likely more pragmatic: hard to estimate and regress stable age effect in thousands of FC features with GAM, but relatively straightforward to assess age effect in EF with GAM once and use that as outcome variable
+
 # write out motion-regressed version 
 MotRegrEF<-gam(F1_Exec_Comp_Cog_Accuracy~Motion,data=masteref)$residuals
 # write out age and motion-regressed version
@@ -1359,40 +1367,63 @@ write.table(AgeIndepEF,'/cbica/projects/pinesParcels/results/EffectVecs/AgeIndep
 
 predEF_ADcsv<-read.csv('/cbica/projects/pinesParcels/data/aggregated_data/SubjPreds_AD.csv',header=F)
 predEF_AIcsv<-read.csv('/cbica/projects/pinesParcels/data/aggregated_data/SubjPreds_AI.csv',header=F)
+predEF_ADLcsv<-read.csv('/cbica/projects/pinesParcels/data/aggregated_data/SubjPreds_ADL.csv',header=F)
+predEF_AILcsv<-read.csv('/cbica/projects/pinesParcels/data/aggregated_data/SubjPreds_AIL.csv',header=F)
 
 # convert to average predicted EF over all folds
 #predEF_ADcsv<-predEFcsv[,1]/predEFcsv[,2]
 predEF_AD<-predEF_ADcsv[,1]/predEF_ADcsv[,2]
 predEF_AI<-predEF_AIcsv[,1]/predEF_AIcsv[,2]
+predEF_ADL<-predEF_ADLcsv[,1]/predEF_ADLcsv[,2]
+predEF_AIL<-predEF_AILcsv[,1]/predEF_AILcsv[,2]
 
 # pred ef vs. age
 plot(masteref$Age,predEF_AD)
 cor.test(masteref$Age,predEF_AD,method='spearman')
 plot(masteref$Age,predEF_AI)
 cor.test(masteref$Age,predEF_AI,method='spearman')
+#lasso
+plot(masteref$Age,predEF_ADL)
+cor.test(masteref$Age,predEF_ADL,method='spearman')
+plot(masteref$Age,predEF_AIL)
+cor.test(masteref$Age,predEF_AIL,method='spearman')
 
 # pred ef vs. ef
 plot(MotRegrEF,predEF_AD)
 cor.test(MotRegrEF,predEF_AD,method='spearman')
 plot(AgeMotRegrEF,predEF_AI)
 cor.test(AgeMotRegrEF,predEF_AI,method='spearman')
+#lasso
+plot(MotRegrEF,predEF_ADL)
+cor.test(MotRegrEF,predEF_ADL,method='spearman')
+plot(AgeMotRegrEF,predEF_AIL)
+cor.test(AgeMotRegrEF,predEF_AIL,method='spearman')
 
 # read in feature weights
 featWeightsAD<-read.csv('/cbica/projects/pinesParcels/data/aggregated_data/FeatureWeights_AD.csv',header=F)
 featWeightsAI<-read.csv('/cbica/projects/pinesParcels/data/aggregated_data/FeatureWeights_AI.csv',header=F)
+featWeightsADL<-read.csv('/cbica/projects/pinesParcels/data/aggregated_data/FeatureWeights_ADL.csv',header=F)
+featWeightsAIL<-read.csv('/cbica/projects/pinesParcels/data/aggregated_data/FeatureWeights_AIL.csv',header=F)
 
 # Use feature weight vectors to show kinds of networks that are weighted
-BwAgeCorTMDifDf_rrWeights<-data.frame(tmdifvec,ageEfvec,noAge_EFEfVec,EFEfvec,scalevec,Net1Vec,Net2Vec,Net1Vec17,Net2Vec17,fdr_ageEfPvec,fdr_EFEfPvec,fdr_noAge_EFEfPVec,as.numeric(featWeightsAD$V1),as.numeric(featWeightsAI$V1))
-# fix last two colnames
-colnames(BwAgeCorTMDifDf_rrWeights)[13:14]<-c('AgeDependentWeights','AgeIndependentWeights')
+BwAgeCorTMDifDf_prWeights<-data.frame(tmdifvec,ageEfvec,noAge_EFEfVec,EFEfvec,scalevec,Net1Vec,Net2Vec,Net1Vec17,Net2Vec17,fdr_ageEfPvec,fdr_EFEfPvec,fdr_noAge_EFEfPVec,as.numeric(featWeightsAD$V1),as.numeric(featWeightsAI$V1),as.numeric(featWeightsADL$V1),as.numeric(featWeightsAIL$V1))
+# fix last four colnames
+colnames(BwAgeCorTMDifDf_prWeights)[13:16]<-c('AgeDependentWeights','AgeIndependentWeights','AgeDependentWeights_Las','AgeIndependentWeights_Las')
 #y7ver
-y7RidgeWeights<-ggplot(BwAgeCorTMDifDf_rrWeights,aes(x=AgeDependentWeights,y=AgeIndependentWeights,color=Net1Vec)) + geom_text(size=10,label="\u25D6",family="Arial Unicode MS") + xlab('Age-Dep. EF Weight') + ylab('Age-Indep. EF Weight') + ggtitle('EF-prediction weights:Ridge')+scale_color_manual(values=ycolors,limits=Y7vec)+geom_text(aes(x=AgeDependentWeights,y=AgeIndependentWeights,color=Net2Vec),size=10,label="\u25D7",family="Arial Unicode MS")+theme_classic()
+y7RidgeWeights<-ggplot(BwAgeCorTMDifDf_prWeights,aes(x=AgeDependentWeights,y=AgeIndependentWeights,color=Net1Vec)) + geom_text(size=10,label="\u25D6",family="Arial Unicode MS") + xlab('Age-Dep. EF Weight') + ylab('Age-Indep. EF Weight') + ggtitle('EF-prediction weights:Ridge')+scale_color_manual(values=ycolors,limits=Y7vec)+geom_text(aes(x=AgeDependentWeights,y=AgeIndependentWeights,color=Net2Vec),size=10,label="\u25D7",family="Arial Unicode MS")+theme_classic()
 #y17ver
-y17RidgeWeights<-ggplot(BwAgeCorTMDifDf_rrWeights,aes(x=AgeDependentWeights,y=AgeIndependentWeights,color=Net1Vec17)) + geom_text(size=10,label="\u25D6",family="Arial Unicode MS") + xlab('Age-Dep. EF Weight') + ylab('Age-Indep. EF Weight') + ggtitle('EF-prediction weights:Ridge')+scale_color_manual(values=y17colors,limits=y17vec)+geom_text(aes(x=AgeDependentWeights,y=AgeIndependentWeights,color=Net2Vec17),size=10,label="\u25D7",family="Arial Unicode MS")+theme_minimal()
+y17RidgeWeights<-ggplot(BwAgeCorTMDifDf_prWeights,aes(x=AgeDependentWeights,y=AgeIndependentWeights,color=Net1Vec17)) + geom_text(size=10,label="\u25D6",family="Arial Unicode MS") + xlab('Age-Dep. EF Weight') + ylab('Age-Indep. EF Weight') + ggtitle('EF-prediction weights:Ridge')+scale_color_manual(values=y17colors,limits=y17vec)+geom_text(aes(x=AgeDependentWeights,y=AgeIndependentWeights,color=Net2Vec17),size=10,label="\u25D7",family="Arial Unicode MS")+theme_minimal()
+#y7ver
+y7LassoWeights<-ggplot(BwAgeCorTMDifDf_prWeights,aes(x=AgeDependentWeights_Las,y=AgeIndependentWeights_Las,color=Net1Vec)) + geom_text(size=10,label="\u25D6",family="Arial Unicode MS") + xlab('Age-Dep. EF Weight') + ylab('Age-Indep. EF Weight') + ggtitle('EF-prediction weights:Lasso')+scale_color_manual(values=ycolors,limits=Y7vec)+geom_text(aes(x=AgeDependentWeights_Las,y=AgeIndependentWeights_Las,color=Net2Vec),size=10,label="\u25D7",family="Arial Unicode MS")+theme_classic()
+#y17ver
+y17LassoWeights<-ggplot(BwAgeCorTMDifDf_prWeights,aes(x=AgeDependentWeights_Las,y=AgeIndependentWeights_Las,color=Net1Vec17)) + geom_text(size=10,label="\u25D6",family="Arial Unicode MS") + xlab('Age-Dep. EF Weight') + ylab('Age-Indep. EF Weight') + ggtitle('EF-prediction weights:Lasso')+scale_color_manual(values=y17colors,limits=y17vec)+geom_text(aes(x=AgeDependentWeights_Las,y=AgeIndependentWeights_Las,color=Net2Vec17),size=10,label="\u25D7",family="Arial Unicode MS")+theme_minimal()
 
 # write feature weightS with colname labels as matrices for brain mapping viz
 featWeightsAD_lab<-cbind(colnames(masterdf)[indiv_bwcols_ind],featWeightsAD$V1)
 featWeightsAI_lab<-cbind(colnames(masterdf)[indiv_bwcols_ind],featWeightsAI$V1)
+
+ggarrange(y7RidgeWeights,y7LassoWeights)
+ggarrange(y17RidgeWeights,y17LassoWeights)
 ```
 
 ```{r}
