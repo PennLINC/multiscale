@@ -1373,6 +1373,8 @@ predEF_ADcsv<-read.csv('/cbica/projects/pinesParcels/data/aggregated_data/SubjPr
 predEF_AIcsv<-read.csv('/cbica/projects/pinesParcels/data/aggregated_data/SubjPreds_AI.csv',header=F)
 predEF_ADLcsv<-read.csv('/cbica/projects/pinesParcels/data/aggregated_data/SubjPreds_ADL.csv',header=F)
 predEF_AILcsv<-read.csv('/cbica/projects/pinesParcels/data/aggregated_data/SubjPreds_AIL.csv',header=F)
+predEF_Acsv<-read.csv('/cbica/projects/pinesParcels/data/aggregated_data/SubjPreds_A.csv',header=F)
+predEF_ALcsv<-read.csv('/cbica/projects/pinesParcels/data/aggregated_data/SubjPreds_AL.csv',header=F)
 
 # convert to average predicted EF over all folds
 #predEF_ADcsv<-predEFcsv[,1]/predEFcsv[,2]
@@ -1380,6 +1382,8 @@ predEF_AD<-predEF_ADcsv[,1]/predEF_ADcsv[,2]
 predEF_AI<-predEF_AIcsv[,1]/predEF_AIcsv[,2]
 predEF_ADL<-predEF_ADLcsv[,1]/predEF_ADLcsv[,2]
 predEF_AIL<-predEF_AILcsv[,1]/predEF_AILcsv[,2]
+predEF_A<-predEF_Acsv[,1]/predEF_Acsv[,2]
+predEF_AL<-predEF_ALcsv[,1]/predEF_ALcsv[,2]
 
 # pred ef vs. age
 plot(masteref$Age,predEF_AD)

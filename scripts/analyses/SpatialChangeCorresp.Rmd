@@ -15,16 +15,26 @@ R=read.csv('/cbica/projects/pinesParcels/results/aggregated_data/vertexWiseChang
 for (K in 2:30){
   x=data.frame(R[,K],R[,1])
   colnames(x)<-c('LoadingChange','GradChange')
-  ggplot(x,aes(x=LoadingChange,y=GradChange)) + geom_pointdensity(adjust=.001) + scale_color_viridis_c()
+  print(ggplot(x,aes(x=LoadingChange,y=GradChange)) + geom_pointdensity(adjust=.001) + scale_color_viridis_c())
   # definitely not normally distr.
   print(cor.test(R[,K],R[,1],method='spearman'))
 }
 for (K in 2:30){
   x=data.frame(L[,K],L[,1])
   colnames(x)<-c('LoadingChange','GradChange')
-  ggplot(x,aes(x=LoadingChange,y=GradChange)) + geom_pointdensity(adjust=.001) + scale_color_viridis_c()
+  print(ggplot(x,aes(x=LoadingChange,y=GradChange)) + geom_pointdensity(adjust=.001) + scale_color_viridis_c())
   plot(L[,K],L[,1],ylim=c(0,4))
   # definitely not normally distr.
   print(cor.test(L[,K],L[,1],method='spearman'))
 }
+
+# save the residuals
+for (K in 2:30){
+  spatChangR<-lm(R[,K]~R[,1])
+  spatChangL<-lm(L[,K]~L[,1])
+  fn<-paste('/cbica/projects/pinesParcels/results/aggregated_data/spatChangeResids_K_',K,'.csv',sep='')
+  write.table(c(spatChangL$residuals,spatChangR$residuals),fn,sep=',', col.names = F,quote = F,row.names=F)
+}
+
+
 ```
