@@ -12,11 +12,11 @@ bordIndR=find(borderVertsR);
 surfML = '/cbica/projects/pinesParcels/data/H_SNR_masks/lh.Mask_SNR.label';
 mwIndVec_l = read_medial_wall_label(surfML);
 mwIndVec_bord_l = vertcat(mwIndVec_l,bordIndL');
-Index_l = setdiff([1:10242], mwIndVec_l);
+Index_l = setdiff([1:10242], mwIndVec_bord_l);
 surfMR = '/cbica/projects/pinesParcels/data/H_SNR_masks/rh.Mask_SNR.label';
 mwIndVec_r = read_medial_wall_label(surfMR);
 mwIndVec_bord_r = vertcat(mwIndVec_r,bordIndR');
-Index_r = setdiff([1:10242], mwIndVec_r);
+Index_r = setdiff([1:10242], mwIndVec_bord_r);
 
 % initialize array (1 for each hemi, can merge later in R)
 % 30 columns for 29 scales and PG1

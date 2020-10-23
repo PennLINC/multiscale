@@ -12,21 +12,28 @@ library(ggpointdensity)
 L=read.csv('/cbica/projects/pinesParcels/results/aggregated_data/vertexWiseChange_LH.csv')
 R=read.csv('/cbica/projects/pinesParcels/results/aggregated_data/vertexWiseChange_RH.csv')
 
+# initialize vectors
+spatCorvec_L<-rep(0,30)
+spatCorvec_R<-rep(0,30)
+spatCorvec<-rep(0,30)
+
 for (K in 2:30){
-  x=data.frame(R[,K],R[,1])
+  x=data.frame(c(L[,K],R[,K]),c(L[,1],R[,1]))
   colnames(x)<-c('LoadingChange','GradChange')
   print(ggplot(x,aes(x=LoadingChange,y=GradChange)) + geom_pointdensity(adjust=.001) + scale_color_viridis_c())
   # definitely not normally distr.
-  print(cor.test(R[,K],R[,1],method='spearman'))
+  spatCorvec_R[K]<-cor.test(R[,K],R[,1],method='spearman')$estimate
+  spatCorvec_L[K]<-cor.test(L[,K],L[,1],method='spearman')$estimate
+  spatCorvec[K]<-cor.test(x$LoadingChange,x$GradChange,method='spearman')$estimate
 }
-for (K in 2:30){
-  x=data.frame(L[,K],L[,1])
-  colnames(x)<-c('LoadingChange','GradChange')
-  print(ggplot(x,aes(x=LoadingChange,y=GradChange)) + geom_pointdensity(adjust=.001) + scale_color_viridis_c())
-  plot(L[,K],L[,1],ylim=c(0,4))
+#for (K in 2:30){
+#  x=data.frame(L[,K],L[,1])
+#  colnames(x)<-c('LoadingChange','GradChange')
+#  print(ggplot(x,aes(x=LoadingChange,y=GradChange)) + geom_pointdensity(adjust=.001) + scale_color_viridis_c())
+#  plot(L[,K],L[,1],ylim=c(0,4))
   # definitely not normally distr.
-  print(cor.test(L[,K],L[,1],method='spearman'))
-}
+#  spatCorvec_L[K-1]<-cor.test(L[,K],L[,1],method='spearman')$estimate
+#}
 
 # save the residuals
 for (K in 2:30){
@@ -36,5 +43,5 @@ for (K in 2:30){
   write.table(c(spatChangL$residuals,spatChangR$residuals),fn,sep=',', col.names = F,quote = F,row.names=F)
 }
 
-
+plot(spatCorvec)
 ```

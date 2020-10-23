@@ -152,8 +152,10 @@ varoverscales$community_vec<-community_vec
 # make a vector for shape in these plots
 scalevec<-rep(0,times=29)
 changevec<-scalevec
+changevecVar<-scalevec
 for (i in 2:29){
   changevec[i]<-mcrecnerrdf$mreconerr[i]-mcrecnerrdf$mreconerr[i-1]
+  changevecVar[i]<-varoverscales$SoftVar[i]-varoverscales$SoftVar[i-1]
 }
 
 
@@ -162,7 +164,9 @@ scalevec[shapedvec]<-1
 
 mcrecnerrdf$shape<-scalevec
 mcrecnerrdf$change<-changevec
-
+varoverscales$change<-changevecVar
+mcrecnerrdf$SoftVar<-varoverscales$SoftVar
+mcrecnerrdfchangeVar<-changevecVar
 # select vector for chosen visualized scales (-1 because scales start at 2)
 selectvec<-rep(0,29)
 selectvec[3]<-1
@@ -170,9 +174,10 @@ selectvec[6]<-1
 selectvec[12]<-1
 selectvec[19]<-1
 mcrecnerrdf$select<-selectvec
-# make vector for scales of interest
 
-avgrecon<-ggplot(data=mcrecnerrdf,aes(y=mreconerr,x=community_vec,color=abs(change)))+geom_step(size=2)+theme_minimal(base_size = 28)+ggtitle("Reconstruction Error Over Scales")+ scale_x_continuous(name ="# of Communitites",  breaks=seq(2, 30, 4))+ylab("Recon. Error")+scale_color_continuous(name='Decrease\nfrom prev.') + geom_point(data=mcrecnerrdf,aes(y=mreconerr,x=community_vec,size=select*5))+guides(size=F)+theme(legend.position="left")
+# dual plot of recon error and variab.
+avgrecon_softParVar<-ggplot(data=mcrecnerrdf,aes(y=mreconerr,x=community_vec))+geom_step(size=3,color='#0375B4') +geom_step(aes(y=SoftVar*2e6,x=community_vec),size=3,color='#262228') +ggtitle("Reconstruction Error Over Scales")+ scale_x_continuous(name ="# of Communitites",  breaks=seq(2,30,4))+scale_y_continuous(sec.axis=sec_axis(trans =as.formula(~./2e6),name = 'Median Absolute Deviation'))+labs(y='Recon Error')+theme_minimal(base_size = 25)+ theme(axis.title.y.left =  element_text(color = '#0375B4'),axis.text.y.left =  element_text(color = '#0375B4'))
+
 
 avgSPvar<-ggplot(data=varoverscales,aes(y=SoftVar,x=community_vec))+geom_step(col='black',size=2)+theme_minimal(base_size = 28)+ggtitle("Loading Variability (MAD)")+ scale_x_continuous(name ="# of Communitites",  breaks=seq(2, 30, 4))+ylab("Avg. MAD")
 avgHPvar<-ggplot(data=varoverscales,aes(y=HardVar,x=community_vec))+geom_step(col='black',size=2)+theme_minimal(base_size = 28)+ggtitle("Label Variability (Entropy)")+ scale_x_continuous(name ="# of Communitites",  breaks=seq(2, 30, 4))+ylab("Avg. Entropy")
