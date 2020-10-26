@@ -91,16 +91,10 @@ for h=1:2;
 			% this was apparently the distance range for which this is feasible in sphere
 			if (eucld < 5)  && (eucld > 0);
     				% extract gradient values
-				neighbGrads=both(N,1);
-                                % flag 0-loading neighbors like the medial wall for elimination (inflates spatial change)
-                                if (sum(neighbGrads)==0);
-                                        neighbvec(N)=999;
-                                else
-                                        neighbvec(N)=1;
-                                end
+				neighbGrad=both(N,1);
 				neighbvec(N)=1;
 				% subtract a 1 x K array of all loadings for V from the same for N
-				difvec=Gradvec-neighbGrads;
+				difvec=Gradvec-neighbGrad;
 				% square all for sensitivity to big changes (esp. for averaging over high Ks)
 				sqvec=difvec.^2;
 				% average square change across component loadings for this vertices N neighbor
@@ -110,10 +104,7 @@ for h=1:2;
     				neighbvec(N)=0;
 			end
 		end
-                % pull out vertices with 0-loading neighbs (mask boders, MW borders)
-                if (sum(neighbvec) > 100)
-                        VertexExclude(V)=1;
-                else
+		% extract and assign average spatial change to this vertex
 		neighbindex=find(neighbvec==1);
 		localChangeScores=changeVtoN(neighbindex);
 		VertexChange(V)=mean(localChangeScores);
@@ -121,7 +112,5 @@ for h=1:2;
 	end
 	fn=strcat('/cbica/projects/pinesParcels/results/aggregated_data/changeVec_PG1_',hemilist(h),'.mat');
 	save(fn,'VertexChange');
-	ExcluFn=strcat('/cbica/projects/pinesParcels/results/aggregated_data/Border_excludeVec_PG1_',hemilist(h),'.mat');
-        save(ExcluFn,'VertexExclude');
 end
 

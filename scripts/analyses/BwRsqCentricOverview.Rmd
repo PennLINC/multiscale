@@ -1125,7 +1125,7 @@ agM_y7_thresh<-ggplot(ageMitigateddf_stringent,aes(x=tmdifvec,y=EFEfvec,color=Ne
 
 agF_y17<-ggplot(ageAligneddf_stringent,aes(x=tmdifvec,y=noAge_EFEfVec,color=Net1Vec17)) + geom_text(size=10,label="\u25D6",family="Arial Unicode MS") + xlab('Transmodality Difference') + ylab('EF Partial Correlation') + ggtitle('Pairwise Between-Network Age-aligned EF-FC Relations: Yeo17')+scale_color_manual(values=y17colors,limits=y17vec)+geom_text(aes(x=tmdifvec,y=noAge_EFEfVec,color=Net2Vec17),size=10,label="\u25D7",family="Arial Unicode MS")+theme_classic()+xlim(0,12)+ylim(-.3,.3)
 
-agM_y17<-ggplot(ageMitigateddf_stringent,aes(x=tmdifvec,y=EFEfvec,color=Net1Vec17)) + geom_text(size=10,label="\u25D6",family="Arial Unicode MS") + xlab('Transmodality Difference') + ylab('EF Partial Correlation') + ggtitle('Pairwise Between-Network Age-mitigated EF-FC Relations: Yeo17')+scale_color_manual(values=y17colors,limits=y17vec)+geom_text(aes(x=tmdifvec,y=EFEfvec,color=Net2Vec17),size=10,label="\u25D7",family="Arial Unicode MS")+theme_classic()+xlim(0,12)+ylim(-.3,.3)
+agM_y17<-ggplot(ageMitigateddf_stringent,aes(x=tmdifvec,y=EFEfvec,color=Net1Vec17)) + geom_text(size=10,label="\u25D6",family="Arial Unicode MS") + xlab('Transmodality Difference') + ylab('EF Partial Correlation') + ggtitle('Between-Network Features with Opposite EF and Age Relations: Yeo17')+scale_color_manual(values=y17colors,limits=y17vec)+geom_text(aes(x=tmdifvec,y=EFEfvec,color=Net2Vec17),size=10,label="\u25D7",family="Arial Unicode MS")+theme_classic()+xlim(0,12)+ylim(-.3,.3)
 
 ggarrange(agF_y7,agM_y7,agF_y7_thresh,agM_y7_thresh,agF_y17,agM_y17,nrow=3,ncol=2)
 
@@ -1412,11 +1412,14 @@ featWeightsAD<-read.csv('/cbica/projects/pinesParcels/data/aggregated_data/Featu
 featWeightsAI<-read.csv('/cbica/projects/pinesParcels/data/aggregated_data/FeatureWeights_AI.csv',header=F)
 featWeightsADL<-read.csv('/cbica/projects/pinesParcels/data/aggregated_data/FeatureWeights_ADL.csv',header=F)
 featWeightsAIL<-read.csv('/cbica/projects/pinesParcels/data/aggregated_data/FeatureWeights_AIL.csv',header=F)
+featWeightsA<-read.csv('/cbica/projects/pinesParcels/data/aggregated_data/FeatureWeights_A.csv',header=F)
+featWeightsAL<-read.csv('/cbica/projects/pinesParcels/data/aggregated_data/FeatureWeights_AL.csv',header=F)
 
 # Use feature weight vectors to show kinds of networks that are weighted
-BwAgeCorTMDifDf_prWeights<-data.frame(tmdifvec,ageEfvec,noAge_EFEfVec,EFEfvec,scalevec,Net1Vec,Net2Vec,Net1Vec17,Net2Vec17,fdr_ageEfPvec,fdr_EFEfPvec,fdr_noAge_EFEfPVec,as.numeric(featWeightsAD$V1),as.numeric(featWeightsAI$V1),as.numeric(featWeightsADL$V1),as.numeric(featWeightsAIL$V1))
+BwAgeCorTMDifDf_prWeights<-data.frame(tmdifvec,ageEfvec,noAge_EFEfVec,EFEfvec,scalevec,Net1Vec,Net2Vec,Net1Vec17,Net2Vec17,fdr_ageEfPvec,fdr_EFEfPvec,fdr_noAge_EFEfPVec,as.numeric(featWeightsAD$V1),as.numeric(featWeightsAI$V1),as.numeric(featWeightsADL$V1),as.numeric(featWeightsAIL$V1),as.numeric(featWeightsA$V1),as.numeric(featWeightsAL$V1))
 # fix last four colnames
-colnames(BwAgeCorTMDifDf_prWeights)[13:16]<-c('AgeDependentWeights','AgeIndependentWeights','AgeDependentWeights_Las','AgeIndependentWeights_Las')
+colnames(BwAgeCorTMDifDf_prWeights)[13:18]<-c('AgeDependentWeights','AgeIndependentWeights','AgeDependentWeights_Las','AgeIndependentWeights_Las','AgeWeights','AgeWeights_Las')
+
 #y7ver
 y7RidgeWeights<-ggplot(BwAgeCorTMDifDf_prWeights,aes(x=AgeDependentWeights,y=AgeIndependentWeights,color=Net1Vec)) + geom_text(size=10,label="\u25D6",family="Arial Unicode MS") + xlab('Age-Dep. EF Weight') + ylab('Age-Indep. EF Weight') + ggtitle('EF-prediction weights:Ridge')+scale_color_manual(values=ycolors,limits=Y7vec)+geom_text(aes(x=AgeDependentWeights,y=AgeIndependentWeights,color=Net2Vec),size=10,label="\u25D7",family="Arial Unicode MS")+theme_classic()
 #y17ver
@@ -1432,6 +1435,16 @@ featWeightsAI_lab<-cbind(colnames(masterdf)[indiv_bwcols_ind],featWeightsAI$V1)
 
 ggarrange(y7RidgeWeights,y7LassoWeights)
 ggarrange(y17RidgeWeights,y17LassoWeights)
+
+# align with age features
+#age Ridge w/ age dep ridge
+AgeAgeDepRR<-ggplot(BwAgeCorTMDifDf_prWeights,aes(x=AgeWeights,y=AgeDependentWeights,color=Net1Vec)) + geom_text(size=10,label="\u25D6",family="Arial Unicode MS") + ylab('Age-Dep. EF Weight') + xlab('Age Weight') + ggtitle('Age-Dependent EF x Age Features:Ridge')+scale_color_manual(values=ycolors,limits=Y7vec)+geom_text(aes(x=AgeWeights,y=AgeDependentWeights,color=Net2Vec),size=10,label="\u25D7",family="Arial Unicode MS")+theme_minimal()+geom_smooth(method='lm', formula= y~x,color='gray82',size=2)
+AgeAgeIndepRR<-ggplot(BwAgeCorTMDifDf_prWeights,aes(x=AgeWeights,y=AgeIndependentWeights,color=Net1Vec)) + geom_text(size=10,label="\u25D6",family="Arial Unicode MS") + xlab('Age Weight') + ylab('Age-Indep. EF Weight') + ggtitle('Age-Independent EF x Age Features: Ridge')+scale_color_manual(values=ycolors,limits=Y7vec)+geom_text(aes(x=AgeWeights,y=AgeIndependentWeights,color=Net2Vec),size=10,label="\u25D7",family="Arial Unicode MS")+theme_minimal()+geom_smooth(method='lm', formula= y~x,color='gray82',size=2)
+ggarrange(AgeAgeDepRR,AgeAgeIndepRR)
+#lasso
+AgeAgeDepLas<-ggplot(BwAgeCorTMDifDf_prWeights,aes(x=AgeWeights_Las,y=AgeDependentWeights_Las,color=Net1Vec)) + geom_text(size=10,label="\u25D6",family="Arial Unicode MS") + ylab('Age-Dep. EF Weight') + xlab('Age Weight') + ggtitle('Age-Dependent EF x Age Features:Lasso')+scale_color_manual(values=ycolors,limits=Y7vec)+geom_text(aes(x=AgeWeights_Las,y=AgeDependentWeights_Las,color=Net2Vec),size=10,label="\u25D7",family="Arial Unicode MS")+theme_minimal()+geom_smooth(method='lm', formula= y~x,color='gray82',size=2)
+AgeAgeIndepLas<-ggplot(BwAgeCorTMDifDf_prWeights,aes(x=AgeWeights_Las,y=AgeIndependentWeights_Las,color=Net1Vec)) + geom_text(size=10,label="\u25D6",family="Arial Unicode MS") + xlab('Age Weight') + ylab('Age-Indep. EF Weight') + ggtitle('Age-Independent EF x Age Features: Lasso')+scale_color_manual(values=ycolors,limits=Y7vec)+geom_text(aes(x=AgeWeights_Las,y=AgeIndependentWeights_Las,color=Net2Vec),size=10,label="\u25D7",family="Arial Unicode MS")+theme_minimal()+geom_smooth(method='lm', formula= y~x,color='gray82',size=2)
+ggarrange(AgeAgeDepLas,AgeAgeIndepLas)
 ```
 
 ```{r}
@@ -1749,11 +1762,11 @@ Melted_clevel_ef$bblid<-as.factor(Melted_clevel_ef$bblid)
 Melted_clevel_ef$Sex<-as.factor(Melted_clevel_ef$Sex)
 
 # finally, run the model with GAMM
-simplif_EF_mod<-gamm(AvgBetweenCon~s(Age,k=3)+Sex+Motion+log(Scale)+EF*log(Scale), random=list(bblid=~1),data=Melted_clevel_ef,REML=T)
+#simplif_EF_mod<-gamm(AvgBetweenCon~s(Age,k=3)+Sex+Motion+log(Scale)+EF*log(Scale), random=list(bblid=~1),data=Melted_clevel_ef,REML=T)
 summary(simplif_EF_mod$lme)
 summary(simplif_EF_mod$gam)
 # run it with gamm4 for checkin
-simplif_EF_mod4<-gamm4(AvgBetweenCon~s(Age)+Sex+Motion+log(Scale)+EF*log(Scale),data=Melted_clevel_ef,random=~(1|bblid),REML=T)
+#simplif_EF_mod4<-gamm4(AvgBetweenCon~s(Age)+Sex+Motion+log(Scale)+EF*log(Scale),data=Melted_clevel_ef,random=~(1|bblid),REML=T)
 summary(simplif_EF_mod4$gam)
 ```
 
