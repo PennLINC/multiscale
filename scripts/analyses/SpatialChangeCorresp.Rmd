@@ -8,6 +8,7 @@ output: html_document
 ```{r}
 library(ggplot2)
 library(ggpointdensity)
+library(ggridges)
 
 L=read.csv('/cbica/projects/pinesParcels/results/aggregated_data/vertexWiseChange_LH.csv')
 R=read.csv('/cbica/projects/pinesParcels/results/aggregated_data/vertexWiseChange_RH.csv')
@@ -44,4 +45,22 @@ for (K in 2:30){
 }
 
 plot(spatCorvec)
+```
+
+```{r}
+# load in spin test distributions
+spinDistr<-read.csv('/cbica/projects/pinesParcels/results/aggregated_data/SpinTestDistrs.csv')
+
+# melt this into 1001*29 columns 
+m_spinDistr<-melt(spinDistr)
+
+# add a "scale" column
+m_spinDistr$Scale<-rep(2:30,each=1001)
+# add a "realCor" boolean column
+repeatVector<-array(0,dim=c(1001,1))
+repeatVector[1]<-1
+m_spinDistr$RealCor<-rep(rep(c(1,0),c(1,1000)),times=29)
+
+ggplot(m_spinDistr[m_spinDistr$RealCor==0,], aes(x = value, y = Scale, group = Scale))+xlab(expression(rho)) +
+  geom_density_ridges(scale = 10, size = 0.25, rel_min_height = 0.03,alpha=.3) +geom_point(data=m_spinDistr[m_spinDistr$RealCor==1,],aes(x=value,y=Scale))+theme_minimal()
 ```
