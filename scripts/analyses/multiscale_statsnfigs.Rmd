@@ -427,7 +427,7 @@ ind_GBwcors[,1]<-2:30
 for (i in 1:29){
   # i+4 because first column is scanid, second is age, third is sex, 4th is motion
   print(ggplot(indglobWin_motSexC,aes(Age,indglobWin_motSexC[,i+4])) + geom_point() + geom_smooth() +ylab(paste("Ind Global Win at Scale", i+1)))
-    print(ggplot(indglobBw_motSexC,aes(Age,indglobBw_motSexC[,i+4])) + geom_point(color='#AAAAAA',alpha=.5) + geom_smooth(method='gam',formula=y~s(x,k=3),color='black') +ylab(paste("B/w at Scale", i+1))+theme_classic())
+    print(ggplot(indglobBw_motSexC,aes(Age,indglobBw_motSexC[,i+4])) + geom_point(color='#AAAAAA',alpha=.5) + geom_smooth(method='gam',formula=y~s(x,k=3),color='black') +ylab(paste("B/w at Scale", i+1))+theme_classic(base_size=30))
   
 # relevant df
   Winscaledf<-cbind(indglobWin$Age,indglobWin$Sex,indglobWin$Motion,indglobWin[,i+4])

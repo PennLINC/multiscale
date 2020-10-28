@@ -575,7 +575,8 @@ for (i in 1:2){
       # generate index for where values for this network at this scale should reside
       # start from K index
       Nind<-Kind[N]
-      bwAgeCorVecs[Nind,5]=N
+      bwAgeCorVecs[Nind,5]=K
+      bwAgeCorVecs[Nind,6]=N
       # get index for this N in terms of masterdf (collapse | to match multiple patterns)
       Ncolname<-grep(as.character(paste('_',N,'_',sep='')),bwnetnames_thisScale_extended,value=T)
       # need to add "_" before and after each number so I can select for '_N_' and not pick up teens digits with 1, 20s with 3, 15 and 25 with 5, etc.
@@ -738,6 +739,10 @@ bwdf$bwAgeCorVecs.cavg_bw<-bwdf$bwAgeCorVecs.avg_bw
 bwdf$bwAgeCorVecs.cavg_bw[bwdf$bwAgeCorVecs.avg_bwP>0.05]=0
 
 Corrected_avgbw_age_tm<-ggplot(bwdf,aes(tmvec,bwAgeCorVecs.cavg_bw,color=domnetvec,alpha=netpropvec^2)) + geom_point(size=6)+ scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068')) + xlab("Transmodality") + ylab(expression(paste(Delta,R^2[adj]))) +theme_classic(base_size = 28) + ggtitle('B/w Variance Captured by Age') +guides(alpha=FALSE,color=guide_legend(title="Maximal Y7 Overlap"))+theme(legend.position="top")
+
+# save em out to cubic for viz of delta r^2 by community
+forBwAgeDR2viz<-cbind(bwAgeCorVecs$avg_bw,bwAgeCorVecs$K,bwAgeCorVecs$N)
+write.table(forBwAgeDR2viz,'/cbica/projects/pinesParcels/results/aggregated_data/fc/bwAge_dr2_overscales_forviz.csv',sep=",",col.names=F,row.names = F)
 ```
 
 
