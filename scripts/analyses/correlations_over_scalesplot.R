@@ -6,7 +6,7 @@ correlations_over_scales <- function(correlations,title){
     xlab("# of Communities") + scale_x_continuous(breaks=seq(2, 30, 4)) +
     ggtitle(title)+
     geom_hline(aes(yintercept=.098), linetype="dashed", col='#ECB602',size=2.5) +
-    geom_hline(aes(yintercept=-.098), linetype="dashed", col='#ECB602',size=2.5)+ylim(c(-.4,.4))
+    geom_hline(aes(yintercept=-.098), linetype="dashed", col='#ECB602',size=2.5)+ylim(c(-.35,.35))
 }
 
 

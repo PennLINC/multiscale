@@ -182,7 +182,7 @@ avgrecon_softParVar<-ggplot(data=mcrecnerrdf,aes(y=mreconerr,x=community_vec))+g
 avgSPvar<-ggplot(data=varoverscales,aes(y=SoftVar,x=community_vec))+geom_step(col='black',size=2)+theme_minimal(base_size = 28)+ggtitle("Loading Variability (MAD)")+ scale_x_continuous(name ="# of Communitites",  breaks=seq(2, 30, 4))+ylab("Avg. MAD")
 avgHPvar<-ggplot(data=varoverscales,aes(y=HardVar,x=community_vec))+geom_step(col='black',size=2)+theme_minimal(base_size = 28)+ggtitle("Label Variability (Entropy)")+ scale_x_continuous(name ="# of Communitites",  breaks=seq(2, 30, 4))+ylab("Avg. Entropy")
 
-ggarrange(avgrecon,avgSPvar,nrow = 1)
+ggarrange(avgrecon_softParVar,avgSPvar,nrow = 1)
 ```
 
 ```{r}
@@ -427,7 +427,7 @@ ind_GBwcors[,1]<-2:30
 for (i in 1:29){
   # i+4 because first column is scanid, second is age, third is sex, 4th is motion
   print(ggplot(indglobWin_motSexC,aes(Age,indglobWin_motSexC[,i+4])) + geom_point() + geom_smooth() +ylab(paste("Ind Global Win at Scale", i+1)))
-    print(ggplot(indglobBw_motSexC,aes(Age,indglobBw_motSexC[,i+4])) + geom_point() + geom_smooth() +ylab(paste("Ind Global BW at Scale", i+1)))
+    print(ggplot(indglobBw_motSexC,aes(Age,indglobBw_motSexC[,i+4])) + geom_point(color='#AAAAAA',alpha=.5) + geom_smooth(method='gam',formula=y~s(x,k=3),color='black') +ylab(paste("B/w at Scale", i+1))+theme_classic())
   
 # relevant df
   Winscaledf<-cbind(indglobWin$Age,indglobWin$Sex,indglobWin$Motion,indglobWin[,i+4])
@@ -542,7 +542,7 @@ for (i in 1:29){
   gro_segcors[i,2]<-pspear[4]
 }
 
-indagecor<-correlations_over_scales(ind_segcors,"Global Segregation Age Correlation - Individ. Partitions")
+indagecor<-correlations_over_scales(ind_segcors,'Segregation-Age Correlation')
 groagecor<-correlations_over_scales(gro_segcors,"Global Segregation Age Correlation - Group Partitions")
 ggarrange(indagecor,groagecor,ncol = 1)
 
@@ -588,7 +588,7 @@ for (i in 1:29){
   gro_segcors[i,2]<-pspear[4]
 }
 
-youngindagecor<-correlations_over_scalesplot_minor(ind_segcors,"Global Segregation Age Correlation - 8-13 Year Olds")
+youngindagecor<-correlations_over_scalesplot(ind_segcors,'Segregation-Age Correlation: 8-13 Years')
 
 ind_segcors_df<-data.frame(ind_segcors)
 gro_segcors_df<-data.frame(gro_segcors)
@@ -626,7 +626,7 @@ for (i in 1:29){
   gro_segcors[i,2]<-pspear[4]
 }
 
-midindagecor<-correlations_over_scalesplot_minor(ind_segcors,"Global Segregation Age Correlation - 13-18 Year Olds")
+midindagecor<-correlations_over_scalesplot(ind_segcors,'Segregation-Age Correlation: 13-18 Years')
 
 ind_segcors_df<-data.frame(ind_segcors)
 gro_segcors_df<-data.frame(gro_segcors)
@@ -666,7 +666,7 @@ for (i in 1:29){
   gro_segcors[i,2]<-pspear[4]
 }
 
-oldindagecor<-correlations_over_scalesplot_minor(ind_segcors,"Global Segregation Age Correlation - 18-23 Year Olds")
+oldindagecor<-correlations_over_scalesplot(ind_segcors,'Segregation-Age Correlation: 18-23 Years')
 
 
 ind_segcors_df<-data.frame(ind_segcors)

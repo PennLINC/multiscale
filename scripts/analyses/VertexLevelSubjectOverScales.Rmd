@@ -7,7 +7,7 @@ output: github_document
 
 ```{r}
 library(rmarkdown)
-library(reshape)
+library(reshape2)
 library(ggplot2)
 library(ggpubr)
 library(sjPlot)

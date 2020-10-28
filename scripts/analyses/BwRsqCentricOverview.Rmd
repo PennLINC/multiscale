@@ -106,6 +106,32 @@ DeltaR2EstVec<-function(x){
   
 }
 
+DeltaR2EstVec_ageSubset<-function(df,x){
+  
+  # relevant df
+  scaledf<-df[,c(2,3,4,x)]
+  colnames(scaledf)<-c('Age','Sex','Motion','varofint')
+  
+  # no-age model (segreg ~ sex + motion)
+  noAgeGam<-gam(varofint~Sex+Motion,data=scaledf)
+  noAgeSum<-summary(noAgeGam)
+  # age-included model for measuring difference
+  AgeGam<-gam(varofint~Sex+Motion+s(Age,k=3),data=scaledf)
+  AgeSum<-summary(AgeGam)
+  
+  dif<-AgeSum$r.sq-noAgeSum$r.sq
+  
+  # partial spearmans to extract age relation (for direction)
+  pspear=pcor(scaledf,method='spearman')$estimate
+  corest<-pspear[4]
+  if(corest<0){
+    dif=dif*-1
+  }
+  
+  return(dif)
+  
+}
+
 # same thing but returning chisq test sig. output for FDR correction instead of hard difference
 DeltaPEstVec<-function(x){
   
@@ -418,6 +444,7 @@ for (i in 1:29){
 }
 correlations_over_scales(ind_GBwcors_highCI,"Global BetweenCon Age Correlation")
 correlations_over_scales(ind_GBwcors_lowCI,"Global BetweenCon Age Correlation")
+
 
 # merge em together for plot
 estAndBootStrapped<-data.frame(ind_GBwcors[,1],ind_GBwcors[,2],ind_GBwcors_highCI[,2],ind_GBwcors_lowCI[,2])
@@ -1123,7 +1150,7 @@ agM_y7_thresh<-ggplot(ageMitigateddf_stringent,aes(x=tmdifvec,y=EFEfvec,color=Ne
 
 # yeo17
 
-agF_y17<-ggplot(ageAligneddf_stringent,aes(x=tmdifvec,y=noAge_EFEfVec,color=Net1Vec17)) + geom_text(size=10,label="\u25D6",family="Arial Unicode MS") + xlab('Transmodality Difference') + ylab('EF Partial Correlation') + ggtitle('Pairwise Between-Network Age-aligned EF-FC Relations: Yeo17')+scale_color_manual(values=y17colors,limits=y17vec)+geom_text(aes(x=tmdifvec,y=noAge_EFEfVec,color=Net2Vec17),size=10,label="\u25D7",family="Arial Unicode MS")+theme_classic()+xlim(0,12)+ylim(-.3,.3)
+agF_y17<-ggplot(ageAligneddf_stringent,aes(x=tmdifvec,y=noAge_EFEfVec,color=Net1Vec17)) + geom_text(size=10,label="\u25D6",family="Arial Unicode MS") + xlab('Transmodality Difference') + ylab('EF Partial Correlation') + ggtitle('Between-Network Features with Aligned EF and Age Relations: Yeo17')+scale_color_manual(values=y17colors,limits=y17vec)+geom_text(aes(x=tmdifvec,y=noAge_EFEfVec,color=Net2Vec17),size=10,label="\u25D7",family="Arial Unicode MS")+theme_classic()+xlim(0,12)+ylim(-.3,.3)
 
 agM_y17<-ggplot(ageMitigateddf_stringent,aes(x=tmdifvec,y=EFEfvec,color=Net1Vec17)) + geom_text(size=10,label="\u25D6",family="Arial Unicode MS") + xlab('Transmodality Difference') + ylab('EF Partial Correlation') + ggtitle('Between-Network Features with Opposite EF and Age Relations: Yeo17')+scale_color_manual(values=y17colors,limits=y17vec)+geom_text(aes(x=tmdifvec,y=EFEfvec,color=Net2Vec17),size=10,label="\u25D7",family="Arial Unicode MS")+theme_classic()+xlim(0,12)+ylim(-.3,.3)
 
@@ -1135,32 +1162,32 @@ AgeVsEFEffects_agM<-ggplot(BwAgeCorTMDifDf,aes(x=EFEfvec,y=ageEfvec,color=Net1Ve
 ```
 
 ```{r}
-# global plots
-# plot average at each scale
-AA_corvec<-rep(0,29)
-AM_corvec<-rep(0,29)
-both_corvec<-rep(0,29)
-for (K in 2:30){
-  AA_K<-ageAligneddf[ageAligneddf$scalevec==K,]
-  AM_K<-ageMitigateddf[ageMitigateddf$scalevec==K,]
-  both<-BwAgeCorTMDifDf[BwAgeCorTMDifDf$scalevec==K,]
-  AA_corvec[K-1]<-mean(AA_K$noAge_EFEfVec)
-  AM_corvec[K-1]<-mean(AM_K$EFEfvec)
-  both_corvec[K-1]<-mean(both$EFEfvec)
-}
-
-plot(AA_corvec)
-plot(AM_corvec)
-plot(both_corvec)
-aa_plotCols<-cbind(seq(2:30),c(AA_corvec))
-am_plotCols<-cbind(seq(2:30),c(AM_corvec))
-both_plotCols<-cbind(seq(2:30),c(both_corvec))
-
-# average correlations
-correlations_over_scales(aa_plotCols,"Average b/w EF Cor: Age-Aligned")
-correlations_over_scales(am_plotCols,"Average b/w EF Cor: Age-Mitigated")
-correlations_over_scales(both_plotCols,"Average b/w EF Cor")
-
+##### global plots
+##### plot average at each scale
+####AA_corvec<-rep(0,29)
+####AM_corvec<-rep(0,29)
+####both_corvec<-rep(0,29)
+#######both_corvec_age<-rep(0,29)
+####for (K in 2:30){
+####  AA_K<-ageAligneddf[ageAligneddf$scalevec==K,]
+####  AM_K<-ageMitigateddf[ageMitigateddf$scalevec==K,]
+####  both<-BwAgeCorTMDifDf[BwAgeCorTMDifDf$scalevec==K,]
+####  AA_corvec[K-1]<-mean(AA_K$noAge_EFEfVec)
+####  AM_corvec[K-1]<-mean(AM_K$EFEfvec)
+####  both_corvec[K-1]<-mean(both$EFEfvec)
+#######  both_corvec_age[K-1]<-mean(both$ageEfvec)
+####}
+####
+####plot(AA_corvec)
+####plot(AM_corvec)
+####plot(both_corvec)
+####aa_plotCols<-cbind(seq(2:30),c(AA_corvec))
+####am_plotCols<-cbind(seq(2:30),c(AM_corvec))
+####both_plotCols<-cbind(seq(2:30),c(both_corvec))
+##### average correlations
+####correlations_over_scales(aa_plotCols,"Average b/w EF Cor: Age-Aligned")
+####correlations_over_scales(am_plotCols,"Average b/w EF Cor: Age-Mitigated")
+####correlations_over_scales(both_plotCols,"Average b/w EF Cor")
 ### now do with average value for parallelism
 ### note - bottom section of this chunk is the valid one: averaging correlations of all nets within scales != averaging b/w cons within scales and correlating
 
@@ -1253,8 +1280,110 @@ for (i in 1:29){
 }
 indEFcor_agM<-correlations_over_scales(ind_bwcors,"Global B/w-EF: Age-Mitig.")
 
+######## for age instead of EF
+# just for global age
+indglobbw<-data.frame(cbind(masteref$bblid,masteref$Age/12,masteref$Sex,masteref$Motion,winScaleAvgbwVal))
+colnames(indglobbw)[1:4]<-c('bblid','Age','Sex','Motion')
+ind_bwcors<-matrix(0,29,2)
+ind_bwcors[,1]<-2:30
+for (i in 1:29){
+  # relevant df
+  scaledf<-cbind(indglobbw$Age,indglobbw$Sex,indglobbw$Motion,indglobbw[,i+4])
+  # partial spearmans to extrac age relation
+  pspear=pcor(scaledf,method='spearman')$estimate
+  ind_bwcors[i,2]<-pspear[4]
+}
+indAgecor<-correlations_over_scales(ind_bwcors,"B/w Community Connectivity - Age Correlation")
 
+######### do age subsets
+#8-13
+indglobbw<-data.frame(cbind(masteref$bblid,masteref$Age/12,masteref$Sex,masteref$Motion,winScaleAvgbwVal))
+colnames(indglobbw)[1:4]<-c('bblid','Age','Sex','Motion')
+indglobbw<-indglobbw[indglobbw$Age<13,]
+ind_bwcors<-matrix(0,29,2)
+ind_bwcors[,1]<-2:30
+for (i in 1:29){
+  # relevant df
+  scaledf<-cbind(indglobbw$Age,indglobbw$Sex,indglobbw$Motion,indglobbw[,i+4])
+  # partial spearmans to extrac age relation
+  pspear=pcor(scaledf,method='spearman')$estimate
+  ind_bwcors[i,2]<-pspear[4]
+}
+youngAgecor<-correlations_over_scales(ind_bwcors,"B/w Community Connectivity - Age Correlation: 8-13")
+#13-18
+indglobbw<-data.frame(cbind(masteref$bblid,masteref$Age/12,masteref$Sex,masteref$Motion,winScaleAvgbwVal))
+colnames(indglobbw)[1:4]<-c('bblid','Age','Sex','Motion')
+indglobbw<-indglobbw[indglobbw$Age>13,]
+indglobbw<-indglobbw[indglobbw$Age<18,]
+ind_bwcors<-matrix(0,29,2)
+ind_bwcors[,1]<-2:30
+for (i in 1:29){
+  # relevant df
+  scaledf<-cbind(indglobbw$Age,indglobbw$Sex,indglobbw$Motion,indglobbw[,i+4])
+  # partial spearmans to extrac age relation
+  pspear=pcor(scaledf,method='spearman')$estimate
+  ind_bwcors[i,2]<-pspear[4]
+}
+midAgecor<-correlations_over_scales(ind_bwcors,"B/w Community Connectivity - Age Correlation: 13-18")
+#18-23
+indglobbw<-data.frame(cbind(masteref$bblid,masteref$Age/12,masteref$Sex,masteref$Motion,winScaleAvgbwVal))
+colnames(indglobbw)[1:4]<-c('bblid','Age','Sex','Motion')
+indglobbw<-indglobbw[indglobbw$Age>18,]
+ind_bwcors<-matrix(0,29,2)
+ind_bwcors[,1]<-2:30
+for (i in 1:29){
+  # relevant df
+  scaledf<-cbind(indglobbw$Age,indglobbw$Sex,indglobbw$Motion,indglobbw[,i+4])
+  # partial spearmans to extrac age relation
+  pspear=pcor(scaledf,method='spearman')$estimate
+  ind_bwcors[i,2]<-pspear[4]
+}
+oldAgecor<-correlations_over_scales(ind_bwcors,"B/w Community Connectivity - Age Correlation: 18-23")
+```
+```{r}
+# make same plots but with delta r^2 instead of correlation to account for non-linearity
+# just for global age
+indglobbw<-data.frame(cbind(masteref$bblid,masteref$Age/12,masteref$Sex,masteref$Motion,winScaleAvgbwVal))
+colnames(indglobbw)[1:4]<-c('bblid','Age','Sex','Motion')
+ind_bw_dr2<-matrix(0,29,2)
+ind_bw_dr2[,1]<-2:30
+for (i in 1:29){
+  ind_bw_dr2[i,2]<-DeltaR2EstVec_ageSubset(indglobbw,(i+4))
+}
+indAgedr2<-dr2_over_scales(ind_bw_dr2,'B/w Community Connectivity - Age Effect')
 
+######### do age subsets
+#8-13
+indglobbw<-data.frame(cbind(masteref$bblid,masteref$Age/12,masteref$Sex,masteref$Motion,winScaleAvgbwVal))
+colnames(indglobbw)[1:4]<-c('bblid','Age','Sex','Motion')
+indglobbw<-indglobbw[indglobbw$Age<13,]
+ind_bw_dr2<-matrix(0,29,2)
+ind_bw_dr2[,1]<-2:30
+for (i in 1:29){
+  ind_bw_dr2[i,2]<-DeltaR2EstVec_ageSubset(indglobbw,(i+4))
+}
+youngAgedr2<-dr2_over_scales(ind_bw_dr2,"B/w Community Connectivity - Age Effect: 8-13")
+#13-18
+indglobbw<-data.frame(cbind(masteref$bblid,masteref$Age/12,masteref$Sex,masteref$Motion,winScaleAvgbwVal))
+colnames(indglobbw)[1:4]<-c('bblid','Age','Sex','Motion')
+indglobbw<-indglobbw[indglobbw$Age>13,]
+indglobbw<-indglobbw[indglobbw$Age<18,]
+ind_bw_dr2<-matrix(0,29,2)
+ind_bw_dr2[,1]<-2:30
+for (i in 1:29){
+  ind_bw_dr2[i,2]<-DeltaR2EstVec_ageSubset(indglobbw,(i+4))
+}
+midAgedr2<-dr2_over_scales(ind_bw_dr2,"B/w Community Connectivity - Age Effect: 13-18")
+#18-23
+indglobbw<-data.frame(cbind(masteref$bblid,masteref$Age/12,masteref$Sex,masteref$Motion,winScaleAvgbwVal))
+colnames(indglobbw)[1:4]<-c('bblid','Age','Sex','Motion')
+indglobbw<-indglobbw[indglobbw$Age>18,]
+ind_bw_dr2<-matrix(0,29,2)
+ind_bw_dr2[,1]<-2:30
+for (i in 1:29){
+  ind_bw_dr2[i,2]<-DeltaR2EstVec_ageSubset(indglobbw,(i+4))
+}
+oldAgedr2<-dr2_over_scales(ind_bw_dr2,"B/w Community Connectivity - Age Effect: 18-23")
 ```
 
 ```{r}
