@@ -6,6 +6,18 @@ output: html_document
 ---
 
 ```{r}
+# color vector for highlighting 4 different scales
+grayHexa<-'#AAAAAA'
+fourscalescheme<-rep(grayHexa,29)
+# scale 4 - purple
+fourscalescheme[3]<-'#6600CC'
+# scale 7 - yellow
+fourscalescheme[6]<- '#FFCC00'
+# scale 13 - black
+fourscalescheme[12]<- '#000000' 
+# scale 20 - red
+fourscalescheme[19]<- '#CC0000'
+
 # need to 
 source('~/cbica/projects/pinesParcels/multiscale/scripts/analyses/correlations_over_scalesplot_minor.R')
 library(shapes)

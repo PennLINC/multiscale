@@ -198,9 +198,21 @@ EFDeltaPEstVec<-function(x){
   
 }
 
+# color vector for highlighting 4 different scales
+grayHexa<-'#AAAAAA'
+fourscalescheme<-rep(grayHexa,29)
+# scale 4 - purple
+fourscalescheme[3]<-'#6600CC'
+# scale 7 - yellow
+fourscalescheme[6]<- '#FFCC00'
+# scale 13 - black
+fourscalescheme[12]<- '#000000' 
+# scale 20 - red
+fourscalescheme[19]<- '#CC0000'
+
 ```
 
-```{r include=FALSE}
+```{r}
 # need to 
 source('~/cbica/projects/pinesParcels/multiscale/scripts/analyses/correlations_over_scalesplot_minor.R')
 library(shapes)
@@ -755,7 +767,7 @@ tmvecRepped<-rep(tmvec,each=693)
 domnetvecRepped<-rep(domnetvec,each=693)
 melt_long$transmodality<-tmvecRepped
 melt_long$dominantYeo<-domnetvecRepped
-saveRDS(melt_long,file = '~/Desktop/Long_bblidAgeSexMotionAvgBw.rds')
+###saveRDS(melt_long,file = '~/Desktop/Long_bblidAgeSexMotionAvgBw.rds')
 ```
 
 
@@ -954,6 +966,7 @@ Net1Vec=rep(0,length(colnames(individ_scalebybw_df)))
 Net2Vec=rep(0,length(colnames(individ_scalebybw_df)))
 Net1Vec17=rep(0,length(colnames(individ_scalebybw_df)))
 Net2Vec17=rep(0,length(colnames(individ_scalebybw_df)))
+ageDR2vec=rep(0,length(colnames(individ_scalebybw_df)))
 
 # make a scale vector to match transmodality difference values
 # this is to look at how finer scales confer networks that are less different
@@ -1042,6 +1055,10 @@ for (i in 1:length(colnames(individ_scalebybw_df))){
     Net2Vec[i]<-as.character(y7lab2)
     Net1Vec17[i]<-as.character(y17lab1)
     Net2Vec17[i]<-as.character(y17lab2)
+    
+    
+    # delta r2 for age
+    ageDR2vec[i]<-DeltaR2EstVec(masterdf[,colindex])
 }
 
 # fdr correct pvectors, together
@@ -1055,13 +1072,15 @@ fdr_noAge_EFEfPVec<-correctconcatpvecs[((2*chunksize)+1):(3*chunksize)]
 
 
 ## merged vectors
-BwAgeCorTMDifDf<-data.frame(tmdifvec,ageEfvec,noAge_EFEfVec,EFEfvec,scalevec,Net1Vec,Net2Vec,Net1Vec17,Net2Vec17,fdr_ageEfPvec,fdr_EFEfPvec,fdr_noAge_EFEfPVec)
+BwAgeCorTMDifDf<-data.frame(tmdifvec,ageEfvec,noAge_EFEfVec,EFEfvec,scalevec,Net1Vec,Net2Vec,Net1Vec17,Net2Vec17,fdr_ageEfPvec,fdr_EFEfPvec,fdr_noAge_EFEfPVec,ageDR2vec)
 
 nonthresh<-ggplot(BwAgeCorTMDifDf,aes(x=tmdifvec,y=ageEfvec)) + geom_point(alpha=.07,size=5) + xlab('Transmodality Difference') + ylab('Age Partial Correlation') + ggtitle('Pairwise Between-Network Age-FC Relations')
 
 thresh<-ggplot(BwAgeCorTMDifDf[fdr_ageEfPvec<0.05,],aes(x=tmdifvec,y=ageEfvec)) + geom_point(alpha=.07,size=5) + xlab('Transmodality Difference') + ylab('Age Partial Correlation') + ggtitle('Pairwise Between-Network Age-FC Relations: FDR Thresh.')
 
 ggarrange(nonthresh,thresh)
+
+TMdifDR2<-ggplot(BwAgeCorTMDifDf,aes(x=tmdifvec,y=ageDR2vec)) + geom_point(alpha=.07,size=5) + xlab('Transmodality Difference') + ylab(expression(paste(Delta,R^2[adj]))) + ggtitle('Age-FC Relations')+theme_classic(base_size=35)
 
 # combine scalevec and transmodality dif vec for transmodality difference
 ScaleTMDifDf<-data.frame(tmdifvec,scalevec)
@@ -1077,12 +1096,33 @@ plot(ScaleTMDifMeanVec)
 
 ggplot(ScaleTMDifDf,aes(x=scalevec,y=tmdifvec)) + geom_point(alpha=.1,size=2) +xlab('Number of Communities') + ylab('B/W Transmodality Difference')
 
+# adapt four color scheme to b/w-con-level feautres
+granularFourscalesscheme<-vector(length=4495)
+for (i in 1:length(granularFourscalesscheme)){
+  scaleOfInt<-scalevec[i]
+  # +1 because fourscale scheme is 1:29 and scales are 2:30
+  colorOfInt<-fourscalescheme[scaleOfInt-1]
+  granularFourscalesscheme[i]<-colorOfInt
+}
+
+# adapt to weird factor ordering
+# color vector for highlighting 4 different scales
+grayHexa<-'#AAAAAA'
+Weirdfourscalescheme<-rep(grayHexa,29)
+# scale 4 - purple
+Weirdfourscalescheme[24]<-'#6600CC'
+# scale 7 - yellow
+Weirdfourscalescheme[27]<- '#FFCC00'
+# scale 13 - black
+Weirdfourscalescheme[4]<- '#000000' 
+# scale 20 - red
+Weirdfourscalescheme[13]<- '#CC0000'
 # big violin plot
-ggplot(data = BwAgeCorTMDifDf, aes(x = factor(scalevec), y = tmdifvec)) +
-  geom_violin(alpha = .8) +
-  geom_boxplot(width=0.2)+
-  geom_point(size = 1, alpha = 0.8,color='blue') +
-  raincloud_theme+theme_classic()+ylab('Modal Dissimilarity')
+ggplot(data = BwAgeCorTMDifDf, aes(x = as.factor(scalevec), y = tmdifvec,color=as.factor(scalevec))) +
+  geom_violin(alpha = .8) + scale_color_manual(values=Weirdfourscalescheme)+
+  geom_boxplot(width=0.3)+
+  geom_point(size = 2, alpha = 0.8) +
+  raincloud_theme+theme_classic(base_size=40)+ylab('Modal Dissimilarity')+theme(legend.position = 'none')+xlab('Scale')
 ```
 
 ```{r}
