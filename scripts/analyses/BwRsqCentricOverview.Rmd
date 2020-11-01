@@ -106,32 +106,6 @@ DeltaR2EstVec<-function(x){
   
 }
 
-DeltaR2EstVec_ageSubset<-function(df,x){
-  
-  # relevant df
-  scaledf<-df[,c(2,3,4,x)]
-  colnames(scaledf)<-c('Age','Sex','Motion','varofint')
-  
-  # no-age model (segreg ~ sex + motion)
-  noAgeGam<-gam(varofint~Sex+Motion,data=scaledf)
-  noAgeSum<-summary(noAgeGam)
-  # age-included model for measuring difference
-  AgeGam<-gam(varofint~Sex+Motion+s(Age,k=3),data=scaledf)
-  AgeSum<-summary(AgeGam)
-  
-  dif<-AgeSum$r.sq-noAgeSum$r.sq
-  
-  # partial spearmans to extract age relation (for direction)
-  pspear=pcor(scaledf,method='spearman')$estimate
-  corest<-pspear[4]
-  if(corest<0){
-    dif=dif*-1
-  }
-  
-  return(dif)
-  
-}
-
 # same thing but returning chisq test sig. output for FDR correction instead of hard difference
 DeltaPEstVec<-function(x){
   
@@ -198,21 +172,9 @@ EFDeltaPEstVec<-function(x){
   
 }
 
-# color vector for highlighting 4 different scales
-grayHexa<-'#AAAAAA'
-fourscalescheme<-rep(grayHexa,29)
-# scale 4 - purple
-fourscalescheme[3]<-'#6600CC'
-# scale 7 - yellow
-fourscalescheme[6]<- '#FFCC00'
-# scale 13 - black
-fourscalescheme[12]<- '#000000' 
-# scale 20 - red
-fourscalescheme[19]<- '#CC0000'
-
 ```
 
-```{r}
+```{r include=FALSE}
 # need to 
 source('~/cbica/projects/pinesParcels/multiscale/scripts/analyses/correlations_over_scalesplot_minor.R')
 library(shapes)
@@ -457,7 +419,6 @@ for (i in 1:29){
 correlations_over_scales(ind_GBwcors_highCI,"Global BetweenCon Age Correlation")
 correlations_over_scales(ind_GBwcors_lowCI,"Global BetweenCon Age Correlation")
 
-
 # merge em together for plot
 estAndBootStrapped<-data.frame(ind_GBwcors[,1],ind_GBwcors[,2],ind_GBwcors_highCI[,2],ind_GBwcors_lowCI[,2])
 colnames(estAndBootStrapped)<-c('Scale','AgeCor','upperCI','lowerCI')
@@ -587,8 +548,7 @@ for (i in 1:2){
       # generate index for where values for this network at this scale should reside
       # start from K index
       Nind<-Kind[N]
-      bwAgeCorVecs[Nind,5]=K
-      bwAgeCorVecs[Nind,6]=N
+      bwAgeCorVecs[Nind,5]=N
       # get index for this N in terms of masterdf (collapse | to match multiple patterns)
       Ncolname<-grep(as.character(paste('_',N,'_',sep='')),bwnetnames_thisScale_extended,value=T)
       # need to add "_" before and after each number so I can select for '_N_' and not pick up teens digits with 1, 20s with 3, 15 and 25 with 5, etc.
@@ -751,10 +711,6 @@ bwdf$bwAgeCorVecs.cavg_bw<-bwdf$bwAgeCorVecs.avg_bw
 bwdf$bwAgeCorVecs.cavg_bw[bwdf$bwAgeCorVecs.avg_bwP>0.05]=0
 
 Corrected_avgbw_age_tm<-ggplot(bwdf,aes(tmvec,bwAgeCorVecs.cavg_bw,color=domnetvec,alpha=netpropvec^2)) + geom_point(size=6)+ scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068')) + xlab("Transmodality") + ylab(expression(paste(Delta,R^2[adj]))) +theme_classic(base_size = 28) + ggtitle('B/w Variance Captured by Age') +guides(alpha=FALSE,color=guide_legend(title="Maximal Y7 Overlap"))+theme(legend.position="top")
-
-# save em out to cubic for viz of delta r^2 by community
-forBwAgeDR2viz<-cbind(bwAgeCorVecs$avg_bw,bwAgeCorVecs$K,bwAgeCorVecs$N)
-write.table(forBwAgeDR2viz,'/cbica/projects/pinesParcels/results/aggregated_data/fc/bwAge_dr2_overscales_forviz.csv',sep=",",col.names=F,row.names = F)
 ```
 
 
@@ -767,7 +723,7 @@ tmvecRepped<-rep(tmvec,each=693)
 domnetvecRepped<-rep(domnetvec,each=693)
 melt_long$transmodality<-tmvecRepped
 melt_long$dominantYeo<-domnetvecRepped
-###saveRDS(melt_long,file = '~/Desktop/Long_bblidAgeSexMotionAvgBw.rds')
+saveRDS(melt_long,file = '~/Desktop/Long_bblidAgeSexMotionAvgBw.rds')
 ```
 
 
@@ -940,7 +896,6 @@ plot_model(netLM,type='int')
 tab_model(netLM)
 
 ```
-
 ```{r}
 # Framework for pairwise age patterns
 # Transmodality Dif and Age-relation
@@ -967,6 +922,10 @@ Net2Vec=rep(0,length(colnames(individ_scalebybw_df)))
 Net1Vec17=rep(0,length(colnames(individ_scalebybw_df)))
 Net2Vec17=rep(0,length(colnames(individ_scalebybw_df)))
 ageDR2vec=rep(0,length(colnames(individ_scalebybw_df)))
+ageDR2Pvec=rep(0,length(colnames(individ_scalebybw_df)))
+EFDR2vec=rep(0,length(colnames(individ_scalebybw_df)))
+EFDR2Pvec=rep(0,length(colnames(individ_scalebybw_df)))
+
 
 # make a scale vector to match transmodality difference values
 # this is to look at how finer scales confer networks that are less different
@@ -990,7 +949,7 @@ for (k in 2:30){
 #### This measures all the pairwise distances for the plots
 ## for all b/w cols - 10/9/20: EF added in.
 for (i in 1:length(colnames(individ_scalebybw_df))){
-    #print(i)
+    print(i)
     # extract column name. Will parse column name to determine nature of #connection
     curcolname<-colnames(individ_scalebybw_df)[i]
     splitname<-unlist(strsplit(curcolname,'_'))
@@ -1056,9 +1015,11 @@ for (i in 1:length(colnames(individ_scalebybw_df))){
     Net1Vec17[i]<-as.character(y17lab1)
     Net2Vec17[i]<-as.character(y17lab2)
     
-    
-    # delta r2 for age
+    # delta r2 for age, EF
     ageDR2vec[i]<-DeltaR2EstVec(masterdf[,colindex])
+    ageDR2Pvec[i]<-DeltaPEstVec(masterdf[,colindex])
+    EFDR2vec[i]<-EFDeltaR2EstVec(masterdf[,colindex])
+    EFDR2Pvec[i]<-EFDeltaPEstVec(masterdf[,colindex])
 }
 
 # fdr correct pvectors, together
@@ -1072,15 +1033,15 @@ fdr_noAge_EFEfPVec<-correctconcatpvecs[((2*chunksize)+1):(3*chunksize)]
 
 
 ## merged vectors
-BwAgeCorTMDifDf<-data.frame(tmdifvec,ageEfvec,noAge_EFEfVec,EFEfvec,scalevec,Net1Vec,Net2Vec,Net1Vec17,Net2Vec17,fdr_ageEfPvec,fdr_EFEfPvec,fdr_noAge_EFEfPVec,ageDR2vec)
+BwAgeCorTMDifDf<-data.frame(tmdifvec,ageEfvec,noAge_EFEfVec,EFEfvec,scalevec,Net1Vec,Net2Vec,Net1Vec17,Net2Vec17,fdr_ageEfPvec,fdr_EFEfPvec,fdr_noAge_EFEfPVec)
 
-nonthresh<-ggplot(BwAgeCorTMDifDf,aes(x=tmdifvec,y=ageEfvec)) + geom_point(alpha=.07,size=5) + xlab('Transmodality Difference') + ylab('Age Partial Correlation') + ggtitle('Pairwise Between-Network Age-FC Relations')
+nonthresh<-ggplot(BwAgeCorTMDifDf,aes(x=tmdifvec,y=ageEfvec)) + geom_point(alpha=.07,size=5) + xlab('Transmodality Difference') + ylab('Age Partial Correlation') + ggtitle('Pairwise Between-Network Age-FC Relations')+geom_smooth(method='lm', formula= y~x,color='black',size=2)
+
+nonthreshEF<-ggplot(BwAgeCorTMDifDf,aes(x=tmdifvec,y=EFEfvec)) + geom_point(alpha=.07,size=5) + xlab('Transmodality Difference') + ylab('EF Partial Correlation') + ggtitle('Pairwise Between-Network EF-FC Relations')+geom_smooth(method='lm', formula= y~x,color='black',size=2)
 
 thresh<-ggplot(BwAgeCorTMDifDf[fdr_ageEfPvec<0.05,],aes(x=tmdifvec,y=ageEfvec)) + geom_point(alpha=.07,size=5) + xlab('Transmodality Difference') + ylab('Age Partial Correlation') + ggtitle('Pairwise Between-Network Age-FC Relations: FDR Thresh.')
 
 ggarrange(nonthresh,thresh)
-
-TMdifDR2<-ggplot(BwAgeCorTMDifDf,aes(x=tmdifvec,y=ageDR2vec)) + geom_point(alpha=.07,size=5) + xlab('Transmodality Difference') + ylab(expression(paste(Delta,R^2[adj]))) + ggtitle('Age-FC Relations')+theme_classic(base_size=35)
 
 # combine scalevec and transmodality dif vec for transmodality difference
 ScaleTMDifDf<-data.frame(tmdifvec,scalevec)
@@ -1096,33 +1057,13 @@ plot(ScaleTMDifMeanVec)
 
 ggplot(ScaleTMDifDf,aes(x=scalevec,y=tmdifvec)) + geom_point(alpha=.1,size=2) +xlab('Number of Communities') + ylab('B/W Transmodality Difference')
 
-# adapt four color scheme to b/w-con-level feautres
-granularFourscalesscheme<-vector(length=4495)
-for (i in 1:length(granularFourscalesscheme)){
-  scaleOfInt<-scalevec[i]
-  # +1 because fourscale scheme is 1:29 and scales are 2:30
-  colorOfInt<-fourscalescheme[scaleOfInt-1]
-  granularFourscalesscheme[i]<-colorOfInt
-}
 
-# adapt to weird factor ordering
-# color vector for highlighting 4 different scales
-grayHexa<-'#AAAAAA'
-Weirdfourscalescheme<-rep(grayHexa,29)
-# scale 4 - purple
-Weirdfourscalescheme[24]<-'#6600CC'
-# scale 7 - yellow
-Weirdfourscalescheme[27]<- '#FFCC00'
-# scale 13 - black
-Weirdfourscalescheme[4]<- '#000000' 
-# scale 20 - red
-Weirdfourscalescheme[13]<- '#CC0000'
-# big violin plot
-ggplot(data = BwAgeCorTMDifDf, aes(x = as.factor(scalevec), y = tmdifvec,color=as.factor(scalevec))) +
-  geom_violin(alpha = .8) + scale_color_manual(values=Weirdfourscalescheme)+
-  geom_boxplot(width=0.3)+
-  geom_point(size = 2, alpha = 0.8) +
-  raincloud_theme+theme_classic(base_size=40)+ylab('Modal Dissimilarity')+theme(legend.position = 'none')+xlab('Scale')
+# distribution of modal dissimilarity over scales
+ggplot(data = BwAgeCorTMDifDf, aes(x = factor(scalevec), y = tmdifvec)) +
+  geom_violin(alpha = .8) +
+  geom_boxplot(width=0.1)+
+  geom_point(size = 1, alpha = 0.8) +
+  raincloud_theme+theme_classic()
 ```
 
 ```{r}
@@ -1184,7 +1125,7 @@ ageMitigateddf_stringent<-BwAgeCorTMDifDf[c(ageMitigated_stringent),]
 
 agF_y7<-ggplot(ageAligneddf,aes(x=tmdifvec,y=noAge_EFEfVec,color=Net1Vec)) + geom_text(size=10,label="\u25D6",family="Arial Unicode MS") + xlab('Transmodality Difference') + ylab('EF Partial Correlation') + ggtitle('Pairwise Between-Network Age-aligned EF-FC Relations')+scale_color_manual(values=ycolors,limits=Y7vec)+geom_text(aes(x=tmdifvec,y=noAge_EFEfVec,color=Net2Vec),size=10,label="\u25D7",family="Arial Unicode MS")+theme_classic()+xlim(0,12)+ylim(-.3,.3)+geom_smooth(method='lm', formula= y~x,color='gray82',size=2)
 
-agM_y7<-ggplot(ageMitigateddf,aes(x=tmdifvec,y=EFEfvec,color=Net1Vec)) + geom_text(size=10,label="\u25D6",family="Arial Unicode MS") + xlab('Transmodality Difference') + ylab('EF Partial Correlation') + ggtitle('Pairwise Between-Network Age-mitigated EF-FC Relations')+scale_color_manual(values=ycolors,limits=Y7vec)+geom_text(aes(x=tmdifvec,y=EFEfvec,color=Net2Vec),size=10,label="\u25D7",family="Arial Unicode MS")+theme_classic()+xlim(0,12)+ylim(-.3,.3)+geom_smooth(method='lm', formula= y~x,color='gray82',size=2)
+agM_y7<-ggplot(ageMitigateddf,aes(x=tmdifvec,y=EFEfvec,color=Net1Vec)) + geom_text(size=10,label="\u25D6",family="Arial Unicode MS") + xlab('Transmodality Difference') + ylab('EF Partial Correlation') + ggtitle('Pairwise Between-Network Age-mitigated EF-FC Relations')+scale_color_manual(values=ycolors,limits=Y7vec)+geom_text(aes(x=tmdifvec,y=EFEfvec,color=Net2Vec),size=10,label="\u25D7",family="Arial Unicode MS")+theme_classic()+xlim(0,12)+ylim(-.4,.4)+geom_smooth(method='lm', formula= y~x,color='gray82',size=2)
 
 agM_y7_age_relations<-ggplot(ageMitigateddf,aes(x=tmdifvec,y=ageEfvec,color=Net1Vec)) + geom_text(size=10,label="\u25D6",family="Arial Unicode MS") + xlab('Transmodality Difference') + ylab('Age Partial Correlation') + ggtitle('Pairwise Between-Network EF-Age-mitigated Age-FC Relations')+scale_color_manual(values=ycolors,limits=Y7vec)+geom_text(aes(x=tmdifvec,y=ageEfvec,color=Net2Vec),size=10,label="\u25D7",family="Arial Unicode MS")+theme_classic()+xlim(0,12)+ylim(-.4,.4)+geom_smooth(method='lm', formula= y~x,color='gray82',size=2)
 
@@ -1195,14 +1136,13 @@ agM_y7_thresh<-ggplot(ageMitigateddf_stringent,aes(x=tmdifvec,y=EFEfvec,color=Ne
 
 # yeo17
 
-agF_y17<-ggplot(ageAligneddf_stringent,aes(x=tmdifvec,y=noAge_EFEfVec,color=Net1Vec17)) + geom_text(size=10,label="\u25D6",family="Arial Unicode MS") + xlab('Transmodality Difference') + ylab('EF Partial Correlation') + ggtitle('Between-Network Features with Aligned EF and Age Relations: Yeo17')+scale_color_manual(values=y17colors,limits=y17vec)+geom_text(aes(x=tmdifvec,y=noAge_EFEfVec,color=Net2Vec17),size=10,label="\u25D7",family="Arial Unicode MS")+theme_classic()+xlim(0,12)+ylim(-.3,.3)
+agF_y17<-ggplot(ageAligneddf_stringent,aes(x=tmdifvec,y=noAge_EFEfVec,color=Net1Vec17)) + geom_text(size=10,label="\u25D6",family="Arial Unicode MS") + xlab('Transmodality Difference') + ylab('EF Partial Correlation') + ggtitle('Pairwise Between-Network Age-aligned EF-FC Relations: Yeo17')+scale_color_manual(values=y17colors,limits=y17vec)+geom_text(aes(x=tmdifvec,y=noAge_EFEfVec,color=Net2Vec17),size=10,label="\u25D7",family="Arial Unicode MS")+theme_classic()+xlim(0,12)+ylim(-.3,.3)
 
-agM_y17<-ggplot(ageMitigateddf_stringent,aes(x=tmdifvec,y=EFEfvec,color=Net1Vec17)) + geom_text(size=10,label="\u25D6",family="Arial Unicode MS") + xlab('Transmodality Difference') + ylab('EF Partial Correlation') + ggtitle('Between-Network Features with Opposite EF and Age Relations: Yeo17')+scale_color_manual(values=y17colors,limits=y17vec)+geom_text(aes(x=tmdifvec,y=EFEfvec,color=Net2Vec17),size=10,label="\u25D7",family="Arial Unicode MS")+theme_classic()+xlim(0,12)+ylim(-.3,.3)
+agM_y17<-ggplot(ageMitigateddf_stringent,aes(x=tmdifvec,y=EFEfvec,color=Net1Vec17)) + geom_text(size=10,label="\u25D6",family="Arial Unicode MS") + xlab('Transmodality Difference') + ylab('EF Partial Correlation') + ggtitle('Pairwise Between-Network Age-mitigated EF-FC Relations: Yeo17')+scale_color_manual(values=y17colors,limits=y17vec)+geom_text(aes(x=tmdifvec,y=EFEfvec,color=Net2Vec17),size=10,label="\u25D7",family="Arial Unicode MS")+theme_classic()+xlim(0,12)+ylim(-.3,.3)
 
 ggarrange(agF_y7,agM_y7,agF_y7_thresh,agM_y7_thresh,agF_y17,agM_y17,nrow=3,ncol=2)
 
 AgeVsEFEffects_agF<-ggplot(BwAgeCorTMDifDf,aes(x=noAge_EFEfVec,y=ageEfvec,color=Net1Vec)) + geom_text(size=7,label="\u25D6",family="Arial Unicode MS") + xlab('EF Partial Correlation') + ylab('Age Partial Correlation') + ggtitle('Age vs. EF effects - no age control')+scale_color_manual(values=ycolors,limits=Y7vec)+geom_text(aes(x=noAge_EFEfVec,y=ageEfvec,color=Net2Vec),size=7,label="\u25D7",family="Arial Unicode MS")+theme_minimal()+theme(legend.position = "none")
-
 AgeVsEFEffects_agM<-ggplot(BwAgeCorTMDifDf,aes(x=EFEfvec,y=ageEfvec,color=Net1Vec)) + geom_text(size=7,label="\u25D6",family="Arial Unicode MS") + xlab('EF Partial Correlation') + ylab('Age Partial Correlation') + ggtitle('Age vs. Age-controlled EF effects')+scale_color_manual(values=ycolors,limits=Y7vec)+geom_text(aes(x=EFEfvec,y=ageEfvec,color=Net2Vec),size=7,label="\u25D7",family="Arial Unicode MS")+theme_minimal()+theme(legend.position = "none")
 ```
 
@@ -1235,14 +1175,11 @@ AgeVsEFEffects_agM<-ggplot(BwAgeCorTMDifDf,aes(x=EFEfvec,y=ageEfvec,color=Net1Ve
 ####correlations_over_scales(both_plotCols,"Average b/w EF Cor")
 ### now do with average value for parallelism
 ### note - bottom section of this chunk is the valid one: averaging correlations of all nets within scales != averaging b/w cons within scales and correlating
-
 #use age mitig. and age facilitated indices to extract corresp. values from indiv_bwcols_ind
-
 # initialize 
 winScaleAvgbwVal_agF<-matrix(0,693,29)
 winScaleAvgbwVal_agM<-matrix(0,693,29)
 winScaleAvgbwVal<-matrix(0,693,29)
-
 # for each scale
 for (K in 2:30){
   # use logical indices of age aligned and age mitigated in tandem with scale index
@@ -1281,9 +1218,7 @@ for (K in 2:30){
     }
   }
 }
-
 # there's gotta be a more efficient way to do that. Anyways, now repeat correlation analyses on "global" b/w values
-
 ### use the "global" b/w values to evaluate global scale-dependency
 # global
 indglobbw<-data.frame(cbind(masteref$bblid,masteref$Age/12,masteref$Sex,masteref$Motion,masteref$F1_Exec_Comp_Cog_Accuracy,winScaleAvgbwVal))
@@ -1324,7 +1259,6 @@ for (i in 1:29){
   ind_bwcors[i,2]<-pspear[5]
 }
 indEFcor_agM<-correlations_over_scales(ind_bwcors,"Global B/w-EF: Age-Mitig.")
-
 ######## for age instead of EF
 # just for global age
 indglobbw<-data.frame(cbind(masteref$bblid,masteref$Age/12,masteref$Sex,masteref$Motion,winScaleAvgbwVal))
@@ -1339,7 +1273,6 @@ for (i in 1:29){
   ind_bwcors[i,2]<-pspear[4]
 }
 indAgecor<-correlations_over_scales(ind_bwcors,"B/w Community Connectivity - Age Correlation")
-
 ######### do age subsets
 #8-13
 indglobbw<-data.frame(cbind(masteref$bblid,masteref$Age/12,masteref$Sex,masteref$Motion,winScaleAvgbwVal))
@@ -1392,43 +1325,167 @@ indglobbw<-data.frame(cbind(masteref$bblid,masteref$Age/12,masteref$Sex,masteref
 colnames(indglobbw)[1:4]<-c('bblid','Age','Sex','Motion')
 ind_bw_dr2<-matrix(0,29,2)
 ind_bw_dr2[,1]<-2:30
-for (i in 1:29){
-  ind_bw_dr2[i,2]<-DeltaR2EstVec_ageSubset(indglobbw,(i+4))
-}
-indAgedr2<-dr2_over_scales(ind_bw_dr2,'B/w Community Connectivity - Age Effect')
+#for (i in 1:29){
+#  ind_bw_dr2[i,2]<-DeltaR2EstVec_ageSubset(indglobbw,(i+4))
+#}
+#indAgedr2<-dr2_over_scales(ind_bw_dr2,'B/w Community Connectivity - Age Effect')
+########## do age subsets
+##8-13
+#indglobbw<-data.frame(cbind(masteref$bblid,masteref$Age/12,masteref$Sex,masteref$Motion,winScaleAvgbwVal))
+#colnames(indglobbw)[1:4]<-c('bblid','Age','Sex','Motion')
+#indglobbw<-indglobbw[indglobbw$Age<13,]
+#ind_bw_dr2<-matrix(0,29,2)
+#ind_bw_dr2[,1]<-2:30
+#for (i in 1:29){
+#  ind_bw_dr2[i,2]<-DeltaR2EstVec_ageSubset(indglobbw,(i+4))
+#}
+#youngAgedr2<-dr2_over_scales(ind_bw_dr2,"B/w Community Connectivity - Age Effect: 8-13")
+##13-18
+#indglobbw<-data.frame(cbind(masteref$bblid,masteref$Age/12,masteref$Sex,masteref$Motion,winScaleAvgbwVal))
+#colnames(indglobbw)[1:4]<-c('bblid','Age','Sex','Motion')
+#indglobbw<-indglobbw[indglobbw$Age>13,]
+#indglobbw<-indglobbw[indglobbw$Age<18,]
+#ind_bw_dr2<-matrix(0,29,2)
+#ind_bw_dr2[,1]<-2:30
+#for (i in 1:29){
+#  ind_bw_dr2[i,2]<-DeltaR2EstVec_ageSubset(indglobbw,(i+4))
+#}
+#midAgedr2<-dr2_over_scales(ind_bw_dr2,"B/w Community Connectivity - Age Effect: 13-18")
+##18-23
+#indglobbw<-data.frame(cbind(masteref$bblid,masteref$Age/12,masteref$Sex,masteref$Motion,winScaleAvgbwVal))
+#colnames(indglobbw)[1:4]<-c('bblid','Age','Sex','Motion')
+#indglobbw<-indglobbw[indglobbw$Age>18,]
+#ind_bw_dr2<-matrix(0,29,2)
+#ind_bw_dr2[,1]<-2:30
+#for (i in 1:29){
+#  ind_bw_dr2[i,2]<-DeltaR2EstVec_ageSubset(indglobbw,(i+4))
+#}
+#oldAgedr2<-dr2_over_scales(ind_bw_dr2,"B/w Community Connectivity - Age Effect: 18-23")
+```
 
-######### do age subsets
-#8-13
-indglobbw<-data.frame(cbind(masteref$bblid,masteref$Age/12,masteref$Sex,masteref$Motion,winScaleAvgbwVal))
-colnames(indglobbw)[1:4]<-c('bblid','Age','Sex','Motion')
-indglobbw<-indglobbw[indglobbw$Age<13,]
-ind_bw_dr2<-matrix(0,29,2)
-ind_bw_dr2[,1]<-2:30
-for (i in 1:29){
-  ind_bw_dr2[i,2]<-DeltaR2EstVec_ageSubset(indglobbw,(i+4))
-}
-youngAgedr2<-dr2_over_scales(ind_bw_dr2,"B/w Community Connectivity - Age Effect: 8-13")
-#13-18
-indglobbw<-data.frame(cbind(masteref$bblid,masteref$Age/12,masteref$Sex,masteref$Motion,winScaleAvgbwVal))
-colnames(indglobbw)[1:4]<-c('bblid','Age','Sex','Motion')
-indglobbw<-indglobbw[indglobbw$Age>13,]
-indglobbw<-indglobbw[indglobbw$Age<18,]
-ind_bw_dr2<-matrix(0,29,2)
-ind_bw_dr2[,1]<-2:30
-for (i in 1:29){
-  ind_bw_dr2[i,2]<-DeltaR2EstVec_ageSubset(indglobbw,(i+4))
-}
-midAgedr2<-dr2_over_scales(ind_bw_dr2,"B/w Community Connectivity - Age Effect: 13-18")
-#18-23
-indglobbw<-data.frame(cbind(masteref$bblid,masteref$Age/12,masteref$Sex,masteref$Motion,winScaleAvgbwVal))
-colnames(indglobbw)[1:4]<-c('bblid','Age','Sex','Motion')
-indglobbw<-indglobbw[indglobbw$Age>18,]
-ind_bw_dr2<-matrix(0,29,2)
-ind_bw_dr2[,1]<-2:30
-for (i in 1:29){
-  ind_bw_dr2[i,2]<-DeltaR2EstVec_ageSubset(indglobbw,(i+4))
-}
-oldAgedr2<-dr2_over_scales(ind_bw_dr2,"B/w Community Connectivity - Age Effect: 18-23")
+```{r}
+# section to make a table of 
+#| ef + age + | ef + age - | EF + no age
+#| ef - age + | ef - age - | EF - no age
+
+#fdr'ed EF
+fdrEFDr2Ps<-p.adjust(EFDR2Pvec,method='fdr')
+
+# index of features surviving FDR
+EFsurvivors<-which(fdrEFDr2Ps<0.05)
+EFsurivor_EF_Effects<-EFDR2vec[EFsurvivors]
+EFsurivor_Age_Effects<-ageDR2vec[EFsurvivors]
+# index of positive and negative EF relations
+EFpos<-which(EFDR2vec>0)
+EFneg<-which(EFDR2vec<0)
+
+# index of features surviving (and dying) with age FDR
+#fdr'ed Age
+fdrAgeDr2Ps<-p.adjust(ageDR2Pvec,method='fdr')
+AgeSurvivors<-which(fdrAgeDr2Ps<0.05)
+AgeCausalties<-which(fdrAgeDr2Ps>0.05)
+
+# index of positive and negative Age relations
+Agepos<-which(ageDR2vec>0)
+Ageneg<-which(ageDR2vec<0)
+
+# get number of features surviving fdr positively associated with EF, pos w/ age
+posEposA<-intersect(intersect(intersect(EFpos,Agepos),EFsurvivors),AgeSurvivors)
+# get number of features surviving fdr negatively associated with EF, pos w/ age
+negEposA<-intersect(intersect(intersect(EFneg,Agepos),EFsurvivors),AgeSurvivors)
+# get number of features surviving fdr positively associated with EF, neg w/ age
+posEnegA<-intersect(intersect(intersect(EFpos,Ageneg),EFsurvivors),AgeSurvivors)
+# get number of features surviving fdr negatively associated with EF, neg w/ age
+negEnegA<-intersect(intersect(intersect(EFneg,Ageneg),EFsurvivors),AgeSurvivors)
+# get number of features surviving fdr positively associated with EF, no relation w/ age
+posEnoA<-intersect(intersect(EFpos,EFsurvivors),AgeCausalties)
+# get number of features surviving fdr negatively associated with EF, no relation w/ age
+negEnoA<-intersect(intersect(EFneg,EFsurvivors),AgeCausalties)
+
+paste("positive Age, pos EF edges:", length(posEposA))
+paste("positive Age, neg EF edges:", length(negEposA))
+paste("negative Age, pos EF edges:", length(posEnegA))
+paste("negative Age, neg EF edges:", length(negEnegA))
+paste("Age-unrelated pos EF edges:", length(posEnoA))
+paste("Age-unrelated, neg EF edges:", length(negEnoA))
+
+# plot em!
+## merged vectors
+BwAgeDR2TMDifDf<-data.frame(tmdifvec,scalevec,Net1Vec,Net2Vec,Net1Vec17,Net2Vec17,ageDR2vec,EFDR2vec)
+
+posEposAy7<-ggplot(BwAgeDR2TMDifDf[posEposA,],aes(x=tmdifvec,y=EFDR2vec,color=Net1Vec)) + geom_text(size=9,label="\u25D6",family="Arial Unicode MS") + xlab('Transmodality Difference') + ylab('EF delta r^2') + ggtitle('EF+ Age+')+scale_color_manual(values=ycolors,limits=Y7vec)+geom_text(aes(x=tmdifvec,y=EFDR2vec,color=Net2Vec),size=9,label="\u25D7",family="Arial Unicode MS")+theme_classic()+xlim(0,12)
+
+negEposAy7<-ggplot(BwAgeDR2TMDifDf[negEposA,],aes(x=tmdifvec,y=EFDR2vec,color=Net1Vec)) + geom_text(size=9,label="\u25D6",family="Arial Unicode MS") + xlab('Transmodality Difference') + ylab('EF delta r^2') + ggtitle('EF- Age+')+scale_color_manual(values=ycolors,limits=Y7vec)+geom_text(aes(x=tmdifvec,y=EFDR2vec,color=Net2Vec),size=9,label="\u25D7",family="Arial Unicode MS")+theme_classic()+xlim(0,12)
+
+posEnegAy7<-ggplot(BwAgeDR2TMDifDf[posEnegA,],aes(x=tmdifvec,y=EFDR2vec,color=Net1Vec)) + geom_text(size=9,label="\u25D6",family="Arial Unicode MS") + xlab('Transmodality Difference') + ylab('EF delta r^2') + ggtitle('EF+ Age-')+scale_color_manual(values=ycolors,limits=Y7vec)+geom_text(aes(x=tmdifvec,y=EFDR2vec,color=Net2Vec),size=9,label="\u25D7",family="Arial Unicode MS")+theme_classic()+xlim(0,12)
+
+negEnegAy7<-ggplot(BwAgeDR2TMDifDf[negEnegA,],aes(x=tmdifvec,y=EFDR2vec,color=Net1Vec)) + geom_text(size=9,label="\u25D6",family="Arial Unicode MS") + xlab('Transmodality Difference') + ylab('EF delta r^2') + ggtitle('EF- Age-')+scale_color_manual(values=ycolors,limits=Y7vec)+geom_text(aes(x=tmdifvec,y=EFDR2vec,color=Net2Vec),size=9,label="\u25D7",family="Arial Unicode MS")+theme_classic()+xlim(0,12)
+
+posEnoAy7<-ggplot(BwAgeDR2TMDifDf[posEnoA,],aes(x=tmdifvec,y=EFDR2vec,color=Net1Vec)) + geom_text(size=9,label="\u25D6",family="Arial Unicode MS") + xlab('Transmodality Difference') + ylab('EF delta r^2') + ggtitle('EF+ No Age')+scale_color_manual(values=ycolors,limits=Y7vec)+geom_text(aes(x=tmdifvec,y=EFDR2vec,color=Net2Vec),size=9,label="\u25D7",family="Arial Unicode MS")+theme_classic()+xlim(0,12)
+
+negEnoAy7<-ggplot(BwAgeDR2TMDifDf[negEnoA,],aes(x=tmdifvec,y=EFDR2vec,color=Net1Vec)) + geom_text(size=9,label="\u25D6",family="Arial Unicode MS") + xlab('Transmodality Difference') + ylab('EF delta r^2') + ggtitle('EF- No Age')+scale_color_manual(values=ycolors,limits=Y7vec)+geom_text(aes(x=tmdifvec,y=EFDR2vec,color=Net2Vec),size=9,label="\u25D7",family="Arial Unicode MS")+theme_classic()+xlim(0,12)
+
+############## 17 coloration
+posEposAy17<-ggplot(BwAgeDR2TMDifDf[posEposA,],aes(x=tmdifvec,y=EFDR2vec,color=Net1Vec17)) + geom_text(size=9,label="\u25D6",family="Arial Unicode MS") + xlab('Transmodality Difference') + ylab('EF delta r^2') + ggtitle('EF+ Age+')+scale_color_manual(values=y17colors,limits=y17vec)+geom_text(aes(x=tmdifvec,y=EFDR2vec,color=Net2Vec17),size=9,label="\u25D7",family="Arial Unicode MS")+theme_classic()+xlim(0,12)
+
+negEposAy17<-ggplot(BwAgeDR2TMDifDf[negEposA,],aes(x=tmdifvec,y=EFDR2vec,color=Net1Vec17)) + geom_text(size=9,label="\u25D6",family="Arial Unicode MS") + xlab('Transmodality Difference') + ylab('EF delta r^2') + ggtitle('EF- Age+')+scale_color_manual(values=y17colors,limits=y17vec)+geom_text(aes(x=tmdifvec,y=EFDR2vec,color=Net2Vec17),size=9,label="\u25D7",family="Arial Unicode MS")+theme_classic()+xlim(0,12)
+
+posEnegAy17<-ggplot(BwAgeDR2TMDifDf[posEnegA,],aes(x=tmdifvec,y=EFDR2vec,color=Net1Vec17)) + geom_text(size=9,label="\u25D6",family="Arial Unicode MS") + xlab('Transmodality Difference') + ylab('EF delta r^2') + ggtitle('EF+ Age-')+scale_color_manual(values=y17colors,limits=y17vec)+geom_text(aes(x=tmdifvec,y=EFDR2vec,color=Net2Vec17),size=9,label="\u25D7",family="Arial Unicode MS")+theme_classic()+xlim(0,12)
+
+negEnegAy17<-ggplot(BwAgeDR2TMDifDf[negEnegA,],aes(x=tmdifvec,y=EFDR2vec,color=Net1Vec17)) + geom_text(size=9,label="\u25D6",family="Arial Unicode MS") + xlab('Transmodality Difference') + ylab('EF delta r^2') + ggtitle('EF- Age-')+scale_color_manual(values=y17colors,limits=y17vec)+geom_text(aes(x=tmdifvec,y=EFDR2vec,color=Net2Vec17),size=9,label="\u25D7",family="Arial Unicode MS")+theme_classic()+xlim(0,12)
+
+posEnoAy17<-ggplot(BwAgeDR2TMDifDf[posEnoA,],aes(x=tmdifvec,y=EFDR2vec,color=Net1Vec17)) + geom_text(size=9,label="\u25D6",family="Arial Unicode MS") + xlab('Transmodality Difference') + ylab('EF delta r^2') + ggtitle('EF+ No Age')+scale_color_manual(values=y17colors,limits=y17vec)+geom_text(aes(x=tmdifvec,y=EFDR2vec,color=Net2Vec17),size=9,label="\u25D7",family="Arial Unicode MS")+theme_classic()+xlim(0,12)
+
+negEnoAy17<-ggplot(BwAgeDR2TMDifDf[negEnoA,],aes(x=tmdifvec,y=EFDR2vec,color=Net1Vec17)) + geom_text(size=9,label="\u25D6",family="Arial Unicode MS") + xlab('Transmodality Difference') + ylab('EF delta r^2') + ggtitle('EF- No Age')+scale_color_manual(values=y17colors,limits=y17vec)+geom_text(aes(x=tmdifvec,y=EFDR2vec,color=Net2Vec17),size=9,label="\u25D7",family="Arial Unicode MS")+theme_classic()+xlim(0,12)
+
+
+############## Scale coloration
+
+posEposAs<-ggplot(BwAgeDR2TMDifDf[posEposA,],aes(x=tmdifvec,y=EFDR2vec,color=scalevec)) + geom_text(size=9,label="\u25D6",family="Arial Unicode MS") + xlab('Transmodality Difference') + ylab('EF delta r^2') + ggtitle('EF+ Age+')+scale_color_gradientn(colours = rainbow(5))+geom_text(aes(x=tmdifvec,y=EFDR2vec,color=scalevec),size=9,label="\u25D7",family="Arial Unicode MS")+theme_classic()+xlim(0,12)
+
+negEposAs<-ggplot(BwAgeDR2TMDifDf[negEposA,],aes(x=tmdifvec,y=EFDR2vec,color=scalevec)) + geom_text(size=9,label="\u25D6",family="Arial Unicode MS") + xlab('Transmodality Difference') + ylab('EF delta r^2') + ggtitle('EF- Age+')+scale_color_gradientn(colours = rainbow(5))+geom_text(aes(x=tmdifvec,y=EFDR2vec,color=scalevec),size=9,label="\u25D7",family="Arial Unicode MS")+theme_classic()+xlim(0,12)
+
+posEnegAs<-ggplot(BwAgeDR2TMDifDf[posEnegA,],aes(x=tmdifvec,y=EFDR2vec,color=scalevec)) + geom_text(size=9,label="\u25D6",family="Arial Unicode MS") + xlab('Transmodality Difference') + ylab('EF delta r^2') + ggtitle('EF+ Age-')+scale_color_gradientn(colours = rainbow(5))+geom_text(aes(x=tmdifvec,y=EFDR2vec,color=scalevec),size=9,label="\u25D7",family="Arial Unicode MS")+theme_classic()+xlim(0,12)
+
+negEnegAs<-ggplot(BwAgeDR2TMDifDf[negEnegA,],aes(x=tmdifvec,y=EFDR2vec,color=scalevec)) + geom_text(size=9,label="\u25D6",family="Arial Unicode MS") + xlab('Transmodality Difference') + ylab('EF delta r^2') + ggtitle('EF- Age-')+scale_color_gradientn(colours = rainbow(5))+geom_text(aes(x=tmdifvec,y=EFDR2vec,color=scalevec),size=9,label="\u25D7",family="Arial Unicode MS")+theme_classic()+xlim(0,12)
+
+posEnoAs<-ggplot(BwAgeDR2TMDifDf[posEnoA,],aes(x=tmdifvec,y=EFDR2vec,color=scalevec)) + geom_text(size=9,label="\u25D6",family="Arial Unicode MS") + xlab('Transmodality Difference') + ylab('EF delta r^2') + ggtitle('EF+ No Age')+scale_color_gradientn(colours = rainbow(5))+geom_text(aes(x=tmdifvec,y=EFDR2vec,color=scalevec),size=9,label="\u25D7",family="Arial Unicode MS")+theme_classic()+xlim(0,12)
+
+negEnoAs<-ggplot(BwAgeDR2TMDifDf[negEnoA,],aes(x=tmdifvec,y=EFDR2vec,color=scalevec)) + geom_text(size=9,label="\u25D6",family="Arial Unicode MS") + xlab('Transmodality Difference') + ylab('EF delta r^2') + ggtitle('EF- No Age')+scale_color_gradientn(colours = rainbow(5))+geom_text(aes(x=tmdifvec,y=EFDR2vec,color=scalevec),size=9,label="\u25D7",family="Arial Unicode MS")+theme_classic()+xlim(0,12)
+
+#megaPosEf<-ggarrange(posEposAy7,posEnegAy7,posEnoAy7,posEposAy17,posEnegAy17,posEnoAy17,posEposAs,posEnegAs,posEnoAs)
+#megaNegEf<-ggarrange(negEposAy7,negEnegAy7,negEnoAy7,negEposAy17,negEnegAy17,negEnoAy17,negEposAs,negEnegAs,negEnoAs)
+```
+
+
+```{r}
+# for high dimensional mediation
+# save X - Age
+write.table(masteref$Age,'/cbica/projects/pinesParcels/data/aggregated_data/X.csv',sep=',',row.names = F,col.names = F)
+# save Y - EF
+write.table(masteref$F1_Exec_Comp_Cog_Accuracy,'/cbica/projects/pinesParcels/data/aggregated_data/Y.csv',sep=',',row.names = F,col.names = F)
+
+# extract edges - starting with scale20
+# get indices of edges
+bwi='_bw_FC_'
+ind='ind'
+# indices of said indicators, this time in masteref as double check
+indiv=grep(ind,colnames(masteref))
+bwcol=grep(bwi,colnames(masteref))
+# get indices of edges and individualized values
+indiv_bwcols_ind<-intersect(bwcol,indiv)
+
+####set K
+k=4
+####
+
+# grep out edges at this scale
+scaleStr=paste('scale',k,'_',sep='')
+scaleCols_inds=grep(scaleStr,colnames(masteref))
+scaleK_bw_indivi_cols_inds<-intersect(indiv_bwcols_ind,scaleCols_inds)
+# combine indices
+# same M - edges
+write.table(masteref[colnames(masteref)[scaleK_bw_indivi_cols_inds]],'/cbica/projects/pinesParcels/data/aggregated_data/M.csv',sep=',',row.names = F,col.names = F)
 ```
 
 ```{r}
@@ -1448,6 +1505,7 @@ agF_sc<-ggplot(BwAgeCorTMDifDf_rev,aes(x=tmdifvec,y=noAge_EFEfVec,color=scalevec
 agM_sc<-ggplot(BwAgeCorTMDifDf_rev,aes(x=tmdifvec,y=EFEfvec,color=scalevec)) + geom_point(size=10) + xlab('Transmodality Difference') + ylab('EF Partial Correlation') + ggtitle('Pairwise Between-Network Age-controlled EF-FC Relations: Yeo17')+scale_color_viridis(option='inferno')+theme_classic()
 
 ggarrange(agF_sc,agM_sc)
+
 
 ```
 
@@ -1490,9 +1548,8 @@ for (featNum in 1:dim(individ_scalebybw_df)[2]){
     tempLm<-lm(bwFeature~Sex+Motion,data=tempDf)
     # plug residuals into feature matrix
     bothFeats[,featNum]<-tempLm$residuals
-  }
-    # if age-mitig, control for age
-    if (ageMitigated[featNum]==1){
+  # if age-mitig, control for age
+  } else if (ageAligned[featNum]==0){
     # make dataframe for gamming, b/w feature sex motion and scale
     tempDf<-data.frame(individ_scalebybw_df[,featNum],masterdf$Age,masterdf$Sex,masterdf$Motion,scalevec[featNum])
     colnames(tempDf)<-c('bwFeature','Age','Sex','Motion','Scale')
@@ -1516,109 +1573,21 @@ bothFeats<-cbind(bothFeats,masteref$F1_Exec_Comp_Cog_Accuracy)
 #write.table(ageFacilFeats,'/cbica/projects/pinesParcels/results/EffectVecs/AgeFacilFeats',sep=',', col.names = F,quote = F,row.names=F)
 #write.table(ageMitigFeats,'/cbica/projects/pinesParcels/results/EffectVecs/AgeMitigFeats',sep=',', col.names = F,quote = F,row.names=F)
 #write.table(bothFeats,'/cbica/projects/pinesParcels/results/EffectVecs/AgeFacilAndMitigFeats',sep=',', col.names = F,quote = F,row.names=F)
-
-
-### bottom section is likely more pragmatic: hard to estimate and regress stable age effect in thousands of FC features with GAM, but relatively straightforward to assess age effect in EF with GAM once and use that as outcome variable
-
-# write out motion-regressed version 
-MotRegrEF<-gam(F1_Exec_Comp_Cog_Accuracy~Motion,data=masteref)$residuals
-# write out age and motion-regressed version
-AgeMotRegrEF<-gam(F1_Exec_Comp_Cog_Accuracy~s(Age,k=4)+Motion,data=masteref)$residuals
-# pure age prediction version for comparison
-MotRegrAge<-lm(Age~Motion,data=masteref)$residuals
-
-AgeDepEF<-cbind(masterdf[,indiv_bwcols_ind],MotRegrEF)
-AgeIndepEF<-cbind(masterdf[,indiv_bwcols_ind],AgeMotRegrEF)
-AgeOnly<-cbind(masterdf[,indiv_bwcols_ind],MotRegrAge)
-
-write.table(AgeDepEF,'/cbica/projects/pinesParcels/results/EffectVecs/AgeDepEF',sep=',', col.names = F,quote = F,row.names=F)
-write.table(AgeIndepEF,'/cbica/projects/pinesParcels/results/EffectVecs/AgeIndepEF',sep=',', col.names = F,quote = F,row.names=F)
-write.table(AgeOnly,'/cbica/projects/pinesParcels/results/EffectVecs/AgeOnly',sep=',', col.names = F,quote = F,row.names=F)
 ```
 
 ```{r}
 # czech out the predicted EF values
-#predEFcsv<-read.csv('/cbica/projects/pinesParcels/data/aggregated_data/SubjPreds_agFagM.csv',header=F)
-#predEF_agFcsv<-read.csv('/cbica/projects/pinesParcels/data/aggregated_data/SubjPreds_agF.csv',header=F)
-#predEF_agMcsv<-read.csv('/cbica/projects/pinesParcels/data/aggregated_data/SubjPreds_agM.csv',header=F)
-
-
-predEF_ADcsv<-read.csv('/cbica/projects/pinesParcels/data/aggregated_data/SubjPreds_AD.csv',header=F)
-predEF_AIcsv<-read.csv('/cbica/projects/pinesParcels/data/aggregated_data/SubjPreds_AI.csv',header=F)
-predEF_ADLcsv<-read.csv('/cbica/projects/pinesParcels/data/aggregated_data/SubjPreds_ADL.csv',header=F)
-predEF_AILcsv<-read.csv('/cbica/projects/pinesParcels/data/aggregated_data/SubjPreds_AIL.csv',header=F)
-predEF_Acsv<-read.csv('/cbica/projects/pinesParcels/data/aggregated_data/SubjPreds_A.csv',header=F)
-predEF_ALcsv<-read.csv('/cbica/projects/pinesParcels/data/aggregated_data/SubjPreds_AL.csv',header=F)
+predEFcsv<-read.csv('/cbica/projects/pinesParcels/data/aggregated_data/SubjPreds_agFagM.csv',header=F)
+predEF_agFcsv<-read.csv('/cbica/projects/pinesParcels/data/aggregated_data/SubjPreds_agF.csv',header=F)
+predEF_agMcsv<-read.csv('/cbica/projects/pinesParcels/data/aggregated_data/SubjPreds_agM.csv',header=F)
 
 # convert to average predicted EF over all folds
-#predEF_ADcsv<-predEFcsv[,1]/predEFcsv[,2]
-predEF_AD<-predEF_ADcsv[,1]/predEF_ADcsv[,2]
-predEF_AI<-predEF_AIcsv[,1]/predEF_AIcsv[,2]
-predEF_ADL<-predEF_ADLcsv[,1]/predEF_ADLcsv[,2]
-predEF_AIL<-predEF_AILcsv[,1]/predEF_AILcsv[,2]
-predEF_A<-predEF_Acsv[,1]/predEF_Acsv[,2]
-predEF_AL<-predEF_ALcsv[,1]/predEF_ALcsv[,2]
+predEF<-predEFcsv[,1]/predEFcsv[,2]
+predEF_agF<-predEF_agFcsv[,1]/predEF_agFcsv[,2]
+predEF_agM<-predEF_agMcsv[,1]/predEF_agMcsv[,2]
 
-# pred ef vs. age
-plot(masteref$Age,predEF_AD)
-cor.test(masteref$Age,predEF_AD,method='spearman')
-plot(masteref$Age,predEF_AI)
-cor.test(masteref$Age,predEF_AI,method='spearman')
-#lasso
-plot(masteref$Age,predEF_ADL)
-cor.test(masteref$Age,predEF_ADL,method='spearman')
-plot(masteref$Age,predEF_AIL)
-cor.test(masteref$Age,predEF_AIL,method='spearman')
-
-# pred ef vs. ef
-plot(MotRegrEF,predEF_AD)
-cor.test(MotRegrEF,predEF_AD,method='spearman')
-plot(AgeMotRegrEF,predEF_AI)
-cor.test(AgeMotRegrEF,predEF_AI,method='spearman')
-#lasso
-plot(MotRegrEF,predEF_ADL)
-cor.test(MotRegrEF,predEF_ADL,method='spearman')
-plot(AgeMotRegrEF,predEF_AIL)
-cor.test(AgeMotRegrEF,predEF_AIL,method='spearman')
-
-# read in feature weights
-featWeightsAD<-read.csv('/cbica/projects/pinesParcels/data/aggregated_data/FeatureWeights_AD.csv',header=F)
-featWeightsAI<-read.csv('/cbica/projects/pinesParcels/data/aggregated_data/FeatureWeights_AI.csv',header=F)
-featWeightsADL<-read.csv('/cbica/projects/pinesParcels/data/aggregated_data/FeatureWeights_ADL.csv',header=F)
-featWeightsAIL<-read.csv('/cbica/projects/pinesParcels/data/aggregated_data/FeatureWeights_AIL.csv',header=F)
-featWeightsA<-read.csv('/cbica/projects/pinesParcels/data/aggregated_data/FeatureWeights_A.csv',header=F)
-featWeightsAL<-read.csv('/cbica/projects/pinesParcels/data/aggregated_data/FeatureWeights_AL.csv',header=F)
-
-# Use feature weight vectors to show kinds of networks that are weighted
-BwAgeCorTMDifDf_prWeights<-data.frame(tmdifvec,ageEfvec,noAge_EFEfVec,EFEfvec,scalevec,Net1Vec,Net2Vec,Net1Vec17,Net2Vec17,fdr_ageEfPvec,fdr_EFEfPvec,fdr_noAge_EFEfPVec,as.numeric(featWeightsAD$V1),as.numeric(featWeightsAI$V1),as.numeric(featWeightsADL$V1),as.numeric(featWeightsAIL$V1),as.numeric(featWeightsA$V1),as.numeric(featWeightsAL$V1))
-# fix last four colnames
-colnames(BwAgeCorTMDifDf_prWeights)[13:18]<-c('AgeDependentWeights','AgeIndependentWeights','AgeDependentWeights_Las','AgeIndependentWeights_Las','AgeWeights','AgeWeights_Las')
-
-#y7ver
-y7RidgeWeights<-ggplot(BwAgeCorTMDifDf_prWeights,aes(x=AgeDependentWeights,y=AgeIndependentWeights,color=Net1Vec)) + geom_text(size=10,label="\u25D6",family="Arial Unicode MS") + xlab('Age-Dep. EF Weight') + ylab('Age-Indep. EF Weight') + ggtitle('EF-prediction weights:Ridge')+scale_color_manual(values=ycolors,limits=Y7vec)+geom_text(aes(x=AgeDependentWeights,y=AgeIndependentWeights,color=Net2Vec),size=10,label="\u25D7",family="Arial Unicode MS")+theme_classic()
-#y17ver
-y17RidgeWeights<-ggplot(BwAgeCorTMDifDf_prWeights,aes(x=AgeDependentWeights,y=AgeIndependentWeights,color=Net1Vec17)) + geom_text(size=10,label="\u25D6",family="Arial Unicode MS") + xlab('Age-Dep. EF Weight') + ylab('Age-Indep. EF Weight') + ggtitle('EF-prediction weights:Ridge')+scale_color_manual(values=y17colors,limits=y17vec)+geom_text(aes(x=AgeDependentWeights,y=AgeIndependentWeights,color=Net2Vec17),size=10,label="\u25D7",family="Arial Unicode MS")+theme_minimal()
-#y7ver
-y7LassoWeights<-ggplot(BwAgeCorTMDifDf_prWeights,aes(x=AgeDependentWeights_Las,y=AgeIndependentWeights_Las,color=Net1Vec)) + geom_text(size=10,label="\u25D6",family="Arial Unicode MS") + xlab('Age-Dep. EF Weight') + ylab('Age-Indep. EF Weight') + ggtitle('EF-prediction weights:Lasso')+scale_color_manual(values=ycolors,limits=Y7vec)+geom_text(aes(x=AgeDependentWeights_Las,y=AgeIndependentWeights_Las,color=Net2Vec),size=10,label="\u25D7",family="Arial Unicode MS")+theme_classic()
-#y17ver
-y17LassoWeights<-ggplot(BwAgeCorTMDifDf_prWeights,aes(x=AgeDependentWeights_Las,y=AgeIndependentWeights_Las,color=Net1Vec17)) + geom_text(size=10,label="\u25D6",family="Arial Unicode MS") + xlab('Age-Dep. EF Weight') + ylab('Age-Indep. EF Weight') + ggtitle('EF-prediction weights:Lasso')+scale_color_manual(values=y17colors,limits=y17vec)+geom_text(aes(x=AgeDependentWeights_Las,y=AgeIndependentWeights_Las,color=Net2Vec17),size=10,label="\u25D7",family="Arial Unicode MS")+theme_minimal()
-
-# write feature weightS with colname labels as matrices for brain mapping viz
-featWeightsAD_lab<-cbind(colnames(masterdf)[indiv_bwcols_ind],featWeightsAD$V1)
-featWeightsAI_lab<-cbind(colnames(masterdf)[indiv_bwcols_ind],featWeightsAI$V1)
-
-ggarrange(y7RidgeWeights,y7LassoWeights)
-ggarrange(y17RidgeWeights,y17LassoWeights)
-
-# align with age features
-#age Ridge w/ age dep ridge
-AgeAgeDepRR<-ggplot(BwAgeCorTMDifDf_prWeights,aes(x=AgeWeights,y=AgeDependentWeights,color=Net1Vec)) + geom_text(size=10,label="\u25D6",family="Arial Unicode MS") + ylab('Age-Dep. EF Weight') + xlab('Age Weight') + ggtitle('Age-Dependent EF x Age Features:Ridge')+scale_color_manual(values=ycolors,limits=Y7vec)+geom_text(aes(x=AgeWeights,y=AgeDependentWeights,color=Net2Vec),size=10,label="\u25D7",family="Arial Unicode MS")+theme_minimal()+geom_smooth(method='lm', formula= y~x,color='gray82',size=2)
-AgeAgeIndepRR<-ggplot(BwAgeCorTMDifDf_prWeights,aes(x=AgeWeights,y=AgeIndependentWeights,color=Net1Vec)) + geom_text(size=10,label="\u25D6",family="Arial Unicode MS") + xlab('Age Weight') + ylab('Age-Indep. EF Weight') + ggtitle('Age-Independent EF x Age Features: Ridge')+scale_color_manual(values=ycolors,limits=Y7vec)+geom_text(aes(x=AgeWeights,y=AgeIndependentWeights,color=Net2Vec),size=10,label="\u25D7",family="Arial Unicode MS")+theme_minimal()+geom_smooth(method='lm', formula= y~x,color='gray82',size=2)
-ggarrange(AgeAgeDepRR,AgeAgeIndepRR)
-#lasso
-AgeAgeDepLas<-ggplot(BwAgeCorTMDifDf_prWeights,aes(x=AgeWeights_Las,y=AgeDependentWeights_Las,color=Net1Vec)) + geom_text(size=10,label="\u25D6",family="Arial Unicode MS") + ylab('Age-Dep. EF Weight') + xlab('Age Weight') + ggtitle('Age-Dependent EF x Age Features:Lasso')+scale_color_manual(values=ycolors,limits=Y7vec)+geom_text(aes(x=AgeWeights_Las,y=AgeDependentWeights_Las,color=Net2Vec),size=10,label="\u25D7",family="Arial Unicode MS")+theme_minimal()+geom_smooth(method='lm', formula= y~x,color='gray82',size=2)
-AgeAgeIndepLas<-ggplot(BwAgeCorTMDifDf_prWeights,aes(x=AgeWeights_Las,y=AgeIndependentWeights_Las,color=Net1Vec)) + geom_text(size=10,label="\u25D6",family="Arial Unicode MS") + xlab('Age Weight') + ylab('Age-Indep. EF Weight') + ggtitle('Age-Independent EF x Age Features: Lasso')+scale_color_manual(values=ycolors,limits=Y7vec)+geom_text(aes(x=AgeWeights_Las,y=AgeIndependentWeights_Las,color=Net2Vec),size=10,label="\u25D7",family="Arial Unicode MS")+theme_minimal()+geom_smooth(method='lm', formula= y~x,color='gray82',size=2)
-ggarrange(AgeAgeDepLas,AgeAgeIndepLas)
+plot(masteref$Age,predEF_agM)
+cor.test(masteref$Age,predEF_agM,method='spearman')
 ```
 
 ```{r}
@@ -1647,7 +1616,7 @@ for (k in 2:30){
       print('bw column names match')}
     print(k)
     
-    # helping phriendly index ## NEED TO MAKE B/W INDEX
+    # helping phriendly index
     bw_start=bw_end+1
     bw_end=bw_start+((k)*(k-1)/2)-1
     Bwind<-bw_start:bw_end
@@ -1936,11 +1905,11 @@ Melted_clevel_ef$bblid<-as.factor(Melted_clevel_ef$bblid)
 Melted_clevel_ef$Sex<-as.factor(Melted_clevel_ef$Sex)
 
 # finally, run the model with GAMM
-#simplif_EF_mod<-gamm(AvgBetweenCon~s(Age,k=3)+Sex+Motion+log(Scale)+EF*log(Scale), random=list(bblid=~1),data=Melted_clevel_ef,REML=T)
+simplif_EF_mod<-gamm(AvgBetweenCon~s(Age,k=3)+Sex+Motion+log(Scale)+EF*log(Scale), random=list(bblid=~1),data=Melted_clevel_ef,REML=T)
 summary(simplif_EF_mod$lme)
 summary(simplif_EF_mod$gam)
 # run it with gamm4 for checkin
-#simplif_EF_mod4<-gamm4(AvgBetweenCon~s(Age)+Sex+Motion+log(Scale)+EF*log(Scale),data=Melted_clevel_ef,random=~(1|bblid),REML=T)
+simplif_EF_mod4<-gamm4(AvgBetweenCon~s(Age)+Sex+Motion+log(Scale)+EF*log(Scale),data=Melted_clevel_ef,random=~(1|bblid),REML=T)
 summary(simplif_EF_mod4$gam)
 ```
 
