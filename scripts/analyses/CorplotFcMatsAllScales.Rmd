@@ -8,14 +8,14 @@ output: html_document
 ```{r}
 library(corrplot)
 library(circlize)
-library(ggraph)
-library(igraph)
+#library(ggraph)
+#library(igraph)
  
 grid.col = c(Motor = "#3281ab", Visual = "#670068", DA = "#007500", VA = '#b61ad0', FP = "#d77d00", DM = "#c1253c", Limbic = '#007502')
 
-col_fun=function(x) ifelse(abs(x)<.1,"#00000000",
-                           ifelse(x<0,"red","blue")
-)
+col_fun=function(x) ifelse(abs(x)<.05,"#00000000",
+                           ifelse(x<0,"red","blue"))
+                           
   
 for (K in 2:30){
   K_start=((K-1)*(K))/2
@@ -30,17 +30,55 @@ for (K in 2:30){
   curTmRank<-order(tmvec[Kind])
   
   # if desired, COMMENT OUT TO OBSERVE ORIGINAL ORDER
-  ReArAgeEfMat<-AgeEfMat[curTmRank,curTmRank]
-  #ReArAgeEfMat<-AgeEfMat
+  #ReArAgeEfMat<-AgeEfMat[curTmRank,curTmRank]
+  ReArAgeEfMat<-AgeEfMat
   
   ReArAgeEfMatThresh<-ReArAgeEfMat
   ReArAgeEfMatThresh[ReArAgeEfMat > -.1 & ReArAgeEfMat < .1]=0
   corrplot(ReArAgeEfMat,is.corr = F,tl.cex = 2,cl.cex=2,cl.ratio = .3)
   
   chordDiagram(ReArAgeEfMat,grid.col = grid.col, col = col_fun,symmetric = "TRUE",annotationTrack=c("name","grid"),self.link = 1)
-  title(paste(K))
+  title(paste('Age at K =',K))
   
 }
+
+# @ K=4
+edgenames<-colnames(masteref)[scaleK_bw_indivi_cols_inds]
+
+#PDM 1
+ReArAgeEfMat[1,2]<- 0.7597
+ReArAgeEfMat[2,1]<- 0.7597
+ReArAgeEfMat[1,3]<- 0.3849
+ReArAgeEfMat[3,1]<- 0.3849
+ReArAgeEfMat[1,4]<- -0.1034
+ReArAgeEfMat[4,1]<- -0.1034
+ReArAgeEfMat[2,3]<- 0.0054
+ReArAgeEfMat[3,2]<- 0.0054
+ReArAgeEfMat[2,4]<- -0.5033
+ReArAgeEfMat[4,2]<- -0.5033
+ReArAgeEfMat[3,4]<- 0.1027
+ReArAgeEfMat[4,3]<- 0.1027
+
+chordDiagram(ReArAgeEfMat,grid.col = grid.col, col = col_fun,symmetric = "TRUE",annotationTrack=c("name","grid"),self.link = 1)
+title(paste('PDM1 at K =',K))
+  
+#PDM 2
+ReArAgeEfMat[1,2]<- 0.1219
+ReArAgeEfMat[2,1]<- 0.1219
+ReArAgeEfMat[1,3]<- 0.1494
+ReArAgeEfMat[3,1]<- 0.1494
+ReArAgeEfMat[1,4]<- -0.1181
+ReArAgeEfMat[4,1]<- -0.1181
+ReArAgeEfMat[2,3]<- -0.7718
+ReArAgeEfMat[3,2]<- -0.7718
+ReArAgeEfMat[2,4]<- 0.2000
+ReArAgeEfMat[4,2]<- 0.2000
+ReArAgeEfMat[3,4]<- -0.5597
+ReArAgeEfMat[4,3]<- -0.5597
+
+chordDiagram(ReArAgeEfMat,grid.col = grid.col, col = col_fun,symmetric = "TRUE",annotationTrack=c("name","grid"),self.link = 1)
+title(paste('PDM2 at K =',K))
+
 ```
 
 ```{r}
@@ -63,7 +101,7 @@ for (K in 2:30){
   corrplot(ReAr_EF_EfMatThresh,is.corr = F,tl.cex = 2,cl.cex=2,cl.ratio = .3)
   title(paste(K))
   chordDiagram(ReAr_EF_EfMatThresh,grid.col = grid.col, col = col_fun,symmetric = "TRUE",annotationTrack=c("name","grid"),self.link = 1)
-  title(paste(K))
+  title(paste('EF at K =',K))
 }
   
 # IN ORIG PARCEL ORDER 

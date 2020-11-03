@@ -1461,8 +1461,10 @@ negEnoAs<-ggplot(BwAgeDR2TMDifDf[negEnoA,],aes(x=tmdifvec,y=EFDR2vec,color=scale
 ```{r}
 # for high dimensional mediation
 # save X - Age
-write.table(masteref$Age,'/cbica/projects/pinesParcels/data/aggregated_data/X.csv',sep=',',row.names = F,col.names = F)
+zage=((masteref$Age-mean(masteref$Age)))/(sd(masteref$Age))
+write.table(zage,'/cbica/projects/pinesParcels/data/aggregated_data/X.csv',sep=',',row.names = F,col.names = F)
 # save Y - EF
+zage=((masteref$Age-mean(masteref$Age)))/(sd(masteref$Age))
 write.table(masteref$F1_Exec_Comp_Cog_Accuracy,'/cbica/projects/pinesParcels/data/aggregated_data/Y.csv',sep=',',row.names = F,col.names = F)
 
 # extract edges - starting with scale20
@@ -1482,10 +1484,15 @@ k=4
 # grep out edges at this scale
 scaleStr=paste('scale',k,'_',sep='')
 scaleCols_inds=grep(scaleStr,colnames(masteref))
+# combine with edge only and individualized only values
 scaleK_bw_indivi_cols_inds<-intersect(indiv_bwcols_ind,scaleCols_inds)
-# combine indices
+# z score edges
+edges<-masteref[colnames(masteref)[scaleK_bw_indivi_cols_inds]]
+for (i in 1:length(edges)){
+  edges[,i]<-((edges[,i]-mean(edges[,i])))/(sd(edges[,i]))
+}
 # same M - edges
-write.table(masteref[colnames(masteref)[scaleK_bw_indivi_cols_inds]],'/cbica/projects/pinesParcels/data/aggregated_data/M.csv',sep=',',row.names = F,col.names = F)
+write.table(edges,'/cbica/projects/pinesParcels/data/aggregated_data/M.csv',sep=',',row.names = F,col.names = F)
 ```
 
 ```{r}
