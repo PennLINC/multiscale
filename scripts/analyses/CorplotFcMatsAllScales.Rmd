@@ -11,9 +11,12 @@ library(circlize)
 #library(ggraph)
 #library(igraph)
  
-grid.col = c(Motor = "#3281ab", Visual = "#670068", DA = "#007500", VA = '#b61ad0', FP = "#d77d00", DM = "#c1253c", Limbic = '#007502')
+grid.col = c(Motor = "#3281ab", Visual = "#670068", DA = "#007500", VA = '#b61ad0', FP = "#d77d00", DM = "#c1253c", Limbic = '#f0f9b8')
 
-col_fun=function(x) ifelse(abs(x)<.05,"#00000000",
+# names pulled from y17vec in BwRsqCentric
+grid.col_y17=c(Control_A='#dc8303',Control_B='#8d2049',Control_C='#596a85',DA_A='#2d9a3d',DA_B='#007938',DM_A='#d9e200',DM_B='#bc0943',DM_C='#2b1f67',Limbic_A='#48593a',Limbic_B='#91a967',Somatomotor_A='#4183a8',Somatomotor_B='#00bb89',Temporal_Parietal='#3245a3',VA_A='#9e3ca2',VA_B='#eb75b3',Visual_A='#68126f',Visual_B='#d1001c')
+
+col_fun=function(x) ifelse(abs(x)<.1,"#00000000",
                            ifelse(x<0,"red","blue"))
                            
   
@@ -42,42 +45,113 @@ for (K in 2:30){
   
 }
 
-# @ K=4
+# @ K=20
+k20PDM1<-read.csv('/cbica/projects/pinesParcels/multiscale/scripts/highDim_mediation/PDM1_K20.csv',header=F)
+k20PDM2<-read.csv('/cbica/projects/pinesParcels/multiscale/scripts/highDim_mediation/PDM2_K20.csv',header=F)
+
+### attempt to make generalizeable chord diagram plots for PDMs
+# set K
+K=20
+K_start=((K-1)*(K))/2
+K_end=(((K-1)*(K))/2)+K-1
+Kind<-K_start:K_end
+# change to be iterative as we move forward
+weightvector=k20PDM1
+# initialize a new dataframe of this size
+chordDf<-data.frame(matrix(nrow = dim(weightvector)[1],ncol = 3))
+colnames(chordDf)<-c('Y7_1','Y7_2','value')
+# values we have, labels need some caressing 
+chordDf$value<-weightvector$V1
+# get community order in terms of y7
+comOrder=domnetvec[Kind]
+# get column names utilized
+scaleStr=paste('scale',K,'_',sep='')
+scaleCols_inds=grep(scaleStr,colnames(masteref))
+# combine with edge only and individualized only values
+scaleK_bw_indivi_cols_inds<-intersect(indiv_bwcols_ind,scaleCols_inds)
+# get column names for parsing
 edgenames<-colnames(masteref)[scaleK_bw_indivi_cols_inds]
-
-#PDM 1
-ReArAgeEfMat[1,2]<- 0.7597
-ReArAgeEfMat[2,1]<- 0.7597
-ReArAgeEfMat[1,3]<- 0.3849
-ReArAgeEfMat[3,1]<- 0.3849
-ReArAgeEfMat[1,4]<- -0.1034
-ReArAgeEfMat[4,1]<- -0.1034
-ReArAgeEfMat[2,3]<- 0.0054
-ReArAgeEfMat[3,2]<- 0.0054
-ReArAgeEfMat[2,4]<- -0.5033
-ReArAgeEfMat[4,2]<- -0.5033
-ReArAgeEfMat[3,4]<- 0.1027
-ReArAgeEfMat[4,3]<- 0.1027
-
-chordDiagram(ReArAgeEfMat,grid.col = grid.col, col = col_fun,symmetric = "TRUE",annotationTrack=c("name","grid"),self.link = 1)
-title(paste('PDM1 at K =',K))
+# parse edge names to get edge #, y7 from, y7 to, and value
+scaleStrExtended=paste('scale',K,'_nets',sep='')
+splitEdgenames<-unlist(strsplit(edgenames,scaleStrExtended))
+# index of Desired Edge Name Sections
+DENS<-splitEdgenames[seq(2,380,2)]
+# split into the 2 networks constituting the edge
+netNums<-unlist(strsplit(DENS,'_and_'))
+net1Nums<-netNums[seq(1,379,2)]
+net2Nums<-netNums[seq(2,380,2)]
+# use domnetvec to get y7 labels, there is probz a way to do this without looping
+net1labs<-NULL
+net2labs<-NULL
+for (i in 1:dim(weightvector)[1]){
+  net1labs[i]<-as.character(comOrder[as.numeric(net1Nums[i])])
+  net2labs[i]<-as.character(comOrder[as.numeric(net2Nums[i])])
+}
+# plant into chord df
+chordDf$Y7_1<-net1labs
+chordDf$Y7_2<-net2labs
+# threshold DF
+#chordDf$value[abs(chordDf$value)<0.05]=0
+# change colnames to match internet example (no direction in this graph doe)
+colnames(chordDf)<-c('from','to','value')
+chordDiagramFromDataFrame(chordDf,grid.col = grid.col, col = col_fun)
+  title(paste('PDM1 K=',K))
   
-#PDM 2
-ReArAgeEfMat[1,2]<- 0.1219
-ReArAgeEfMat[2,1]<- 0.1219
-ReArAgeEfMat[1,3]<- 0.1494
-ReArAgeEfMat[3,1]<- 0.1494
-ReArAgeEfMat[1,4]<- -0.1181
-ReArAgeEfMat[4,1]<- -0.1181
-ReArAgeEfMat[2,3]<- -0.7718
-ReArAgeEfMat[3,2]<- -0.7718
-ReArAgeEfMat[2,4]<- 0.2000
-ReArAgeEfMat[4,2]<- 0.2000
-ReArAgeEfMat[3,4]<- -0.5597
-ReArAgeEfMat[4,3]<- -0.5597
+  
+# y17 version
+# set K
+K=20
+K_start=((K-1)*(K))/2
+K_end=(((K-1)*(K))/2)+K-1
+Kind<-K_start:K_end
+# change to be iterative as we move forward
+weightvector=k20PDM2
+# initialize a new dataframe of this size
+chordDf<-data.frame(matrix(nrow = dim(weightvector)[1],ncol = 3))
+colnames(chordDf)<-c('Y17_1','Y17_2','value')
+# values we have, labels need some caressing 
+chordDf$value<-weightvector$V1
+# get community order in terms of y7
+comOrder=domnetvec17[Kind]
+# get column names utilized
+scaleStr=paste('scale',K,'_',sep='')
+scaleCols_inds=grep(scaleStr,colnames(masteref))
+# combine with edge only and individualized only values
+scaleK_bw_indivi_cols_inds<-intersect(indiv_bwcols_ind,scaleCols_inds)
+# get column names for parsing
+edgenames<-colnames(masteref)[scaleK_bw_indivi_cols_inds]
+# parse edge names to get edge #, y17 from, y17 to, and value
+scaleStrExtended=paste('scale',K,'_nets',sep='')
+splitEdgenames<-unlist(strsplit(edgenames,scaleStrExtended))
+# index of Desired Edge Name Sections
+DENS<-splitEdgenames[seq(2,380,2)]
+# split into the 2 networks constituting the edge
+netNums<-unlist(strsplit(DENS,'_and_'))
+net1Nums<-netNums[seq(1,379,2)]
+net2Nums<-netNums[seq(2,380,2)]
+# use domnetvec to get y17 labels, there is probz a way to do this without looping
+net1labs<-NULL
+net2labs<-NULL
+for (i in 1:dim(weightvector)[1]){
+  net1labs[i]<-as.character(comOrder[as.numeric(net1Nums[i])])
+  net2labs[i]<-as.character(comOrder[as.numeric(net2Nums[i])])
+}
+# grep the spaces out so color can map on
+net1labs<-gsub(' ','_',net1labs)
+net2labs<-gsub(' ','_',net2labs)
+# plant into chord df
+chordDf$Y17_1<-net1labs
+chordDf$Y17_2<-net2labs
+# threshold DF
+#chordDf$value[abs(chordDf$value)<0.05]=0
+# change colnames to match internet example (no direction in this graph doe)
+colnames(chordDf)<-c('from','to','value')
+chordDiagramFromDataFrame(chordDf,grid.col = grid.col_y17, col = col_fun)+title(paste('PDM2 K=',K,'y17 colors'))
+```
 
-chordDiagram(ReArAgeEfMat,grid.col = grid.col, col = col_fun,symmetric = "TRUE",annotationTrack=c("name","grid"),self.link = 1)
-title(paste('PDM2 at K =',K))
+```{r}
+# plot pdms b/w transmod. dif
+scale20tmdif<-ScaleTMDifDf[ScaleTMDifDf$scalevec==20,]
 
 ```
 

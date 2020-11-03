@@ -26,8 +26,8 @@ M = load(fullfile(inputdir,'M.csv'));
 %num_pdms = 5
 K=20
 % double check feature number is correct for this scale with triangular number adaptation
-num_pdms=((K-1)*(K))/2
-% num_pdms =  number of feats from k
+%num_pdms=((K-1)*(K))/2
+num_pdms =  5
 % reorganize data into a bunch of cell variables (input type required for the multivariateMediation function)
 xx = {}; yy = {}; mm = {};
 % AP - changed numel(bblid) to 693: bblid not carried over from R dataframe
@@ -76,7 +76,7 @@ end
 % this might reduce the number of PDMs from the initial value we set above (on line 26)
 % reducing this simply stops us from wasting time assessing significance of PDMs with |ab| path coefficients that are equal to 0
 % note, you can just comment this line out and the bootstrapping below will run using the number of PDMs originally specified
-num_pdms = find(diff(round(path_ab,4) == 0));
+%num_pdms = find(diff(round(path_ab,4) == 0));
 
 % test for path significance
 % stats will store the outputs of boostrapping. The p-values for the various paths are stored in .p
