@@ -17,4 +17,5 @@ scripts/derive_percygrads/fcmat_to_threshCosSim.py.o*
 scripts/derive_percygrads/fcmat_to_threshCosSim.py.e*
 matlab_avail.py
 gg*.png
+*PDMresults*
 scripts/highDim_mediation/PDM*

@@ -23,11 +23,12 @@ M = load(fullfile(inputdir,'M.csv'));
 
 % set number of PDMs here
 % trial run on just number of features from single scale
-%num_pdms = 5
-K=20
+num_pdms = 3
+
+% set scale
+K=7
 % double check feature number is correct for this scale with triangular number adaptation
-%num_pdms=((K-1)*(K))/2
-num_pdms =  5
+num_inputFeats=((K-1)*(K))/2
 % reorganize data into a bunch of cell variables (input type required for the multivariateMediation function)
 xx = {}; yy = {}; mm = {};
 % AP - changed numel(bblid) to 693: bblid not carried over from R dataframe
@@ -44,7 +45,6 @@ xx = xx'; yy = yy'; mm = mm'; % transpose... lazy code...
 % reset the seed on matlab's random number generator
 rng default
 
-
 % dimensionality reduction via singular value decomposition (or PCA). No PDMs are estimated here.
 %pdm = multivariateMediation(xx,yy,mm,'B',num_pcs,'svd','noPDMestimation');
 %%%%%%%%%% init dimen. reduc. step removed by AP
@@ -55,18 +55,20 @@ pdm.dat.X=X;
 pdm.dat.Y=Y;
 pdm.dat.M_tilde=M;
 % check here for validity: attempting to replace initial PCs (Dt,) PCs with pre-dim.-reduced features
-pdm.dat.Dt=M'; % % Dt     - transposed inverse weight projection matrix (B x voxels) %% AP - SET TO (NUM FEATURES x 1)'
-pdm.dat.B=num_pdms;
+pdm.dat.Dt=ones(num_inputFeats); % Dt-transposed inverse weight projection matrix (B x voxels) %% AP - SET TO (NumFeats x NumFeats)'
+pdm.dat.B=num_inputFeats;
 % AP - making these junk fields to pass flags
-pdm.dat.nImgs=[];
-pdm.dat.method=['PVD'];
-
+pdm.dat.nImgs=[1];
+pdm.dat.method=['SVD'];
+pdm = multivariateMediation(pdm,'nPDM',num_pdms); 
 
 
 % run initial pdm. This will estimate PDMs 
-pdm = multivariateMediation(pdm,'nPDM',num_pdms);
+%pdm = multivariateMediation(pdm,'nPDM',num_pdms);
 
-% assemble a vector of the |ab| path coefficients
+% init dimen reduction
+%pdm = multivariateMediation(xx,yy,mm,'B',20,'svd');
+
 path_ab = zeros(1,num_pdms);
 for i = 1:num_pdms
     path_ab(i) = abs(pdm.Theta{i}(5));
@@ -83,11 +85,14 @@ end
 % for example, the p values for the first PDM are stored in stats{1} as a vector. This vector stores p values corresponding to the following order: a, b, c', c, ab
 % as such, the p-value for the ab path for the first PDM is stored in stats{1}.p(5)
 stats = cell(0);
-for k = 1:num_pdms
-    m = pdm.dat.M_tilde*pdm.dat.Dt*pdm.Wfull{k};
-    x = cell2mat(xx);
-    y = cell2mat(yy);
-    [paths, stats{k}] = mediation(x, y, m, 'verbose', 'boottop', 'bootsamples', 1e4, 'hierarchical');
+for k = 1:num_pdms 
+% like above, try both M's, test bootstrap, test equivalence of path sig.
+	%m = pdm.dat.M_tilde*pdm.dat.Dt*pdm.Wfull{k};
+    	% confirm W over Wfull
+	m = pdm.dat.M_tilde*pdm.W{k};
+	x = cell2mat(xx);
+	y = cell2mat(yy);
+	[paths, stats{k}] = mediation(x, y, m, 'verbose', 'boottop', 'bootsamples', 1e4, 'hierarchical');
 end
 
 % bootstrap the weights of each PDM.
@@ -95,6 +100,12 @@ end
 % this analysis can take a while.. get a coffee.. or a beer..
 % I would probably comment this out in your initial runs of this code. i.e., only run this once everything before it is dialed in.
 %pdm = multivariateMediation(pdm,'noPDMestimation','bootPDM',1:num_pdms,'Bsamp',1e4);
+pdm1OutFn=['/cbica/projects/pinesParcels/multiscale/scripts/highDim_mediation/PDM1_' num2str(K) '.csv'];
+csvwrite(pdm1OutFn,pdm.W{1});
+pdm2OutFn=['/cbica/projects/pinesParcels/multiscale/scripts/highDim_mediation/PDM2_' num2str(K) '.csv'];
+csvwrite(pdm2OutFn,pdm.W{2});
+pdm3OutFn=['/cbica/projects/pinesParcels/multiscale/scripts/highDim_mediation/PDM3_' num2str(K) '.csv'];
+csvwrite(pdm3OutFn,pdm.W{3});
 
 % save outputs
 save(strcat('PDMresults_nPDMs_',num2str(num_pdms),'.mat'), 'pdm', 'stats')

@@ -1489,7 +1489,7 @@ bwcol=grep(bwi,colnames(masteref))
 indiv_bwcols_ind<-intersect(bwcol,indiv)
 
 ####set K
-k=20
+k=7
 ####
 
 # grep out edges at this scale

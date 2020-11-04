@@ -45,6 +45,117 @@ for (K in 2:30){
   
 }
 
+
+# PDM1 @ K=7
+# @ K=20
+k7PDM1<-read.csv('/cbica/projects/pinesParcels/multiscale/scripts/highDim_mediation/PDM1_7.csv',header=F)
+k7PDM2<-read.csv('/cbica/projects/pinesParcels/multiscale/scripts/highDim_mediation/PDM2_7.csv',header=F)
+
+### attempt to make generalizeable chord diagram plots for PDMs
+# set K
+K=7
+K_start=((K-1)*(K))/2
+K_end=(((K-1)*(K))/2)+K-1
+Kind<-K_start:K_end
+# change to be iterative as we move forward
+weightvector=k7PDM2
+# initialize a new dataframe of this size
+chordDf<-data.frame(matrix(nrow = dim(weightvector)[1],ncol = 3))
+colnames(chordDf)<-c('Y7_1','Y7_2','value')
+# values we have, labels need some caressing 
+chordDf$value<-weightvector$V1
+# get community order in terms of y7
+comOrder=domnetvec[Kind]
+# get column names utilized
+scaleStr=paste('scale',K,'_',sep='')
+scaleCols_inds=grep(scaleStr,colnames(masteref))
+# combine with edge only and individualized only values
+scaleK_bw_indivi_cols_inds<-intersect(indiv_bwcols_ind,scaleCols_inds)
+# get column names for parsing
+edgenames<-colnames(masteref)[scaleK_bw_indivi_cols_inds]
+# parse edge names to get edge #, y7 from, y7 to, and value
+scaleStrExtended=paste('scale',K,'_nets',sep='')
+splitEdgenames<-unlist(strsplit(edgenames,scaleStrExtended))
+# index of Desired Edge Name Sections
+DENS<-splitEdgenames[seq(2,380,2)]
+# split into the 2 networks constituting the edge
+netNums<-unlist(strsplit(DENS,'_and_'))
+net1Nums<-netNums[seq(1,379,2)]
+net2Nums<-netNums[seq(2,380,2)]
+# use domnetvec to get y7 labels, there is probz a way to do this without looping
+net1labs<-NULL
+net2labs<-NULL
+for (i in 1:dim(weightvector)[1]){
+  net1labs[i]<-as.character(comOrder[as.numeric(net1Nums[i])])
+  net2labs[i]<-as.character(comOrder[as.numeric(net2Nums[i])])
+}
+# plant into chord df
+chordDf$Y7_1<-net1labs
+chordDf$Y7_2<-net2labs
+# threshold DF
+#chordDf$value[abs(chordDf$value)<0.05]=0
+# change colnames to match internet example (no direction in this graph doe)
+colnames(chordDf)<-c('from','to','value')
+chordDiagramFromDataFrame(chordDf,grid.col = grid.col, col = col_fun)
+  title(paste('PDM2 K=',K))
+```
+
+```{r}
+# just derived PCs (pdm.dat.Dt)
+k20_svdOutput<-read.csv('/cbica/projects/pinesParcels/multiscale/scripts/highDim_mediation/edges_PCvals.csv',header=F)
+
+# set K
+K=20
+K_start=((K-1)*(K))/2
+K_end=(((K-1)*(K))/2)+K-1
+Kind<-K_start:K_end
+# change to be iterative as we move forward
+weightvector=k20_svdOutput[1,]
+# initialize a new dataframe of this size
+chordDf<-data.frame(matrix(nrow = dim(weightvector)[2],ncol = 3))
+colnames(chordDf)<-c('Y7_1','Y7_2','value')
+# values we have, labels need some caressing 
+chordDf$value<-t(weightvector)
+# get community order in terms of y7
+comOrder=domnetvec[Kind]
+# get column names utilized
+scaleStr=paste('scale',K,'_',sep='')
+scaleCols_inds=grep(scaleStr,colnames(masteref))
+# combine with edge only and individualized only values
+scaleK_bw_indivi_cols_inds<-intersect(indiv_bwcols_ind,scaleCols_inds)
+# get column names for parsing
+edgenames<-colnames(masteref)[scaleK_bw_indivi_cols_inds]
+# parse edge names to get edge #, y7 from, y7 to, and value
+scaleStrExtended=paste('scale',K,'_nets',sep='')
+splitEdgenames<-unlist(strsplit(edgenames,scaleStrExtended))
+# index of Desired Edge Name Sections
+DENS<-splitEdgenames[seq(2,380,2)]
+# split into the 2 networks constituting the edge
+netNums<-unlist(strsplit(DENS,'_and_'))
+net1Nums<-netNums[seq(1,379,2)]
+net2Nums<-netNums[seq(2,380,2)]
+# use domnetvec to get y7 labels, there is probz a way to do this without looping
+net1labs<-NULL
+net2labs<-NULL
+for (i in 1:dim(weightvector)[2]){
+  net1labs[i]<-as.character(comOrder[as.numeric(net1Nums[i])])
+  net2labs[i]<-as.character(comOrder[as.numeric(net2Nums[i])])
+}
+# plant into chord df
+chordDf$Y7_1<-net1labs
+chordDf$Y7_2<-net2labs
+# threshold DF
+#chordDf$value[abs(chordDf$value)<0.05]=0
+# change colnames to match internet example (no direction in this graph doe)
+colnames(chordDf)<-c('from','to','value')
+chordDiagramFromDataFrame(chordDf,grid.col = grid.col, col = col_fun)
+  title(paste('Pc1 K=',K))
+  
+# check out subject level PC loadings
+k20_svdOutput_subjs<-read.csv('/cbica/projects/pinesParcels/multiscale/scripts/highDim_mediation/subj_PCvals.csv',header=F)
+```
+
+```{r}
 # @ K=20
 k20PDM1<-read.csv('/cbica/projects/pinesParcels/multiscale/scripts/highDim_mediation/PDM1_K20.csv',header=F)
 k20PDM2<-read.csv('/cbica/projects/pinesParcels/multiscale/scripts/highDim_mediation/PDM2_K20.csv',header=F)
