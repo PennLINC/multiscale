@@ -16,8 +16,8 @@ grid.col = c(Motor = "#3281ab", Visual = "#670068", DA = "#007500", VA = '#b61ad
 # names pulled from y17vec in BwRsqCentric
 grid.col_y17=c(Control_A='#dc8303',Control_B='#8d2049',Control_C='#596a85',DA_A='#2d9a3d',DA_B='#007938',DM_A='#d9e200',DM_B='#bc0943',DM_C='#2b1f67',Limbic_A='#48593a',Limbic_B='#91a967',Somatomotor_A='#4183a8',Somatomotor_B='#00bb89',Temporal_Parietal='#3245a3',VA_A='#9e3ca2',VA_B='#eb75b3',Visual_A='#68126f',Visual_B='#d1001c')
 
-col_fun=function(x) ifelse(abs(x)<.1,"#00000000",
-                           ifelse(x<0,"red","blue"))
+col_fun=function(x) ifelse(abs(x)<.001,"#00000000",
+                           ifelse(x<0,"red","white"))
                            
   
 for (K in 2:30){
@@ -45,6 +45,34 @@ for (K in 2:30){
   
 }
 
+
+# PDM1 @ All edges
+kAllPDM1<-read.csv('/cbica/projects/pinesParcels/multiscale/scripts/highDim_mediation/pcPDM1_AllEdges.csv',header=F)
+kAllPDM2<-read.csv('/cbica/projects/pinesParcels/multiscale/scripts/highDim_mediation/pcPDM2_AllEdges.csv',header=F)
+
+### attempt to make generalizeable chord diagram plots for PDMs
+# change to be iterative as we move forward
+weightvector=kAllPDM1
+# initialize a new dataframe of this size
+chordDf<-data.frame(matrix(nrow = dim(weightvector)[1],ncol = 3))
+colnames(chordDf)<-c('Y7_1','Y7_2','value')
+# values we have, labels need some caressing 
+chordDf$value<-weightvector$V1
+# plant into chord df
+chordDf$Y7_1<-BwAgeDR2TMDifDf$Net1Vec17
+chordDf$Y7_2<-BwAgeDR2TMDifDf$Net2Vec17
+# replace spaces with '_'
+chordDf$Y7_1<-gsub(' ','_',chordDf$Y7_1)
+chordDf$Y7_2<-gsub(' ','_',chordDf$Y7_2)
+# threshold DF
+#chordDf$value[abs(chordDf$value)<0.05]=0
+# change colnames to match internet example (no direction in this graph doe)
+colnames(chordDf)<-c('from','to','value')
+chordDiagramFromDataFrame(chordDf,grid.col = grid.col_y17, col = col_fun)
+  title(paste('PDM1 All Negative Edges'))
+```
+
+```{r}
 
 # PDM1 @ K=7
 # @ K=20
@@ -99,6 +127,7 @@ colnames(chordDf)<-c('from','to','value')
 chordDiagramFromDataFrame(chordDf,grid.col = grid.col, col = col_fun)
   title(paste('PDM2 K=',K))
 ```
+
 
 ```{r}
 # just derived PCs (pdm.dat.Dt)

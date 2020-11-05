@@ -1493,12 +1493,14 @@ k=7
 ####
 
 # grep out edges at this scale
-scaleStr=paste('scale',k,'_',sep='')
-scaleCols_inds=grep(scaleStr,colnames(masteref))
+### commented out for all features version
+###scaleStr=paste('scale',k,'_',sep='')
+###scaleCols_inds=grep(scaleStr,colnames(masteref))
 # combine with edge only and individualized only values
-scaleK_bw_indivi_cols_inds<-intersect(indiv_bwcols_ind,scaleCols_inds)
+###scaleK_bw_indivi_cols_inds<-intersect(indiv_bwcols_ind,scaleCols_inds)
 # z score edges
-edges<-masteref[colnames(masteref)[scaleK_bw_indivi_cols_inds]]
+edges<-masteref[colnames(masteref)[indiv_bwcols_ind]]
+###edges<-masteref[colnames(masteref)[scaleK_bw_indivi_cols_inds]]
 for (i in 1:length(edges)){
   edges[,i]<-((edges[,i]-mean(edges[,i])))/(sd(edges[,i]))
 }
