@@ -13,11 +13,15 @@ library(circlize)
  
 grid.col = c(Motor = "#3281ab", Visual = "#670068", DA = "#007500", VA = '#b61ad0', FP = "#d77d00", DM = "#c1253c", Limbic = '#f0f9b8')
 
+y7TMorder=c("Motor","Visual","DA","VA","Limbic","FP","DM")
+
 # names pulled from y17vec in BwRsqCentric
 grid.col_y17=c(Control_A='#dc8303',Control_B='#8d2049',Control_C='#596a85',DA_A='#2d9a3d',DA_B='#007938',DM_A='#d9e200',DM_B='#bc0943',DM_C='#2b1f67',Limbic_A='#48593a',Limbic_B='#91a967',Somatomotor_A='#4183a8',Somatomotor_B='#00bb89',Temporal_Parietal='#3245a3',VA_A='#9e3ca2',VA_B='#eb75b3',Visual_A='#68126f',Visual_B='#d1001c')
 
-col_fun=function(x) ifelse(abs(x)<.001,"#00000000",
-                           ifelse(x<0,"red","white"))
+###y17TMorder=c("Somatomotor_A","Somatomotor_B","Visual_B","Visual_A")
+
+col_fun=function(x) ifelse(abs(x)<.0001,"#00000000",
+                           ifelse(x<0,"red","blue"))
                            
   
 for (K in 2:30){
@@ -49,18 +53,26 @@ for (K in 2:30){
 # PDM1 @ All edges
 kAllPDM1<-read.csv('/cbica/projects/pinesParcels/multiscale/scripts/highDim_mediation/pcPDM1_AllEdges.csv',header=F)
 kAllPDM2<-read.csv('/cbica/projects/pinesParcels/multiscale/scripts/highDim_mediation/pcPDM2_AllEdges.csv',header=F)
+kAllPDM3<-read.csv('/cbica/projects/pinesParcels/multiscale/scripts/highDim_mediation/pcPDM3_AllEdges.csv',header=F)
+kAllPDM4<-read.csv('/cbica/projects/pinesParcels/multiscale/scripts/highDim_mediation/pcPDM4_AllEdges.csv',header=F)
+kAllPDM5<-read.csv('/cbica/projects/pinesParcels/multiscale/scripts/highDim_mediation/pcPDM5_AllEdges.csv',header=F)
+kAllPDM6<-read.csv('/cbica/projects/pinesParcels/multiscale/scripts/highDim_mediation/pcPDM6_AllEdges.csv',header=F)
+kAllPDM7<-read.csv('/cbica/projects/pinesParcels/multiscale/scripts/highDim_mediation/pcPDM7_AllEdges.csv',header=F)
+kAllPDM8<-read.csv('/cbica/projects/pinesParcels/multiscale/scripts/highDim_mediation/pcPDM8_AllEdges.csv',header=F)
 
+KAcrossNeg<-kAllPDM2+kAllPDM4+kAllPDM5+kAllPDM7+kAllPDM8
+KAcrossPos<-kAllPDM1+kAllPDM3+kAllPDM6
 ### attempt to make generalizeable chord diagram plots for PDMs
 # change to be iterative as we move forward
-weightvector=kAllPDM1
+weightvector=KAcrossNeg
 # initialize a new dataframe of this size
 chordDf<-data.frame(matrix(nrow = dim(weightvector)[1],ncol = 3))
 colnames(chordDf)<-c('Y7_1','Y7_2','value')
 # values we have, labels need some caressing 
 chordDf$value<-weightvector$V1
 # plant into chord df
-chordDf$Y7_1<-BwAgeDR2TMDifDf$Net1Vec17
-chordDf$Y7_2<-BwAgeDR2TMDifDf$Net2Vec17
+chordDf$Y7_1<-BwAgeDR2TMDifDf$Net1Vec
+chordDf$Y7_2<-BwAgeDR2TMDifDf$Net2Vec
 # replace spaces with '_'
 chordDf$Y7_1<-gsub(' ','_',chordDf$Y7_1)
 chordDf$Y7_2<-gsub(' ','_',chordDf$Y7_2)
@@ -68,8 +80,56 @@ chordDf$Y7_2<-gsub(' ','_',chordDf$Y7_2)
 #chordDf$value[abs(chordDf$value)<0.05]=0
 # change colnames to match internet example (no direction in this graph doe)
 colnames(chordDf)<-c('from','to','value')
-chordDiagramFromDataFrame(chordDf,grid.col = grid.col_y17, col = col_fun)
-  title(paste('PDM1 All Negative Edges'))
+chordDiagramFromDataFrame(chordDf,grid.col = grid.col, order = y7TMorder,col = col_fun,annotationTrack = c("name","grid"))
+  title(paste('Across Negative PDMs'))
+
+# pull in this pairwise plot for comparison
+BwAgeCorTMDifDf$posweights<-KAcrossPos$V1
+BwAgeCorTMDifDf$negweights<-KAcrossNeg$V1
+ggplot(BwAgeCorTMDifDf,aes(x=tmdifvec,y=posweights,color=Net1Vec)) + geom_text(size=5,label="\u25D6",family="Arial Unicode MS") + xlab('Transmodality Difference') + ylab('Positive Mediation Weight') + ggtitle('Positive Mediators of EF')+scale_color_manual(values=ycolors,limits=Y7vec)+geom_text(aes(x=tmdifvec,y=posweights,color=Net2Vec),size=5,label="\u25D7",family="Arial Unicode MS")+theme_classic()
+
+ggplot(BwAgeCorTMDifDf,aes(x=tmdifvec,y=negweights,color=Net1Vec)) + geom_text(size=5,label="\u25D6",family="Arial Unicode MS") + xlab('Transmodality Difference') + ylab('Negative Mediation Weight') + ggtitle('Negative Mediators of EF')+scale_color_manual(values=ycolors,limits=Y7vec)+geom_text(aes(x=tmdifvec,y=negweights,color=Net2Vec),size=5,label="\u25D7",family="Arial Unicode MS")+theme_classic()
+  
+# further parsing of Pos and Neg weights : exlcude if other mediation has larger effect
+KAcrossNeg2<-scale(KAcrossNeg)
+KAcrossPos2<-scale(KAcrossPos)
+KAcrossNeg2[abs(KAcrossNeg2)<abs(KAcrossPos2)]<-0
+KAcrossPos2[abs(KAcrossPos2)<abs(KAcrossNeg2)]<-0
+# change to be iterative as we move forward
+weightvector=KAcrossPos2
+# initialize a new dataframe of this size
+chordDf<-data.frame(matrix(nrow = dim(weightvector)[1],ncol = 3))
+colnames(chordDf)<-c('Y7_1','Y7_2','value')
+# values we have, labels need some caressing 
+chordDf$value<-weightvector[,1]
+# plant into chord df
+chordDf$Y7_1<-BwAgeDR2TMDifDf$Net1Vec
+chordDf$Y7_2<-BwAgeDR2TMDifDf$Net2Vec
+# replace spaces with '_'
+chordDf$Y7_1<-gsub(' ','_',chordDf$Y7_1)
+chordDf$Y7_2<-gsub(' ','_',chordDf$Y7_2)
+# threshold DF
+#chordDf$value[abs(chordDf$value)<0.05]=0
+# change colnames to match internet example (no direction in this graph doe)
+colnames(chordDf)<-c('from','to','value')
+chordDiagramFromDataFrame(chordDf,order = y7TMorder, grid.col = grid.col, col = col_fun,annotationTrack = c("name","grid"))
+  title(paste('Across Positive PDMs'))
+  
+# pull in this pairwise plot for comparison
+BwAgeCorTMDifDf$posweights<-KAcrossPos2[,1]
+BwAgeCorTMDifDf$negweights<-KAcrossNeg2[,1]
+ggplot(BwAgeCorTMDifDf,aes(x=tmdifvec,y=posweights,color=Net1Vec)) + geom_text(size=5,label="\u25D6",family="Arial Unicode MS") + xlab('Transmodality Difference') + ylab('Positive Mediation Weight') + ggtitle('Positive Mediators of EF')+scale_color_manual(values=ycolors,limits=Y7vec)+geom_text(aes(x=tmdifvec,y=posweights,color=Net2Vec),size=5,label="\u25D7",family="Arial Unicode MS")+theme_classic()
+
+ggplot(BwAgeCorTMDifDf,aes(x=tmdifvec,y=negweights,color=Net1Vec)) + geom_text(size=5,label="\u25D6",family="Arial Unicode MS") + xlab('Transmodality Difference') + ylab('Negative Mediation Weight') + ggtitle('Negative Mediators of EF')+scale_color_manual(values=ycolors,limits=Y7vec)+geom_text(aes(x=tmdifvec,y=negweights,color=Net2Vec),size=5,label="\u25D7",family="Arial Unicode MS")+theme_classic()
+
+#yeo17
+ggplot(BwAgeCorTMDifDf,aes(x=tmdifvec,y=posweights,color=Net1Vec17)) + geom_text(size=5,label="\u25D6",family="Arial Unicode MS") + xlab('Transmodality Difference') + ylab('Positive Mediation Weight') + ggtitle('Positive Mediators of EF')+scale_color_manual(values=y17colors,limits=y17vec)+geom_text(aes(x=tmdifvec,y=posweights,color=Net2Vec17),size=5,label="\u25D7",family="Arial Unicode MS")+theme_classic()
+
+ggplot(BwAgeCorTMDifDf,aes(x=tmdifvec,y=negweights,color=Net1Vec17)) + geom_text(size=5,label="\u25D6",family="Arial Unicode MS") + xlab('Transmodality Difference') + ylab('Negative Mediation Weight') + ggtitle('Negative Mediators of EF')+scale_color_manual(values=y17colors,limits=y17vec)+geom_text(aes(x=tmdifvec,y=negweights,color=Net2Vec17),size=5,label="\u25D7",family="Arial Unicode MS")+theme_classic()
+
+# with PG2 as 3rd dimension
+BwAgeCorTMDifDf$PG2Difference<-occdifvec
+plot3d(x=BwAgeCorTMDifDf$tmdifvec,y=BwAgeCorTMDifDf$posweights,z=BwAgeCorTMDifDf$PG2Difference,size = 5)
 ```
 
 ```{r}

@@ -920,6 +920,7 @@ bwcolnames<-colnames(individ_scalebybw_df)
 # initialize empty tm difference vector and age effect vector - 10/9/20: EF vector 
 # I guess append is just terribly slow. replace these with proper-length initializations
 tmdifvec=rep(0,length(colnames(individ_scalebybw_df)))
+occdifvec=rep(0,length(colnames(individ_scalebybw_df)))
 ageEfvec=rep(0,length(colnames(individ_scalebybw_df)))
 ageEfPvec=rep(0,length(colnames(individ_scalebybw_df)))
 motionEfvec=rep(0,length(colnames(individ_scalebybw_df)))
@@ -978,8 +979,11 @@ for (i in 1:length(colnames(individ_scalebybw_df))){
     # get TM values of both nets at this scale
     tm1=tmvec[Kind[as.numeric(net1)]]
     tm2=tmvec[Kind[as.numeric(net2)]]
+    oc1=occvec[Kind[as.numeric(net1)]]
+    oc2=occvec[Kind[as.numeric(net2)]]
     # absolute value as directionality is meaningless here
     tmdif=abs(tm1-tm2)
+    occdif=abs(oc1-oc2)
     # get position in master df of this column (need to use \b for exact matches #only)
     curcolnameexact<-paste('\\',curcolname,'\\b',sep='')
     colindex<-grep(curcolnameexact,colnames(masterdf))
@@ -997,6 +1001,7 @@ for (i in 1:length(colnames(individ_scalebybw_df))){
     pspearval=pcor(pcordf,method='spearman')$p.value
     # save to respective vectors
     tmdifvec[i]<-tmdif
+    occdifvec[i]<-occdif
     ageEfvec[i]<-pspear[4]
     ageEfPvec[i]<-pspearval[4]
     motionEfvec[i]<-pspear[3,4]
@@ -1466,6 +1471,9 @@ negEnoAs<-ggplot(BwAgeDR2TMDifDf[negEnoA,],aes(x=tmdifvec,y=EFDR2vec,color=scale
 
 #megaPosEf<-ggarrange(posEposAy7,posEnegAy7,posEnoAy7,posEposAy17,posEnegAy17,posEnoAy17,posEposAs,posEnegAs,posEnoAs)
 #megaNegEf<-ggarrange(negEposAy7,negEnegAy7,negEnoAy7,negEposAy17,negEnegAy17,negEnoAy17,negEposAs,negEnegAs,negEnoAs)
+
+
+#plot(KAcrossPos$V1,BwAgeDR2TMDifDf$tmdifvec)
 ```
 
 
