@@ -48,10 +48,9 @@ for i=2:max(Krange)
 	Khouse{i}=zeros(i,i,length(subjs));
 	GKhouse{i}=zeros(i,i,length(subjs));
 	K_bTS_house{i}=zeros(i,i,length(subjs));
+	% 11-6-20 parallel track where correlations of bases is used to approx. partial correlation
+	K_bTSP_house{i}=zeros(i,i,length(subjs));
 end
-% participation coef. will be same vector length regardless of scale
-partcoefpos=zeros(10242,length(subjs),length(Krange));
-partcoefneg=zeros(10242,length(subjs),length(Krange));
 
 % for each subject
 for s=1:length(subjs)
@@ -85,10 +84,13 @@ for s=1:length(subjs)
 		curGK=GKhouse{K};
 		curK=Khouse{K};
 		curbtsK=K_bTS_house{K};
+		curbtsPK=K_bTSP_house{K};
 		% 2D matrices
 		Kmat=zeros(K);
                 g_Kmat=zeros(K);
                 bTS_Kmat=zeros(K);
+		% 11-6-20 parallel track where correlations of bases is used to approx. partial correlation
+		bts_conmat=zeros(K);
 		% load in partitions
 		K_Folder = [ProjectFolder '/SingleParcel_1by1_kequal_' num2str(K) '/Sub_' num2str(subjs(s))];
 		K_part_subj =[K_Folder '/IndividualParcel_Final_sbj1_comp' num2str(K) '_alphaS21_1_alphaL10_vxInfo1_ard0_eta0/final_UV.mat'];
@@ -111,6 +113,8 @@ for s=1:length(subjs)
 		%bTS_bwconvals=zeros(1,(((K-1)*(K))/2));
 		% get U at this scale to evaluate connectivities via correlation with K basis time series (U), but labeling as yu because it looks less like V
 		subj_yu=subj_part.U{1};
+		% use subj_yu as low-dimensional representation of community correlations
+		bts_conmat=partialcorr(subj_yu);
 		% for each "network"
 		for N=1:K
 			% get index of which vertices are in this K
@@ -128,8 +132,12 @@ for s=1:length(subjs)
 			%g_winconvals(N)=g_wincon;
 			% and within connectivity assessed via cor. w/ U corresponding to same K
 			K_TimeSeries=vw_ts_bothrw(:,Kind);	
-			bTS_wincon=mean(corr(K_TimeSeries,subj_yu(:,N)));
-			%bTS_winconvals(N)=bTS_wincon;
+			% dumb for loop to correlate each vertex with the basis time series
+			curNetWinVec=zeros(1,size(Kind,1));
+			for curNetV = 1:size(Kind,1)
+				curNetWinVec(curNetV)=corr(subj_yu(:,N),K_TimeSeries(:,curNetV));
+			end
+			bTS_wincon=mean(curNetWinVec);
 			% values are reasonable relative to each other (wincon > g_wincon), but lower than expected. Double check to make sure mapping on correctly
 			% make vector for all values except for current K (N) to loop through
 			Kvec=1:K;
@@ -144,21 +152,20 @@ for s=1:length(subjs)
 				g_bwMat=ba_conmat(g_Kind,g_NotKind);
 				bwcon=mean(mean(bwMat));
 				g_bwcon=mean(mean(g_bwMat));
-				bTScon=mean(corr(K_TimeSeries,subj_yu(:,curOtherNet)));
-				
+				% dumb for loop to correlate each vertex with the bases
+				curNetBwVec=zeros(1,size(NotKind,1));
+				NotN_TimeSeries=vw_ts_bothrw(:,NotKind);
+				for curNetV2 = 1:size(NotKind,1)
+					curNetBwVec(curNetV2)=corr(subj_yu(:,curOtherNet),K_TimeSeries(:,N));
+				end	
 				Kmat(N,curOtherNet)=bwcon;
 				g_Kmat(N,curOtherNet)=g_bwcon;
-				bTS_Kmat(N,curOtherNet)=bTScon;
+				bTS_Kmat(N,curOtherNet)=mean(curNetBwVec);
 			end
 			Kmat(N,N)=wincon;
 			g_Kmat(N,N)=g_wincon;
 			bTS_Kmat(N,N)=bTS_wincon;
 		end
-		% small section to get vertex-wise participation coefficients for this this subject at this scale
-		[pospc, negpc] = participation_coef_sign(ba_conmat,subj_V(:,K+1));
-		% K-1 because K starts at 2, 3d array starts at 1
-		partcoefpos(:,s,K-1)=pospc;
-		partcoefneg(:,s,K-1)=negpc;
 		% Make empty KxK matrix to summarize network connectivities
 		%Kmat=diag(winconvals);
 		%g_Kmat=diag(g_winconvals);
@@ -173,10 +180,14 @@ for s=1:length(subjs)
 		curK(:,:,s)=Kmat;
 		curGK(:,:,s)=g_Kmat;
 		curbtsK(:,:,s)=bTS_Kmat;
+		% 11-6-20 parallel track where correlations of bases is used to approx. partial correlation
+		curbtsPK(:,:,s)=bts_conmat;
 		% shove back in so one more subject is filled out at this K
 		Khouse{K}=curK;
 		GKhouse{K}=curGK;
 		K_bTS_house{K}=curbtsK;
+		% pcor ad-in
+		K_bTSP_house{K}=curbtsPK;
 		toc
 	end
 end
@@ -184,10 +195,8 @@ end
 fn_ind=['/cbica/projects/pinesParcels/results/connectivities/ind_conmats_allscales_allsubjs.mat'];
 fn_gro=['/cbica/projects/pinesParcels/results/connectivities/gro_conmats_allscales_allsubjs.mat'];	
 fn_bts=['/cbica/projects/pinesParcels/results/connectivities/bts_conmats_allscales_allsubjs.mat']; 
-fn_pospcs=['/cbica/projects/pinesParcels/results/connectivities/pospcs_allscales_allsubjs.mat'];
-fn_negpcs=['/cbica/projects/pinesParcels/results/connectivities/negpcs_allscales_allsubjs.mat'];
 save('Khouse',fn_ind)
 save('GKhouse',fn_gro)
 save('K_bTS_house',fn_bts)
-save('partcoefpos',fn_pospcs)
-save('partcoefneg',fn_negpcs)
+fn_pcor=['/cbica/projects/pinesParcels/results/connectivities/bts_PcorConmats_allscales_allsubjs.mat'];
+save('K_bTSP_house',fn_pcor)
