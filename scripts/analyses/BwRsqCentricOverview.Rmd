@@ -985,7 +985,8 @@ for (i in 1:length(colnames(individ_scalebybw_df))){
     tmdif=abs(tm1-tm2)
     occdif=abs(oc1-oc2)
     # get position in master df of this column (need to use \b for exact matches #only)
-    curcolnameexact<-paste('\\',curcolname,'\\b',sep='')
+    # added first b 11-9, works if remove
+    curcolnameexact<-paste('\\b',curcolname,'\\b',sep='')
     colindex<-grep(curcolnameexact,colnames(masterdf))
     # get Age relation controlling for sex and motion
     pcordf<-cbind(masterdf$Age,masterdf$Sex,masterdf$Motion,masterdf[,colindex])
