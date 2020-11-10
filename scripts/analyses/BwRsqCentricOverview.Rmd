@@ -433,7 +433,49 @@ melted_Bwscaledf$Scale<-rep(seq(from=2,to=30),each=693)
 globModAge<-lm(value~Age*log(Scale)+Motion+Sex+(1|bblid),melted_Bwscaledf)
 
 
+# multiscale mediation of b/w con on EF (from age)
+library(mediation)
+covariates="F1_Exec_Comp_Cog_Accuracy~Age+Sex+Motion"   
 
+# get EF in here
+subjbehav<-read.csv("~/Downloads/n9498_cnb_factor_scores_fr_20170202.csv")
+ef<-data.frame(subjbehav$NAR_F1_Exec_Comp_Cog_Accuracy,subjbehav$bblid)
+colnames(ef)<-c('F1_Exec_Comp_Cog_Accuracy','bblid')
+# merge in
+globAgeEf<-merge(indglobBw,ef,by='bblid')
+# writeout vectors
+gbwToEF<-array(0,29)
+ageTogbw<-array(0,29)
+SigMed<-array(0,29)
+for (i in 1:29){
+  # generate df for this scale
+  print(i)
+  loopdf<-data.frame(globAgeEf$F1_Exec_Comp_Cog_Accuracy,globAgeEf$Age,globAgeEf$Sex,globAgeEf$Motion,globAgeEf[i+4])
+  colnames(loopdf)<-c('EF','Age','Sex','Motion','Gbw')
+  # normalize
+  loopdf$Age<-scale(loopdf$Age)[,1]
+  loopdf$Gbw<-scale(loopdf$Gbw)[,1]
+  # fit main X->Y effect (age on EF, will be same at each scale)
+  fitXY<-lm(EF~Age,data=loopdf)
+  # effect of X->, controlling for mediator of GBW
+  fitXYContr<-lm(EF~Age+Gbw+Motion,data=loopdf)
+  # X->M effect (path A)
+  fit.mediator=lm(Gbw~Age+Motion+Sex,loopdf)
+  ageTogbw[i]<-fit.mediator$coefficients['Age']
+  fit.dv=lm(EF~Age+Sex+Motion+Gbw,data=loopdf)
+  gbwToEF[i]<-fit.dv$coefficients['Gbw']
+  # commented out for speed runs
+  ####results=mediate(fit.mediator,fit.dv,treat='Age',mediator = 'Gbw',boot=T)
+  print(paste('mediation p',results$d0.ci,',a=',fit.mediator$coefficients['Age'],',b=',fit.dv$coefficients['Gbw']))
+  # if both p's are on the same side of 0, flag as sig
+  ####if (results$d0.ci[1]*results$d0.ci[2]>0){
+  ####  SigMed[i]<-1
+  ####}
+}
+
+dataforplot<-data.frame(ageTogbw,gbwToEF,SigMed,seq(2, 30))
+
+ggplot(dataforplot,aes(x=seq.2..30.,y=ageTogbw,col=SigMed))+geom_step(size=2)+geom_step(aes(x=seq.2..30.,y=gbwToEF,col=SigMed))+theme_classic()+ylab('Path Coefficient')+xlab('Scale')+ggtitle('Global B/w Con. as an Age->EF Mediator')
 ```
 
 
@@ -734,6 +776,16 @@ saveRDS(melt_long,file = '~/Desktop/Long_bblidAgeSexMotionAvgBw.rds')
 
 ```{r}
 # delineate age trajectories of every net.
+# 11/10/20 - added in ab path coef. for each com
+# load in EF first
+#subjbehav<-read.csv("/cbica/projects/pinesParcels/data/n713_Behavior_20181219.csv")
+subjbehav<-read.csv("~/Downloads/n9498_cnb_factor_scores_fr_20170202.csv")
+#ef<-data.frame(subjbehav$F1_Exec_Comp_Cog_Accuracy,subjbehav$bblid)
+ef<-data.frame(subjbehav$NAR_F1_Exec_Comp_Cog_Accuracy,subjbehav$bblid)
+colnames(ef)<-c('F1_Exec_Comp_Cog_Accuracy','bblid')
+# merge in
+masteref<-merge(masterdf,ef,by='bblid')
+
 library(gratia)
 library(dplyr)
 library(svglite)
@@ -742,9 +794,12 @@ library(mgcv)
 library(viridis)
 
 covariates=" ~s(Age,k=3)+Sex+Motion"   
+lm_xM_covariates="~Age+Sex+Motion"
+lm_My_covariates="EF~Sex+Motion+Age+"
 
 minAgeEst<-rep(0,length=length(masterdf[,indiv_nsegcols_ind]))
 maxAgeEst<-rep(0,length=length(masterdf[,indiv_nsegcols_ind]))
+AB_Est<-rep(0,length=length(masterdf[,indiv_nsegcols_ind]))
 
 derivInfo<-array(0,dim=c(464,200))
 NetSplines<-array(0,dim=c(464,693))                  
@@ -758,9 +813,15 @@ bwAvgCondf<-data.frame(bwAvgCon)
 bwAvgCondf$Age<-masterdf$Age
 bwAvgCondf$Sex<-masterdf$Sex
 bwAvgCondf$Motion<-masterdf$Motion
-
-#for i in 464, -3 because age sex and motion columns sit at the end
-for (i in 1:(length(bwAvgCondf)-3)){
+# master EF is in same order
+bwAvgCondf$EF<-masteref$F1_Exec_Comp_Cog_Accuracy
+# standarized (z-scored) version for mediation interpretation
+bwAvgCondfZ<-bwAvgCondf
+bwAvgCondfZ$Age<-scale(bwAvgCondf$Age)[,1]
+bwAvgCondfZ$Motion<-scale(bwAvgCondf$Motion)[,1]
+#for i in 464, -4 because age sex motion ef columns sit at the end
+for (i in 1:(length(bwAvgCondf)-4)){
+  print(i)
   # borrowing colnames from indiv_nsegcols to keep network mappings
   x<-colnames(bwAvgCondf[i])
   form<-as.formula(paste("",x,"", covariates, sep=""))
@@ -779,16 +840,36 @@ for (i in 1:(length(bwAvgCondf)-3)){
   # adding mean val because output values are centered
   colOfInt<-unlist(bwAvgCondf[,i])
   NetSplines[i,]<-forSpline[,3]+coef(igam)[1]
-  
+  }
+  # added component to estimate AB path mediation from age to EF (linear)
+  bwAvgCondfZ[,i]<-scale(bwAvgCondfZ[,i])[,1]
+  # fit x-M path
+  xM_form<-as.formula(paste("",x,"", lm_xM_covariates, sep=""))
+  xMpath<-lm(formula=xM_form,data=bwAvgCondfZ)
+  # fit M-y path
+  My_form<-as.formula(paste(lm_My_covariates, "",x,"",sep=""))
+  Mypath<-lm(formula=My_form,data=bwAvgCondfZ)
+  # run mediation
+  mediationFit<-mediate(xMpath,Mypath,treat="Age",mediator=x)
+  AB_Est[i]<-mediationFit$d1
   # set to just print out networks that have an average b/w con of over 0
   #if (mean(colOfInt)>0){
   #  print(paste(x,mean(colOfInt)))
   #}
-  }
+  
   
   # set to print deriv duration
   ###cat(sprintf("\nSig change: %1.2f - %1.2f\n",minAgeEst[i],maxAgeEst[i]))
 }
+
+# save AB_est so i don't have to calculate again
+saveRDS(AB_Est,file='~/Desktop/multiscale/AB_est')
+AB_Est<-readRDS('~/Desktop/multiscale/AB_est')
+# plot of mediation effects
+MediationDF<-data.frame(tmvec,scalesvec,occvec,domnetvec,netpropvec,AB_Est)
+ggplot(MediationDF,aes(tmvec,AB_Est,color=domnetvec,alpha=netpropvec^2)) + scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068')) + xlab("Transmodality") + ylab('AB Path Coef.') +theme_classic(base_size = 40) + geom_point(size=7,aes(tmvec,AB_Est)) + ggtitle('AB Path Mediation Coef by Transmodality')+guides(alpha=FALSE,color=guide_legend(title="Maximal Y7 Overlap"))+theme(legend.position="top")
+ggplot(MediationDF,aes(occvec,AB_Est,color=domnetvec,alpha=netpropvec^2)) + scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068')) + xlab("PG2 Value") + ylab('AB Path Coef.') +theme_classic(base_size = 40) + geom_point(size=7,aes(occvec,AB_Est)) + ggtitle('AB Path Mediation Coef by Transmodality')+guides(alpha=FALSE,color=guide_legend(title="Maximal Y7 Overlap"))+theme(legend.position="top")
+
 
 # years format
 minAgeEst<-minAgeEst/12
@@ -852,15 +933,6 @@ y7ver<-ggplot(LongAgeSpan_plotdf2,aes(agespans,tmvec,color=domnetvec,group=CIgro
 
 ```{r}
 #b/w EF relations at community level
-
-#subjbehav<-read.csv("/cbica/projects/pinesParcels/data/n713_Behavior_20181219.csv")
-subjbehav<-read.csv("~/Downloads/n9498_cnb_factor_scores_fr_20170202.csv")
-#ef<-data.frame(subjbehav$F1_Exec_Comp_Cog_Accuracy,subjbehav$bblid)
-ef<-data.frame(subjbehav$NAR_F1_Exec_Comp_Cog_Accuracy,subjbehav$bblid)
-colnames(ef)<-c('F1_Exec_Comp_Cog_Accuracy','bblid')
-# merge in
-masteref<-merge(masterdf,ef,by='bblid')
-
 
 # difference in R^2
 BW_R2VecEst<-as.numeric(lapply(bwAvgCondf[,1:464],EFDeltaR2EstVec))
@@ -1605,6 +1677,40 @@ bothFeats<-cbind(bothFeats,masteref$F1_Exec_Comp_Cog_Accuracy)
 ```
 
 ```{r}
+######### Adapted for K=17 vs. Multiscale features
+####set K
+k=17
+####
+
+# grep out edges at this scale
+scaleStr=paste('scale',k,'_',sep='')
+scaleCols_inds=grep(scaleStr,colnames(masteref))
+# combine with edge only and individualized only values
+scaleK_bw_indivi_cols_inds<-intersect(indiv_bwcols_ind,scaleCols_inds)
+# z score edges
+edges<-masteref[colnames(masteref)[scaleK_bw_indivi_cols_inds]]
+#for (i in 1:length(edges)){
+#  edges[,i]<-((edges[,i]-mean(edges[,i])))/(sd(edges[,i]))
+#}
+
+# same thing for all edges
+alledges<-masteref[colnames(masteref)[indiv_bwcols_ind]]
+#for (i in 1:length(alledges)){
+#  alledges[,i]<-((alledges[,i]-mean(alledges[,i])))/(sd(alledges[,i]))
+#}
+
+
+# combine feature matrices with EF scores
+edgesAt17_EF<-cbind(edges,masteref$F1_Exec_Comp_Cog_Accuracy)
+edges_EF<-cbind(alledges,masteref$F1_Exec_Comp_Cog_Accuracy)
+
+
+# write em out to cubic
+write.table(edgesAt17_EF,'/cbica/projects/pinesParcels/results/EffectVecs/edgesAt17_EF',sep=',', col.names = F,quote = F,row.names=F)
+write.table(edges_EF,'/cbica/projects/pinesParcels/results/EffectVecs/edges_EF',sep=',', col.names = F,quote = F,row.names=F)
+```
+
+```{r}
 # czech out the predicted EF values
 predEFcsv<-read.csv('/cbica/projects/pinesParcels/data/aggregated_data/SubjPreds_agFagM.csv',header=F)
 predEF_agFcsv<-read.csv('/cbica/projects/pinesParcels/data/aggregated_data/SubjPreds_agF.csv',header=F)
@@ -1617,6 +1723,16 @@ predEF_agM<-predEF_agMcsv[,1]/predEF_agMcsv[,2]
 
 plot(masteref$Age,predEF_agM)
 cor.test(masteref$Age,predEF_agM,method='spearman')
+
+# czech out the predicted EF values
+predEFcsv<-read.csv('/cbica/projects/pinesParcels/data/aggregated_data/SubjPreds_MS.csv',header=F)
+
+# convert to average predicted EF over all folds
+predEF<-predEFcsv[,1]/predEFcsv[,2]
+
+EFpredDF<-data.frame(predEF,masteref$F1_Exec_Comp_Cog_Accuracy)
+colnames(EFpredDF)<-c('Predicted','Observed')
+ggplot(EFpredDF,aes(y=Predicted,x=Observed)) + geom_point(alpha=.8)+theme_classic()
 ```
 
 ```{r}
