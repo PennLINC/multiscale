@@ -850,8 +850,8 @@ for (i in 1:(length(bwAvgCondf)-4)){
   My_form<-as.formula(paste(lm_My_covariates, "",x,"",sep=""))
   Mypath<-lm(formula=My_form,data=bwAvgCondfZ)
   # run mediation
-  mediationFit<-mediate(xMpath,Mypath,treat="Age",mediator=x)
-  AB_Est[i]<-mediationFit$d1
+  ###mediationFit<-mediate(xMpath,Mypath,treat="Age",mediator=x)
+  ###AB_Est[i]<-mediationFit$d1
   # set to just print out networks that have an average b/w con of over 0
   #if (mean(colOfInt)>0){
   #  print(paste(x,mean(colOfInt)))
@@ -870,6 +870,10 @@ MediationDF<-data.frame(tmvec,scalesvec,occvec,domnetvec,netpropvec,AB_Est)
 ggplot(MediationDF,aes(tmvec,AB_Est,color=domnetvec,alpha=netpropvec^2)) + scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068')) + xlab("Transmodality") + ylab('AB Path Coef.') +theme_classic(base_size = 40) + geom_point(size=7,aes(tmvec,AB_Est)) + ggtitle('AB Path Mediation Coef by Transmodality')+guides(alpha=FALSE,color=guide_legend(title="Maximal Y7 Overlap"))+theme(legend.position="top")
 ggplot(MediationDF,aes(occvec,AB_Est,color=domnetvec,alpha=netpropvec^2)) + scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068')) + xlab("PG2 Value") + ylab('AB Path Coef.') +theme_classic(base_size = 40) + geom_point(size=7,aes(occvec,AB_Est)) + ggtitle('AB Path Mediation Coef by Transmodality')+guides(alpha=FALSE,color=guide_legend(title="Maximal Y7 Overlap"))+theme(legend.position="top")
 
+palette(c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068'))
+colnames(MediationDF)<-c('PG1','Scale','PG2','domnetvec','netpropvec','AB_Est')
+plot3d(x=MediationDF$PG1,y=MediationDF$PG2,z=MediationDF$AB_Est,size = 12,col=as.integer(MediationDF$domnetvec))
+palette(colorRampPalette(c("yellow","black"))(464))
 
 # years format
 minAgeEst<-minAgeEst/12
@@ -1009,6 +1013,11 @@ ageDR2vec=rep(0,length(colnames(individ_scalebybw_df)))
 ageDR2Pvec=rep(0,length(colnames(individ_scalebybw_df)))
 EFDR2vec=rep(0,length(colnames(individ_scalebybw_df)))
 EFDR2Pvec=rep(0,length(colnames(individ_scalebybw_df)))
+# for mediation
+AB_EstEdgesvec=rep(0,length(colnames(individ_scalebybw_df)))
+AB_EstEdgesvec_agedir=rep(0,length(colnames(individ_scalebybw_df)))
+lm_xM_covariates="~Age+Sex+Motion"
+lm_My_covariates="F1_Exec_Comp_Cog_Accuracy~Sex+Motion+Age+"
 
 
 # make a scale vector to match transmodality difference values
@@ -1018,18 +1027,16 @@ scalevec=rep(0,length(colnames(individ_scalebybw_df)))
 
 # quick write of colnames for bw features for all scales as sep. files for matlab reading
 
-for (k in 2:30){
-    # index which values are at this scale
-    scaleStr=paste('scale',k,'_',sep='')
-    scaleCols_inds=grep(scaleStr,colnames(masterdf))
-    scaleK_bw_indivi_cols_inds<-intersect(indiv_bwcols_ind,scaleCols_inds)
-    # print colnames
-    scalebwcolnames<-colnames(masterdf[scaleK_bw_indivi_cols_inds])
-  # write list of b/w col names for matching in matlab
-    write.table(scalebwcolnames,paste('/cbica/projects/pinesParcels/results/aggregated_data/Scale',k,'_Ind_bwColnames.csv',sep=''),sep=',', col.names = F,quote = F,row.names=F)
-}    
-
-
+#for (k in 2:30){
+#    # index which values are at this scale
+#    scaleStr=paste('scale',k,'_',sep='')
+#    scaleCols_inds=grep(scaleStr,colnames(masterdf))
+#    scaleK_bw_indivi_cols_inds<-intersect(indiv_bwcols_ind,scaleCols_inds)
+#    # print colnames
+#    scalebwcolnames<-colnames(masterdf[scaleK_bw_indivi_cols_inds])
+#  # write list of b/w col names for matching in matlab
+#    write.table(scalebwcolnames,paste('/cbica/projects/pinesParcels/results/#aggregated_data/Scale',k,'_Ind_bwColnames.csv',sep=''),sep=',', col.names = #F,quote = F,row.names=F)
+#}    
 #### This measures all the pairwise distances for the plots
 ## for all b/w cols - 10/9/20: EF added in.
 for (i in 1:length(colnames(individ_scalebybw_df))){
@@ -1109,8 +1116,29 @@ for (i in 1:length(colnames(individ_scalebybw_df))){
     ageDR2Pvec[i]<-DeltaPEstVec(masterdf[,colindex])
     EFDR2vec[i]<-EFDeltaR2EstVec(masterdf[,colindex])
     EFDR2Pvec[i]<-EFDeltaPEstVec(masterdf[,colindex])
+    
+    # mediation section
+    masteref[,colindex]<-scale(masteref[,colindex])[,1]
+    # fit x-M path
+    xM_form<-as.formula(paste("",curcolname,"", lm_xM_covariates, sep=""))
+    xMpath<-lm(formula=xM_form,data=masteref)
+    xMsum<-summary(xMpath)
+    # fit M-y path
+    My_form<-as.formula(paste(lm_My_covariates, "",curcolname,"",sep=""))
+    Mypath<-lm(formula=My_form,data=masteref)
+    Mysum<-summary(Mypath)
+    # only run if other two paths are sig
+    ###if (xMsum$coefficients['Age','Pr(>|t|)']<0.05 && Mysum$coefficients[5,'Pr(>|t|)']<0.05){
+    # run mediation
+    ###mediationFit<-mediate(xMpath,Mypath,treat="Age",mediator=curcolname)
+    ###AB_EstEdgesvec[i]<-mediationFit$d1
+    # direction of age effects for subchord plots
+    AB_EstEdgesvec_agedir[i]<-xMsum$coefficients['Age','Estimate']
+    ###}
 }
-
+###write.csv(AB_EstEdgesvec,'~/Desktop/multiscale/edgesABEst.csv')
+AB_EstEdgesvec_csv<-read.csv('~/Desktop/multiscale/edgesABEst.csv')
+AB_EstEdgesvec<-AB_EstEdgesvec_csv$x
 # fdr correct pvectors, together
 concatpvecs<-c(ageEfPvec,EFEfPvec,noAge_EFEfPVec)
 correctconcatpvecs<-p.adjust(concatpvecs,method='fdr')

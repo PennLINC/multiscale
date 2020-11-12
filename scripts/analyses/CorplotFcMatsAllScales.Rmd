@@ -49,6 +49,80 @@ for (K in 2:30){
   
 }
 
+#univarite edge mediation
+weightvector=AB_EstEdgesvec
+chordDf<-data.frame(matrix(nrow = length(weightvector),ncol = 3))
+colnames(chordDf)<-c('Y7_1','Y7_2','value')
+# values we have, labels need some caressing 
+chordDf$value<-weightvector
+# plant into chord df
+chordDf$Y7_1<-BwAgeDR2TMDifDf$Net1Vec17
+chordDf$Y7_2<-BwAgeDR2TMDifDf$Net2Vec17
+# replace spaces with '_'
+chordDf$Y7_1<-gsub(' ','_',chordDf$Y7_1)
+chordDf$Y7_2<-gsub(' ','_',chordDf$Y7_2)
+# threshold DF
+#chordDf$value[abs(chordDf$value)<0.05]=0
+# change colnames to match internet example (no direction in this graph doe)
+colnames(chordDf)<-c('from','to','value')
+chordDiagramFromDataFrame(chordDf,grid.col = grid.col_y17,col = col_fun,annotationTrack = c("name","grid"))
+  title(paste('Univariate AB Path Coefs'))
+
+# pull out increasing with age only
+AB_EstEdgesvecPos<-AB_EstEdgesvec
+AB_EstEdgesvecPos[AB_EstEdgesvec_agedir<0]<-0
+# pull out decreasing with age only
+AB_EstEdgesvecNeg<-AB_EstEdgesvec
+AB_EstEdgesvecNeg[AB_EstEdgesvec_agedir>0]<-0
+weightvector=AB_EstEdgesvec
+
+#plot inc. w/ age
+chordDf<-data.frame(matrix(nrow = length(weightvector),ncol = 3))
+colnames(chordDf)<-c('Y7_1','Y7_2','value')
+# values we have, labels need some caressing 
+chordDf$value<-AB_EstEdgesvecPos
+# plant into chord df
+chordDf$Y7_1<-BwAgeDR2TMDifDf$Net1Vec
+chordDf$Y7_2<-BwAgeDR2TMDifDf$Net2Vec
+# replace spaces with '_'
+chordDf$Y7_1<-gsub(' ','_',chordDf$Y7_1)
+chordDf$Y7_2<-gsub(' ','_',chordDf$Y7_2)
+# threshold DF
+#chordDf$value[abs(chordDf$value)<0.05]=0
+# change colnames to match internet example (no direction in this graph doe)
+colnames(chordDf)<-c('from','to','value')
+chordDiagramFromDataFrame(chordDf,order = y7TMorder,grid.col = grid.col,col = col_fun,annotationTrack = c("name","grid"))
+  title(paste('AB Path Coefs: Increasing with Age'))
+  
+#plot dec. w/ age
+chordDf<-data.frame(matrix(nrow = length(weightvector),ncol = 3))
+colnames(chordDf)<-c('Y7_1','Y7_2','value')
+# values we have, labels need some caressing 
+chordDf$value<-AB_EstEdgesvecNeg
+# plant into chord df
+chordDf$Y7_1<-BwAgeDR2TMDifDf$Net1Vec
+chordDf$Y7_2<-BwAgeDR2TMDifDf$Net2Vec
+# replace spaces with '_'
+chordDf$Y7_1<-gsub(' ','_',chordDf$Y7_1)
+chordDf$Y7_2<-gsub(' ','_',chordDf$Y7_2)
+# threshold DF
+#chordDf$value[abs(chordDf$value)<0.05]=0
+# change colnames to match internet example (no direction in this graph doe)
+colnames(chordDf)<-c('from','to','value')
+chordDiagramFromDataFrame(chordDf,order = y7TMorder,grid.col = grid.col,col = col_fun,annotationTrack = c("name","grid"))
+  title(paste('AB Path Coefs: Decreasing with Age'))
+  
+# scatterplots for comparison  
+BwAgeCorTMDifDf$posweights<-AB_EstEdgesvecPos
+BwAgeCorTMDifDf$negweights<-AB_EstEdgesvecNeg
+ggplot(BwAgeCorTMDifDf,aes(x=tmdifvec,y=posweights,color=Net1Vec)) + geom_text(size=5,label="\u25D6",family="Arial Unicode MS") + xlab('Transmodality Difference') + ylab('EF Mediation') + ggtitle('Edges Increasing With Age')+scale_color_manual(values=ycolors,limits=Y7vec)+geom_text(aes(x=tmdifvec,y=posweights,color=Net2Vec),size=5,label="\u25D7",family="Arial Unicode MS")+theme_classic()
+ggplot(BwAgeCorTMDifDf,aes(x=tmdifvec,y=negweights,color=Net1Vec)) + geom_text(size=5,label="\u25D6",family="Arial Unicode MS") + xlab('Transmodality Difference') + ylab('EF Mediation') + ggtitle('Edges Decreasing with Age')+scale_color_manual(values=ycolors,limits=Y7vec)+geom_text(aes(x=tmdifvec,y=negweights,color=Net2Vec),size=5,label="\u25D7",family="Arial Unicode MS")+theme_classic()
+```
+
+```{r}
+# pcor pdms
+pcorkAllPDM1<-read.csv('/cbica/projects/pinesParcels/multiscale/scripts/highDim_mediation/pcorPDM1_AllEdges.csv',header=F)
+pcorkAllPDM2<-read.csv('/cbica/projects/pinesParcels/multiscale/scripts/highDim_mediation/pcorPDM2_AllEdges.csv',header=F)
 
 # PDM1 @ All edges
 kAllPDM1<-read.csv('/cbica/projects/pinesParcels/multiscale/scripts/highDim_mediation/pcPDM1_AllEdges.csv',header=F)
@@ -129,7 +203,7 @@ ggplot(BwAgeCorTMDifDf,aes(x=tmdifvec,y=negweights,color=Net1Vec17)) + geom_text
 
 # with PG2 as 3rd dimension
 BwAgeCorTMDifDf$PG2Difference<-occdifvec
-plot3d(x=BwAgeCorTMDifDf$tmdifvec,y=BwAgeCorTMDifDf$posweights,z=BwAgeCorTMDifDf$PG2Difference,size = 5)
+#plot3d(x=BwAgeCorTMDifDf$tmdifvec,y=BwAgeCorTMDifDf$posweights,z=BwAgeCorTMDifDf$PG2Difference,size = 5)
 ```
 
 ```{r}

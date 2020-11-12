@@ -37,12 +37,18 @@ for (K in 2:30){
 #  spatCorvec_L[K-1]<-cor.test(L[,K],L[,1],method='spearman')$estimate
 #}
 
-# save the residuals
+# get z-scores of grad change
+zscoredGradChange<-scale(c(L[,1],R[,1]))
+
+# save the z-scored dif
 for (K in 2:30){
-  spatChangR<-lm(R[,K]~R[,1])
-  spatChangL<-lm(L[,K]~L[,1])
-  fn<-paste('/cbica/projects/pinesParcels/results/aggregated_data/spatChangeResids_K_',K,'.csv',sep='')
-  write.table(c(spatChangL$residuals,spatChangR$residuals),fn,sep=',', col.names = F,quote = F,row.names=F)
+  # get z-score of community change at this scale
+  zcoredCommChange<-scale(c(L[,1],R[,1]))
+  zScoredDif<-zscoredGradChange-zcoredCommChange
+  spatChangL<-zScoredDif[1:(dim(L)[1])]
+  spatChangR<-zScoredDif[((dim(L)[1])+1):((dim(L)[1])+dim(R)[1])]
+  fn<-paste('/cbica/projects/pinesParcels/results/aggregated_data/spatChangeZDif_K_',K,'.csv',sep='')
+  write.table(c(spatChangL,spatChangR),fn,sep=',', col.names = F,quote = F,row.names=F)
 }
 
 plot(spatCorvec)
