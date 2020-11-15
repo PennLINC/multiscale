@@ -43,7 +43,7 @@ zscoredGradChange<-scale(c(L[,1],R[,1]))
 # save the z-scored dif
 for (K in 2:30){
   # get z-score of community change at this scale
-  zcoredCommChange<-scale(c(L[,1],R[,1]))
+  zcoredCommChange<-scale(c(L[,K],R[,K]))
   zScoredDif<-zscoredGradChange-zcoredCommChange
   spatChangL<-zScoredDif[1:(dim(L)[1])]
   spatChangR<-zScoredDif[((dim(L)[1])+1):((dim(L)[1])+dim(R)[1])]

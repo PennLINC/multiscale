@@ -99,7 +99,7 @@ ggarrange(tc,ni,dif,rc)
 # plot average recon error over scales
 mreconerr<-(colMeans(recon_err)[2:30])
 mcrecnerrdf<-data.frame(mreconerr,community_vec)
-ggplot(data=mcrecnerrdf,aes(y=mreconerr,x=community_vec))+geom_line(col='black',size=2)+theme_minimal(base_size = 28)+ggtitle("Reconstruction Error Over Scales")+ scale_x_continuous(name ="# of Communitites",  breaks=seq(2, 30, 4))+ylab("Recon. Error")
+ggplot(data=mcrecnerrdf,aes(y=mreconerr,x=community_vec))+geom_step(col='black',size=2)+theme_minimal(base_size = 28)+ scale_x_continuous(name ="# of Communitites",  breaks=seq(2, 30, 4))+ylab("Reconstruction Error (a.u.)")
 
 # Motion and Sex Replacing Age (characterize indep. relations before controlling for them)
 
