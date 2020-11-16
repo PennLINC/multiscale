@@ -56,16 +56,16 @@ plot(spatCorvec)
 
 ```{r}
 # color vector for highlighting 4 different scales
-grayHexa<-'#AAAAAA'
+grayHexa<-'#a19f9f'
 fourscalescheme<-rep(grayHexa,29)
 # scale 4 - purple
-fourscalescheme[3]<-'#6600CC'
+fourscalescheme[3]<-'#490091'
 # scale 7 - yellow
-fourscalescheme[6]<- '#FFCC00'
+#fourscalescheme[6]<- '#FFCC00'
 # scale 13 - black
-fourscalescheme[12]<- '#000000' 
+fourscalescheme[12]<- '#cca300' 
 # scale 20 - red
-fourscalescheme[19]<- '#CC0000'
+fourscalescheme[19]<- '#a30000'
   
 # load in spin test distributions
 spinDistr<-read.csv('/cbica/projects/pinesParcels/results/aggregated_data/SpinTestDistrs.csv')
@@ -80,6 +80,6 @@ repeatVector<-array(0,dim=c(1001,1))
 repeatVector[1]<-1
 m_spinDistr$RealCor<-rep(rep(c(1,0),c(1,1000)),times=29)
 m_spinDistr$Scale<-as.factor(m_spinDistr$Scale)
-ggplot(m_spinDistr[m_spinDistr$RealCor==0,], aes(x = value, y = Scale, group = Scale,fill=Scale))+xlab(expression(rho)) + geom_density_ridges(scale = 5, size = 0.25,rel_min_height = 0.0001) +geom_point(data=m_spinDistr[m_spinDistr$RealCor==1,],aes(x=value,y=Scale,color=Scale),size=2)+scale_fill_manual(values=fourscalescheme)+scale_color_manual(values=fourscalescheme)+theme_minimal(base_size = 17)+coord_flip()+theme(legend.position = "none")
+ggplot(m_spinDistr[m_spinDistr$RealCor==0,], aes(x = value, y = Scale, group = Scale,fill=Scale))+xlab(expression(rho)) + geom_jitter(size = 0.75,alpha=.15) +geom_point(data=m_spinDistr[m_spinDistr$RealCor==1,],aes(x=value,y=Scale,color=Scale),size=3)+scale_fill_manual(values=fourscalescheme)+scale_color_manual(values=fourscalescheme)+theme_minimal(base_size = 17)+coord_flip()+theme(legend.position = "none")+xlim(c(0,.7))+ylab('# of Communities')
 
 ```

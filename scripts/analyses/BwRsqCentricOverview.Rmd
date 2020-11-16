@@ -800,6 +800,7 @@ lm_My_covariates="EF~Sex+Motion+Age+"
 minAgeEst<-rep(0,length=length(masterdf[,indiv_nsegcols_ind]))
 maxAgeEst<-rep(0,length=length(masterdf[,indiv_nsegcols_ind]))
 AB_Est<-rep(0,length=length(masterdf[,indiv_nsegcols_ind]))
+SplineP<-rep(0,length=length(masterdf[,indiv_nsegcols_ind]))
 
 derivInfo<-array(0,dim=c(464,200))
 NetSplines<-array(0,dim=c(464,693))                  
@@ -826,6 +827,7 @@ for (i in 1:(length(bwAvgCondf)-4)){
   x<-colnames(bwAvgCondf[i])
   form<-as.formula(paste("",x,"", covariates, sep=""))
   igam<-gam(formula = form,data=bwAvgCondf)
+  SplineP[i]<-summary(igam)$s.pv
   derv<-derivatives(igam,term='Age')
   derv<- derv %>%
   mutate(sig = !(0 >lower & 0 < upper))
@@ -861,6 +863,12 @@ for (i in 1:(length(bwAvgCondf)-4)){
   # set to print deriv duration
   ###cat(sprintf("\nSig change: %1.2f - %1.2f\n",minAgeEst[i],maxAgeEst[i]))
 }
+
+# fdr spline P's
+SplineP_fdr<-p.adjust(SplineP,method='fdr')
+# community-level sig vector
+CL_sigVec<-logical(464)
+CL_sigVec[SplineP_fdr<0.05]<-TRUE
 
 # save AB_est so i don't have to calculate again
 saveRDS(AB_Est,file='~/Desktop/multiscale/AB_est')
@@ -932,7 +940,7 @@ LongAgeSpan_plotdf2$domnetvec<-as.factor(LongAgeSpan_plotdf2$domnetvec)
 
 y7ver<-ggplot(LongAgeSpan_plotdf2,aes(agespans,tmvec,color=domnetvec,group=CIgroupingInd,alpha=abs(derivs))) +geom_line(size=10,aes(agespans,tmvec)) +labs(title='External Connectivity Effect Span', x = 'Age', y = 'Transmodality') +theme_classic(base_size = 58)+ xlim(c(8,23))+ scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068'),name="Maximal Y7 Overlap")+scale_alpha_continuous(range=c(0,1))+theme(legend.position="top",legend.key.width = unit(5, "cm"))+ylim(c(min(tmvec),max(tmvec)))
 
-
+avgbw_age_tm_sig<-ggplot(bwdf[CL_sigVec,],aes(tmvec,bwAgeCorVecs.avg_bw,color=domnetvec,alpha=netpropvec^2)) + geom_point(size=6)+ scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068')) + xlab("Transmodality") + ylab(expression(paste(Delta,R^2[adj]))) +theme_classic(base_size = 28) +guides(alpha=FALSE,color=guide_legend(title="Maximal Y7 Overlap"))+theme(legend.position="top")
 ```
 
 ```{r}
@@ -978,9 +986,10 @@ netLM<-lm(BW_R2VecEst~occvec*scalesvec,bwR2EFdf)
 plot_model(netLM,type='int')
 tab_model(netLM)
 
+
 library(plot3Drgl)
 library(rgl)
-plot3d(x=bwR2EFdf$tmvec,y=bwR2EFdf$occvec,z=bwR2EFdf$BW_R2VecEst,colvar=bwR2EFdf$scalesvec,col=viridis(29),size = 10)
+#plot3d(x=bwR2EFdf$tmvec,y=bwR2EFdf$occvec,z=bwR2EFdf$BW_R2VecEst,colvar=bwR2EFdf$scalesvec,col=viridis(29),size = 10)
 ```
 
 ```{r}
@@ -1435,6 +1444,7 @@ for (i in 1:29){
 }
 oldAgecor<-correlations_over_scales(ind_bwcors,"B/w Community Connectivity - Age Correlation: 18-23")
 ```
+
 ```{r}
 # make same plots but with delta r^2 instead of correlation to account for non-linearity
 # just for global age
@@ -2078,11 +2088,11 @@ Melted_clevel_ef$bblid<-as.factor(Melted_clevel_ef$bblid)
 Melted_clevel_ef$Sex<-as.factor(Melted_clevel_ef$Sex)
 
 # finally, run the model with GAMM
-simplif_EF_mod<-gamm(AvgBetweenCon~s(Age,k=3)+Sex+Motion+log(Scale)+EF*log(Scale), random=list(bblid=~1),data=Melted_clevel_ef,REML=T)
+###simplif_EF_mod<-gamm(AvgBetweenCon~s(Age,k=3)+Sex+Motion+log(Scale)+EF*log(Scale), random=list(bblid=~1),data=Melted_clevel_ef,REML=T)
 summary(simplif_EF_mod$lme)
 summary(simplif_EF_mod$gam)
 # run it with gamm4 for checkin
-simplif_EF_mod4<-gamm4(AvgBetweenCon~s(Age)+Sex+Motion+log(Scale)+EF*log(Scale),data=Melted_clevel_ef,random=~(1|bblid),REML=T)
+###simplif_EF_mod4<-gamm4(AvgBetweenCon~s(Age)+Sex+Motion+log(Scale)+EF*log(Scale),data=Melted_clevel_ef,random=~(1|bblid),REML=T)
 summary(simplif_EF_mod4$gam)
 ```
 
@@ -2145,14 +2155,14 @@ LongAgeSpan_plotdf2<-data.frame(sapply(AgeSpan_plotdf2,rep.int,times=200))
 LongAgeSpan_plotdf2$agespans<-agerange200464
 LongAgeSpan_plotdf2$derivs<-deriv200464
 
-breaks=c(-.005,0.005)
+breaks=c(-.05,0.05)
 
 
 # older version
 ###ggplot(LongAgeSpan_plotdf2,aes(agespans,tmvec,color=derivs,group=CIgroupingInd)) +geom_line(size=10,alpha=.8) +labs(title='Network Segregation Effect Span', x = 'Age', y = 'Transmodality') +theme_classic(base_size = 58)+ xlim(c(8,23))+ scale_colour_gradientn(colours=c('#ff0a0a','#ff9191','white','#8585ff','#0b0bff'),values = c(0,.05,.265,.615,1),breaks=breaks, labels = breaks,name="Change Per Year")+theme(legend.position="top",legend.key.width = unit(4, "cm"))
 
 
-bwspan<-ggplot(LongAgeSpan_plotdf2,aes(agespans,tmvec,color=derivs,group=CIgroupingInd)) +geom_line(size=13,alpha=.8) +labs(title='External Connectivity Age Effect Span', x = 'Age', y = 'Transmodality') +theme_classic(base_size = 58)+ xlim(c(8,23))+ scale_colour_gradientn(colours=c('#0b0bff','#8585ff','white','#ff9191','#ff0a0a'),values = c(0,.25,.5,.75,1),breaks=breaks, labels = breaks,limits=c(-.005,0.005),name="Change Per Year")+theme(legend.position="top",legend.key.width = unit(5, "cm"))
+bwspan<-ggplot(LongAgeSpan_plotdf2,aes(agespans,tmvec,color=derivs,group=CIgroupingInd)) +geom_line(size=13,alpha=.8) +labs(title='External Connectivity Age Effect Span', x = 'Age', y = 'Transmodality') +theme_classic(base_size = 58)+ xlim(c(8,23))+ scale_colour_gradientn(colours=c('#0b0bff','#8585ff','white','#ff9191','#ff0a0a'),values = c(0,.25,.5,.75,1),breaks=breaks, labels = breaks,limits=c(-.06,0.06),name="Change Per Year")+theme(legend.position="top",legend.key.width = unit(5, "cm"))
 
 
 
@@ -2165,7 +2175,41 @@ LongAgeSpan_plotdf2$domnetvec<-as.factor(LongAgeSpan_plotdf2$domnetvec)
 
 y7ver<-ggplot(LongAgeSpan_plotdf2,aes(agespans,tmvec,color=domnetvec,group=CIgroupingInd,alpha=abs(derivs))) +geom_line(size=13,aes(agespans,tmvec)) +labs(title='Network Segregation Effect Manifestation', x = 'Age', y = 'Transmodality') +theme_classic(base_size = 58)+ xlim(c(8,23))+ scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068'),name="Maximal Y7 Overlap")+scale_alpha_continuous(range=c(0,1))+theme(legend.position="none",legend.key.width = unit(5, "cm"))
 
+# long df 3?
+# With the smooths overlaid
+AgeSpan_plotdf3<-data.frame(tmvec,scalesvec,domnetvec,corVecEst,netpropvec,CIgroupingInd)
+LongAgeSpan_plotdf3<-data.frame(sapply(AgeSpan_plotdf3,rep.int,times=693))
+# assign same transmodality value to each point on same lines
+Transmodality693464<-array(dim=c(693*464,1))
+for (i in 1:464){
+Transmodality693464[((693*i)-692):(693*i)]<-tmvec[i]
+}
+LongAgeSpan_plotdf3$Transmodality<-Transmodality693464
+# grouping index so all points of same line have CIgroupingInd in common
+GroupingInd693464<-array(dim=c(693*464,1))
+for (i in 1:464){
+GroupingInd693464[((693*i)-692):(693*i)]<-CIgroupingInd[i]
+}
+LongAgeSpan_plotdf3$Grouping<-GroupingInd693464
+# ports actual splines in
+NetSplines693464<-array(dim=c(693*464,1))
+for (i in 1:464){
+  if (CL_sigVec[i]==TRUE){
+# scale added 11/16/20
+  NetSplines693464[((693*i)-692):(693*i)]<-NetSplines[i,]
+  }
+}
+LongAgeSpan_plotdf3$Splines<-NetSplines693464
+# put this guy through the same wrangling ringer as the "estimated age", which is how the spline is ported in
+NetSplinesAgeSideCar693464<-array(dim=c(693*464,1))
+for (i in 1:464){
+NetSplinesAgeSideCar693464[((693*i)-692):(693*i)]<-masterdf$Age
+}
+LongAgeSpan_plotdf3$Age<-NetSplinesAgeSideCar693464/12
+ggplot(LongAgeSpan_plotdf3,aes(Age,Splines,color=Transmodality,group=Grouping)) +geom_line(size=3,alpha=.4) +labs(x = 'Age', y = 'Between-Community Coupling') +theme_classic(base_size = 28)+ xlim(c(8,23))+ scale_colour_viridis(option="inferno",guide=guide_colorbar(barwidth = 22))+theme(legend.position="top")
+
 ```
+
 
 ```{r}
 # summary models for global level
