@@ -920,14 +920,14 @@ LongAgeSpan_plotdf2<-data.frame(sapply(AgeSpan_plotdf2,rep.int,times=200))
 LongAgeSpan_plotdf2$agespans<-agerange200464
 LongAgeSpan_plotdf2$derivs<-deriv200464
 
-breaks=c(-.02,-.01,0,0.01,0.02)
+breaks=c(-.005,0,0.005)
 
 
 # older version
 ###ggplot(LongAgeSpan_plotdf2,aes(agespans,tmvec,color=derivs,group=CIgroupingInd)) +geom_line(size=10,alpha=.8) +labs(title='Network Segregation Effect Span', x = 'Age', y = 'Transmodality') +theme_classic(base_size = 58)+ xlim(c(8,23))+ scale_colour_gradientn(colours=c('#ff0a0a','#ff9191','white','#8585ff','#0b0bff'),values = c(0,.05,.265,.615,1),breaks=breaks, labels = breaks,name="Change Per Year")+theme(legend.position="top",legend.key.width = unit(4, "cm"))
 
 
-Bwspan<-ggplot(LongAgeSpan_plotdf2,aes(agespans,tmvec,color=derivs,group=CIgroupingInd)) +geom_line(size=10) +labs(title='External Connectivity Effect Span', x = 'Age', y = 'Transmodality') +theme_classic(base_size = 58)+ xlim(c(8,23))+ scale_colour_gradientn(colours=c('#0b0bff','#8585ff','white','#ff9191','#ff0a0a'),values = c(0,.25,.5,.75,1),breaks=breaks, labels = breaks,limits=c(-.005,0.005),name="Change Per Year")+theme(legend.position="top",legend.key.width = unit(5, "cm"))+ylim(c(min(tmvec),max(tmvec)))
+Bwspan<-ggplot(LongAgeSpan_plotdf2,aes(agespans,tmvec,color=derivs,group=CIgroupingInd)) +geom_line(size=4) +labs(x = 'Age', y = 'Transmodality') +theme_classic(base_size = 28)+ xlim(c(8,23))+ scale_colour_gradientn(colours=c('#0b0bff','#8585ff','white','#ff9191','#ff0a0a'),values = c(0,.25,.5,.75,1),breaks=breaks, labels = breaks,limits=c(-.006,0.006),name="Change Per Year")+theme(legend.position="top",legend.key.width = unit(3, "cm"))+ylim(c(min(tmvec),max(tmvec)))
 
 
 
@@ -1159,7 +1159,9 @@ fdr_noAge_EFEfPVec<-correctconcatpvecs[((2*chunksize)+1):(3*chunksize)]
 
 
 ## merged vectors
-BwAgeCorTMDifDf<-data.frame(tmdifvec,ageEfvec,noAge_EFEfVec,EFEfvec,scalevec,Net1Vec,Net2Vec,Net1Vec17,Net2Vec17,fdr_ageEfPvec,fdr_EFEfPvec,fdr_noAge_EFEfPVec)
+BwAgeCorTMDifDf<-data.frame(tmdifvec,ageEfvec,noAge_EFEfVec,EFEfvec,scalevec,Net1Vec,Net2Vec,Net1Vec17,Net2Vec17,fdr_ageEfPvec,fdr_EFEfPvec,fdr_noAge_EFEfPVec,ageDR2vec)
+# fdr age dr2
+BwAgeCorTMDifDf$ageDR2Pvec<-p.adjust(ageDR2Pvec,method='fdr')
 
 nonthresh<-ggplot(BwAgeCorTMDifDf,aes(x=tmdifvec,y=ageEfvec)) + geom_point(alpha=.07,size=5) + xlab('Transmodality Difference') + ylab('Age Partial Correlation') + ggtitle('Pairwise Between-Network Age-FC Relations')+geom_smooth(method='lm', formula= y~x,color='black',size=2)
 
@@ -1270,6 +1272,11 @@ ggarrange(agF_y7,agM_y7,agF_y7_thresh,agM_y7_thresh,agF_y17,agM_y17,nrow=3,ncol=
 
 AgeVsEFEffects_agF<-ggplot(BwAgeCorTMDifDf,aes(x=noAge_EFEfVec,y=ageEfvec,color=Net1Vec)) + geom_text(size=7,label="\u25D6",family="Arial Unicode MS") + xlab('EF Partial Correlation') + ylab('Age Partial Correlation') + ggtitle('Age vs. EF effects - no age control')+scale_color_manual(values=ycolors,limits=Y7vec)+geom_text(aes(x=noAge_EFEfVec,y=ageEfvec,color=Net2Vec),size=7,label="\u25D7",family="Arial Unicode MS")+theme_minimal()+theme(legend.position = "none")
 AgeVsEFEffects_agM<-ggplot(BwAgeCorTMDifDf,aes(x=EFEfvec,y=ageEfvec,color=Net1Vec)) + geom_text(size=7,label="\u25D6",family="Arial Unicode MS") + xlab('EF Partial Correlation') + ylab('Age Partial Correlation') + ggtitle('Age vs. Age-controlled EF effects')+scale_color_manual(values=ycolors,limits=Y7vec)+geom_text(aes(x=EFEfvec,y=ageEfvec,color=Net2Vec),size=7,label="\u25D7",family="Arial Unicode MS")+theme_minimal()+theme(legend.position = "none")
+
+# for figure 4
+ggplot(BwAgeCorTMDifDf[BwAgeCorTMDifDf$ageDR2Pvec<0.05,],aes(x=tmdifvec,y=ageDR2vec,color=Net1Vec))+ geom_text(size=7,label="\u25D6",family="Arial Unicode MS")+scale_color_manual(values=ycolors,limits=Y7vec)+geom_text(aes(x=tmdifvec,y=ageDR2vec,color=Net2Vec),size=7,label="\u25D7",family="Arial Unicode MS")+theme(legend.position = "none") + xlab('Gradient Distance') + ylab(expression(paste(Delta,R^2[adj])))+theme_classic(base_size = 35)+theme(legend.position = "none")
+
+ggplot(BwAgeCorTMDifDf[BwAgeCorTMDifDf$ageDR2Pvec<0.05,],aes(x=tmdifvec,y=ageDR2vec,color=Net1Vec17))+ geom_text(size=5,label="\u25D6",family="Arial Unicode MS")+scale_color_manual(values=y17colors,limits=y17vec)+geom_text(aes(x=tmdifvec,y=ageDR2vec,color=Net2Vec17),size=5,label="\u25D7",family="Arial Unicode MS")+theme(legend.position = "none") + xlab('Transmodality Difference') + ylab(expression(paste(Delta,R^2[adj])))+theme_classic(base_size = 28)
 ```
 
 ```{r}
@@ -1982,7 +1989,9 @@ ycolors=c('#3281ab','#670068','#007500','#b61ad0','#b8cf86','#d77d00','#c1253c')
 # Section to do this with half circles. corresp. to colors of involved y7 nets
 # get vector of net1 membership
 # get vector of net2 membership
-
+# initialize dataframe for violin plot, 2000 is guess for max b/w cons for a y7 net
+violinDF<-data.frame(matrix(data=NA,nrow=2000,ncol=7))
+violinDFP<-data.frame(matrix(data=NA,nrow=2000,ncol=7))
 # for all y7 nets
 for (y in 1:7){
   # net looked at in this iteration
@@ -1992,6 +2001,7 @@ for (y in 1:7){
   # initialize vectors
   tmdifvec=NULL
   ageEfvec=NULL
+  ageEfvecP=NULL
   Net2Memb=NULL
   # for all b/w cols
   for (i in 1:length(colnames(individ_scalebybw_df))){
@@ -2002,7 +2012,7 @@ for (y in 1:7){
       scalefield=splitname[4]
       net1field=splitname[5]
       net2field=splitname[7]
-      # doctor up scale and net1field so they are exclusively the value of #interestx
+      # doctor up scale and net1field so they are exclusively the value of #interest
       scale=as.numeric(unlist(strsplit(scalefield,'e'))[2])
       net1=unlist(strsplit(net1field,'s'))[2]
       net2=net2field 
@@ -2022,13 +2032,14 @@ for (y in 1:7){
      # get position in master df of this column (need to use \b for exact #matches only)
       curcolnameexact<-paste('\\',curcolname,'\\b',sep='')
       colindex<-grep(curcolnameexact,colnames(masterdf))
-      # get Age relation controlling for sex and motion
-      pcordf<-cbind(masterdf$Age,masterdf$Sex,masterdf$Motion,masterdf[,colindex])
-      # partial spearmans to extrac age relation
-      pspear=pcor(pcordf,method='spearman')$estimate
+      # gam w/age vs. gam w/o age to extract age relation
+      AgeEffect=DeltaR2EstVec(masterdf[,colindex])
+      # extract P's for fdr
+      AgeEffectP=DeltaPEstVec(masterdf[,colindex])
       # save both to respective vectors
       tmdifvec<-append(tmdifvec,tmdif)
-      ageEfvec<-append(ageEfvec,pspear[4])
+      ageEfvec<-append(ageEfvec,AgeEffect)
+      ageEfvecP<-append(ageEfvecP,AgeEffectP)
       if (Y7vec[y]==y7lab1){
         Net2Memb<-append(Net2Memb,as.character(y7lab2))
       }else{
@@ -2040,14 +2051,40 @@ for (y in 1:7){
   # merged vectors
   BwAgeCorTMDifDf<-data.frame(tmdifvec,ageEfvec,factor(Net2Memb,levels=c("Motor","Visual","DA","VA","Limbic","FP","DM")))
   colnames(BwAgeCorTMDifDf)<-c('tmdifvec','ageEfVec','Net2Memb')
-  print(ggplot(BwAgeCorTMDifDf,aes(x=tmdifvec,y=ageEfvec,color=Net2Memb)) + geom_point(alpha=.27,size=3)+ scale_color_manual(values=ycolors) + xlab('Transmodality Difference') +  ylim(-.4,.4) +xlim(-.1,13)+ ylab('Age Correlation') + ggtitle(paste('Pairwise Between-Network Age-FC Relations - ',Y7vec[y]))+theme_minimal())
-  
+  # this uses violinDFP, which is calculated after initial run-thru. comment out for initial run-thru.
+  sigDF<-BwAgeCorTMDifDf[which((violinDFP[1:(dim(BwAgeCorTMDifDf)[1]),y]) <0.05),]
+  print(ggplot(sigDF, aes(x=tmdifvec,y=ageEfVec,color=Net2Memb)) + geom_point(alpha=.27,size=3)+ scale_color_manual(values=ycolors) + xlab('Gradient Distance') +  ylim(-.1,.14) +xlim(-.1,13)+ ylab(expression(paste(Delta,R^2[adj])))+theme_minimal(base_size=28)+theme(legend.position = "none"))
+  # throw age effects into master violin df
+  violinDF[1:length(ageEfvec),y]<-ageEfvec
+  violinDFP[1:length(ageEfvecP),y]<-ageEfvecP
 }
+# All ps
+meltedPs<-melt(violinDFP)
+#allPs<-na.omit(meltedPs$value)
+allPs_fdr<-p.adjust(meltedPs$value,method='fdr')
+violinDFP[,1]<-allPs_fdr[1:2000]
+violinDFP[,2]<-allPs_fdr[2001:4000]
+violinDFP[,3]<-allPs_fdr[4001:6000]
+violinDFP[,4]<-allPs_fdr[6001:8000]
+violinDFP[,5]<-allPs_fdr[8001:10000]
+violinDFP[,6]<-allPs_fdr[10001:12000]
+violinDFP[,7]<-allPs_fdr[12001:14000]
 
-
-# can use this unicode half circle thing to get each dot on one plot with dual-colored halves
-
-#ggplot(BwAgeCorTMDifDf[1:10,],aes(x=tmdifvec,y=ageEfvec)) + geom_text(size=5,label="\u25D6",family="Arial Unicode MS") + xlab('Transmodality Difference') + ylab('Age Partial Correlation') + ggtitle('Pairwise Between-Network Age-FC Relations')+geom_text(size=5,label="\u25D7",family="Arial Unicode MS",color='blue')
+# melt the dataframe to have a col for y7 identity 
+violinAgeEfVec<-NULL
+violinY7membVec<-NULL
+for (y in 1:7){
+  y7AgeEffects<-na.omit(violinDF[,y])
+  y7AgeEffectsP<-na.omit(violinDFP[,y])
+  y7AgeEffectsSig<-y7AgeEffects[y7AgeEffectsP<0.05]
+  violinAgeEfVec<-append(violinAgeEfVec,y7AgeEffectsSig)
+  violinY7membVec<-append(violinY7membVec,rep(Y7vec[y],length(y7AgeEffectsSig)))
+}
+violinDF2<-data.frame(violinAgeEfVec,violinY7membVec)
+# violin plot for figure 4: delta r^2 distributions for each FNET
+ggplot(data = violinDF2, aes(x = factor(violinY7membVec,levels = Y7vec), y = violinAgeEfVec,color=factor(violinY7membVec,levels = Y7vec))) +
+  geom_violin(alpha = .7,size=1.5) +
+  geom_point(size = 1, alpha = 0.3)+theme_classic(base_size=35)+scale_color_manual(values=ycolors,limits=Y7vec)+theme(legend.position = "none")+ylim(c(-.1,.15))+xlab("Yeo7 Community")+ylab(expression(paste(Delta,R^2[adj])))
 ```
 
 
