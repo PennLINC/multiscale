@@ -1476,20 +1476,101 @@ ggplot(data = BwAgeCorTMDifDf, aes(x = factor(scalevec), y = tmdifvec)) +
 meanTmDif<-aggregate(BwAgeCorTMDifDf$tmdifvec~BwAgeCorTMDifDf$scalevec, FUN=mean)
 meanAgeEf<-dr2globalAge[,2]
 suppl_df<-data.frame(meanTmDif,meanAgeEf)
-colnames(suppl_df)<-c('scalevec','avgtmdif','scalesvecduplicate','gbwAge')
+colnames(suppl_df)<-c('scalevec','avgtmdif','gbwAge')
 # rescale pal.
 
 ggplot(data = BwAgeCorTMDifDf, aes(x = factor(scalevec), y = tmdifvec)) +
   geom_violin(alpha = .1)+ylab('Gradient Distance')+xlab("# of Communities") +theme_classic()+geom_point(data=suppl_df,aes(x=factor(scalevec),y=avgtmdif,color=gbwAge),size=3)+ scale_colour_gradientn(colours=c('#0b0bff','#8585ff','gray90','#ff9191','#ff0a0a'),values = c(0,.45,.67,.7,1),breaks=c(-.2,0,.1), labels = c(-.2,0,.1),limits=c(-.2,0.1),name=expression(paste(Delta,R^2[adj])))+theme(legend.position="top",legend.key.width = unit(3, "cm"))
 
-# alternative version
-suppl_df2<-data.frame(2:30,withinBetweenClassConVec[2:30],meanAgeEf$`BwAgeCorTMDifDf$ageEfvec`)
-colnames(suppl_df2)<-c('scalevec','ratio','gbwAge')
+# alternative version (requires ratvec from statsnfigs)
+#suppl_df2<-data.frame(2:30,withinBetweenClassConVec[2:30],meanAgeEf$`BwAgeCorTMDifDf$ageEfvec`)
+#colnames(suppl_df2)<-c('scalevec','ratio','gbwAge')
 
-ggplot(data = suppl_df2, aes(x = factor(scalevec), y = gbwAge,color=ratio)) +geom_point(size=3)+ scale_colour_gradientn(colours=c('#0b0bff','#8585ff','gray90','#ff9191','#ff0a0a'),values = c(0,.1,.5,.9,1))+theme_classic()
+#ggplot(data = suppl_df2, aes(x = factor(scalevec), y = gbwAge,color=ratio)) +geom_point(size=3)+ scale_colour_gradientn(colours=c('#0b0bff','#8585ff','gray90','#ff9191','#ff0a0a'),values = c(0,.1,.5,.9,1))+theme_classic()
 
-ggplot(data = BwAgeCorTMDifDf, aes(x = factor(scalevec), y = tmdifvec,color=ageEfvec)) +geom_point(size=5,alpha=.4)+ylab('Gradient Distance')+xlab("# of Communities") +theme_classic(base_size=28)+ scale_colour_gradientn(colours=c('#0b0bff','#8585ff','white','#ff9191','#ff0a0a'),values = c(0,.215,.429,.644,1),breaks=c(-.3,0,.4), labels = c(-.3,0,.4),limits=c(-.3,0.4),name=expression(paste(Delta,R^2[adj])))+
-  geom_violin(alpha=0)
+#ggplot(data = BwAgeCorTMDifDf, aes(x = factor(scalevec), y = tmdifvec,color=ageEfvec)) +geom_point(size=5,alpha=.4)+ylab('Gradient Distance')+xlab("# of Communities") +theme_classic(base_size=28)+ scale_colour_gradientn(colours=c('#0b0bff','#8585ff','white','#ff9191','#ff0a0a'),values = c(0,.21,.46,.73,1),breaks=c(-.3,0,.3), labels = c(-.3,0,.3),limits=c(-.32,0.37),name=expression(paste(Delta,R^2[adj])))+geom_violin(alpha=0)
+
+### can use this to viz number of edges over scales if you want (1100 width 12k height)
+#ggplot(data = BwAgeCorTMDifDf, aes(x = factor(scalevec), y = tmdifvec,color=ageEfvec)) +ylab('Gradient Distance')+xlab("# of Communities") +theme_classic(base_size=28)+ scale_colour_gradientn(colours=c('#0b0bff','#8585ff','white','#ff9191','#ff0a0a'),values = c(0,.21,.46,.73,1),breaks=c(-.3,0,.3), labels = c(-.3,0,.3),limits=c(-.32,0.37),name=expression(paste(Delta,R^2[adj])))+geom_dotplot(alpha=1)
+
+
+### going with this one for figure 5 draft1, 11/18/20
+ggplot(data = BwAgeCorTMDifDf[1:56,], aes(x = factor(scalevec), y = tmdifvec,color=ageEfvec)) +geom_point(size=8,alpha=.5)+ylab('Gradient Distance')+xlab("# of Communities") +theme_classic(base_size=28)+ scale_colour_gradientn(colours=c('#0b0bff','#8585ff','gray90','#ff9191','#ff0a0a'),values = c(0,0.3,0.5,0.7,1),breaks=c(-.3,0,.3), labels = c(-.3,0,.3),limits=c(-.35,0.35),name=expression(paste(Delta,R^2[adj])))
+
+```
+
+```{r}
+library(ggridges)
+# geom_ridge section
+ridgedf<-tibble(BwAgeCorTMDifDf)
+### year needs to be scale, need coordinate flip
+jj <- ggplot(ridgedf[1:50,], aes(x = tmdifvec, y = as.factor(scalevec))) +
+  stat_density_ridges(
+    geom = "density_ridges_gradient",
+    quantile_lines = TRUE,
+    size = 1,
+    quantiles = 2) +
+  theme_ridges() +
+  theme(
+    plot.margin = margin(t = 1, r = 1, b = 0.5, l = 0.5, "cm") 
+  )+
+  coord_flip()
+# t needs to be grad distance
+
+
+
+# Density plot -----------------------------------------------
+jj <- ggplot(t2, aes(x = t, y = year)) +
+  stat_density_ridges(
+    geom = "density_ridges_gradient",
+    quantile_lines = TRUE,
+    size = 1,
+    quantiles = 2) +
+  theme_ridges() +
+  theme(
+    plot.margin = margin(t = 1, r = 1, b = 0.5, l = 0.5, "cm") 
+  )
+
+
+# Build ggplot and extract data
+d <- ggplot_build(jj)$data[[1]]
+
+# Add geom_ribbon for shaded area
+jj +
+  geom_ribbon(
+    data = transform(subset(d, x >= 20), year = group),
+    aes(x, ymin = ymin, ymax = ymax, group = group),
+    fill = "red",
+    alpha = 0.5) 
+
+# he is subsetting the data by the transformed subset 
+
+# would need to for loop over every quantile over every scale to extract expanse, average within-quantile age-effect (for color calculation)
+
+ridgedf$scalevec<-as.factor(ridgedf$scalevec)
+
+
+ggplot(ridgedf, aes(x=tmdifvec, y=scalevec, fill = factor(scalevec))) +theme_classic()+
+  stat_density_ridges(
+    geom = "density_ridges_gradient", 
+    calc_ecdf = TRUE)+
+    scale_fill_viridis_d(name = "Quartiles")+
+    coord_flip()
+
+
+geom_jitter()
+
+ggplot(ridgedf, aes(x = tmdifvec, y = as.factor(scalevec))) +geom_density_ridges()+theme_classic()
+
+# going to have to make a separate layer for each
+ggplot(ridgedf[1:10,], aes(x=tmdifvec, y=scalevec, fill = factor(scalevec))) +theme_classic()+stat_density_ridges()+stat_density_ridges(data=ridgedf[31:100,],aes(x=tmdifvec, y=scalevec,fill='none'))+xlim(0,12)
+
+
+# really annoying fucking plot
+ggplot(ridgedf[5:11,], aes(x=tmdifvec, y=scalevec,fill = stat(mean(ridgedf[5:11,]$ageEfvec))))+
+stat_density_ridges()+stat_density_ridges(data=ridgedf[2:4,],aes(x=tmdifvec, y=scalevec,fill=stat(mean(ridgedf[2:4,]$ageEfvec))))+
+  theme_classic()+scale_cok
+
 ```
 
 ```{r}
