@@ -1189,9 +1189,7 @@ ggplot(ScaleTMDifDf,aes(x=scalevec,y=tmdifvec)) + geom_point(alpha=.1,size=2) +x
 # distribution of modal dissimilarity over scales
 ggplot(data = BwAgeCorTMDifDf, aes(x = factor(scalevec), y = tmdifvec)) +
   geom_violin(alpha = .8) +
-  geom_boxplot(width=0.1)+
-  geom_point(size = 1, alpha = 0.8) +
-  raincloud_theme+theme_classic()
+  geom_point(size = 1, alpha = 0.8)+theme_classic()+ylab('Gradient Distance')+xlab("# of Communities")
 ```
 
 ```{r}
@@ -1358,6 +1356,8 @@ indglobbw<-data.frame(cbind(masteref$bblid,masteref$Age/12,masteref$Sex,masteref
 colnames(indglobbw)[1:5]<-c('bblid','Age','Sex','Motion','EF')
 ind_bwcors<-matrix(0,29,2)
 ind_bwcors[,1]<-2:30
+dr2globalAge<-matrix(0,29,2)
+dr2globalAge[,1]<-2:30
 for (i in 1:29){
   # relevant df
   scaledf<-cbind(indglobbw$EF,indglobbw$Age,indglobbw$Sex,indglobbw$Motion,indglobbw[,i+5])
@@ -1404,6 +1404,21 @@ for (i in 1:29){
   # partial spearmans to extrac age relation
   pspear=pcor(scaledf,method='spearman')$estimate
   ind_bwcors[i,2]<-pspear[4]
+  # delta r^2 for final version
+  scaledf<-data.frame(scaledf)
+  colnames(scaledf)<-c('Age','Sex','Motion','varofint')
+  # no-age model (segreg ~ sex + motion)
+  noAgeGam<-gam(varofint~Sex+Motion,data=scaledf)
+  # age-included model for measuring difference
+  AgeGam<-gam(varofint~Sex+Motion+s(Age,k=3),data=scaledf)
+  AgeR<-sqrt(summary(AgeGam)$r.sq)
+  NoageR<-sqrt(summary(noAgeGam)$r.sq)
+  dif<-AgeR-NoageR
+  # partial spearmans to extract age relation (for direction)
+  if(pspear[4]<0){
+    dif=dif*-1
+  }
+  dr2globalAge[i,2]=dif
 }
 indAgecor<-correlations_over_scales(ind_bwcors,"B/w Community Connectivity - Age Correlation")
 ######### do age subsets
@@ -1450,6 +1465,31 @@ for (i in 1:29){
   ind_bwcors[i,2]<-pspear[4]
 }
 oldAgecor<-correlations_over_scales(ind_bwcors,"B/w Community Connectivity - Age Correlation: 18-23")
+
+# distribution of modal dissimilarity over scales
+ggplot(data = BwAgeCorTMDifDf, aes(x = factor(scalevec), y = tmdifvec)) +
+  geom_violin(alpha = .8) +
+  geom_point(size = 1, alpha = 0.8)+theme_classic()+ylab('Gradient Distance')+xlab("# of Communities")
+
+### get average point, color average point by average age relation (global b/w con)
+# get mean within each scale
+meanTmDif<-aggregate(BwAgeCorTMDifDf$tmdifvec~BwAgeCorTMDifDf$scalevec, FUN=mean)
+meanAgeEf<-dr2globalAge[,2]
+suppl_df<-data.frame(meanTmDif,meanAgeEf)
+colnames(suppl_df)<-c('scalevec','avgtmdif','scalesvecduplicate','gbwAge')
+# rescale pal.
+
+ggplot(data = BwAgeCorTMDifDf, aes(x = factor(scalevec), y = tmdifvec)) +
+  geom_violin(alpha = .1)+ylab('Gradient Distance')+xlab("# of Communities") +theme_classic()+geom_point(data=suppl_df,aes(x=factor(scalevec),y=avgtmdif,color=gbwAge),size=3)+ scale_colour_gradientn(colours=c('#0b0bff','#8585ff','gray90','#ff9191','#ff0a0a'),values = c(0,.45,.67,.7,1),breaks=c(-.2,0,.1), labels = c(-.2,0,.1),limits=c(-.2,0.1),name=expression(paste(Delta,R^2[adj])))+theme(legend.position="top",legend.key.width = unit(3, "cm"))
+
+# alternative version
+suppl_df2<-data.frame(2:30,withinBetweenClassConVec[2:30],meanAgeEf$`BwAgeCorTMDifDf$ageEfvec`)
+colnames(suppl_df2)<-c('scalevec','ratio','gbwAge')
+
+ggplot(data = suppl_df2, aes(x = factor(scalevec), y = gbwAge,color=ratio)) +geom_point(size=3)+ scale_colour_gradientn(colours=c('#0b0bff','#8585ff','gray90','#ff9191','#ff0a0a'),values = c(0,.1,.5,.9,1))+theme_classic()
+
+ggplot(data = BwAgeCorTMDifDf, aes(x = factor(scalevec), y = tmdifvec,color=ageEfvec)) +geom_point(size=5,alpha=.4)+ylab('Gradient Distance')+xlab("# of Communities") +theme_classic(base_size=28)+ scale_colour_gradientn(colours=c('#0b0bff','#8585ff','white','#ff9191','#ff0a0a'),values = c(0,.215,.429,.644,1),breaks=c(-.3,0,.4), labels = c(-.3,0,.4),limits=c(-.3,0.4),name=expression(paste(Delta,R^2[adj])))+
+  geom_violin(alpha=0)
 ```
 
 ```{r}
