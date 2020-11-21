@@ -222,7 +222,11 @@ EFDeltaR2EstVec_ageless<-function(x){
   # partial spearmans to extract EF relation (for direction)
   pspear=pcor(scaledf,method='spearman')$estimate
   corest<-pspear[4]
-  return(corest)
+  dif<-corest^2
+  if(corest<0){
+    dif=dif*-1
+  }
+  return(dif)
   
 }
 
@@ -1047,13 +1051,13 @@ EFPG2<-ggplot(bwR2EFdf,aes(occvec,BW_R2VecEst,color=domnetSig,alpha=netpropvec^2
 
 EFPG3<-ggplot(bwR2EFdf,aes(attnmvec,BW_R2VecEst,color=domnetSig,alpha=netpropvec^2)) + scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068','gray80')) + xlab("PG3") + ylab(expression(paste(Delta,R^2[adj]))) +theme_classic(base_size = 40) + geom_point(size=7,aes(attnmvec,BW_R2VecEst)) + ggtitle('EF Effect by PG3: Age controlled for')+guides(alpha=FALSE,color=guide_legend(title="Maximal Y7 Overlap"))+theme(legend.position="top")
 
-EFPG1_ageless<-ggplot(bwR2EFdf,aes(tmvec,BW_R2VecEst_ageless,color=domnetAgelessSig,alpha=netpropvec^2)) + scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068','gray80')) + xlab("PG1") + ylab('EF Partial Correlation') +theme_classic(base_size = 40) + geom_point(size=7,aes(tmvec,BW_R2VecEst_ageless)) + ggtitle('EF Effect by PG1: Main Effect')+guides(alpha=FALSE,color=guide_legend(title="Maximal Y7 Overlap"))+theme(legend.position="top")
+EFPG1_ageless<-ggplot(bwR2EFdf,aes(tmvec,BW_R2VecEst_ageless,color=domnetAgelessSig,alpha=netpropvec^2)) + scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068','gray80')) + xlab("PG1") + ylab(expression(R^2)) +theme_classic(base_size = 40) + geom_point(size=7,aes(tmvec,BW_R2VecEst_ageless)) + ggtitle('EF Effect by PG1: Main Effect')+guides(alpha=FALSE,color=guide_legend(title="Maximal Y7 Overlap"))+theme(legend.position="top")
 
-EFPG2_ageless<-ggplot(bwR2EFdf,aes(occvec,BW_R2VecEst_ageless,color=domnetAgelessSig,alpha=netpropvec^2)) + scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068','gray80')) + xlab("PG2") + ylab(expression('EF Partial Correlation') +theme_classic(base_size = 40) + geom_point(size=7,aes(occvec,BW_R2VecEst_ageless)) + ggtitle('EF Effect by PG2: Main Effect')+guides(alpha=FALSE,color=guide_legend(title="Maximal Y7 Overlap"))+theme(legend.position="top")
+EFPG2_ageless<-ggplot(bwR2EFdf,aes(occvec,BW_R2VecEst_ageless,color=domnetAgelessSig,alpha=netpropvec^2)) + scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068','gray80')) + xlab("PG2") + ylab(expression(R^2)) +theme_classic(base_size = 40) + geom_point(size=7,aes(occvec,BW_R2VecEst_ageless)) + ggtitle('EF Effect by PG2: Main Effect')+guides(alpha=FALSE,color=guide_legend(title="Maximal Y7 Overlap"))+theme(legend.position="top")
 
-EFPG3_ageless<-ggplot(bwR2EFdf,aes(attnmvec,BW_R2VecEst,color=domnetAgelessSig,alpha=netpropvec^2)) + scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068','gray80')) + xlab("PG3") + ylab('EF Partial Correlation') +theme_classic(base_size = 40) + geom_point(size=7,aes(attnmvec,BW_R2VecEst_ageless)) + ggtitle('EF Effect by PG3: Main Effect')+guides(alpha=FALSE,color=guide_legend(title="Maximal Y7 Overlap"))+theme(legend.position="top")
+EFPG3_ageless<-ggplot(bwR2EFdf,aes(attnmvec,BW_R2VecEst,color=domnetAgelessSig,alpha=netpropvec^2)) + scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068','gray80')) + xlab("PG3") + ylab(expression(R^2)) +theme_classic(base_size = 40) + geom_point(size=7,aes(attnmvec,BW_R2VecEst_ageless)) + ggtitle('EF Effect by PG3: Main Effect')+guides(alpha=FALSE,color=guide_legend(title="Maximal Y7 Overlap"))+theme(legend.position="top")
 
-#ggarrange(EFPG1_ageless,EFPG2_ageless,EFPG3_ageless,EFPG1,EFPG2,EFPG3)
+###ggarrange(EFPG1_ageless,EFPG2_ageless,EFPG3_ageless,EFPG1,EFPG2,EFPG3)
 
 # scale by pg2 interaction in EF relation
 #netLM<-lm(BW_R2VecEst~occvec*scalesvec,bwR2EFdf)
@@ -1102,8 +1106,8 @@ Net1Vec17=rep(0,length(colnames(individ_scalebybw_df)))
 Net2Vec17=rep(0,length(colnames(individ_scalebybw_df)))
 ageDR2vec=rep(0,length(colnames(individ_scalebybw_df)))
 ageDR2Pvec=rep(0,length(colnames(individ_scalebybw_df)))
-#EFDR2vec=rep(0,length(colnames(individ_scalebybw_df)))
-#EFDR2Pvec=rep(0,length(colnames(individ_scalebybw_df)))
+EFDR2vec=rep(0,length(colnames(individ_scalebybw_df)))
+EFDR2Pvec=rep(0,length(colnames(individ_scalebybw_df)))
 EF_Bvec=rep(0,length(colnames(individ_scalebybw_df)))
 EF_BPvec=rep(0,length(colnames(individ_scalebybw_df)))
 EFDeltaEstVec_agelessvec=rep(0,length(colnames(individ_scalebybw_df)))
@@ -1214,12 +1218,10 @@ for (i in 1:length(colnames(individ_scalebybw_df))){
     # delta r2 for age, not EF
     ageDR2vec[i]<-DeltaR2EstVec(masterdf[,colindex])
     ageDR2Pvec[i]<-DeltaPEstVec(masterdf[,colindex])
-    #EFDR2vec[i]<-EFDeltaR2EstVec(masterdf[,colindex])
-    EF_Bvec[i]<-EFEstVec(masterdf[,colindex])
-    EF_BPvec[i]<-EFEstVecP(masterdf[,colindex])
-    #EFDR2Pvec[i]<-EFDeltaPEstVec(masterdf[,colindex])
-    #EFDeltaEstVec_agelessvec[i]<-EFDeltaR2EstVec_ageless(masterdf[,colindex])
-    #EFDeltaPEstVec_agelessvec[i]<-EFDeltaPEstVec_ageless(masterdf[,colindex])
+    EFDR2vec[i]<-EFDeltaR2EstVec(masterdf[,colindex])
+    EFDR2Pvec[i]<-EFDeltaPEstVec(masterdf[,colindex])
+    EFDeltaEstVec_agelessvec[i]<-EFDeltaR2EstVec_ageless(masterdf[,colindex])
+    EFDeltaPEstVec_agelessvec[i]<-EFDeltaPEstVec_ageless(masterdf[,colindex])
     
     # mediation section
     masteref[,colindex]<-scale(masteref[,colindex])[,1]
@@ -1251,14 +1253,26 @@ fdr_ageEfPvec<-correctconcatpvecs[1:chunksize]
 fdr_EFEfPvec<-correctconcatpvecs[(chunksize+1):(2*chunksize)]
 fdr_noAge_EFEfPVec<-correctconcatpvecs[((2*chunksize)+1):(3*chunksize)]
 ## ^^ masks for developmentally facilitated vs. devel. conflicted
-
+# use p values to make gray'ed mask
+domnetSig1<-Net1Vec
+domnetSig2<-Net2Vec
+domnetAgelessSig1<-Net1Vec
+domnetAgelessSig2<-Net2Vec
+levels(domnetSig1)<-c(levels(domnetSig1),'NonSig')
+levels(domnetAgelessSig1)<-c(levels(domnetAgelessSig1),'NonSig')
+domnetSig1[fdr_EFEfPvec>0.05]='NonSig'
+domnetAgelessSig1[fdr_noAge_EFEfPVec>0.05]='NonSig'
+levels(domnetSig2)<-c(levels(domnetSig2),'NonSig')
+levels(domnetAgelessSig2)<-c(levels(domnetAgelessSig2),'NonSig')
+domnetSig2[fdr_EFEfPvec>0.05]='NonSig'
+domnetAgelessSig2[fdr_noAge_EFEfPVec>0.05]='NonSig'
 
 # 11/20/20 - gam-pulled EF coefficient estimates subbed in for EF partial correlation effect estimates. The ONLY difference is in how the age term is accounted for in this multiple regression
-EFEfvec<-EF_Bvec
-EF_BPvec<-EF_BPvec
+EFEfvec<-EFDR2vec
+EF_BPvec<-EFDR2Pvec
 
 ## merged vectors
-BwAgeCorTMDifDf<-data.frame(tmdifvec,ageEfvec,noAge_EFEfVec,EFEfvec,scalevec,Net1Vec,Net2Vec,Net1Vec17,Net2Vec17,fdr_ageEfPvec,fdr_EFEfPvec,fdr_noAge_EFEfPVec,ageDR2vec,occdifvec,all3pgDifvec)
+BwAgeCorTMDifDf<-data.frame(tmdifvec,ageEfvec,noAge_EFEfVec,EFEfvec,scalevec,Net1Vec,Net2Vec,Net1Vec17,Net2Vec17,fdr_ageEfPvec,fdr_EFEfPvec,fdr_noAge_EFEfPVec,ageDR2vec,occdifvec,all3pgDifvec,domnetSig1,domnetSig2,domnetAgelessSig1,domnetAgelessSig2)
 # fdr age dr2
 BwAgeCorTMDifDf$ageDR2Pvec<-p.adjust(ageDR2Pvec,method='fdr')
 
@@ -1336,11 +1350,20 @@ y17vec<-levels(domnetvec17)
 ycolors=c('#3281ab','#670068','#007500','#b61ad0','#b8cf86','#d77d00','#c1253c')
 y17colors=c('#dc8303','#8d2049','#596a85','#2d9a3d','#007938','#d9e200','#bc0943','#2b1f67','#48593a','#91a967','#4183a8','#00bb89','#3245a3','#9e3ca2','#eb75b3','#68126f','#d1001c')
 
-TMdifEF<-ggplot(BwAgeCorTMDifDf,aes(x=tmdifvec,y=noAge_EFEfVec,color=Net1Vec)) + geom_text(size=5,label="\u25D6",family="Arial Unicode MS") + xlab('Transmodality Difference') + ylab('EF Partial Correlation') + ggtitle('Pairwise Between-Network EF-FC Relations')+scale_color_manual(values=ycolors,limits=Y7vec)+geom_text(aes(x=tmdifvec,y=noAge_EFEfVec,color=Net2Vec),size=5,label="\u25D7",family="Arial Unicode MS")+theme_classic()
+TMdifEF<-ggplot(BwAgeCorTMDifDf,aes(x=tmdifvec,y=noAge_EFEfVec,color=Net1Vec)) + geom_text(size=5,label="\u25D6",family="Arial Unicode MS") + xlab('Transmodality Difference') + ylab('EF Partial Correlation') + ggtitle('Pairwise Between-Network EF-FC Relations')+scale_color_manual(values=ycolors,limits=Y7vec)+geom_text(aes(x=tmdifvec,y=noAge_EFEfVec,color=Net2Vec),size=5,label="\u25D7",family="Arial Unicode MS")+theme_classic()+ stat_smooth(method = "gam", formula = y ~ s(x), size = 1)
 
 OccdifEF<-ggplot(BwAgeCorTMDifDf,aes(x=occdifvec,y=noAge_EFEfVec,color=Net1Vec)) + geom_text(size=5,label="\u25D6",family="Arial Unicode MS") + xlab('Occipality Difference') + ylab('EF Partial Correlation') + ggtitle('Pairwise Between-Network EF-FC Relations')+scale_color_manual(values=ycolors,limits=Y7vec)+geom_text(aes(x=occdifvec,y=noAge_EFEfVec,color=Net2Vec),size=5,label="\u25D7",family="Arial Unicode MS")+theme_classic()+ stat_smooth(method = "gam", formula = y ~ s(x), size = 1)
 
-OccdifEF17<-ggplot(BwAgeCorTMDifDf,aes(x=occdifvec,y=noAge_EFEfVec,color=Net1Vec17)) + geom_text(size=5,label="\u25D6",family="Arial Unicode MS") + xlab('Occipality Difference') + ylab('EF Partial Correlation') + ggtitle('Pairwise Between-Network EF-FC Relations')+scale_color_manual(values=y17colors,limits=y17vec)+geom_text(aes(x=occdifvec,y=noAge_EFEfVec,color=Net2Vec17),size=5,label="\u25D7",family="Arial Unicode MS")+theme_classic()+ stat_smooth(method = "gam", formula = y ~ s(x), size = 1)
+GD_EF<-ggplot(BwAgeCorTMDifDf,aes(x=all3pgDifvec,y=noAge_EFEfVec,color=Net1Vec)) + geom_text(size=5,label="\u25D6",family="Arial Unicode MS") + xlab('Gradient Distance') + ylab('EF Partial Correlation') + ggtitle('Pairwise Between-Network EF-FC Relations')+scale_color_manual(values=ycolors,limits=Y7vec)+geom_text(aes(x=all3pgDifvec,y=noAge_EFEfVec,color=Net2Vec),size=5,label="\u25D7",family="Arial Unicode MS")+theme_classic()+ stat_smooth(method = "gam", formula = y ~ s(x), size = 1)
+
+#### Age controlled versions of same plots
+TMdifEF_agc<-ggplot(BwAgeCorTMDifDf,aes(x=tmdifvec,y=EFEfvec,color=Net1Vec)) + geom_text(size=5,label="\u25D6",family="Arial Unicode MS") + xlab('Transmodality Difference') + ylab('EF Partial Correlation') + ggtitle('Pairwise Between-Network EF-FC Relations:AgC')+scale_color_manual(values=ycolors,limits=Y7vec)+geom_text(aes(x=tmdifvec,y=EFEfvec,color=Net2Vec),size=5,label="\u25D7",family="Arial Unicode MS")+theme_classic()+ stat_smooth(method = "gam", formula = y ~ s(x), size = 1)
+
+OccdifEF_agc<-ggplot(BwAgeCorTMDifDf,aes(x=occdifvec,y=EFEfvec,color=Net1Vec)) + geom_text(size=5,label="\u25D6",family="Arial Unicode MS") + xlab('Occipality Difference') + ylab('EF Partial Correlation') + ggtitle('Pairwise Between-Network EF-FC Relations:AgC')+scale_color_manual(values=ycolors,limits=Y7vec)+geom_text(aes(x=occdifvec,y=EFEfvec,color=Net2Vec),size=5,label="\u25D7",family="Arial Unicode MS")+theme_classic()+ stat_smooth(method = "gam", formula = y ~ s(x), size = 1)
+
+GD_EF_agc<-ggplot(BwAgeCorTMDifDf,aes(x=all3pgDifvec,y=EFEfvec,color=Net1Vec)) + geom_text(size=5,label="\u25D6",family="Arial Unicode MS") + xlab('Gradient Distance') + ylab('EF Partial Correlation') + ggtitle('Pairwise Between-Network EF-FC Relations:AgC')+scale_color_manual(values=ycolors,limits=Y7vec)+geom_text(aes(x=all3pgDifvec,y=EFEfvec,color=Net2Vec),size=5,label="\u25D7",family="Arial Unicode MS")+theme_classic()+ stat_smooth(method = "gam", formula = y ~ s(x), size = 1)
+
+OccdifEF17<-ggplot(BwAgeCorTMDifDf,aes(x=occdifvec,y=EFEfvec,color=Net1Vec17)) + geom_text(size=5,label="\u25D6",family="Arial Unicode MS") + xlab('Occipality Difference') + ylab('EF Partial Correlation') + ggtitle('Pairwise Between-Network EF-FC Relations')+scale_color_manual(values=y17colors,limits=y17vec)+geom_text(aes(x=occdifvec,y=EFEfvec,color=Net2Vec17),size=5,label="\u25D7",family="Arial Unicode MS")+theme_classic()+ stat_smooth(method = "gam", formula = y ~ s(x), size = 1)
 
 # remove rows to get age aligned and age mitigaged dfs
 ageAligned<-as.logical(ageAligned)
