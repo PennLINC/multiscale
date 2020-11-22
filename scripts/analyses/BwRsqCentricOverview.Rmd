@@ -623,7 +623,7 @@ bwAvgCon<-matrix(0,693,464)
 modalloopvar=c('unimodal','transmodal')
 for (i in 1:2){
   print(modalloopvar[i])
-  # index "the other" (dystopian)
+  # index "the other"
   modalloopvar_other=modalloopvar[modalloopvar!=(modalloopvar[i])]
   # extract which of 1:464 network mappings match the modalitity of this loop
   modalindices=which(tmclass %in% modalloopvar[i])
@@ -1350,20 +1350,20 @@ y17vec<-levels(domnetvec17)
 ycolors=c('#3281ab','#670068','#007500','#b61ad0','#b8cf86','#d77d00','#c1253c')
 y17colors=c('#dc8303','#8d2049','#596a85','#2d9a3d','#007938','#d9e200','#bc0943','#2b1f67','#48593a','#91a967','#4183a8','#00bb89','#3245a3','#9e3ca2','#eb75b3','#68126f','#d1001c')
 
-TMdifEF<-ggplot(BwAgeCorTMDifDf,aes(x=tmdifvec,y=noAge_EFEfVec,color=Net1Vec)) + geom_text(size=5,label="\u25D6",family="Arial Unicode MS") + xlab('Transmodality Difference') + ylab('EF Partial Correlation') + ggtitle('Pairwise Between-Network EF-FC Relations')+scale_color_manual(values=ycolors,limits=Y7vec)+geom_text(aes(x=tmdifvec,y=noAge_EFEfVec,color=Net2Vec),size=5,label="\u25D7",family="Arial Unicode MS")+theme_classic()+ stat_smooth(method = "gam", formula = y ~ s(x), size = 1)
+TMdifEF<-ggplot(BwAgeCorTMDifDf,aes(x=tmdifvec,y=noAge_EFEfVec,color=Net1Vec)) + geom_text(size=5,label="\u25D6",family="Arial Unicode MS") + xlab('Transmodality Difference') + ylab('EF Partial Correlation') + ggtitle('Pairwise Between-Network EF-FC Relations')+scale_color_manual(values=ycolors,limits=Y7vec)+geom_text(aes(x=tmdifvec,y=noAge_EFEfVec,color=Net2Vec),size=5,label="\u25D7",family="Arial Unicode MS")+theme_classic()+ stat_smooth(aes(group = 1),method = "gam", formula = y ~ s(x), size = 1)
 
-OccdifEF<-ggplot(BwAgeCorTMDifDf,aes(x=occdifvec,y=noAge_EFEfVec,color=Net1Vec)) + geom_text(size=5,label="\u25D6",family="Arial Unicode MS") + xlab('Occipality Difference') + ylab('EF Partial Correlation') + ggtitle('Pairwise Between-Network EF-FC Relations')+scale_color_manual(values=ycolors,limits=Y7vec)+geom_text(aes(x=occdifvec,y=noAge_EFEfVec,color=Net2Vec),size=5,label="\u25D7",family="Arial Unicode MS")+theme_classic()+ stat_smooth(method = "gam", formula = y ~ s(x), size = 1)
+OccdifEF<-ggplot(BwAgeCorTMDifDf,aes(x=occdifvec,y=noAge_EFEfVec,color=Net1Vec)) + geom_text(size=5,label="\u25D6",family="Arial Unicode MS") + xlab('Occipality Difference') + ylab('EF Partial Correlation') + ggtitle('Pairwise Between-Network EF-FC Relations')+scale_color_manual(values=ycolors,limits=Y7vec)+geom_text(aes(x=occdifvec,y=noAge_EFEfVec,color=Net2Vec),size=5,label="\u25D7",family="Arial Unicode MS")+theme_classic()+ stat_smooth(aes(group = 1),method = "gam", formula = y ~ s(x), size = 1)
 
-GD_EF<-ggplot(BwAgeCorTMDifDf,aes(x=all3pgDifvec,y=noAge_EFEfVec,color=Net1Vec)) + geom_text(size=5,label="\u25D6",family="Arial Unicode MS") + xlab('Gradient Distance') + ylab('EF Partial Correlation') + ggtitle('Pairwise Between-Network EF-FC Relations')+scale_color_manual(values=ycolors,limits=Y7vec)+geom_text(aes(x=all3pgDifvec,y=noAge_EFEfVec,color=Net2Vec),size=5,label="\u25D7",family="Arial Unicode MS")+theme_classic()+ stat_smooth(method = "gam", formula = y ~ s(x), size = 1)
+GD_EF<-ggplot(BwAgeCorTMDifDf,aes(x=all3pgDifvec,y=noAge_EFEfVec,color=Net1Vec)) + geom_text(size=5,label="\u25D6",family="Arial Unicode MS") + xlab('Gradient Distance') + ylab('EF Partial Correlation') + ggtitle('Pairwise Between-Network EF-FC Relations')+scale_color_manual(values=ycolors,limits=Y7vec)+geom_text(aes(x=all3pgDifvec,y=noAge_EFEfVec,color=Net2Vec),size=5,label="\u25D7",family="Arial Unicode MS")+theme_classic()+ stat_smooth(aes(group = 1),method = "gam", formula = y ~ s(x), size = 1)
 
 #### Age controlled versions of same plots
-TMdifEF_agc<-ggplot(BwAgeCorTMDifDf,aes(x=tmdifvec,y=EFEfvec,color=Net1Vec)) + geom_text(size=5,label="\u25D6",family="Arial Unicode MS") + xlab('Transmodality Difference') + ylab('EF Partial Correlation') + ggtitle('Pairwise Between-Network EF-FC Relations:AgC')+scale_color_manual(values=ycolors,limits=Y7vec)+geom_text(aes(x=tmdifvec,y=EFEfvec,color=Net2Vec),size=5,label="\u25D7",family="Arial Unicode MS")+theme_classic()+ stat_smooth(method = "gam", formula = y ~ s(x), size = 1)
+TMdifEF_agc<-ggplot(BwAgeCorTMDifDf,aes(x=tmdifvec,y=EFEfvec,color=Net1Vec)) + geom_text(size=5,label="\u25D6",family="Arial Unicode MS") + xlab('Transmodality Difference') + ylab('EF Partial Correlation') + ggtitle('Pairwise Between-Network EF-FC Relations:AgC')+scale_color_manual(values=ycolors,limits=Y7vec)+geom_text(aes(x=tmdifvec,y=EFEfvec,color=Net2Vec),size=5,label="\u25D7",family="Arial Unicode MS")+theme_classic()+ stat_smooth(aes(group = 1),method = "gam", formula = y ~ s(x), size = 1)
 
-OccdifEF_agc<-ggplot(BwAgeCorTMDifDf,aes(x=occdifvec,y=EFEfvec,color=Net1Vec)) + geom_text(size=5,label="\u25D6",family="Arial Unicode MS") + xlab('Occipality Difference') + ylab('EF Partial Correlation') + ggtitle('Pairwise Between-Network EF-FC Relations:AgC')+scale_color_manual(values=ycolors,limits=Y7vec)+geom_text(aes(x=occdifvec,y=EFEfvec,color=Net2Vec),size=5,label="\u25D7",family="Arial Unicode MS")+theme_classic()+ stat_smooth(method = "gam", formula = y ~ s(x), size = 1)
+OccdifEF_agc<-ggplot(BwAgeCorTMDifDf,aes(x=occdifvec,y=EFEfvec,color=Net1Vec)) + geom_text(size=5,label="\u25D6",family="Arial Unicode MS") + xlab('Occipality Difference') + ylab('EF Partial Correlation') + ggtitle('Pairwise Between-Network EF-FC Relations:AgC')+scale_color_manual(values=ycolors,limits=Y7vec)+geom_text(aes(x=occdifvec,y=EFEfvec,color=Net2Vec),size=5,label="\u25D7",family="Arial Unicode MS")+theme_classic()+ stat_smooth(aes(group = 1),method = "gam", formula = y ~ s(x), size = 1)
 
-GD_EF_agc<-ggplot(BwAgeCorTMDifDf,aes(x=all3pgDifvec,y=EFEfvec,color=Net1Vec)) + geom_text(size=5,label="\u25D6",family="Arial Unicode MS") + xlab('Gradient Distance') + ylab('EF Partial Correlation') + ggtitle('Pairwise Between-Network EF-FC Relations:AgC')+scale_color_manual(values=ycolors,limits=Y7vec)+geom_text(aes(x=all3pgDifvec,y=EFEfvec,color=Net2Vec),size=5,label="\u25D7",family="Arial Unicode MS")+theme_classic()+ stat_smooth(method = "gam", formula = y ~ s(x), size = 1)
+GD_EF_agc<-ggplot(BwAgeCorTMDifDf,aes(x=all3pgDifvec,y=EFEfvec,color=Net1Vec)) + geom_text(size=5,label="\u25D6",family="Arial Unicode MS") + xlab('Gradient Distance') + ylab('EF Partial Correlation') + ggtitle('Pairwise Between-Network EF-FC Relations:AgC')+scale_color_manual(values=ycolors,limits=Y7vec)+geom_text(aes(x=all3pgDifvec,y=EFEfvec,color=Net2Vec),size=5,label="\u25D7",family="Arial Unicode MS")+theme_classic()+ stat_smooth(aes(group = 1),method = "gam", formula = y ~ s(x), size = 1)
 
-OccdifEF17<-ggplot(BwAgeCorTMDifDf,aes(x=occdifvec,y=EFEfvec,color=Net1Vec17)) + geom_text(size=5,label="\u25D6",family="Arial Unicode MS") + xlab('Occipality Difference') + ylab('EF Partial Correlation') + ggtitle('Pairwise Between-Network EF-FC Relations')+scale_color_manual(values=y17colors,limits=y17vec)+geom_text(aes(x=occdifvec,y=EFEfvec,color=Net2Vec17),size=5,label="\u25D7",family="Arial Unicode MS")+theme_classic()+ stat_smooth(method = "gam", formula = y ~ s(x), size = 1)
+OccdifEF17<-ggplot(BwAgeCorTMDifDf,aes(x=occdifvec,y=EFEfvec,color=Net1Vec17)) + geom_text(size=5,label="\u25D6",family="Arial Unicode MS") + xlab('Occipality Difference') + ylab('EF Partial Correlation') + ggtitle('Pairwise Between-Network EF-FC Relations')+scale_color_manual(values=y17colors,limits=y17vec)+geom_text(aes(x=occdifvec,y=EFEfvec,color=Net2Vec17),size=5,label="\u25D7",family="Arial Unicode MS")+theme_classic()+ stat_smooth(aes(group = 1),method = "gam", formula = y ~ s(x), size = 1)
 
 # remove rows to get age aligned and age mitigaged dfs
 ageAligned<-as.logical(ageAligned)
@@ -1629,76 +1629,76 @@ ggplot(data = BwAgeCorTMDifDf[1:56,], aes(x = factor(scalevec), y = tmdifvec,col
 ```
 
 ```{r}
-library(ggridges)
-# geom_ridge section
-ridgedf<-tibble(BwAgeCorTMDifDf)
-### year needs to be scale, need coordinate flip
-jj <- ggplot(ridgedf[1:50,], aes(x = tmdifvec, y = as.factor(scalevec))) +
-  stat_density_ridges(
-    geom = "density_ridges_gradient",
-    quantile_lines = TRUE,
-    size = 1,
-    quantiles = 2) +
-  theme_ridges() +
-  theme(
-    plot.margin = margin(t = 1, r = 1, b = 0.5, l = 0.5, "cm") 
-  )+
-  coord_flip()
-# t needs to be grad distance
-
-
-
-# Density plot -----------------------------------------------
-jj <- ggplot(t2, aes(x = t, y = year)) +
-  stat_density_ridges(
-    geom = "density_ridges_gradient",
-    quantile_lines = TRUE,
-    size = 1,
-    quantiles = 2) +
-  theme_ridges() +
-  theme(
-    plot.margin = margin(t = 1, r = 1, b = 0.5, l = 0.5, "cm") 
-  )
-
-
-# Build ggplot and extract data
-d <- ggplot_build(jj)$data[[1]]
-
-# Add geom_ribbon for shaded area
-jj +
-  geom_ribbon(
-    data = transform(subset(d, x >= 20), year = group),
-    aes(x, ymin = ymin, ymax = ymax, group = group),
-    fill = "red",
-    alpha = 0.5) 
-
-# he is subsetting the data by the transformed subset 
-
-# would need to for loop over every quantile over every scale to extract expanse, average within-quantile age-effect (for color calculation)
-
-ridgedf$scalevec<-as.factor(ridgedf$scalevec)
-
-
-ggplot(ridgedf, aes(x=tmdifvec, y=scalevec, fill = factor(scalevec))) +theme_classic()+
-  stat_density_ridges(
-    geom = "density_ridges_gradient", 
-    calc_ecdf = TRUE)+
-    scale_fill_viridis_d(name = "Quartiles")+
-    coord_flip()
-
-
-geom_jitter()
-
-ggplot(ridgedf, aes(x = tmdifvec, y = as.factor(scalevec))) +geom_density_ridges()+theme_classic()
-
-# going to have to make a separate layer for each
-ggplot(ridgedf[1:10,], aes(x=tmdifvec, y=scalevec, fill = factor(scalevec))) +theme_classic()+stat_density_ridges()+stat_density_ridges(data=ridgedf[31:100,],aes(x=tmdifvec, y=scalevec,fill='none'))+xlim(0,12)
-
-
-# really annoying fucking plot
-ggplot(ridgedf[5:11,], aes(x=tmdifvec, y=scalevec,fill = stat(mean(ridgedf[5:11,]$ageEfvec))))+
-stat_density_ridges()+stat_density_ridges(data=ridgedf[2:4,],aes(x=tmdifvec, y=scalevec,fill=stat(mean(ridgedf[2:4,]$ageEfvec))))+
-  theme_classic()+scale_cok
+###library(ggridges)
+#### geom_ridge section
+###ridgedf<-tibble(BwAgeCorTMDifDf)
+###### year needs to be scale, need coordinate flip
+###jj <- ggplot(ridgedf[1:50,], aes(x = tmdifvec, y = ###as.factor(scalevec))) +
+###  stat_density_ridges(
+###    geom = "density_ridges_gradient",
+###    quantile_lines = TRUE,
+###    size = 1,
+###    quantiles = 2) +
+###  theme_ridges() +
+###  theme(
+###    plot.margin = margin(t = 1, r = 1, b = 0.5, l = 0.5, "cm") 
+###  )+
+###  coord_flip()
+#### t needs to be grad distance
+###
+###
+###
+#### Density plot -----------------------------------------------
+###jj <- ggplot(t2, aes(x = t, y = year)) +
+###  stat_density_ridges(
+###    geom = "density_ridges_gradient",
+###    quantile_lines = TRUE,
+###    size = 1,
+###    quantiles = 2) +
+###  theme_ridges() +
+###  theme(
+###    plot.margin = margin(t = 1, r = 1, b = 0.5, l = 0.5, "cm") 
+###  )
+###
+###
+#### Build ggplot and extract data
+###d <- ggplot_build(jj)$data[[1]]
+###
+#### Add geom_ribbon for shaded area
+###jj +
+###  geom_ribbon(
+###    data = transform(subset(d, x >= 20), year = group),
+###    aes(x, ymin = ymin, ymax = ymax, group = group),
+###    fill = "red",
+###    alpha = 0.5) 
+###
+#### he is subsetting the data by the transformed subset 
+###
+#### would need to for loop over every quantile over every scale to ###extract expanse, average within-quantile age-effect (for color ###calculation)
+###
+###ridgedf$scalevec<-as.factor(ridgedf$scalevec)
+###
+###
+###ggplot(ridgedf, aes(x=tmdifvec, y=scalevec, fill = factor(scalevec))) ###+theme_classic()+
+###  stat_density_ridges(
+###    geom = "density_ridges_gradient", 
+###    calc_ecdf = TRUE)+
+###    scale_fill_viridis_d(name = "Quartiles")+
+###    coord_flip()
+###
+###
+###geom_jitter()
+###
+###ggplot(ridgedf, aes(x = tmdifvec, y = as.factor(scalevec))) ###+geom_density_ridges()+theme_classic()
+###
+#### going to have to make a separate layer for each
+###ggplot(ridgedf[1:10,], aes(x=tmdifvec, y=scalevec, fill = ###factor(scalevec))) ###+theme_classic()+stat_density_ridges()+stat_density_ridges(data=ridgedf###[31:100,],aes(x=tmdifvec, y=scalevec,fill='none'))+xlim(0,12)
+###
+###
+#### really annoying fucking plot
+###ggplot(ridgedf[5:11,], aes(x=tmdifvec, y=scalevec,fill = ###stat(mean(ridgedf[5:11,]$ageEfvec))))+
+###stat_density_ridges()+stat_density_ridges(data=ridgedf[2:4,],aes(x=tmdi###fvec, y=scalevec,fill=stat(mean(ridgedf[2:4,]$ageEfvec))))+
+###  theme_classic()+scale_cok
 
 ```
 
@@ -2056,6 +2056,36 @@ bothFeats<-cbind(bothFeats,masteref$F1_Exec_Comp_Cog_Accuracy)
 #write.table(ageFacilFeats,'/cbica/projects/pinesParcels/results/EffectVecs/AgeFacilFeats',sep=',', col.names = F,quote = F,row.names=F)
 #write.table(ageMitigFeats,'/cbica/projects/pinesParcels/results/EffectVecs/AgeMitigFeats',sep=',', col.names = F,quote = F,row.names=F)
 #write.table(bothFeats,'/cbica/projects/pinesParcels/results/EffectVecs/AgeFacilAndMitigFeats',sep=',', col.names = F,quote = F,row.names=F)
+```
+
+```{r}
+######### Change to print out avg. intercept (b/w con), slope @ 10, slope @ 15, slope @ 20 of each community over scales
+BW_interceptVec<-rep(0,464)
+BW_deriv10vec<-rep(0,464)
+BW_deriv15vec<-rep(0,464)
+BW_deriv20vec<-rep(0,464)
+
+# use calculated bwAvg Con for intercept
+BW_interceptVec<-colMeans(bwAvgCon)
+
+# use calculated deriv info for slopes, age range is 178 months
+# 10 y.o. is 22/178 months into the 200 point derivs age-range
+deriv.point.10<-round((22/178)*200)
+# 15 y.o. 82/178 months in
+deriv.point.15<-round((82/178)*200)
+# 20 y.o. is 142/178 months in
+deriv.point.20<-round((142/178)*200)
+#derivInfo
+BW_deriv10vec<-derivInfo[,deriv.point.10]
+BW_deriv15vec<-derivInfo[,deriv.point.15]
+BW_deriv20vec<-derivInfo[,deriv.point.20]
+
+
+# write em out as an effect vector for each scale: restart here 11/21
+
+# write em out to cubic
+write.table(edgesAt17_EF,'/cbica/projects/pinesParcels/results/EffectVecs/edgesAt17_EF',sep=',', col.names = F,quote = F,row.names=F)
+write.table(edges_EF,'/cbica/projects/pinesParcels/results/EffectVecs/edges_EF',sep=',', col.names = F,quote = F,row.names=F)
 ```
 
 ```{r}
