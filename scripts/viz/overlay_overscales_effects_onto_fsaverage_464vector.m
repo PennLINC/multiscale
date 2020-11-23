@@ -6,16 +6,18 @@ vecsfp='/cbica/projects/pinesParcels/results/EffectVecs';
 %uncomment to switch to meanSegreg
 % _i is for individualized, added to look at individ. vs gro. partition effect differences
 % _g for group partitions
-vecs=dir([vecsfp '/Deriv20yoAt*']);
+vecs=load([vecsfp '/maxderiv']);
 % first two are . and ..
-sizevecs=size(vecs);
-for i=1:sizevecs(1)
-	% i + 1 because 1:29 files but 2:30 scales
-	scale=i+1;
-	% have to manually reconstruct the name bc bash stores as 10 first
-	fn=['Deriv20yoAt' num2str(scale)];
-	effCellStruct{i}=load([vecsfp '/' fn]);
+for K=2:30
+	K_start=((K-1)*(K))/2;
+      	K_end=(((K-1)*(K))/2)+K-1;
+      	Kind=K_start:K_end;
+	% pick out this scale with Kind
+	file=vecs(Kind);
+	% transform them to represent age in years
+	file=(((file*178)/200)+98)/12;
+	effCellStruct{K-1}=file;
 end
 % name
-effectname='Deriv20yo'
+effectname='MaxDeriv'
 PBP_effect_msOverlay(effCellStruct,effectname);

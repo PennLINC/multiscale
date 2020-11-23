@@ -879,7 +879,7 @@ minAgeEst<-rep(0,length=length(masterdf[,indiv_nsegcols_ind]))
 maxAgeEst<-rep(0,length=length(masterdf[,indiv_nsegcols_ind]))
 AB_Est<-rep(0,length=length(masterdf[,indiv_nsegcols_ind]))
 SplineP<-rep(0,length=length(masterdf[,indiv_nsegcols_ind]))
-
+InterceptVector<-rep(0,length=length(masterdf[,indiv_nsegcols_ind]))
 derivInfo<-array(0,dim=c(464,200))
 NetSplines<-array(0,dim=c(464,693))                  
 
@@ -906,6 +906,7 @@ for (i in 1:(length(bwAvgCondf)-4)){
   form<-as.formula(paste("",x,"", covariates, sep=""))
   igam<-gam(formula = form,data=bwAvgCondf)
   SplineP[i]<-summary(igam)$s.pv
+  InterceptVector[i]<-summary(igam)$p.coeff['(Intercept)']
   derv<-derivatives(igam,term='Age')
   derv<- derv %>%
   mutate(sig = !(0 >lower & 0 < upper))
@@ -1117,7 +1118,9 @@ AB_EstEdgesvec=rep(0,length(colnames(individ_scalebybw_df)))
 AB_EstEdgesvec_agedir=rep(0,length(colnames(individ_scalebybw_df)))
 lm_xM_covariates="~Age+Sex+Motion"
 lm_My_covariates="F1_Exec_Comp_Cog_Accuracy~Sex+Motion+Age+"
-
+# for recording net1 and net2 tm
+net1tmvec=rep(0,length(colnames(individ_scalebybw_df)))
+net2tmvec=rep(0,length(colnames(individ_scalebybw_df)))
 
 # make a scale vector to match transmodality difference values
 # this is to look at how finer scales confer networks that are less different
@@ -1157,6 +1160,8 @@ for (i in 1:length(colnames(individ_scalebybw_df))){
     # get TM values of both nets at this scale
     tm1=tmvec[Kind[as.numeric(net1)]]
     tm2=tmvec[Kind[as.numeric(net2)]]
+    net1tmvec[i]<-tm1
+    net2tmvec[i]<-tm2
     oc1=occvec[Kind[as.numeric(net1)]]
     oc2=occvec[Kind[as.numeric(net2)]]
     atn1=attnmvec[Kind[as.numeric(net1)]]
@@ -1245,8 +1250,10 @@ for (i in 1:length(colnames(individ_scalebybw_df))){
 ###write.csv(AB_EstEdgesvec,'~/Desktop/multiscale/edgesABEst.csv')
 AB_EstEdgesvec_csv<-read.csv('~/Desktop/multiscale/edgesABEst.csv')
 AB_EstEdgesvec<-AB_EstEdgesvec_csv$x
+# age corrections for MC
+fdrAgeDR2<-p.adjust(ageDR2Pvec,method='fdr')
 # fdr correct pvectors, together
-concatpvecs<-c(ageEfPvec,EF_BPvec,noAge_EFEfPVec)
+concatpvecs<-c(ageDR2Pvec,EF_BPvec,noAge_EFEfPVec)
 correctconcatpvecs<-p.adjust(concatpvecs,method='fdr')
 chunksize=length(correctconcatpvecs)/3
 fdr_ageEfPvec<-correctconcatpvecs[1:chunksize]
@@ -1254,10 +1261,13 @@ fdr_EFEfPvec<-correctconcatpvecs[(chunksize+1):(2*chunksize)]
 fdr_noAge_EFEfPVec<-correctconcatpvecs[((2*chunksize)+1):(3*chunksize)]
 ## ^^ masks for developmentally facilitated vs. devel. conflicted
 # use p values to make gray'ed mask
+domnetSigAge1<-Net1Vec
+domnetSigAge2<-Net2Vec
 domnetSig1<-Net1Vec
 domnetSig2<-Net2Vec
 domnetAgelessSig1<-Net1Vec
 domnetAgelessSig2<-Net2Vec
+
 levels(domnetSig1)<-c(levels(domnetSig1),'NonSig')
 levels(domnetAgelessSig1)<-c(levels(domnetAgelessSig1),'NonSig')
 domnetSig1[fdr_EFEfPvec>0.05]='NonSig'
@@ -1267,12 +1277,17 @@ levels(domnetAgelessSig2)<-c(levels(domnetAgelessSig2),'NonSig')
 domnetSig2[fdr_EFEfPvec>0.05]='NonSig'
 domnetAgelessSig2[fdr_noAge_EFEfPVec>0.05]='NonSig'
 
+levels(domnetSigAge1)<-c(levels(domnetSigAge1),'NonSig')
+levels(domnetSigAge2)<-c(levels(domnetSigAge2),'NonSig')
+domnetSigAge1[ageDR2Pvec>0.05]='NonSig'
+domnetSigAge2[ageDR2Pvec>0.05]='NonSig'
+
 # 11/20/20 - gam-pulled EF coefficient estimates subbed in for EF partial correlation effect estimates. The ONLY difference is in how the age term is accounted for in this multiple regression
 EFEfvec<-EFDR2vec
 EF_BPvec<-EFDR2Pvec
 
 ## merged vectors
-BwAgeCorTMDifDf<-data.frame(tmdifvec,ageEfvec,noAge_EFEfVec,EFEfvec,scalevec,Net1Vec,Net2Vec,Net1Vec17,Net2Vec17,fdr_ageEfPvec,fdr_EFEfPvec,fdr_noAge_EFEfPVec,ageDR2vec,occdifvec,all3pgDifvec,domnetSig1,domnetSig2,domnetAgelessSig1,domnetAgelessSig2)
+BwAgeCorTMDifDf<-data.frame(tmdifvec,ageEfvec,noAge_EFEfVec,EFEfvec,scalevec,Net1Vec,Net2Vec,Net1Vec17,Net2Vec17,fdr_ageEfPvec,fdr_EFEfPvec,fdr_noAge_EFEfPVec,ageDR2vec,occdifvec,all3pgDifvec,domnetSig1,domnetSig2,domnetAgelessSig1,domnetAgelessSig2,domnetSigAge1,domnetSigAge2,net1tmvec,net2tmvec)
 # fdr age dr2
 BwAgeCorTMDifDf$ageDR2Pvec<-p.adjust(ageDR2Pvec,method='fdr')
 
@@ -1900,6 +1915,7 @@ negEnoAs<-ggplot(BwAgeDR2TMDifDf[negEnoA,],aes(x=occdifvec,y=EFDR2vec,color=scal
 
 #plot(KAcrossPos$V1,BwAgeDR2TMDifDf$tmdifvec)
 ```
+
 ```{r}
 # section to make a table of 
 # WITH PG2 - 2 - 2 -2 -2 -2 -2 -2 -2#
@@ -2065,8 +2081,8 @@ BW_deriv10vec<-rep(0,464)
 BW_deriv15vec<-rep(0,464)
 BW_deriv20vec<-rep(0,464)
 
-# use calculated bwAvg Con for intercept
-BW_interceptVec<-colMeans(bwAvgCon)
+# use calculated InterceptVector for intercept
+BW_interceptVec<-InterceptVector
 
 # use calculated deriv info for slopes, age range is 178 months
 # 10 y.o. is 22/178 months into the 200 point derivs age-range
@@ -2082,10 +2098,21 @@ BW_deriv20vec<-derivInfo[,deriv.point.20]
 
 
 # write em out as an effect vector for each scale: restart here 11/21
+for (K in 2:30){
+      K_start=((K-1)*(K))/2
+      K_end=(((K-1)*(K))/2)+K-1
+      Kind<-K_start:K_end
+      Intercept=InterceptVector[Kind]
+      at10=BW_deriv10vec[Kind]
+      at15=BW_deriv15vec[Kind]
+      at20=BW_deriv20vec[Kind]
+      # write em out to cubic
+      write.table(Intercept,paste('/cbica/projects/pinesParcels/results/EffectVecs/BW_InterceptAt',K,sep=''),sep=',', col.names = F,quote = F,row.names=F)
+      write.table(at10,paste('/cbica/projects/pinesParcels/results/EffectVecs/Deriv10yoAt',K,sep=''),sep=',', col.names = F,quote = F,row.names=F)
+      write.table(at15,paste('/cbica/projects/pinesParcels/results/EffectVecs/Deriv15yoAt',K,sep=''),sep=',', col.names = F,quote = F,row.names=F)
+      write.table(at20,paste('/cbica/projects/pinesParcels/results/EffectVecs/Deriv20yoAt',K,sep=''),sep=',', col.names = F,quote = F,row.names=F)
+}
 
-# write em out to cubic
-write.table(edgesAt17_EF,'/cbica/projects/pinesParcels/results/EffectVecs/edgesAt17_EF',sep=',', col.names = F,quote = F,row.names=F)
-write.table(edges_EF,'/cbica/projects/pinesParcels/results/EffectVecs/edges_EF',sep=',', col.names = F,quote = F,row.names=F)
 ```
 
 ```{r}
@@ -2362,12 +2389,62 @@ ycolors=c('#3281ab','#670068','#007500','#b61ad0','#b8cf86','#d77d00','#c1253c')
 ```
 
 ```{r}
+# trying to replicate this section by indexing into edge effects instead of calculating again
+dr2TmDif_coef<-rep(0,7)
+dr2TmDif_pval<-rep(0,7)
+# for all y7 nets
+for (y in 1:7){
+  # net looked at in this iteration
+  print(Y7vec[y])
+  # isolate this net by getting indices of where it is in the 464 vector
+  spotsWhereitsNet1<-grep(Y7vec[y],BwAgeCorTMDifDf$Net1Vec)
+  spotsWhereitsNet2<-grep(Y7vec[y],BwAgeCorTMDifDf$Net2Vec)
+  # get union to be inclusive
+  Y7rows<-union(spotsWhereitsNet1,spotsWhereitsNet2)
+  # get that include this y7 from processed edgelist
+  Net1Vec[i]<-as.character(y7lab1)
+  Net2Vec[i]<-as.character(y7lab2)
+  # plot df
+  plotdf<-BwAgeCorTMDifDf[Y7rows,]
+  # get linear estimate of dr2-transmodality dif relation
+  linRelation<-cor.test(plotdf$tmdifvec,plotdf$ageDR2vec)
+  dr2TmDif_coef[y]<-linRelation$estimate
+  dr2TmDif_pval[y]<-linRelation$p.value
+  # set non-sig dots to gray
+  #ggplot(plotdf,aes(tmdifvec,ageDR2vec,color=domnetSigAge1,alpha=domnetSigAge1))+ geom_text(size=10,label="\u25D6",family="Arial Unicode MS")+scale_alpha_manual(values=c(1,1,1,1,1,.3,1,1),guide=F)+scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','gray','#b61ad0','#670068')) +xlab("Transmodality") +ylab(expression(paste(Delta,R^2[adj]))) +geom_text(aes(x=tmdifvec,y=ageDR2vec,color=domnetSigAge2,alpha=domnetSigAge1),size=10,label="\u25D7",family="Arial Unicode MS")+  scale_alpha_manual(values=c(1,1,1,1,1,.3,1,1),guide=F)+  theme_classic(base_size=40)+theme(legend.position="none")
+}
+
+# on all points
+ggplot(BwAgeCorTMDifDf,aes(tmdifvec,ageDR2vec,color=domnetSigAge1,alpha=domnetSigAge1))+ geom_text(size=10,label="\u25D6",family="Arial Unicode MS")+
+  scale_alpha_manual(values=c(1,1,1,1,1,.3,1,1),guide=F)+
+scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','gray','#b61ad0','#670068')) +
+xlab("Transmodality") +
+ylab(expression(paste(Delta,R^2[adj]))) +
+geom_text(aes(x=tmdifvec,y=ageDR2vec,color=domnetSigAge2,alpha=domnetSigAge1),size=10,label="\u25D7",family="Arial Unicode MS")+
+  scale_alpha_manual(values=c(1,1,1,1,1,.3,1,1),guide=F)+
+  theme_classic(base_size=40)+
+    theme(legend.position="none")
+
+ggplot(BwAgeCorTMDifDf,aes(net1tmvec,net2tmvec,color=ageDR2vec,alpha=.7))+ geom_point(size=4)+
+xlab("Transmodality") +
+ylab('Transmodality') +
+theme_classic(base_size=40)+scale_color_viridis()+theme(legend.position = 'none')
+
+
+### big bar plot of linear effects
+barplotdf<-data.frame(dr2TmDif_coef,Y7vec)
+ggplot(barplotdf,aes(x=reorder(Y7vec,dr2TmDif_coef),dr2TmDif_coef,fill=Y7vec))+geom_col()+ggtitle('Relation Between Age Effect and Transmodality Difference')+scale_fill_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068'))+theme_classic(base_size=28)+ylab(expression(rho))+xlab('Yeo7')+theme(legend.position = 'none')
+```
+
+```{r}
 # Section to do this with half circles. corresp. to colors of involved y7 nets
 # get vector of net1 membership
 # get vector of net2 membership
 # initialize dataframe for violin plot, 2000 is guess for max b/w cons for a y7 net
 violinDF<-data.frame(matrix(data=NA,nrow=2000,ncol=7))
 violinDFP<-data.frame(matrix(data=NA,nrow=2000,ncol=7))
+dr2TmDif_coef<-rep(0,7)
+dr2TmDif_pval<-rep(0,7)
 # for all y7 nets
 for (y in 1:7){
   # net looked at in this iteration
@@ -2427,7 +2504,12 @@ for (y in 1:7){
   # merged vectors
   BwAgeCorTMDifDf<-data.frame(tmdifvec,ageEfvec,factor(Net2Memb,levels=c("Motor","Visual","DA","VA","Limbic","FP","DM")))
   colnames(BwAgeCorTMDifDf)<-c('tmdifvec','ageEfVec','Net2Memb')
+  # get linear estimate of dr2-transmodality dif relation
+  linRelation<-cor.test(BwAgeCorTMDifDf$tmdifvec,BwAgeCorTMDifDf$ageEfVec)
+  dr2TmDif_coef[y]<-linRelation$estimate
+  dr2TmDif_pval[y]<-linRelation$p.value
   # this uses violinDFP, which is calculated after initial run-thru. comment out for initial run-thru.
+  # set non-sig dots to gray
   sigDF<-BwAgeCorTMDifDf[which((violinDFP[1:(dim(BwAgeCorTMDifDf)[1]),y]) <0.05),]
   print(ggplot(sigDF, aes(x=tmdifvec,y=ageEfVec,color=Net2Memb)) + geom_point(alpha=.27,size=3)+ scale_color_manual(values=ycolors) + xlab('Gradient Distance') +  ylim(-.1,.14) +xlim(-.1,13)+ ylab(expression(paste(Delta,R^2[adj])))+theme_minimal(base_size=28)+theme(legend.position = "none"))
   # throw age effects into master violin df
