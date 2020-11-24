@@ -21,3 +21,4 @@ gg*.png
 scripts/highDim_mediation/PDM*
 scripts/highDim_mediation/*.csv
 pcPDM*_AllEdges
+*bart*

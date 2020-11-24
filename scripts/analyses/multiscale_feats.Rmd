@@ -57,7 +57,14 @@ for (i in 2:30){
   forRRfc<-cbind(masterdf$Age,masterdf$Motion,masterdf[,scaleind])
   RRfcFN<-paste('/cbica/projects/pinesParcels/results/EffectVecs/scale',i,'for_bw_RRfc.csv',sep='')
   write.table(forRRfc,RRfcFN,row.names = F,col.names = F,sep = ',')
+
 }
+
+# write multiscale (all) edges as scale 31 for python convenience
+scaleind<-grep('ind_bw_FC',colnames(masterdf))
+forRRfc<-cbind(masterdf$Age,masterdf$Motion,masterdf[,scaleind])
+RRfcFN<-paste('/cbica/projects/pinesParcels/results/EffectVecs/scale31for_bw_RRfc.csv',sep='')
+write.table(forRRfc,RRfcFN,row.names = F,col.names = F,sep = ',')
 ```
 
 ```{r}

@@ -2117,36 +2117,25 @@ for (K in 2:30){
 
 ```{r}
 ######### Adapted for K=17 vs. Multiscale features
-####set K
-k=17
-####
-
+for (k in 2:30){
 # grep out edges at this scale
 scaleStr=paste('scale',k,'_',sep='')
 scaleCols_inds=grep(scaleStr,colnames(masteref))
 # combine with edge only and individualized only values
 scaleK_bw_indivi_cols_inds<-intersect(indiv_bwcols_ind,scaleCols_inds)
-# z score edges
-edges<-masteref[colnames(masteref)[scaleK_bw_indivi_cols_inds]]
-#for (i in 1:length(edges)){
-#  edges[,i]<-((edges[,i]-mean(edges[,i])))/(sd(edges[,i]))
-#}
-
-# same thing for all edges
-alledges<-masteref[colnames(masteref)[indiv_bwcols_ind]]
-#for (i in 1:length(alledges)){
-#  alledges[,i]<-((alledges[,i]-mean(alledges[,i])))/(sd(alledges[,i]))
-#}
-
-
+edges<-masteref[,scaleK_bw_indivi_cols_inds]
 # combine feature matrices with EF scores
-edgesAt17_EF<-cbind(edges,masteref$F1_Exec_Comp_Cog_Accuracy)
-edges_EF<-cbind(alledges,masteref$F1_Exec_Comp_Cog_Accuracy)
-
+edgesAtK_EF<-cbind(edges,masteref$F1_Exec_Comp_Cog_Accuracy)
+print(dim(edgesAtK_EF))
 
 # write em out to cubic
-write.table(edgesAt17_EF,'/cbica/projects/pinesParcels/results/EffectVecs/edgesAt17_EF',sep=',', col.names = F,quote = F,row.names=F)
-write.table(edges_EF,'/cbica/projects/pinesParcels/results/EffectVecs/edges_EF',sep=',', col.names = F,quote = F,row.names=F)
+write.table(edgesAtK_EF,paste('/cbica/projects/pinesParcels/results/EffectVecs/edgesAt',k,'_EF',sep=''),sep=',', col.names = F,quote = F,row.names=F)
+
+}
+# same thing for all edges
+alledges<-masteref[colnames(masteref)[indiv_bwcols_ind]]
+edges_EF<-cbind(alledges,masteref$F1_Exec_Comp_Cog_Accuracy)
+write.table(edges_EF,'/cbica/projects/pinesParcels/results/EffectVecs/edgesAt31_EF',sep=',', col.names = F,quote = F,row.names=F)
 ```
 
 ```{r}
@@ -2610,6 +2599,11 @@ melteddf$Scale<-log(melteddf$Scale)
 # fit model across scales
 GlobalBwEF_model<-glmer(value~Scale*Age*EF+Sex+Motion+(1|bblid),melteddf)
 plot_model(GlobalBwEF_model,type='int')
+```
+
+```{r}
+TmTmEdge_model<-lm(ageDR2vec~net1tmvec*net2tmvec,BwAgeCorTMDifDf)
+plot_model(TmTmEdge_model,type='int')
 ```
 
 ```{r}

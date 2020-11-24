@@ -62,7 +62,7 @@ for K in range(2,31):
 	#varofint_permut=masterdf_permut[:,varofintnum]
 	# set alphas for gcv
 	# use Zaixu's alpha range
-	alphas = np.exp2(np.arange(16) - 10)
+	alphas = np.exp2(np.arange(30) - 14)
 
 	# outcome predictions will be in these 2d arrays (finally back to 2d!)
 	# needs to be 12 x 1, 12 rows for each split 1 col for each var of interest
