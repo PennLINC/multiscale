@@ -35,12 +35,12 @@ for scale in range(2,32):
 		# for a few different train and test splits
 		# Train and test split from data frame
 		xtrain,xtest,ytrain,ytest,indices_train,indices_test=train_test_split(Featvecs,varofint,indices,test_size=0.33,random_state=(split))
-		# fit model with gcv
-		lm = sklearn.linear_model.RidgeCV(alphas=alphas, store_cv_values=True).fit(xtrain,ytrain)
+		# fit model with gcv # false intercept bc it is centered now
+		lm = sklearn.linear_model.RidgeCV(alphas=alphas,fit_intercept=False,store_cv_values=True).fit(xtrain,ytrain)
 		# set prediction alpha to best performing alpha in training set
 		alpha=lm.alpha_
 		# test prediction on left out sample
-		pred_obs_r2 = sklearn.linear_model.Ridge(alpha=alpha).fit(xtrain,ytrain).score(xtest,ytest)
+		pred_obs_r2 = sklearn.linear_model.Ridge(alpha=alpha,fit_intercept=False).fit(xtrain,ytrain).score(xtest,ytest)
 		# stack the predictions vertically to be averaged across samples splits
 		all_preds[split,scale-2]=pred_obs_r2
 		all_alphas[split,scale-2]=alpha

@@ -1416,7 +1416,22 @@ AgeVsEFEffects_agF<-ggplot(BwAgeCorTMDifDf,aes(x=noAge_EFEfVec,y=ageEfvec,color=
 AgeVsEFEffects_agM<-ggplot(BwAgeCorTMDifDf,aes(x=EFEfvec,y=ageEfvec,color=Net1Vec)) + geom_text(size=7,label="\u25D6",family="Arial Unicode MS") + xlab('EF Partial Correlation') + ylab('Age Partial Correlation') + ggtitle('Age vs. Age-controlled EF effects')+scale_color_manual(values=ycolors,limits=Y7vec)+geom_text(aes(x=EFEfvec,y=ageEfvec,color=Net2Vec),size=7,label="\u25D7",family="Arial Unicode MS")+theme_minimal()+theme(legend.position = "none")
 
 # for figure 4
-ggplot(BwAgeCorTMDifDf[BwAgeCorTMDifDf$ageDR2Pvec<0.05,],aes(x=tmdifvec,y=ageDR2vec,color=Net1Vec))+ geom_text(size=7,label="\u25D6",family="Arial Unicode MS")+scale_color_manual(values=ycolors,limits=Y7vec)+geom_text(aes(x=tmdifvec,y=ageDR2vec,color=Net2Vec),size=7,label="\u25D7",family="Arial Unicode MS")+theme(legend.position = "none") + xlab('Gradient Distance') + ylab(expression(paste(Delta,R^2[adj])))+theme_classic(base_size = 35)+theme(legend.position = "none")
+### get null distribution for permtued p-value
+# real cor
+realCor<-cor.test(BwAgeCorTMDifDf$tmdifvec,BwAgeCorTMDifDf$ageDR2vec)$estimate
+
+permutedCors<-rep(0,1000)
+
+for (permut in 1:1000){
+  permutDF<-data.frame(BwAgeCorTMDifDf$tmdifvec,BwAgeCorTMDifDf$ageDR2vec)
+  colnames(permutDF)<-c('tmdif','ageEffect')
+  permutedDF<-transform(permutDF,tmdif=sample(tmdif))
+  permutedCors[permut]<-cor.test(permutedDF$tmdif,permutedDF$ageEffect)$estimate
+}
+
+2*pnorm(realCor,mean(permutedCors),sd(permutedCors))
+
+ggplot(BwAgeCorTMDifDf[BwAgeCorTMDifDf$ageDR2Pvec<0.05,],aes(x=tmdifvec,y=ageDR2vec))+ geom_text(size=7,label="\u25D6",family="Arial Unicode MS",aes(color=Net1Vec))+scale_color_manual(values=ycolors,limits=Y7vec)+geom_text(aes(x=tmdifvec,y=ageDR2vec,color=Net2Vec),size=7,label="\u25D7",family="Arial Unicode MS")+theme(legend.position = "none") + xlab('Transmodality Difference') + ylab(expression(paste('Age Effect(',Delta,R^2[adj],')')))+theme_classic(base_size = 35)+geom_point(data=BwAgeCorTMDifDf[BwAgeCorTMDifDf$ageDR2Pvec>0.05,],aes(x=tmdifvec,y=ageDR2vec,fill=NULL),pch=21,color='grey',size=3)+theme(legend.position = "none")+geom_smooth(size=3,method='lm',color='black',formula=y~x)
 
 ggplot(BwAgeCorTMDifDf[BwAgeCorTMDifDf$ageDR2Pvec<0.05,],aes(x=tmdifvec,y=ageDR2vec,color=Net1Vec17))+ geom_text(size=5,label="\u25D6",family="Arial Unicode MS")+scale_color_manual(values=y17colors,limits=y17vec)+geom_text(aes(x=tmdifvec,y=ageDR2vec,color=Net2Vec17),size=5,label="\u25D7",family="Arial Unicode MS")+theme(legend.position = "none") + xlab('Transmodality Difference') + ylab(expression(paste(Delta,R^2[adj])))+theme_classic(base_size = 28)
 ```
@@ -2116,7 +2131,32 @@ for (K in 2:30){
 ```
 
 ```{r}
-######### Adapted for K=17 vs. Multiscale features
+##### print out features by scale - age
+for (i in 2:30){
+  # just extract individualized b/w feats at this scale
+  scaleind<-grep((paste('ind_bw_FC_scale',i,'_',sep='')),colnames(masterdf))
+  # annoying fucking exception for K=2's prissy ass not being able to figure out colMeans
+  if (i==2){
+    CenteredEdges<-masterdf[,scaleind]-mean(masterdf[,scaleind])
+  } else {
+    CenteredEdges<-masterdf[,scaleind]-colMeans(masterdf[,scaleind])
+  }
+  # center em so we can fit ridge without intercepts
+  CenteredAge<-masterdf$Age-mean(masterdf$Age)
+  forRRfc<-cbind(CenteredAge,masterdf$Motion,CenteredEdges)
+  RRfcFN<-paste('/cbica/projects/pinesParcels/results/EffectVecs/scale',i,'for_bw_RRfc.csv',sep='')
+  write.table(forRRfc,RRfcFN,row.names = F,col.names = F,sep = ',')
+
+}
+
+# write multiscale (all) edges as scale 31 for python convenience
+scaleind<-grep('ind_bw_FC',colnames(masterdf))
+forRRfc<-cbind(CenteredAge,masterdf$Motion,(masterdf[,scaleind]-colMeans(masterdf[,scaleind])))
+RRfcFN<-paste('/cbica/projects/pinesParcels/results/EffectVecs/scale31for_bw_RRfc.csv',sep='')
+write.table(forRRfc,RRfcFN,row.names = F,col.names = F,sep = ',')
+
+
+######### Adapted for EF
 for (k in 2:30){
 # grep out edges at this scale
 scaleStr=paste('scale',k,'_',sep='')
@@ -2124,6 +2164,15 @@ scaleCols_inds=grep(scaleStr,colnames(masteref))
 # combine with edge only and individualized only values
 scaleK_bw_indivi_cols_inds<-intersect(indiv_bwcols_ind,scaleCols_inds)
 edges<-masteref[,scaleK_bw_indivi_cols_inds]
+  # annoying fucking exception for K=2's prissy ass not being able to figure out colMeans
+  if (i==2){
+    centeredEdges<-edges-mean(edges)
+  } else {
+    centeredEdges<-edges-colMeans(edges)
+  }
+# center em so we can fit ridge without intercepts
+centeredEdges<-edges-colMeans(edges)
+centeredEF<-masteref$F1_Exec_Comp_Cog_Accuracy-mean(masteref$F1_Exec_Comp_Cog_Accuracy)
 # combine feature matrices with EF scores
 edgesAtK_EF<-cbind(edges,masteref$F1_Exec_Comp_Cog_Accuracy)
 print(dim(edgesAtK_EF))
@@ -2134,7 +2183,7 @@ write.table(edgesAtK_EF,paste('/cbica/projects/pinesParcels/results/EffectVecs/e
 }
 # same thing for all edges
 alledges<-masteref[colnames(masteref)[indiv_bwcols_ind]]
-edges_EF<-cbind(alledges,masteref$F1_Exec_Comp_Cog_Accuracy)
+edges_EF<-cbind((alledges-colMeans(alledges)),masteref$F1_Exec_Comp_Cog_Accuracy)
 write.table(edges_EF,'/cbica/projects/pinesParcels/results/EffectVecs/edgesAt31_EF',sep=',', col.names = F,quote = F,row.names=F)
 ```
 
@@ -2401,6 +2450,8 @@ for (y in 1:7){
   dr2TmDif_pval[y]<-linRelation$p.value
   # set non-sig dots to gray
   #ggplot(plotdf,aes(tmdifvec,ageDR2vec,color=domnetSigAge1,alpha=domnetSigAge1))+ geom_text(size=10,label="\u25D6",family="Arial Unicode MS")+scale_alpha_manual(values=c(1,1,1,1,1,.3,1,1),guide=F)+scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','gray','#b61ad0','#670068')) +xlab("Transmodality") +ylab(expression(paste(Delta,R^2[adj]))) +geom_text(aes(x=tmdifvec,y=ageDR2vec,color=domnetSigAge2,alpha=domnetSigAge1),size=10,label="\u25D7",family="Arial Unicode MS")+  scale_alpha_manual(values=c(1,1,1,1,1,.3,1,1),guide=F)+  theme_classic(base_size=40)+theme(legend.position="none")
+  
+  ggplot(plotdf[plotdf$ageDR2Pvec<0.05,],aes(x=tmdifvec,y=ageDR2vec))+ geom_text(size=7,label="\u25D6",family="Arial Unicode MS",aes(color=Net1Vec))+scale_color_manual(values=ycolors,limits=Y7vec)+geom_text(aes(x=tmdifvec,y=ageDR2vec,color=Net2Vec),size=7,label="\u25D7",family="Arial Unicode MS")+theme(legend.position = "none") + xlab('Transmodality Difference') + ylab(expression(paste('Age Effect(',Delta,R^2[adj],')')))+theme_classic(base_size = 35)+geom_point(data=plotdf[plotdf$ageDR2Pvec>0.05,],aes(x=tmdifvec,y=ageDR2vec,fill=NULL),pch=21,color='grey',size=3)+theme(legend.position = "none")+geom_smooth(size=3,method='lm',color='black',formula=y~x)
 }
 
 # on all points
