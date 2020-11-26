@@ -40,7 +40,7 @@ for scale in range(2,32):
 		# set prediction alpha to best performing alpha in training set
 		alpha=lm.alpha_
 		# test prediction on left out sample
-		pred_obs_r2 = sklearn.linear_model.Ridge(alpha=alpha,fit_intercept=False).fit(xtrain,ytrain).score(xtest,ytest)
+		pred_obs_r2 = sklearn.linear_model.Ridge(alpha=alpha).fit(xtrain,ytrain).score(xtest,ytest)
 		# stack the predictions vertically to be averaged across samples splits
 		all_preds[split,scale-2]=pred_obs_r2
 		all_alphas[split,scale-2]=alpha

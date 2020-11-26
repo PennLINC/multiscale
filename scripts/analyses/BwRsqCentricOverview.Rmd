@@ -2135,15 +2135,8 @@ for (K in 2:30){
 for (i in 2:30){
   # just extract individualized b/w feats at this scale
   scaleind<-grep((paste('ind_bw_FC_scale',i,'_',sep='')),colnames(masterdf))
-  # annoying fucking exception for K=2's prissy ass not being able to figure out colMeans
-  if (i==2){
-    CenteredEdges<-masterdf[,scaleind]-mean(masterdf[,scaleind])
-  } else {
-    CenteredEdges<-masterdf[,scaleind]-colMeans(masterdf[,scaleind])
-  }
-  # center em so we can fit ridge without intercepts
-  CenteredAge<-masterdf$Age-mean(masterdf$Age)
-  forRRfc<-cbind(CenteredAge,masterdf$Motion,CenteredEdges)
+  print(paste('scale',str(i),'number of fc features:',length(scaleind)))
+  forRRfc<-cbind(masterdf$Age,masterdf$Motion,masterdf[,scaleind])
   RRfcFN<-paste('/cbica/projects/pinesParcels/results/EffectVecs/scale',i,'for_bw_RRfc.csv',sep='')
   write.table(forRRfc,RRfcFN,row.names = F,col.names = F,sep = ',')
 
@@ -2151,12 +2144,12 @@ for (i in 2:30){
 
 # write multiscale (all) edges as scale 31 for python convenience
 scaleind<-grep('ind_bw_FC',colnames(masterdf))
-forRRfc<-cbind(CenteredAge,masterdf$Motion,(masterdf[,scaleind]-colMeans(masterdf[,scaleind])))
+forRRfc<-cbind(masterdf$Age,masterdf$Motion,masterdf[,scaleind])
 RRfcFN<-paste('/cbica/projects/pinesParcels/results/EffectVecs/scale31for_bw_RRfc.csv',sep='')
 write.table(forRRfc,RRfcFN,row.names = F,col.names = F,sep = ',')
 
 
-######### Adapted for EF
+######### Adapted forEF
 for (k in 2:30){
 # grep out edges at this scale
 scaleStr=paste('scale',k,'_',sep='')
@@ -2164,15 +2157,6 @@ scaleCols_inds=grep(scaleStr,colnames(masteref))
 # combine with edge only and individualized only values
 scaleK_bw_indivi_cols_inds<-intersect(indiv_bwcols_ind,scaleCols_inds)
 edges<-masteref[,scaleK_bw_indivi_cols_inds]
-  # annoying fucking exception for K=2's prissy ass not being able to figure out colMeans
-  if (i==2){
-    centeredEdges<-edges-mean(edges)
-  } else {
-    centeredEdges<-edges-colMeans(edges)
-  }
-# center em so we can fit ridge without intercepts
-centeredEdges<-edges-colMeans(edges)
-centeredEF<-masteref$F1_Exec_Comp_Cog_Accuracy-mean(masteref$F1_Exec_Comp_Cog_Accuracy)
 # combine feature matrices with EF scores
 edgesAtK_EF<-cbind(edges,masteref$F1_Exec_Comp_Cog_Accuracy)
 print(dim(edgesAtK_EF))
@@ -2183,7 +2167,7 @@ write.table(edgesAtK_EF,paste('/cbica/projects/pinesParcels/results/EffectVecs/e
 }
 # same thing for all edges
 alledges<-masteref[colnames(masteref)[indiv_bwcols_ind]]
-edges_EF<-cbind((alledges-colMeans(alledges)),masteref$F1_Exec_Comp_Cog_Accuracy)
+edges_EF<-cbind(alledges,masteref$F1_Exec_Comp_Cog_Accuracy)
 write.table(edges_EF,'/cbica/projects/pinesParcels/results/EffectVecs/edgesAt31_EF',sep=',', col.names = F,quote = F,row.names=F)
 ```
 
