@@ -517,6 +517,7 @@ globAgeEf<-merge(indglobBw,ef,by='bblid')
 # writeout vectors
 gbwToEF<-array(0,29)
 ageTogbw<-array(0,29)
+ageTogbwDR2<-array(0,29)
 SigMed<-array(0,29)
 for (i in 1:29){
   # generate df for this scale
@@ -533,6 +534,7 @@ for (i in 1:29){
   # X->M effect (path A)
   fit.mediator=lm(Gbw~Age+Motion+Sex,loopdf)
   ageTogbw[i]<-fit.mediator$coefficients['Age']
+  ageTogbwDR2[i]<-DeltaR2EstVec(loopdf$Gbw)
   fit.dv=lm(EF~Age+Sex+Motion+Gbw,data=loopdf)
   gbwToEF[i]<-fit.dv$coefficients['Gbw']
   # commented out for speed runs
@@ -544,7 +546,7 @@ for (i in 1:29){
   ####}
 }
 
-dataforplot<-data.frame(ageTogbw,gbwToEF,SigMed,seq(2, 30))
+dataforplot<-data.frame(ageTogbw,ageTogbwDR2,gbwToEF,SigMed,seq(2, 30))
 
 ggplot(dataforplot,aes(x=seq.2..30.,y=ageTogbw,col=SigMed))+geom_step(size=2)+geom_step(aes(x=seq.2..30.,y=gbwToEF,col=SigMed))+theme_classic()+ylab('Path Coefficient')+xlab('Scale')+ggtitle('Global B/w Con. as an Age->EF Mediator')
 ```
@@ -765,6 +767,7 @@ for (i in 1:2){
       bwAvgCon[,Nind]=avg_bw
       avg_bw_coarse_agecor<-DeltaR2EstVec(avg_bw)
       avg_bw_coarse_agecorP<-DeltaPEstVec(avg_bw)
+      # this is the step that puts DR2 in place of what was previously age cor.
       bwAgeCorVecs[Nind,3]=unlist(avg_bw_coarse_agecor)
       bwAgeCorVecs[Nind,4]=unlist(avg_bw_coarse_agecorP)
     }
@@ -1121,6 +1124,8 @@ lm_My_covariates="F1_Exec_Comp_Cog_Accuracy~Sex+Motion+Age+"
 # for recording net1 and net2 tm
 net1tmvec=rep(0,length(colnames(individ_scalebybw_df)))
 net2tmvec=rep(0,length(colnames(individ_scalebybw_df)))
+# adding this in to confidently map global-bw DR2 to the edges dataframe
+GbwDR2vec=rep(0,length(colnames(individ_scalebybw_df)))
 
 # make a scale vector to match transmodality difference values
 # this is to look at how finer scales confer networks that are less different
@@ -1197,7 +1202,8 @@ for (i in 1:length(colnames(individ_scalebybw_df))){
     motioncorvec[i]<-cor.test(masterdf[,colindex],masterdf$Motion)$estimate
     # accompanying scalevec so we can look at the typical transmodality #difference at each scale
     scalevec[i]=scale
-    
+    # adding this in to confidently map global-bw DR2 to the edges dataframe
+    GbwDR2vec[i]=ageTogbwDR2[scale-1]
     # additional section for EF
     # partial spearmans to extrac age relation
     pspear=pcor(EFpcordf,method='spearman')$estimate
@@ -1287,7 +1293,7 @@ EFEfvec<-EFDR2vec
 EF_BPvec<-EFDR2Pvec
 
 ## merged vectors
-BwAgeCorTMDifDf<-data.frame(tmdifvec,ageEfvec,noAge_EFEfVec,EFEfvec,scalevec,Net1Vec,Net2Vec,Net1Vec17,Net2Vec17,fdr_ageEfPvec,fdr_EFEfPvec,fdr_noAge_EFEfPVec,ageDR2vec,occdifvec,all3pgDifvec,domnetSig1,domnetSig2,domnetAgelessSig1,domnetAgelessSig2,domnetSigAge1,domnetSigAge2,net1tmvec,net2tmvec)
+BwAgeCorTMDifDf<-data.frame(tmdifvec,ageEfvec,noAge_EFEfVec,EFEfvec,scalevec,Net1Vec,Net2Vec,Net1Vec17,Net2Vec17,fdr_ageEfPvec,fdr_EFEfPvec,fdr_noAge_EFEfPVec,ageDR2vec,occdifvec,all3pgDifvec,domnetSig1,domnetSig2,domnetAgelessSig1,domnetAgelessSig2,domnetSigAge1,domnetSigAge2,net1tmvec,net2tmvec,GbwDR2vec)
 # fdr age dr2
 BwAgeCorTMDifDf$ageDR2Pvec<-p.adjust(ageDR2Pvec,method='fdr')
 
@@ -1321,6 +1327,88 @@ ggplot(data = BwAgeCorTMDifDf, aes(x = factor(scalevec), y = tmdifvec)) +
   geom_violin(alpha = .8) +
   geom_point(size = 1, alpha = 0.8)+theme_classic()+ylab('Gradient Distance')+xlab("# of Communities")
 ```
+```{r}
+# set seed because this might not be 100% deterministic
+set.seed(1)
+# gmms to pull out edge classes
+library(mixtools)
+#' @param x Input data
+#' @param mu Mean of component
+#' @param sigma Standard deviation of compon
+plot_mix_comps <- function(x, mu, sigma, lam) {
+  lam * dnorm(x, mu, sigma)
+}
+
+set.seed(1)
+wait <- BwAgeCorTMDifDf$tmdifvec
+mixmdl <- normalmixEM(wait, k = 2)
+
+data.frame(x = BwAgeCorTMDifDf$tmdifvec) %>%
+  ggplot() +
+  geom_histogram(aes(x, ..density..), binwidth = .1, colour = "black", 
+                 fill = "white") +
+  stat_function(geom = "line", fun = plot_mix_comps,
+                args = list(mixmdl$mu[1], mixmdl$sigma[1], lam = mixmdl$lambda[1]),
+                colour = "red", lwd = 1.5) +
+  stat_function(geom = "line", fun = plot_mix_comps,
+                args = list(mixmdl$mu[2], mixmdl$sigma[2], lam = mixmdl$lambda[2]),
+                colour = "blue", lwd = 1.5) +
+  ylab("Density")
+
+# great, looks like about 1/3rd are short TM distance connections and 2/3rds are longer
+# now pull same # of edges from full distribution, short-range distrib., and long-range distrib.
+
+Pull_n_edges <- function(n) {
+  # initialize short, long, and all range indices
+  SRI=NULL
+  LRI=NULL
+  ARI=NULL
+  # initialize copy of transmodality difference vector for manipulating
+  loop_tmdifvector<-BwAgeCorTMDifDf$tmdifvec
+  # calculated classes are gaussian distrib, use rnorm to match that
+  sdsInSTDunits<-rnorm(n)
+  SRUnits<-sdsInSTDunits*mixmdl$sigma[1]+mixmdl$mu[1]
+  LRUnits<-sdsInSTDunits*mixmdl$sigma[2]+mixmdl$mu[2]
+  # loop over list of transmodality differences n times to sample WITHOUT replacement
+  for (i in 1:n){
+  # pull short range edge indices that are best match to rnorm generated SDs
+  SRI[i]<-which(abs(SRUnits[i]-loop_tmdifvector)==min(abs(SRUnits[i]-loop_tmdifvector)))
+  # take value out
+  loop_tmdifvector[SRI[i]]<- -999
+  # pull long range edge indices that are best match to rnorm generated SDs
+  LRI[i]<-which(abs(LRUnits[i]-loop_tmdifvector)==min(abs(LRUnits[i]-loop_tmdifvector)))
+  # take value out
+  loop_tmdifvector[LRI[i]]<- -999
+  }
+  # take half of each for "full gradient sampling" comparison approach
+  ARI[1:(n/2)]=SRI[1:(n/2)]
+  ARI[(n/2):n]=LRI[(n/2):n]
+  edgesSampled=data.frame(SRI,LRI,ARI)
+  return(edgesSampled)
+}
+
+# trial runs with 30 more features in each iteration
+edgeNumbers<-seq(30,1000,by=30)
+parentFilePath<-'/cbica/projects/pinesParcels/results/EffectVecs/'
+# write em out for penalregress, age version
+for (i in 1:length(edgeNumbers)){
+  # sample edges from above function
+  edgesDF<-Pull_n_edges(edgeNumbers[i])
+  # write out short range edges
+  SRE_forRRfc<-cbind(masterdf$Age,masterdf$Motion,masterdf[,edgesDF$SRI])
+  SRfn<-paste(parentFilePath,'SR',edgeNumbers[i],'_for_bw_RRfc.csv',sep='')
+  write.table(SRE_forRRfc,SRfn,row.names = F,col.names = F,sep = ',')
+  # write out long range
+  LRE_forRRfc<-cbind(masterdf$Age,masterdf$Motion,masterdf[,edgesDF$LRI])
+  LRfn<-paste(parentFilePath,'LR',edgeNumbers[i],'_for_bw_RRfc.csv',sep='')
+  write.table(LRE_forRRfc,LRfn,row.names = F,col.names = F,sep = ',')
+  # write out all range
+  ARE_forRRfc<-cbind(masterdf$Age,masterdf$Motion,masterdf[,edgesDF$ARI])
+  ARfn<-paste(parentFilePath,'AR',edgeNumbers[i],'_for_bw_RRfc.csv',sep='')
+  write.table(ARE_forRRfc,ARfn,row.names = F,col.names = F,sep = ',')
+}
+```
+
 
 ```{r}
 # section to index age-aligned and age-mitigated EF b/w features
@@ -1656,6 +1744,21 @@ ggplot(data = BwAgeCorTMDifDf, aes(x = factor(scalevec), y = tmdifvec)) +
 ### going with this one for figure 5 draft1, 11/18/20
 ggplot(data = BwAgeCorTMDifDf[1:56,], aes(x = factor(scalevec), y = tmdifvec,color=ageEfvec)) +geom_point(size=8,alpha=.5)+ylab('Gradient Distance')+xlab("# of Communities") +theme_classic(base_size=28)+ scale_colour_gradientn(colours=c('#0b0bff','#8585ff','gray90','#ff9191','#ff0a0a'),values = c(0,0.3,0.5,0.7,1),breaks=c(-.3,0,.3), labels = c(-.3,0,.3),limits=c(-.35,0.35),name=expression(paste(Delta,R^2[adj])))
 
+
+ggplot(data = BwAgeCorTMDifDf, aes(x = factor(scalevec), y = tmdifvec,color=ageEfvec)) +geom_violin(size=1,alpha=.5,draw_quantiles =c(.33,.66))+ylab('Gradient Distance')+xlab("# of Communities") +theme_classic(base_size=28)+ scale_colour_gradientn(colours=c('#0b0bff','#8585ff','gray90','#ff9191','#ff0a0a'),values = c(0,0.3,0.5,0.7,1),breaks=c(-.3,0,.3), labels = c(-.3,0,.3),limits=c(-.35,0.35),name=expression(paste(Delta,R^2[adj])))
+
+#### overlay gbw ~ Age DR2
+
+# knabbin this vector from one of the earlier chunks
+BwAgeCorTMDifDf$GbwDr2<-GbwDR2vec
+
+ggplot(data = BwAgeCorTMDifDf, aes(x = factor(scalevec), y = tmdifvec)) +geom_violin(size=1,alpha=.3,draw_quantiles =c(.5),bw=.5)+geom_line(data=BwAgeCorTMDifDf,aes(x=factor(scalevec),y=GbwDr2,color=GbwDr2))+ylab('Transmodality Difference')+xlab("# of Communities") +theme_classic(base_size=28)+ scale_colour_gradientn(colours=c('#0b0bff','#8585ff','gray90','#ff9191','#ff0a0a'),values = c(0,0.3,0.5,0.7,1),breaks=c(-.3,0,.3), labels = c(-.3,0,.3),limits=c(-.35,0.35),name=expression(paste(Delta,R^2[adj])))
+
+
+ggplot(data = BwAgeCorTMDifDf) +geom_violin(aes(x = factor(scalevec), y = (tmdifvec*.04)),size=1,alpha=.3,draw_quantiles =c(.5),bw=.5)+geom_point(data=BwAgeCorTMDifDf,aes(x=scalevec,y=GbwDr2,color=GbwDr2))+ylab('Transmodality Difference')+xlab("# of Communities") +theme_classic(base_size=28)+ scale_colour_gradientn(colours=c('#0b0bff','#8585ff','gray90','#ff9191','#ff0a0a'),values = c(0,0.3,0.5,0.7,1),breaks=c(-.3,0,.3), labels = c(-.3,0,.3),limits=c(-.1,0.1),name=expression(paste(Delta,R^2[adj])))
+
+
+ggplot(data = BwAgeCorTMDifDf) +geom_point(aes(x=as.factor(scalevec),y=(tmdifvec*-.03)+.2),alpha=.5,shape='-',size=10,color='black')+geom_point(data=BwAgeCorTMDifDf,aes(x=scalevec-1,y=GbwDr2,color=GbwDr2),size=15)+ylab('Transmodality Difference')+xlab("# of Communities") +theme_classic(base_size=28)+ scale_colour_gradientn(colours=c('#0b0bff','#8585ff','gray90','#ff9191','#ff0a0a'),values = c(0,0.3,0.5,0.7,1),breaks=c(-.3,0,.3), labels = c(-.3,0,.3),limits=c(-.13,0.13),name=expression(paste(Delta,R^2[adj])))+geom_violin(aes(x = factor(scalevec), y = (tmdifvec*-.03)+.2),size=1,alpha=.3,bw=.01)
 ```
 
 ```{r}
