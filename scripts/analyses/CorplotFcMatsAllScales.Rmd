@@ -117,6 +117,41 @@ BwAgeCorTMDifDf$posweights<-AB_EstEdgesvecPos
 BwAgeCorTMDifDf$negweights<-AB_EstEdgesvecNeg
 ggplot(BwAgeCorTMDifDf,aes(x=tmdifvec,y=posweights,color=Net1Vec)) + geom_text(size=5,label="\u25D6",family="Arial Unicode MS") + xlab('Transmodality Difference') + ylab('EF Mediation') + ggtitle('Edges Increasing With Age')+scale_color_manual(values=ycolors,limits=Y7vec)+geom_text(aes(x=tmdifvec,y=posweights,color=Net2Vec),size=5,label="\u25D7",family="Arial Unicode MS")+theme_classic()
 ggplot(BwAgeCorTMDifDf,aes(x=tmdifvec,y=negweights,color=Net1Vec)) + geom_text(size=5,label="\u25D6",family="Arial Unicode MS") + xlab('Transmodality Difference') + ylab('EF Mediation') + ggtitle('Edges Decreasing with Age')+scale_color_manual(values=ycolors,limits=Y7vec)+geom_text(aes(x=tmdifvec,y=negweights,color=Net2Vec),size=5,label="\u25D7",family="Arial Unicode MS")+theme_classic()
+
+# for univariate mediators, need 4 category horizontal violin:
+# Age +, EF + "1"
+# Age -, EF - "2"
+# Age +, EF - "3"
+# Age -, EF + "4"
+# so, make a categorical variable for BwAgeCorTMDifDf denoting which cat it is in
+BwAgeCorTMDifDf$MediationCategory<-rep(0,dim(BwAgeCorTMDifDf)[1])
+BwAgeCorTMDifDf$MediationCategory<-as.factor(BwAgeCorTMDifDf$MediationCategory)
+levels(BwAgeCorTMDifDf$MediationCategory)<-c('None','AgeEFPos','AgePosEFNeg','AgeNegEFPos','AgeEFNeg')
+for (i in 1:dim(BwAgeCorTMDifDf)[1]){
+  # if these edges are sig increasing with age
+  if (BwAgeCorTMDifDf$posweights[i] != 0){
+    # are they pos. assoc. w/ EF? (is AB positive)
+    if (BwAgeCorTMDifDf$posweights[i] > 0){
+      BwAgeCorTMDifDf$MediationCategory[i]<-'AgeEFPos'
+    } 
+    if (BwAgeCorTMDifDf$posweights[i] < 0){
+      BwAgeCorTMDifDf$MediationCategory[i]<-'AgePosEFNeg'
+    }
+  }
+  # now handle edges sig decreasing with age
+  if (BwAgeCorTMDifDf$negweights[i] != 0){
+    # if >0, dec. w/ age inc. w/ EF
+    if (BwAgeCorTMDifDf$negweights[i] > 0){
+      BwAgeCorTMDifDf$MediationCategory[i]<-'AgeNegEFPos'
+    } 
+    # if <0, dec w/ age and EF
+    if (BwAgeCorTMDifDf$negweights[i] < 0){
+      BwAgeCorTMDifDf$MediationCategory[i]<-'AgeEFNeg'
+    }
+  }
+}
+
+ggplot(data=BwAgeCorTMDifDf)+geom_violin(aes(x=tmdifvec,y=MediationCategory),bw=.25)+geom_text(aes(x=tmdifvec,y=MediationCategory,color=Net1Vec),size=5,label="\u25D6",family="Arial Unicode MS")+scale_color_manual(values=ycolors,limits=Y7vec)+geom_text(aes(x=tmdifvec,y=MediationCategory,color=Net2Vec),size=5,label="\u25D7",family="Arial Unicode MS")+theme_classic()
 ```
 
 ```{r}

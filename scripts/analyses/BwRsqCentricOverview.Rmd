@@ -1341,7 +1341,7 @@ plot_mix_comps <- function(x, mu, sigma, lam) {
 
 set.seed(1)
 wait <- BwAgeCorTMDifDf$tmdifvec
-mixmdl <- normalmixEM(wait, k = 2)
+mixmdl <- normalmixEM(wait, k = 3)
 
 data.frame(x = BwAgeCorTMDifDf$tmdifvec) %>%
   ggplot() +
@@ -1368,7 +1368,7 @@ Pull_n_edges <- function(n) {
   # calculated classes are gaussian distrib, use rnorm to match that
   sdsInSTDunits<-rnorm(n)
   SRUnits<-sdsInSTDunits*mixmdl$sigma[1]+mixmdl$mu[1]
-  LRUnits<-sdsInSTDunits*mixmdl$sigma[2]+mixmdl$mu[2]
+  LRUnits<-sdsInSTDunits*mixmdl$sigma[3]+mixmdl$mu[3]
   # loop over list of transmodality differences n times to sample WITHOUT replacement
   for (i in 1:n){
   # pull short range edge indices that are best match to rnorm generated SDs
