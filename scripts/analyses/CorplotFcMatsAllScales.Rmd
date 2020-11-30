@@ -20,6 +20,15 @@ grid.col_y17=c(Control_A='#dc8303',Control_B='#8d2049',Control_C='#596a85',DA_A=
 
 ###y17TMorder=c("Somatomotor_A","Somatomotor_B","Visual_B","Visual_A")
 
+
+Y7vec<-c('Motor','Visual','DA','VA','Limbic','FP','DM')
+y17vec<-levels(domnetvec17)
+# set yeo colorset
+ycolors=c('#3281ab','#670068','#007500','#b61ad0','#b8cf86','#d77d00','#c1253c')
+y17colors=c('#dc8303','#8d2049','#596a85','#2d9a3d','#007938','#d9e200','#bc0943','#2b1f67','#48593a','#91a967','#4183a8','#00bb89','#3245a3','#9e3ca2','#eb75b3','#68126f','#d1001c')
+
+
+
 col_fun=function(x) ifelse(abs(x)<.0001,"#00000000",
                            ifelse(x<0,"red","blue"))
                            
@@ -198,7 +207,11 @@ BwAgeCorTMDifDf$negweights<-KAcrossNeg$V1
 ggplot(BwAgeCorTMDifDf,aes(x=tmdifvec,y=posweights,color=Net1Vec)) + geom_text(size=5,label="\u25D6",family="Arial Unicode MS") + xlab('Transmodality Difference') + ylab('Positive Mediation Weight') + ggtitle('Positive Mediators of EF')+scale_color_manual(values=ycolors,limits=Y7vec)+geom_text(aes(x=tmdifvec,y=posweights,color=Net2Vec),size=5,label="\u25D7",family="Arial Unicode MS")+theme_classic()
 
 ggplot(BwAgeCorTMDifDf,aes(x=tmdifvec,y=negweights,color=Net1Vec)) + geom_text(size=5,label="\u25D6",family="Arial Unicode MS") + xlab('Transmodality Difference') + ylab('Negative Mediation Weight') + ggtitle('Negative Mediators of EF')+scale_color_manual(values=ycolors,limits=Y7vec)+geom_text(aes(x=tmdifvec,y=negweights,color=Net2Vec),size=5,label="\u25D7",family="Arial Unicode MS")+theme_classic()
-  
+
+ggplot(data=BwAgeCorTMDifDf)+geom_violin(aes(x=tmdifvec,y=MediationCategory),bw=.25)+geom_text(aes(x=tmdifvec,y=MediationCategory,color=Net1Vec),size=5,label="\u25D6",family="Arial Unicode MS")+scale_color_manual(values=ycolors,limits=Y7vec)+geom_text(aes(x=tmdifvec,y=MediationCategory,color=Net2Vec),size=5,label="\u25D7",family="Arial Unicode MS")+theme_classic()
+
+ggplot(data=BwAgeCorTMDifDf)+geom_violin(aes(x=tmdifvec,y=MediationCategory),bw=.25)+geom_text(aes(x=tmdifvec,y=MediationCategory,color=Net1Vec),size=5,label="\u25D6",family="Arial Unicode MS")+scale_color_manual(values=ycolors,limits=Y7vec)+geom_text(aes(x=tmdifvec,y=MediationCategory,color=Net2Vec),size=5,label="\u25D7",family="Arial Unicode MS")+theme_classic()
+
 # further parsing of Pos and Neg weights : exlcude if other mediation has larger effect
 KAcrossNeg2<-scale(KAcrossNeg)
 KAcrossPos2<-scale(KAcrossPos)
@@ -239,6 +252,8 @@ ggplot(BwAgeCorTMDifDf,aes(x=tmdifvec,y=negweights,color=Net1Vec17)) + geom_text
 # with PG2 as 3rd dimension
 BwAgeCorTMDifDf$PG2Difference<-occdifvec
 #plot3d(x=BwAgeCorTMDifDf$tmdifvec,y=BwAgeCorTMDifDf$posweights,z=BwAgeCorTMDifDf$PG2Difference,size = 5)
+
+ggplot(data=BwAgeCorTMDifDf)+geom_violin(aes(x=tmdifvec,y=MediationCategory),bw=.5,size=2)+geom_text(aes(x=tmdifvec,y=MediationCategory,color=Net1Vec),size=5,label="\u25D6",family="Arial Unicode MS",position=position_dodge(0.4))+scale_color_manual(values=ycolors,limits=Y7vec)+geom_text(aes(x=tmdifvec,y=MediationCategory,color=Net2Vec),size=5,label="\u25D7",family="Arial Unicode MS",position=position_dodge(0.4))+theme_classic()
 ```
 
 ```{r}
