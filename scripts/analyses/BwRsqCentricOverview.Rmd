@@ -799,6 +799,18 @@ avgbw_age_tm<-ggplot(bwdf,aes(tmvec,bwAgeCorVecs.avg_bw,color=domnetvec,alpha=ne
 avgbw_age_scale<-ggplot(bwdf,aes(tmvec,bwAgeCorVecs.avg_bw,color=scalesvec)) + geom_point(size=6) +labs(title='B/w Variance Captured by Age', x = 'Transmodality', y = expression(paste(Delta,R^2[adj])), color="Topological \nScale")+theme_classic(base_size = 28)+ ylim(-.5,.5)+ scale_colour_gradient(low="#55185D", high="#ECB602")+theme(legend.position="top",legend.key.width = unit(2.5, "cm"))
 ####
 
+tmbwdf<-bwdf[tmclass=="transmodal",]
+umbwdf<-bwdf[tmclass=="unimodal",]
+
+transmodal_tm<-ggplot(tmbwdf,aes(tmvec,bwAgeCorVecs.avg_bw,color=domnetvec,alpha=netpropvec^2)) + geom_point(size=6)+ scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068')) + xlab("Transmodality") + ylab(expression(paste(Delta,R^2[adj]))) +theme_classic(base_size = 28) + ggtitle('B/w Variance Captured by Age: transmodal') +guides(alpha=FALSE,color=guide_legend(title="Maximal Y7 Overlap"))+theme(legend.position="top")
+
+transmodal_scale<-ggplot(tmbwdf,aes(scalesvec,bwAgeCorVecs.avg_bw)) + geom_point(size=6,aes(color=domnetvec,alpha=netpropvec^2))+ scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068')) + xlab("Scale") + ylab(expression(paste(Delta,R^2[adj]))) +theme_classic(base_size = 28) + ggtitle('B/w Variance Captured by Age: transmodal') +guides(alpha=FALSE,color=guide_legend(title="Maximal Y7 Overlap"))+theme(legend.position="top")+geom_smooth()
+
+
+unimodal_tm<-ggplot(umbwdf,aes(tmvec,bwAgeCorVecs.avg_bw,color=domnetvec,alpha=netpropvec^2)) + geom_point(size=6)+ scale_color_manual(values=c('#007500','#3281ab','#b61ad0','#670068')) + xlab("Transmodality") + ylab(expression(paste(Delta,R^2[adj]))) +theme_classic(base_size = 28) + ggtitle('B/w Variance Captured by Age: unimodal') +guides(alpha=FALSE,color=guide_legend(title="Maximal Y7 Overlap"))+theme(legend.position="top")
+
+unimodal_scale<-ggplot(umbwdf,aes(scalesvec,bwAgeCorVecs.avg_bw)) + geom_point(size=6,aes(color=domnetvec,alpha=netpropvec^2))+ scale_color_manual(values=c('#007500','#3281ab','#b61ad0','#670068')) + xlab("Scale") + ylab(expression(paste(Delta,R^2[adj]))) +theme_classic(base_size = 28) + ggtitle('B/w Variance Captured by Age: unimodal') +guides(alpha=FALSE,color=guide_legend(title="Maximal Y7 Overlap"))+theme(legend.position="top")+geom_smooth()
+
 ####
 # b/w to unimodal
 unibw_age_tm<-ggplot(bwdf,aes(tmvec,bwAgeCorVecs.bw_to_unimodal,color=domnetvec,alpha=netpropvec^2)) + geom_point(size=6)+ scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068')) + xlab("Transmodality") + ylab("AgeBWUCor") +theme_classic(base_size = 28) + ggtitle('Correlation of B/w unimodal con and Age over All Networks')+ ylim(-.5,.5)
@@ -877,7 +889,7 @@ lm_My_covariates="EF~Sex+Motion+Age+"
 
 minAgeEst<-rep(0,length=length(masterdf[,indiv_nsegcols_ind]))
 maxAgeEst<-rep(0,length=length(masterdf[,indiv_nsegcols_ind]))
-AB_Est<-rep(0,length=length(masterdf[,indiv_nsegcols_ind]))
+#AB_Est<-rep(0,length=length(masterdf[,indiv_nsegcols_ind]))
 SplineP<-rep(0,length=length(masterdf[,indiv_nsegcols_ind]))
 InterceptVector<-rep(0,length=length(masterdf[,indiv_nsegcols_ind]))
 derivInfo<-array(0,dim=c(464,200))
@@ -931,8 +943,8 @@ for (i in 1:(length(bwAvgCondf)-4)){
   My_form<-as.formula(paste(lm_My_covariates, "",x,"",sep=""))
   Mypath<-lm(formula=My_form,data=bwAvgCondfZ)
   # run mediation
-  mediationFit<-mediate(xMpath,Mypath,treat="Age",mediator=x)
-  AB_Est[i]<-mediationFit$d1
+  #mediationFit<-mediate(xMpath,Mypath,treat="Age",mediator=x)
+  #AB_Est[i]<-mediationFit$d1
   # set to just print out networks that have an average b/w con of over 0
   #if (mean(colOfInt)>0){
   #  print(paste(x,mean(colOfInt)))
@@ -955,7 +967,7 @@ AB_Est<-readRDS('~/Desktop/multiscale/AB_est')
 # plot of mediation effects
 MediationDF<-data.frame(tmvec,scalesvec,occvec,domnetvec,netpropvec,AB_Est)
 
-ggplot(MediationDF,aes(tmvec,AB_Est,color=domnetvec,alpha=netpropvec^2)) + scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068')) + xlab("Transmodality") + ylab('AB Path Coef.') +theme_classic(base_size = 40) + geom_point(size=7,aes(tmvec,AB_Est)) + ggtitle('AB Path Mediation Coef by Transmodality')+guides(alpha=FALSE,color=guide_legend(title="Maximal Y7 Overlap"))+theme(legend.position="top")
+all<-ggplot(MediationDF,aes(tmvec,AB_Est,color=domnetvec,alpha=netpropvec^2)) + scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068')) + xlab("Transmodality") + ylab('AB Path Coef.') +theme_classic(base_size = 40) + geom_point(size=7,aes(tmvec,AB_Est)) + ggtitle('AB Path Mediation Coef by Transmodality')+guides(alpha=FALSE,color=guide_legend(title="Maximal Y7 Overlap"))+theme(legend.position="top")
 
 ggplot(MediationDF,aes(occvec,AB_Est,color=domnetvec,alpha=netpropvec^2)) + scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068')) + xlab("PG2 Value") + ylab('AB Path Coef.') +theme_classic(base_size = 40) + geom_point(size=7,aes(occvec,AB_Est)) + ggtitle('AB Path Mediation Coef by Transmodality')+guides(alpha=FALSE,color=guide_legend(title="Maximal Y7 Overlap"))+theme(legend.position="top")
 
@@ -1052,6 +1064,8 @@ raw<-ggplot(bwR2EFdf,aes(tmvec,BW_R2VecEst,color=domnetvec,alpha=netpropvec^2)) 
 ggplot(bwR2EFdf,aes(tmvec,BW_R2VecEst,color=scalesvec,alpha=netpropvec^2)) + xlab("Transmodality") + ylab(expression(paste(Delta,R^2[adj]))) +theme_classic(base_size = 45) + geom_point(size=7,aes(tmvec,BW_R2VecEst)) + ggtitle('EF Effect by Transmodality')+guides(alpha=FALSE,color=guide_legend(title="Maximal Y7 Overlap"))+theme(legend.position="top")
 
 EFPG1<-ggplot(bwR2EFdf,aes(tmvec,BW_R2VecEst,color=domnetSig,alpha=netpropvec^2)) + scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068','gray80')) + xlab("PG1") + ylab(expression(paste(Delta,R^2[adj]))) +theme_classic(base_size = 40) + geom_point(size=7,aes(tmvec,BW_R2VecEst)) + ggtitle('EF Effect by PG1: Age controlled for')+guides(alpha=FALSE,color=guide_legend(title="Maximal Y7 Overlap"))+theme(legend.position="top")
+
+EFScale<-ggplot(bwR2EFdf,aes(scalesvec,BW_R2VecEst,color=domnetSig,alpha=netpropvec^2)) + scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068','gray80')) + xlab("Scale") + ylab(expression(paste(Delta,R^2[adj]))) +theme_classic(base_size = 40) + geom_point(size=7,aes(scalesvec,BW_R2VecEst)) + ggtitle('EF Effect by PG1: Age controlled for')+guides(alpha=FALSE,color=guide_legend(title="Maximal Y7 Overlap"))+theme(legend.position="top")
 
 EFPG2<-ggplot(bwR2EFdf,aes(occvec,BW_R2VecEst,color=domnetSig,alpha=netpropvec^2)) + scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068','gray80')) + xlab("PG2") + ylab(expression(paste(Delta,R^2[adj]))) +theme_classic(base_size = 40) + geom_point(size=7,aes(occvec,BW_R2VecEst)) + ggtitle('EF Effect by PG2: Age controlled for')+guides(alpha=FALSE,color=guide_legend(title="Maximal Y7 Overlap"))+theme(legend.position="top")
 
@@ -1244,15 +1258,15 @@ for (i in 1:length(colnames(individ_scalebybw_df))){
     Mypath<-lm(formula=My_form,data=masteref)
     Mysum<-summary(Mypath)
     # only run if other two paths are sig
-    ###if (xMsum$coefficients['Age','Pr(>|t|)']<0.05 && Mysum$coefficients[5,'Pr(>|t|)']<0.05){
+    if (xMsum$coefficients['Age','Pr(>|t|)']<0.05 && Mysum$coefficients[5,'Pr(>|t|)']<0.05){
     # run mediation
-    ###mediationFit<-mediate(xMpath,Mypath,treat="Age",mediator=curcolname)
-    ###AB_EstEdgesvec[i]<-mediationFit$d1
+    mediationFit<-mediate(xMpath,Mypath,treat="Age",mediator=curcolname)
+    AB_EstEdgesvec[i]<-mediationFit$d1
     # direction of age effects for subchord plots
     AB_EstEdgesvec_agedir[i]<-xMsum$coefficients['Age','Estimate']
-    ###}
+    }
 }
-###write.csv(AB_EstEdgesvec,'~/Desktop/multiscale/edgesABEst.csv')
+##write.csv(AB_EstEdgesvec,'~/Desktop/multiscale/edgesABEst.csv')
 AB_EstEdgesvec_csv<-read.csv('~/Desktop/multiscale/edgesABEst.csv')
 AB_EstEdgesvec<-AB_EstEdgesvec_csv$x
 # age corrections for MC
