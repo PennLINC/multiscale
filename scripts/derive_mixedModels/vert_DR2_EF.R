@@ -40,7 +40,7 @@ for (K in 2:30){
         # loop over every vertex
         for (V in 1:17734){
                 # +3 because first 4 columns are other covariates
-                DR2vec[V]=DeltaR2EstVec(masterdf[,V+4])
+                DR2vec[V]=DeltaR2EstVec(masteref[,V+4])
         }
         print('18K gams for this scale run')
         # print out DR2 vec for this scale

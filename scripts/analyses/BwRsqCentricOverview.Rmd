@@ -811,6 +811,10 @@ unimodal_tm<-ggplot(umbwdf,aes(tmvec,bwAgeCorVecs.avg_bw,color=domnetvec,alpha=n
 
 unimodal_scale<-ggplot(umbwdf,aes(scalesvec,bwAgeCorVecs.avg_bw)) + geom_point(size=6,aes(color=domnetvec,alpha=netpropvec^2))+ scale_color_manual(values=c('#007500','#3281ab','#b61ad0','#670068')) + xlab("Scale") + ylab(expression(paste(Delta,R^2[adj]))) +theme_classic(base_size = 28) + ggtitle('B/w Variance Captured by Age: unimodal') +guides(alpha=FALSE,color=guide_legend(title="Maximal Y7 Overlap"))+theme(legend.position="top")+geom_smooth()
 
+# all by scale
+ggplot(bwdf,aes(scalesvec,bwAgeCorVecs.avg_bw,color=domnetvec,alpha=netpropvec^2)) + geom_point(size=6)+ scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068')) + xlab("Scale") + ylab(expression(paste(Delta,R^2[adj]))) +theme_classic(base_size = 28) + ggtitle('B/w Variance Captured by Age') +guides(alpha=FALSE,color=guide_legend(title="Maximal Y7 Overlap"))+theme(legend.position="top")+geom_smooth()
+
+
 ####
 # b/w to unimodal
 unibw_age_tm<-ggplot(bwdf,aes(tmvec,bwAgeCorVecs.bw_to_unimodal,color=domnetvec,alpha=netpropvec^2)) + geom_point(size=6)+ scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068')) + xlab("Transmodality") + ylab("AgeBWUCor") +theme_classic(base_size = 28) + ggtitle('Correlation of B/w unimodal con and Age over All Networks')+ ylim(-.5,.5)
@@ -834,9 +838,11 @@ unibw_age_scale
 transbw_age_scale
 
 #17 network version
-#bwdf17<-data.frame(tmvec,scalesvec,domnetvec17,netpropvec17,bwAgeCorVecs$avg_bw,bwAgeCorVecs$bw_to_unimodal,bwAgeCorVecs$bw_to_transmodal)
+bwdf17<-data.frame(tmvec,scalesvec,domnetvec17,netpropvec17,bwAgeCorVecs$avg_bw,bwAgeCorVecs$bw_to_unimodal,bwAgeCorVecs$bw_to_transmodal)
 
 #ggplot(bwdf17,aes(tmvec,bwAgeCorVecs.avg_bw,color=domnetvec17,alpha=netpropvec17^2)) + scale_color_manual(values=c('#dc8303','#8d2049','#596a85','#2d9a3d','#007938','#d9e200','#bc0943','#2b1f67','#48593a','#91a967','#4183a8','#00bb89','#3245a3','#9e3ca2','#eb75b3','#68126f','#d1001c')) + xlab("Transmodality") + ylab(expression(paste(Delta,R^2[adj]))) +theme_classic(base_size = 28) + geom_point(size=4,aes(tmvec,bwAgeCorVecs.avg_bw)) + ggtitle('Age Effect by Transmodality')
+
+ggplot(bwdf17,aes(scalesvec,bwAgeCorVecs.avg_bw,color=domnetvec17,alpha=netpropvec17^2)) + geom_point(size=6)+ scale_color_manual(values=c('#dc8303','#8d2049','#596a85','#2d9a3d','#007938','#d9e200','#bc0943','#2b1f67','#48593a','#91a967','#4183a8','#00bb89','#3245a3','#9e3ca2','#eb75b3','#68126f','#d1001c')) + xlab("Scale") + ylab(expression(paste(Delta,R^2[adj]))) +theme_classic(base_size = 28) + ggtitle('B/w Variance Captured by Age') +guides(alpha=FALSE,color=guide_legend(title="Maximal Y17 Overlap"))+theme(legend.position="top")+geom_smooth(method='lm')
 
 # version with fdr p > 0.05 removed
 bwdf$bwAgeCorVecs.cavg_bw<-bwdf$bwAgeCorVecs.avg_bw
@@ -968,6 +974,8 @@ AB_Est<-readRDS('~/Desktop/multiscale/AB_est')
 MediationDF<-data.frame(tmvec,scalesvec,occvec,domnetvec,netpropvec,AB_Est)
 
 all<-ggplot(MediationDF,aes(tmvec,AB_Est,color=domnetvec,alpha=netpropvec^2)) + scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068')) + xlab("Transmodality") + ylab('AB Path Coef.') +theme_classic(base_size = 40) + geom_point(size=7,aes(tmvec,AB_Est)) + ggtitle('AB Path Mediation Coef by Transmodality')+guides(alpha=FALSE,color=guide_legend(title="Maximal Y7 Overlap"))+theme(legend.position="top")
+
+byscaleMediation<-ggplot(MediationDF,aes(scalesvec,AB_Est,color=domnetvec,alpha=netpropvec^2)) + scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068')) + xlab("Scale") + ylab('AB Path Coef.') +theme_classic(base_size = 40) + geom_point(size=7,aes(scalesvec,AB_Est)) + ggtitle('AB Path Mediation Coef by Scale')+guides(alpha=FALSE,color=guide_legend(title="Maximal Y7 Overlap"))+theme(legend.position="top")+geom_smooth()
 
 ggplot(MediationDF,aes(occvec,AB_Est,color=domnetvec,alpha=netpropvec^2)) + scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068')) + xlab("PG2 Value") + ylab('AB Path Coef.') +theme_classic(base_size = 40) + geom_point(size=7,aes(occvec,AB_Est)) + ggtitle('AB Path Mediation Coef by Transmodality')+guides(alpha=FALSE,color=guide_legend(title="Maximal Y7 Overlap"))+theme(legend.position="top")
 

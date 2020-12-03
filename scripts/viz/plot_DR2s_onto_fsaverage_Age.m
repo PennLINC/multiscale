@@ -4,6 +4,6 @@ addpath(genpath('/cbica/projects/pinesParcels/multiscale/scripts/derive_parcels/
 for K=2:30;
 	K=K
 	% read without headers and first column
-	data=csvread([effect_vector_dir 'Scale' num2str(K) '_EFBw_VertDR2s.csv'],1,1);
-	PBP_vertWiseEffect4View(data,['EFDR2_Scale' num2str(K)])
+	data=csvread([effect_vector_dir 'Scale' num2str(K) '_AgeBw_VertDR2s.csv'],1,1);
+	PBP_vertWiseEffect4View(data,['AgeDR2_Scale' num2str(K)])
 end
