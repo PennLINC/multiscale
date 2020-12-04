@@ -801,6 +801,7 @@ avgbw_age_scale<-ggplot(bwdf,aes(tmvec,bwAgeCorVecs.avg_bw,color=scalesvec)) + g
 
 tmbwdf<-bwdf[tmclass=="transmodal",]
 umbwdf<-bwdf[tmclass=="unimodal",]
+motorbwdf<-bwdf[domnetvec=='Motor',]
 
 transmodal_tm<-ggplot(tmbwdf,aes(tmvec,bwAgeCorVecs.avg_bw,color=domnetvec,alpha=netpropvec^2)) + geom_point(size=6)+ scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068')) + xlab("Transmodality") + ylab(expression(paste(Delta,R^2[adj]))) +theme_classic(base_size = 28) + ggtitle('B/w Variance Captured by Age: transmodal') +guides(alpha=FALSE,color=guide_legend(title="Maximal Y7 Overlap"))+theme(legend.position="top")
 
@@ -814,6 +815,8 @@ unimodal_scale<-ggplot(umbwdf,aes(scalesvec,bwAgeCorVecs.avg_bw)) + geom_point(s
 # all by scale
 ggplot(bwdf,aes(scalesvec,bwAgeCorVecs.avg_bw,color=domnetvec,alpha=netpropvec^2)) + geom_point(size=6)+ scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068')) + xlab("Scale") + ylab(expression(paste(Delta,R^2[adj]))) +theme_classic(base_size = 28) + ggtitle('B/w Variance Captured by Age') +guides(alpha=FALSE,color=guide_legend(title="Maximal Y7 Overlap"))+theme(legend.position="top")+geom_smooth()
 
+# motor by scale
+ggplot(motorbwdf,aes(scalesvec,bwAgeCorVecs.avg_bw,color=domnetvec)) + geom_point(size=6)+ scale_color_manual(values=c('#3281ab','#b61ad0','#670068')) + xlab("# of Communities") + ylab(expression(paste('Age Effect (',Delta,R^2[adj],')'))) +theme_classic(base_size = 28) +guides(alpha=FALSE,color=guide_legend(title="Maximal Y7 Overlap"))+theme(legend.position='top')+geom_smooth()
 
 ####
 # b/w to unimodal
@@ -853,20 +856,37 @@ Corrected_avgbw_age_tm<-ggplot(bwdf,aes(tmvec,bwAgeCorVecs.cavg_bw,color=domnetv
 # for 3d plot only
 library(plot3Drgl)
 bwdf$occvec<-occvec
-plot3d(x=bwdf$tmvec,y=bwdf$occvec,z=bwdf$bwAgeCorVecs.avg_bw,size = 12)
+#plot3d(x=bwdf$tmvec,y=bwdf$occvec,z=bwdf$bwAgeCorVecs.avg_bw,size = 12)
 ```
 
 
-```{r include=FALSE}
+```{r}
+library(lme4)
 # age effect duration w/ b/w
 # long df - replaced indexed master df with bwAvgCon, because bwAvgCon yields network-wise measures vs. pairwise
 long_precursor<-data.frame(masterdf$bblid,masterdf$Age,masterdf$Sex,masterdf$Motion,bwAvgCon)
 melt_long<-melt(long_precursor,id=c(1,2,3,4))
 tmvecRepped<-rep(tmvec,each=693)
 domnetvecRepped<-rep(domnetvec,each=693)
+scalesvecRepped<-rep(scalesvec,each=693)
 melt_long$transmodality<-tmvecRepped
 melt_long$dominantYeo<-domnetvecRepped
 saveRDS(melt_long,file = '~/Desktop/Long_bblidAgeSexMotionAvgBw.rds')
+
+# comm-level mixed effects age
+# melt df to get model of community b/w as function of scale*Age*transmodality
+# replace x2...x30 with appropriate length scalesvec
+colnames(melt_long)[1:4]<-c('bblid','Age','Sex','Motion')
+melt_long$bblid<-as.factor(melt_long$bblid)
+
+
+melt_long$Age<-as.numeric(melt_long$Age)
+melt_long$Scale<-as.ordered(scalesvecRepped)
+# gamm version
+#model=gamm(value~Motion+Sex+Scale+ti(Age,k=4,fx=T)+ti(transmodality,k=4,fx=T)+ti(Scale,Age,k=4,fx=T)+ti(Scale,transmodality,k=4,fx=T)+ti(Scale,Age,transmodality,k=4,fx=T),random=list(bblid=~1),data=melt_long)
+#lmer version
+#ComBwAge_model<-glmer(value~Scale*Age*transmodality+Sex+Motion+(1|bblid),melt_long)
+#plot_model(ComBwAge_model,type='int')       
 ```
 
 
@@ -973,7 +993,7 @@ AB_Est<-readRDS('~/Desktop/multiscale/AB_est')
 # plot of mediation effects
 MediationDF<-data.frame(tmvec,scalesvec,occvec,domnetvec,netpropvec,AB_Est)
 
-all<-ggplot(MediationDF,aes(tmvec,AB_Est,color=domnetvec,alpha=netpropvec^2)) + scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068')) + xlab("Transmodality") + ylab('AB Path Coef.') +theme_classic(base_size = 40) + geom_point(size=7,aes(tmvec,AB_Est)) + ggtitle('AB Path Mediation Coef by Transmodality')+guides(alpha=FALSE,color=guide_legend(title="Maximal Y7 Overlap"))+theme(legend.position="top")
+all<-ggplot(MediationDF,aes(tmvec,AB_Est,color=domnetvec,alpha=netpropvec^2)) + scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068')) + xlab("Transmodality") + ylab('AB Path Coefficient') +theme_classic(base_size = 28) + geom_point(size=7,aes(tmvec,AB_Est))+guides(alpha=FALSE,color=guide_legend(title="Maximal Y7 Overlap"))+theme(legend.position="bottom")
 
 byscaleMediation<-ggplot(MediationDF,aes(scalesvec,AB_Est,color=domnetvec,alpha=netpropvec^2)) + scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068')) + xlab("Scale") + ylab('AB Path Coef.') +theme_classic(base_size = 40) + geom_point(size=7,aes(scalesvec,AB_Est)) + ggtitle('AB Path Mediation Coef by Scale')+guides(alpha=FALSE,color=guide_legend(title="Maximal Y7 Overlap"))+theme(legend.position="top")+geom_smooth()
 
@@ -985,6 +1005,12 @@ plot3d(x=MediationDF$PG1,y=MediationDF$PG2,z=MediationDF$AB_Est,size = 12,col=as
 
 # to show scale effect
 coarse<-ggplot(MediationDF[1:20,],aes(PG1,AB_Est,color=domnetvec,alpha=netpropvec^2)) + geom_point(size=7) + scale_color_manual(values=c('#007500','#c1253c','#d77d00','#3281ab','#670068')) + xlab("Transmodality") + ylab('AB Path Coef.') +theme_classic(base_size = 40) + ggtitle('AB Path Mediation Coef by Transmodality')+guides(alpha=FALSE,color=guide_legend(title="Maximal Y7 Overlap"))+theme(legend.position="top")
+
+# to show scale effect on motor
+
+motorbwdfMed<-MediationDF[domnetvec=='Motor',]
+
+ggplot(motorbwdfMed,aes(Scale,AB_Est,color=domnetvec)) + geom_point(size=6)+ scale_color_manual(values=c('#3281ab','#b61ad0','#670068')) + xlab("# of Communities") + ylab('AB Path Coefficient') +theme_classic(base_size = 28) +guides(alpha=FALSE,color=guide_legend(title="Maximal Y7 Overlap"))+theme(legend.position='none')+geom_smooth()
 
 # years format
 minAgeEst<-minAgeEst/12
@@ -1046,6 +1072,8 @@ y7ver<-ggplot(LongAgeSpan_plotdf2,aes(agespans,tmvec,color=domnetvec,group=CIgro
 avgbw_age_tm_sig<-ggplot(bwdf[CL_sigVec,],aes(tmvec,bwAgeCorVecs.avg_bw,color=domnetvec,alpha=netpropvec^2)) + geom_point(size=6)+ scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068')) + xlab("Transmodality") + ylab(expression(paste(Delta,R^2[adj]))) +theme_classic(base_size = 28) +guides(alpha=FALSE,color=guide_legend(title="Maximal Y7 Overlap"))+theme(legend.position="top")
 ```
 
+
+
 ```{r}
 #b/w EF relations at community level
 
@@ -1068,6 +1096,8 @@ domnetAgelessSig[corrected_ageless>0.05]='NonSig'
 bwR2EFdf<-data.frame(tmvec,scalesvec,domnetvec,netpropvec,BW_R2VecEst,BW_R2VecEst_ageless,occvec,attnmvec,domnetSig,domnetAgelessSig)
 
 raw<-ggplot(bwR2EFdf,aes(tmvec,BW_R2VecEst,color=domnetvec,alpha=netpropvec^2)) + scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068','gray')) + xlab("Transmodality") + ylab(expression(paste(Delta,R^2[adj]))) +theme_classic(base_size = 40) + geom_point(size=7,aes(tmvec,BW_R2VecEst)) + ggtitle('EF Effect by PG1')+guides(alpha=FALSE,color=guide_legend(title="Maximal Y7 Overlap"))+theme(legend.position="top")
+
+raw2<-ggplot(bwR2EFdf,aes(tmvec,BW_R2VecEst,color=domnetvec,alpha=netpropvec^2)) + scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068','gray')) + xlab("Transmodality") + ylab(expression(paste(Delta,R^2[adj]))) +theme_classic(base_size = 40) + geom_point(size=7,aes(tmvec,BW_R2VecEst)) +guides(alpha=FALSE,color=guide_legend(title="Maximal Y7 Overlap"))+theme(legend.position="none")
 
 ggplot(bwR2EFdf,aes(tmvec,BW_R2VecEst,color=scalesvec,alpha=netpropvec^2)) + xlab("Transmodality") + ylab(expression(paste(Delta,R^2[adj]))) +theme_classic(base_size = 45) + geom_point(size=7,aes(tmvec,BW_R2VecEst)) + ggtitle('EF Effect by Transmodality')+guides(alpha=FALSE,color=guide_legend(title="Maximal Y7 Overlap"))+theme(legend.position="top")
 
@@ -1097,6 +1127,13 @@ library(plot3Drgl)
 library(rgl)
 
 palette(c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068'))
+
+
+motorbwdf<-bwR2EFdf[domnetvec=='Motor',]
+
+# motor by scale
+ggplot(motorbwdf,aes(scalesvec,BW_R2VecEst,color=domnetvec)) + geom_point(size=6)+ scale_color_manual(values=c('#3281ab','#b61ad0','#670068')) + xlab("# of Communities") + ylab(expression(paste('EF Effect (',Delta,R^2[adj],')'))) +theme_classic(base_size = 28) +guides(alpha=FALSE,color=guide_legend(title="Maximal Y7 Overlap"))+theme(legend.position='none')+geom_smooth()
+
 # controlling for age
 #plot3d(x=bwR2EFdf$tmvec,y=bwR2EFdf$occvec,z=bwR2EFdf$BW_R2VecEst,col=as.integer(bwR2EFdf$domnetvec),size = 10)
 # no age control (pure ef effect)
