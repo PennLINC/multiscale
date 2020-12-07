@@ -63,7 +63,8 @@ for (K in 2:30){
 	# print out DR2 vec for this scale
 	writeoutname=paste('/home/pinesa/VertexwiseTables_forDR2/Scale',K,'_AgeBw_VertDR2s.csv',sep='')
 	write.csv(DR2vec,writeoutname)
-	# and p-values
-        writeoutname=paste('/home/pinesa/VertexwiseTables_forDR2/Scale',K,'_AgeBw_VertPs.csv',sep='')
-        write.csv(Pvec,writeoutname)
+	# and Q-values
+	Qs=p.adjust(Pvec,method='fdr')
+        writeoutname=paste('/home/pinesa/VertexwiseTables_forDR2/Scale',K,'_AgeBw_VertQs.csv',sep='')
+        write.csv(Qs,writeoutname)
 }

@@ -868,9 +868,11 @@ alphavec[firstInstance17]=.7
 bwdf17$firstInstance<-alphavec
 bwdf17$domnetvec<-bwdf$domnetvec
 # plot 'em
-a<-ggplot(bwdf17,aes(scalesvec,tmvec,color=domnetvec,alpha=firstInstance)) + geom_text(size=9,label="\u25D6",family="Arial Unicode MS")+ scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068')) + xlab("Scale") + ylab('Transmodality') +theme_classic(base_size = 28) + ggtitle('Community Persistence Over Scales') +guides(alpha=FALSE,color=guide_legend(title="Maximal Y17 Overlap"))+theme(legend.position="top")+geom_smooth(method='lm',se=FALSE)
-
-#+geom_text(aes(x=scalesvec,y=tmvec,color=domnetvec17),size=9,label="\u25D7",family="Arial Unicode MS")+ scale_color_manual(values=c('#dc8303','#8d2049','#596a85','#2d9a3d','#007938','#d9e200','#bc0943','#2b1f67','#48593a','#91a967','#4183a8','#00bb89','#3245a3','#9e3ca2','#eb75b3','#68126f','#d1001c'))
+library(ggnewscale)
+library(ggtree)
+ggplot(bwdf17,aes(scalesvec,tmvec,color=domnetvec17,alpha=firstInstance))+ geom_text(aes(x=scalesvec,y=tmvec),size=20,label="\u25D7",family="Arial Unicode MS")+ scale_color_manual(values=c('#dc8303','#8d2049','#596a85','#2d9a3d','#007938','#d9e200','#bc0943','#2b1f67','#48593a','#91a967','#4183a8','#00bb89','#3245a3','#9e3ca2','#eb75b3','#68126f','#d1001c')) + xlab("Scale") + ylab('Transmodality') +theme_classic(base_size = 20) + ggtitle('Community Emergence Over Scales') +guides(alpha=FALSE)+theme(legend.position='bottom')+ geom_vline(xintercept = c(4,7,13,18,20), linetype='dashed',color = "black", size=1.5)+#geom_smooth(method='lm',se=FALSE)
+new_scale_color()+ 
+geom_text(aes(color=domnetvec),size=35,label="\u25D6",family="Arial Unicode MS")+ scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068'))
 ```
 
 
