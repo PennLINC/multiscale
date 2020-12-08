@@ -1176,32 +1176,87 @@ MU4I<-grep(mostunimodal4,tmvec)
 MT4I<-grep(mosttransmodal4,tmvec)
 MU20I<-grep(mostunimodal20,tmvec)
 MT20I<-grep(mosttransmodal20,tmvec)
+
 # use indices aligned to 1-value-per-network vector for readouts
 paste(colnames(masterdf[indiv_wincols_ind[MU4I]]),colnames(masterdf[indiv_wincols_ind[MT4I]]))
 # and for 20
 paste(colnames(masterdf[indiv_wincols_ind[MU4I]]),colnames(masterdf[indiv_wincols_ind[MT4I]]))
 paste(colnames(masterdf[indiv_wincols_ind[MU20I]]),colnames(masterdf[indiv_wincols_ind[MT20I]]))
 # use bwAvgCon to get each communities' avg. connectivity
-# make df of all of them
-quadrantdf<-data.frame(bwAvgCon[,MU4I],bwAvgCon[,MT4I],bwAvgCon[,MU20I],bwAvgCon[,MT20I],masterdf$Age,masteref$F1_Exec_Comp_Cog_Accuracy)
-colnames(quadrantdf)<-c('Unimodal4','Transmodal4','Unimodal20','Transmodal20','Age','EF')
-# most unimodal
-U4<-ggplot(quadrantdf,aes(x=Age,y=Unimodal4))+geom_point()+geom_smooth(method='lm')+theme_classic()+ylab('Avg. B/w Con. @ K=4, Unimodal')
-T4<-ggplot(quadrantdf,aes(x=Age,y=Transmodal4))+geom_point()+geom_smooth(method='lm',color='red')+theme_classic()+ylab('Avg. B/w Con. @ K=4, Transmodal')
-U20<-ggplot(quadrantdf,aes(x=Age,y=Unimodal20))+geom_point()+geom_smooth(method='lm')+theme_classic()+ylab('Avg. B/w Con. @ K=20, Unimodal')
-T20<-ggplot(quadrantdf,aes(x=Age,y=Transmodal20))+geom_point()+geom_smooth(method='lm',color='red')+theme_classic()+ylab('Avg. B/w Con. @ K=20, Transmodal')
 
-#### add motion control
+# make df of all of them
+quadrantdf<-data.frame(bwAvgCon[,MU4I],bwAvgCon[,MT4I],bwAvgCon[,MU20I],bwAvgCon[,MT20I],masterdf$Age,masteref$F1_Exec_Comp_Cog_Accuracy,masterdf$Motion,masterdf$Sex)
+colnames(quadrantdf)<-c('Unimodal4','Transmodal4','Unimodal20','Transmodal20','Age','EF','Motion','Sex')
+
+# get residuals from sex and motion for age
+#AgeResid<-lm(Age~Sex+Motion,data=quadrantdf)$residuals
+#quadrantdf$AgeResid<-AgeResid
+
+# alt. approach: generate prediction from full model
+# most unimodal
+U4M<-gam(Unimodal4~s(Age,k=3)+Sex+Motion,data=quadrantdf)
+quadrantdf$U4Pred<-stats::predict(U4M,newdata=quadrantdf)
+U4Error<-predict.gam(U4M, newdata=quadrantdf, se = TRUE)
+quadrantdf$U4ucl <- U4Error$fit + 1.96 * U4Error$se.fit
+quadrantdf$U4lcl <- U4Error$fit - 1.96 * U4Error$se.fit
+U4<-ggplot(quadrantdf,aes(x=Age,y=Unimodal4))+geom_point()+geom_smooth(aes(Age,y=U4Pred,ymin=U4lcl,ymax=U4ucl),se=T,method = 'gam', formula = y~s(x,k=3))+theme_classic()+ylab('Avg. B/w Con. @ K=4, Most Unimodal Community')+xlab('Age')
+
+# most transmodal
+T4M<-gam(Transmodal4~s(Age,k=3)+Sex+Motion,data=quadrantdf)
+quadrantdf$T4Pred<-stats::predict(T4M,newdata=quadrantdf)
+T4Error<-predict.gam(T4M, newdata=quadrantdf, se = TRUE)
+quadrantdf$T4ucl <- T4Error$fit + 1.96 * T4Error$se.fit
+quadrantdf$T4lcl <- T4Error$fit - 1.96 * T4Error$se.fit
+T4<-ggplot(quadrantdf,aes(x=Age,y=Transmodal4))+geom_point()+geom_smooth(aes(Age,y=T4Pred,ymin=T4lcl,ymax=T4ucl),se=T,method = 'gam', formula = y~s(x,k=3),color='red')+theme_classic()+ylab('Avg. B/w Con. @ K=4, Most Transmodal Community')+xlab('Age')
+
+# most unimodal
+U20M<-gam(Unimodal20~s(Age,k=3)+Sex+Motion,data=quadrantdf)
+quadrantdf$U20Pred<-stats::predict(U20M,newdata=quadrantdf)
+U20Error<-predict.gam(U20M, newdata=quadrantdf, se = TRUE)
+quadrantdf$U20ucl <- U20Error$fit + 1.96 * U20Error$se.fit
+quadrantdf$U20lcl <- U20Error$fit - 1.96 * U20Error$se.fit
+U20<-ggplot(quadrantdf,aes(x=Age,y=Unimodal20))+geom_point()+geom_smooth(aes(Age,y=U20Pred,ymin=U20lcl,ymax=U20ucl),se=T,method = 'gam', formula = y~s(x,k=3))+theme_classic()+ylab('Avg. B/w Con. @ K=20, Most Unimodal Community')+xlab('Age')
+
+T20M<-gam(Transmodal20~s(Age,k=3)+Sex+Motion,data=quadrantdf)
+quadrantdf$T20Pred<-stats::predict(T20M,newdata=quadrantdf)
+T20Error<-predict.gam(T20M, newdata=quadrantdf, se = TRUE)
+quadrantdf$T20ucl <- T20Error$fit + 1.96 * T20Error$se.fit
+quadrantdf$T20lcl <- T20Error$fit - 1.96 * T20Error$se.fit
+T20<-ggplot(quadrantdf,aes(x=Age,y=Transmodal20))+geom_point()+geom_smooth(aes(Age,y=T20Pred,ymin=T20lcl,ymax=T20ucl),se=T,method = 'gam', formula = y~s(x,k=3),color='red')+theme_classic()+ylab('Avg. B/w Con. @ K=20, Most Transmodal Community')+xlab('Age')
 
 ggarrange(U4,U20,T4,T20)
+
 #### now for EF
-controlledEF<-gam(EF~s(Age,k=3),data=quadrantdf)$residuals
-quadrantdf$AgC_EF<-controlledEF
+#EFResid<-gam(EF~s(Age,k=3),data=quadrantdf)$residuals
+#quadrantdf$EFResid<-EFResid
 # most unimodal
-EU4<-ggplot(quadrantdf,aes(x=AgC_EF,y=Unimodal4))+geom_point()+geom_smooth(method='lm')+theme_classic()+ylab('Avg. B/w Con. @ K=4, Unimodal')+xlab('EF')
-ET4<-ggplot(quadrantdf,aes(x=AgC_EF,y=Transmodal4))+geom_point()+geom_smooth(method='lm',color='red')+theme_classic()+ylab('Avg. B/w Con. @ K=4, Transmodal')+xlab('EF')
-EU20<-ggplot(quadrantdf,aes(x=AgC_EF,y=Unimodal20))+geom_point()+geom_smooth(method='lm')+theme_classic()+ylab('Avg. B/w Con. @ K=20, Unimodal')+xlab('EF')
-ET20<-ggplot(quadrantdf,aes(x=AgC_EF,y=Transmodal20))+geom_point()+geom_smooth(method='lm',color='red')+theme_classic()+ylab('Avg. B/w Con. @ K=20, Transmodal')+xlab('EF')
+EU4M<-gam(Unimodal4~s(Age,k=3)+Sex+Motion+EF,data=quadrantdf)
+quadrantdf$EU4Pred<-stats::predict(EU4M,newdata=quadrantdf)
+EU4Error<-predict.gam(EU4M, newdata=quadrantdf, se = TRUE)
+quadrantdf$EU4ucl <- EU4Error$fit + 1.96 * EU4Error$se.fit
+quadrantdf$EU4lcl <- EU4Error$fit - 1.96 * EU4Error$se.fit
+EU4<-ggplot(quadrantdf,aes(x=EF,y=Unimodal4))+geom_point()+geom_smooth(aes(EF,y=EU4Pred,ymin=EU4lcl,ymax=EU4ucl),se=T,method = 'lm')+theme_classic()+ylab('Avg. B/w Con. @ K=4, Most Unimodal Community')+xlab('EF')
+
+ET4M<-gam(Transmodal4~s(Age,k=3)+Sex+Motion+EF,data=quadrantdf)
+quadrantdf$ET4Pred<-stats::predict(ET4M,newdata=quadrantdf)
+ET4Error<-predict.gam(ET4M, newdata=quadrantdf, se = TRUE)
+quadrantdf$ET4ucl <- ET4Error$fit + 1.96 * ET4Error$se.fit
+quadrantdf$ET4lcl <- ET4Error$fit - 1.96 * ET4Error$se.fit
+ET4<-ggplot(quadrantdf,aes(x=EFResid,y=Transmodal4))+geom_point()+geom_smooth(method = 'lm',color='red')+theme_classic()+ylab('Avg. B/w Con. @ K=4, Most Transmodal Community')+xlab('EF')
+
+EU20M<-gam(Unimodal20~s(Age,k=3)+Sex+Motion+EF,data=quadrantdf)
+quadrantdf$EU20Pred<-stats::predict(EU20M,newdata=quadrantdf)
+EU20Error<-predict.gam(EU20M, newdata=quadrantdf, se = TRUE)
+quadrantdf$EU20ucl <- EU20Error$fit + 1.96 * EU20Error$se.fit
+quadrantdf$EU20lcl <- EU20Error$fit - 1.96 * EU20Error$se.fit
+EU20<-ggplot(quadrantdf,aes(x=EF,y=Unimodal20))+geom_point()+geom_smooth(aes(EF,y=EU20Pred,ymin=EU20lcl,ymax=EU20ucl),se=T,method = 'lm')+theme_classic()+ylab('Avg. B/w Con. @ K=20, Most Unimodal Community')+xlab('EF')
+
+ET20M<-gam(Transmodal20~s(Age,k=3)+Sex+Motion+EF,data=quadrantdf)
+quadrantdf$ET20Pred<-stats::predict(ET20M,newdata=quadrantdf)
+ET20Error<-predict.gam(ET20M, newdata=quadrantdf, se = TRUE)
+quadrantdf$ET20ucl <- ET20Error$fit + 1.96 * ET20Error$se.fit
+quadrantdf$ET20lcl <- ET20Error$fit - 1.96 * ET20Error$se.fit
+ET20<-ggplot(quadrantdf,aes(x=EF,y=Transmodal20))+geom_point()+geom_smooth(method = 'lm',color='red')+theme_classic()+ylab('Avg. B/w Con. @ K=20, Most Transmodal Community')+xlab('EF')
 
 ggarrange(EU4,EU20,ET4,ET20)
 ```
