@@ -45,20 +45,7 @@ xx = xx'; yy = yy'; mm = mm'; % transpose... lazy code...
 rng default
 
 % dimensionality reduction via singular value decomposition (or PCA). No PDMs are estimated here.
-%pdm = multivariateMediation(xx,yy,mm,'B',num_pcs,'svd','noPDMestimation');
-%%%%%%%%%% init dimen. reduc. step removed by AP
-
-% AP - create matlab structure usually outputted from dimen reduc step
-pdm=struct('dat',struct('X',[],'Y',[],'M_tilde',[],'Dt',[],'B',[]));
-pdm.dat.X=X;
-pdm.dat.Y=Y;
-pdm.dat.M_tilde=M;
-% check here for validity: attempting to replace initial PCs (Dt,) PCs with pre-dim.-reduced features
-pdm.dat.Dt=ones(num_inputFeats); % Dt-transposed inverse weight projection matrix (B x voxels) %% AP - SET TO (NumFeats x NumFeats)'
-pdm.dat.B=num_inputFeats;
-% AP - making these junk fields to pass flags
-pdm.dat.nImgs=[1];
-pdm.dat.method=['SVD'];
+pdm = multivariateMediation(xx,yy,mm,'B',num_pcs,'svd','noPDMestimation');
 pdm = multivariateMediation(pdm,'nPDM',num_pdms); 
 
 

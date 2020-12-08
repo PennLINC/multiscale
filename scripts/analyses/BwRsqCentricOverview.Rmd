@@ -1188,6 +1188,43 @@ paste(colnames(masterdf[indiv_wincols_ind[MU20I]]),colnames(masterdf[indiv_winco
 quadrantdf<-data.frame(bwAvgCon[,MU4I],bwAvgCon[,MT4I],bwAvgCon[,MU20I],bwAvgCon[,MT20I],masterdf$Age,masteref$F1_Exec_Comp_Cog_Accuracy,masterdf$Motion,masterdf$Sex)
 colnames(quadrantdf)<-c('Unimodal4','Transmodal4','Unimodal20','Transmodal20','Age','EF','Motion','Sex')
 
+##### stack dfs
+unimodal4df<-data.frame(Bwcon=bwAvgCon[,MU4I])
+unimodal4df$Scale<-'4'
+unimodal4df$Age<-masterdf$Age
+unimodal4df$Sex<-masterdf$Sex
+unimodal4df$Motion<-masterdf$Motion
+unimodal4df$Motion<-masteref$F1_Exec_Comp_Cog_Accuracy
+unimodal4df$bblid<-as.factor(masterdf$bblid)
+
+unimodal20df<-data.frame(Bwcon=bwAvgCon[,MU20I])
+unimodal20df$Scale<-'20'
+unimodal20df$Age<-masterdf$Age
+unimodal20df$Sex<-masterdf$Sex
+unimodal20df$Motion<-masterdf$Motion
+unimodal20df$Motion<-masteref$F1_Exec_Comp_Cog_Accuracy
+unimodal20df$bblid<-as.factor(masterdf$bblid)
+
+unimodalDFlong<-rbind(unimodal4df,unimodal20df)
+
+# proper variable types
+unimodalDFlong$Scale<-as.ordered(unimodalDFlong$Scale)
+unimodalDFlong$Sex<-as.factor(unimodalDFlong$Sex)
+
+testmodel<-gamm(Bwcon~Sex+Motion+Scale+s(Age,k=4)+s(Age,by=Scale,k=4),random=list(bblid=~1),data=unimodalDFlong)
+
+
+# option 1: fit model as dual nonlinear interaction, use "predict" to pull out distinct scales
+
+
+
+
+#b<-getViz(testmodel)
+
+#plot(sm(b, 1)) + l_fitRaster() + l_fitContour() +scale_fill_gradient2(low = "blue",high = "red",mid = "white",midpoint = 0)+labs(fill = "Age Effect (dR2)")+ggtitle("")+xlab("Transmodality (node A)")+ylab("Transmodality (node B)")
+
+visualize_model(modobj = testmodel,smooth_var = 'Age',int_var = 'Scale',group_var = NULL)
+
 # get residuals from sex and motion for age
 #AgeResid<-lm(Age~Sex+Motion,data=quadrantdf)$residuals
 #quadrantdf$AgeResid<-AgeResid
@@ -1259,6 +1296,46 @@ quadrantdf$ET20lcl <- ET20Error$fit - 1.96 * ET20Error$se.fit
 ET20<-ggplot(quadrantdf,aes(x=EF,y=Transmodal20))+geom_point()+geom_smooth(method = 'lm',color='red')+theme_classic()+ylab('Avg. B/w Con. @ K=20, Most Transmodal Community')+xlab('EF')
 
 ggarrange(EU4,EU20,ET4,ET20)
+```
+
+```{r}
+# equivalent to above, but as barplots of relation
+
+# extract 4 age 
+bwdf4<-bwdf[bwdf$scalesvec==4,]
+tmObwdf4<-bwdf4[order(bwdf4$tmvec),]
+# extract 20 age 
+bwdf20<-bwdf[scalesvec==20,]
+tmObwdf20<-bwdf20[order(bwdf20$tmvec),]
+# make significance column
+tmObwdf4$Sig<-as.factor(as.logical(tmObwdf4$bwAgeCorVecs.cavg_bw))
+tmObwdf20$Sig<-as.factor(as.logical(tmObwdf20$bwAgeCorVecs.cavg_bw))
+
+# bar plots of em
+agebar4<-ggplot(tmObwdf4,aes(x=as.factor(round(tmvec,3)),bwAgeCorVecs.avg_bw,fill=Sig))+geom_col()+ggtitle('Age Effect and Transmodality: Scale 4')+theme_classic(base_size=28)+ylab(expression(paste('Age Effect (',Delta,R^2[adj],')')))+theme(legend.position = 'none')+xlab('Transmodality')+ scale_fill_manual(values=c('gray80','black'))
+
+agebar20<-ggplot(tmObwdf20,aes(x=as.factor(round(tmvec,3)),bwAgeCorVecs.avg_bw,fill=Sig))+geom_col()+ggtitle('Age Effect and Transmodality: Scale 20')+theme_classic(base_size=28)+ylab(expression(paste('Age Effect (',Delta,R^2[adj],')')))+theme(legend.position = 'none')+xlab('Transmodality')+ scale_fill_manual(values=c('gray80','black'))
+
+ggarrange(agebar4,agebar20,ncol=1)
+
+#same for EF, recycle these subsetted dfs
+EtmO4bwdf<-scale4bwdf[order(scale4bwdf$tmvec),]
+EtmO20bwdf<-scale20bwdf[order(scale20bwdf$tmvec),]
+# make a signficance vector from existing pieces for coloration
+EFSig4<-rep(1,dim(EtmO4bwdf)[1])
+EFSig20<-rep(1,dim(EtmO20bwdf)[1])
+# set this variable to logical 0 where it fails fdr
+EFSig4[grep('NonSig',EtmO4bwdf$domnetSig)]<-0
+EFSig20[grep('NonSig',EtmO20bwdf$domnetSig)]<-0
+# slap it in the df
+EtmO4bwdf$Sig<-as.factor(as.logical(EFSig4))
+EtmO20bwdf$Sig<-as.factor(as.logical(EFSig20))
+
+EFbar4<-ggplot(EtmO4bwdf,aes(x=as.factor(round(tmvec,3)),BW_R2VecEst,fill=Sig))+geom_col()+ggtitle('EF Effect and Transmodality: Scale 4')+theme_classic(base_size=28)+ylab(expression(paste('EF Effect (',Delta,R^2[adj],')')))+theme(legend.position = 'none')+xlab('Transmodality')+ scale_fill_manual(values=c('gray80','black'))
+
+EFbar20<-ggplot(EtmO20bwdf,aes(x=as.factor(round(tmvec,3)),BW_R2VecEst,fill=Sig))+geom_col()+ggtitle('EF Effect and Transmodality: Scale 20')+theme_classic(base_size=28)+ylab(expression(paste('EF Effect (',Delta,R^2[adj],')')))+theme(legend.position = 'none')+xlab('Transmodality')+ scale_fill_manual(values=c('gray80','black'))
+
+ggarrange(EFbar4,EFbar20,ncol=1)
 ```
 
 ```{r}
@@ -2757,7 +2834,7 @@ ggplot(data = violinDF2, aes(x = factor(violinY7membVec,levels = Y7vec), y = vio
 
 ```{r}
 library(gamm4)
-
+library(sjPlot)
 # unitary model of community-level EF and b/w con
 # melt bwAvgCondf[,1:464] with idcols for age, sex, motion, scale, and bblid (for random intercept)
 to_be_melted<-data.frame(cbind(masteref$bblid,as.numeric(masteref$F1_Exec_Comp_Cog_Accuracy),as.numeric(masteref$Age),as.numeric(masteref$Sex),masteref$Motion,bwAvgCondf[,1:464]))
@@ -2770,7 +2847,6 @@ colnames(Melted_clevel_ef)<-c('bblid','EF','Age','Sex','Motion','ObsoleteColName
 ### create vector of scales using colnames from ,bwAvgCondf[,1:464]
 # initialize
 scalesvector<-vector()
-
 # use the column names to determine the scale each b/w network con feature is at
 for (cn in 1:length(colnames(bwAvgCondf[,1:464]))){
   splitColName<-strsplit((colnames(bwAvgCondf[,1:464]))[cn],split='scale')
@@ -2781,14 +2857,30 @@ for (cn in 1:length(colnames(bwAvgCondf[,1:464]))){
 
 # each value needs to be repeated 693 times 
 repScalesVector=rep(scalesvector,each=693)
-
+# and for transmodality
+repTmVector<-rep(tmvec,each=693)
 # tag onto long format df
-Melted_clevel_ef$Scale<-repScalesVector
-
+Melted_clevel_ef$Scale<-as.ordered(repScalesVector)
+Melted_clevel_ef$Transmodality<-repTmVector
 
 # get non-numeric variables into proper format
 Melted_clevel_ef$bblid<-as.factor(Melted_clevel_ef$bblid)
 Melted_clevel_ef$Sex<-as.factor(Melted_clevel_ef$Sex)
+
+# 12/7/2- version
+linMod=lmer(AvgBetweenCon~Scale*Age*Transmodality+Sex+Motion+(1|bblid),Melted_clevel_ef)
+plot_model(linMod,type = "pred", terms = c("Age","Transmodality[-6,6]","Scale[2,30]"))  
+# non linear version
+nonlinMod=gamm(AvgBetweenCon~Scale+te(Age,Transmodality,k=4)+te(Age,Transmodality,by=Scale,k=4)+Sex+Motion,random=list(bblid=~1),data=Melted_clevel_ef)
+
+
+# for ef
+linModEF=glmer(AvgBetweenCon~Scale*EF*Transmodality+Sex+Age+Motion+(1|bblid),Melted_clevel_ef)
+plot_model(linModEF,type = "pred", terms = c("EF", "Scale[2,30]", "Transmodality[-6,6]")) 
+
+# more sophisticated version
+SophMod<-gamm(AvgBetweenCon~ti(Age,Scale,k=3)+Sex+Motion, random=list(bblid=~1),data=Melted_clevel_ef,REML=T)
+
 
 # finally, run the model with GAMM
 ###simplif_EF_mod<-gamm(AvgBetweenCon~s(Age,k=3)+Sex+Motion+log(Scale)+EF*log(Scale), random=list(bblid=~1),data=Melted_clevel_ef,REML=T)
