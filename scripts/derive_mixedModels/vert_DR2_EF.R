@@ -68,7 +68,11 @@ for (K in 2:30){
 	# print out DR2 vec for this scale
 	writeoutname=paste('/home/pinesa/VertexwiseTables_forDR2/Scale',K,'_EFBw_VertDR2s.csv',sep='')
 	write.csv(DR2vec,writeoutname)
-        # print out DR2 vec for this scale
-        writeoutname=paste('/home/pinesa/VertexwiseTables_forDR2/Scale',K,'_EFBw_VertPs.csv',sep='')
+	#12/7/20 - print out number of NAs, replace w/ .99
+	print(length(Pvec[Pvec=='NA']))
+	Pvec[is.na(Pvec)]=.99
+	# print out DR2 vec for this scale
+        Qs=p.adjust(Pvec,method='fdr')
+        writeoutname=paste('/home/pinesa/VertexwiseTables_forDR2/Scale',K,'_EFBw_VertQs.csv',sep='')
         write.csv(Pvec,writeoutname)
 }

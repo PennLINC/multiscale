@@ -1150,12 +1150,60 @@ motorbwdf<-bwR2EFdf[domnetvec=='Motor',]
 # motor by scale
 ggplot(motorbwdf,aes(scalesvec,BW_R2VecEst,color=domnetvec)) + geom_point(size=6)+ scale_color_manual(values=c('#3281ab','#b61ad0','#670068')) + xlab("# of Communities") + ylab(expression(paste('EF Effect (',Delta,R^2[adj],')'))) +theme_classic(base_size = 28) +guides(alpha=FALSE,color=guide_legend(title="Maximal Y7 Overlap"))+theme(legend.position='none')+geom_smooth()
 
+scale4bwdf<-bwR2EFdf[scalesvec==4,]
+ggplot(scale4bwdf,aes(tmvec,BW_R2VecEst,color=domnetSig)) + geom_point(size=6)+ scale_color_manual(values=c('#d77d00','#3281ab','#670068','gray80')) + xlab("Transmodality") + ylab(expression(paste('EF Effect (',Delta,R^2[adj],')'))) +theme_classic(base_size = 28) +guides(alpha=FALSE,color=guide_legend(title="Maximal Y7 Overlap"))+theme(legend.position='top')
+scale20bwdf<-bwR2EFdf[scalesvec==20,]
+ggplot(scale20bwdf,aes(tmvec,BW_R2VecEst,color=domnetSig)) + geom_point(size=6)+ scale_color_manual(values=c('#007500','#c1253c','#d77d00','#3281ab','#b61ad0','#670068','gray80')) + xlab("Transmodality") + ylab(expression(paste('EF Effect (',Delta,R^2[adj],')'))) +theme_classic(base_size = 28) +guides(alpha=FALSE,color=guide_legend(title="Maximal Y7 Overlap"))+theme(legend.position='top')
+
 # controlling for age
 #plot3d(x=bwR2EFdf$tmvec,y=bwR2EFdf$occvec,z=bwR2EFdf$BW_R2VecEst,col=as.integer(bwR2EFdf$domnetvec),size = 10)
 # no age control (pure ef effect)
 #plot3d(x=cbwR2EFdf$tmvec,y=cbwR2EFdf$occvec,z=cbwR2EFdf$cBW_R2VecEst_ageless,col=as.integer(cbwR2EFdf$domnetvec),size = 10)
 # just dispersion of networks by 3 principal gradients
 #plot3d(x=cbwR2EFdf$tmvec,y=cbwR2EFdf$occvec,z=cbwR2EFdf$attnmvec,col=as.integer(cbwR2EFdf$domnetvec),size = 10)
+```
+
+```{r}
+# pull out most unimodal and transmodal @ 20 and 4
+scale4<-bwR2EFdf[scalesvec==4,]
+scale20<-bwR2EFdf[scalesvec==20,]
+mostunimodal4<-min(scale4$tmvec)
+mostunimodal20<-min(scale20$tmvec)
+mosttransmodal4<-max(scale4$tmvec)
+mosttransmodal20<-max(scale20$tmvec)
+# get indices
+MU4I<-grep(mostunimodal4,tmvec)
+MT4I<-grep(mosttransmodal4,tmvec)
+MU20I<-grep(mostunimodal20,tmvec)
+MT20I<-grep(mosttransmodal20,tmvec)
+# use indices aligned to 1-value-per-network vector for readouts
+paste(colnames(masterdf[indiv_wincols_ind[MU4I]]),colnames(masterdf[indiv_wincols_ind[MT4I]]))
+# and for 20
+paste(colnames(masterdf[indiv_wincols_ind[MU4I]]),colnames(masterdf[indiv_wincols_ind[MT4I]]))
+paste(colnames(masterdf[indiv_wincols_ind[MU20I]]),colnames(masterdf[indiv_wincols_ind[MT20I]]))
+# use bwAvgCon to get each communities' avg. connectivity
+# make df of all of them
+quadrantdf<-data.frame(bwAvgCon[,MU4I],bwAvgCon[,MT4I],bwAvgCon[,MU20I],bwAvgCon[,MT20I],masterdf$Age,masteref$F1_Exec_Comp_Cog_Accuracy)
+colnames(quadrantdf)<-c('Unimodal4','Transmodal4','Unimodal20','Transmodal20','Age','EF')
+# most unimodal
+U4<-ggplot(quadrantdf,aes(x=Age,y=Unimodal4))+geom_point()+geom_smooth(method='lm')+theme_classic()+ylab('Avg. B/w Con. @ K=4, Unimodal')
+T4<-ggplot(quadrantdf,aes(x=Age,y=Transmodal4))+geom_point()+geom_smooth(method='lm',color='red')+theme_classic()+ylab('Avg. B/w Con. @ K=4, Transmodal')
+U20<-ggplot(quadrantdf,aes(x=Age,y=Unimodal20))+geom_point()+geom_smooth(method='lm')+theme_classic()+ylab('Avg. B/w Con. @ K=20, Unimodal')
+T20<-ggplot(quadrantdf,aes(x=Age,y=Transmodal20))+geom_point()+geom_smooth(method='lm',color='red')+theme_classic()+ylab('Avg. B/w Con. @ K=20, Transmodal')
+
+#### add motion control
+
+ggarrange(U4,U20,T4,T20)
+#### now for EF
+controlledEF<-gam(EF~s(Age,k=3),data=quadrantdf)$residuals
+quadrantdf$AgC_EF<-controlledEF
+# most unimodal
+EU4<-ggplot(quadrantdf,aes(x=AgC_EF,y=Unimodal4))+geom_point()+geom_smooth(method='lm')+theme_classic()+ylab('Avg. B/w Con. @ K=4, Unimodal')+xlab('EF')
+ET4<-ggplot(quadrantdf,aes(x=AgC_EF,y=Transmodal4))+geom_point()+geom_smooth(method='lm',color='red')+theme_classic()+ylab('Avg. B/w Con. @ K=4, Transmodal')+xlab('EF')
+EU20<-ggplot(quadrantdf,aes(x=AgC_EF,y=Unimodal20))+geom_point()+geom_smooth(method='lm')+theme_classic()+ylab('Avg. B/w Con. @ K=20, Unimodal')+xlab('EF')
+ET20<-ggplot(quadrantdf,aes(x=AgC_EF,y=Transmodal20))+geom_point()+geom_smooth(method='lm',color='red')+theme_classic()+ylab('Avg. B/w Con. @ K=20, Transmodal')+xlab('EF')
+
+ggarrange(EU4,EU20,ET4,ET20)
 ```
 
 ```{r}
@@ -1319,13 +1367,13 @@ for (i in 1:length(colnames(individ_scalebybw_df))){
     Mypath<-lm(formula=My_form,data=masteref)
     Mysum<-summary(Mypath)
     # only run if other two paths are sig
-    if (xMsum$coefficients['Age','Pr(>|t|)']<0.05 && Mysum$coefficients[5,'Pr(>|t|)']<0.05){
+    #if (xMsum$coefficients['Age','Pr(>|t|)']<0.05 && Mysum$coefficients[5,'Pr(>|t|)']<0.05){
     # run mediation
-    mediationFit<-mediate(xMpath,Mypath,treat="Age",mediator=curcolname)
-    AB_EstEdgesvec[i]<-mediationFit$d1
+    #mediationFit<-mediate(xMpath,Mypath,treat="Age",mediator=curcolname)
+    #AB_EstEdgesvec[i]<-mediationFit$d1
     # direction of age effects for subchord plots
-    AB_EstEdgesvec_agedir[i]<-xMsum$coefficients['Age','Estimate']
-    }
+   # AB_EstEdgesvec_agedir[i]<-xMsum$coefficients['Age','Estimate']
+    #}
 }
 ##write.csv(AB_EstEdgesvec,'~/Desktop/multiscale/edgesABEst.csv')
 AB_EstEdgesvec_csv<-read.csv('~/Desktop/multiscale/edgesABEst.csv')
@@ -1373,13 +1421,20 @@ BwAgeCorTMDifDf$ageDR2Pvec<-p.adjust(ageDR2Pvec,method='fdr')
 
 nonthresh<-ggplot(BwAgeCorTMDifDf,aes(x=tmdifvec,y=ageEfvec)) + geom_point(alpha=.07,size=5) + xlab('Transmodality Difference') + ylab('Age Partial Correlation') + ggtitle('Pairwise Between-Network Age-FC Relations')+geom_smooth(method='lm', formula= y~x,color='black',size=2)
 
-nonthreshEF<-ggplot(BwAgeCorTMDifDf,aes(x=tmdifvec,y=EFEfvec)) + geom_point(alpha=.07,size=5) + xlab('Transmodality Difference') + ylab('EF Partial Correlation') + ggtitle('Pairwise Between-Network EF-FC Relations')+geom_smooth(method='lm', formula= y~x,color='black',size=2)
+nonthreshEF<-ggplot(BwAgeCorTMDifDf,aes(x=tmdifvec,y=EFEfvec)) + geom_point(alpha=.07,size=5) + xlab('Transmodality Difference') + ylab('EF Delta R^2') + ggtitle('Pairwise Between-Network EF-FC Relations')+geom_smooth(method='lm', formula= y~x,color='black',size=2)
 
 nonthreshEF_OC<-ggplot(BwAgeCorTMDifDf,aes(x=occdifvec,y=EFEfvec)) + geom_point(alpha=.07,size=5) + xlab('Occipality Difference') + ylab('EF Partial Correlation') + ggtitle('Pairwise Between-Network EF-FC Relations')+ stat_smooth(method = "gam", formula = y ~ s(x), size = 1)
 
 thresh<-ggplot(BwAgeCorTMDifDf[fdr_ageEfPvec<0.05,],aes(x=tmdifvec,y=ageEfvec)) + geom_point(alpha=.07,size=5) + xlab('Transmodality Difference') + ylab('Age Partial Correlation') + ggtitle('Pairwise Between-Network Age-FC Relations: FDR Thresh.')
 
-ggarrange(nonthresh,thresh)
+# version at scale 4
+scale4bwdfDif<-BwAgeCorTMDifDf[BwAgeCorTMDifDf$scalevec==4,]
+ggplot(scale4bwdfDif,aes(tmdifvec,EFEfvec,color=domnetSig1)) + geom_text(size=9,label="\u25D6",family="Arial Unicode MS") + xlab('Transmodality Difference') + ylab('EF delta r^2') + ggtitle('EF: Scale 4')+scale_color_manual(values=ycolors,limits=Y7vec)+geom_text(aes(x=tmdifvec,y=EFEfvec,color=domnetSig2),size=9,label="\u25D7",family="Arial Unicode MS")+theme_classic()+xlim(0,12)
+
+scale20bwdfDif<-BwAgeCorTMDifDf[BwAgeCorTMDifDf$scalevec==20,]
+ggplot(scale20bwdfDif,aes(tmdifvec,EFEfvec,color=domnetSig1)) + geom_text(size=9,label="\u25D6",family="Arial Unicode MS") + xlab('Transmodality Difference') + ylab('EF delta r^2') + ggtitle('EF: Scale 20')+scale_color_manual(values=ycolors,limits=Y7vec)+geom_text(aes(x=tmdifvec,y=EFEfvec,color=domnetSig2),size=9,label="\u25D7",family="Arial Unicode MS")+theme_classic()+xlim(0,12)
+
+#ggarrange(nonthresh,thresh)
 
 # combine scalevec and transmodality dif vec for transmodality difference
 ScaleTMDifDf<-data.frame(tmdifvec,scalevec)
