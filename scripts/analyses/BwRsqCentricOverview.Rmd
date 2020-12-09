@@ -1223,7 +1223,7 @@ testmodel<-gamm(Bwcon~Sex+Motion+Scale+s(Age,k=4)+s(Age,by=Scale,k=4),random=lis
 
 #plot(sm(b, 1)) + l_fitRaster() + l_fitContour() +scale_fill_gradient2(low = "blue",high = "red",mid = "white",midpoint = 0)+labs(fill = "Age Effect (dR2)")+ggtitle("")+xlab("Transmodality (node A)")+ylab("Transmodality (node B)")
 
-visualize_model(modobj = testmodel,smooth_var = 'Age',int_var = 'Scale',group_var = NULL)
+#visualize_model(modobj = testmodel,smooth_var = 'Age',int_var = 'Scale',group_var = NULL)
 
 # get residuals from sex and motion for age
 #AgeResid<-lm(Age~Sex+Motion,data=quadrantdf)$residuals
@@ -1264,8 +1264,8 @@ T20<-ggplot(quadrantdf,aes(x=Age,y=Transmodal20))+geom_point()+geom_smooth(aes(A
 ggarrange(U4,U20,T4,T20)
 
 #### now for EF
-#EFResid<-gam(EF~s(Age,k=3),data=quadrantdf)$residuals
-#quadrantdf$EFResid<-EFResid
+EFResid<-gam(EF~s(Age,k=3),data=quadrantdf)$residuals
+quadrantdf$EFResid<-EFResid
 # most unimodal
 EU4M<-gam(Unimodal4~s(Age,k=3)+Sex+Motion+EF,data=quadrantdf)
 quadrantdf$EU4Pred<-stats::predict(EU4M,newdata=quadrantdf)
@@ -1295,7 +1295,7 @@ quadrantdf$ET20ucl <- ET20Error$fit + 1.96 * ET20Error$se.fit
 quadrantdf$ET20lcl <- ET20Error$fit - 1.96 * ET20Error$se.fit
 ET20<-ggplot(quadrantdf,aes(x=EF,y=Transmodal20))+geom_point()+geom_smooth(method = 'lm',color='red')+theme_classic()+ylab('Avg. B/w Con. @ K=20, Most Transmodal Community')+xlab('EF')
 
-ggarrange(EU4,EU20,ET4,ET20)
+#ggarrange(EU4,EU20,ET4,ET20)
 ```
 
 ```{r}
@@ -2860,24 +2860,28 @@ repScalesVector=rep(scalesvector,each=693)
 # and for transmodality
 repTmVector<-rep(tmvec,each=693)
 # tag onto long format df
-Melted_clevel_ef$Scale<-as.ordered(repScalesVector)
+Melted_clevel_ef$Scale<-as.integer(repScalesVector)
 Melted_clevel_ef$Transmodality<-repTmVector
 
 # get non-numeric variables into proper format
 Melted_clevel_ef$bblid<-as.factor(Melted_clevel_ef$bblid)
 Melted_clevel_ef$Sex<-as.factor(Melted_clevel_ef$Sex)
 
+ggplot(Melted_clevel_ef,aes(x=Transmodality,y=AvgBetweenCon))+geom_point()+geom_smooth()
+
 # 12/7/2- version
 linMod=lmer(AvgBetweenCon~Scale*Age*Transmodality+Sex+Motion+(1|bblid),Melted_clevel_ef)
 plot_model(linMod,type = "pred", terms = c("Age","Transmodality[-6,6]","Scale[2,30]"))  
-# non linear version
-nonlinMod=gamm(AvgBetweenCon~Scale+te(Age,Transmodality,k=4)+te(Age,Transmodality,by=Scale,k=4)+Sex+Motion,random=list(bblid=~1),data=Melted_clevel_ef)
-
+# non linear version - takes at least an hour to fit locally
+nonlinMod=gamm(AvgBetweenCon~s(Scale,k=4,fx=T)+s(Transmodality,k=4,fx=T)+s(Age,k=4,fx=T)+ti(Scale,Age,k=4,fx=T)+ti(Age,Transmodality,k=4,fx=T)+ti(Age,Transmodality,Scale,k=4,fx=T)+Sex+Motion,random=list(bblid=~1),data=Melted_clevel_ef)
+#nonlinModOF=readRDS('~/multiscale/CommLevelnonLinAgeModelScaleOF')
+#plot_model(nonlinMod,type = "pred", terms = c("Age","Transmodality[-6,6]","Scale[4,20]"))  
 
 # for ef
-linModEF=glmer(AvgBetweenCon~Scale*EF*Transmodality+Sex+Age+Motion+(1|bblid),Melted_clevel_ef)
+#linModEF=glmer(AvgBetweenCon~Scale*EF*Transmodality+Sex+Age+Motion+(1|bblid),Melted_clevel_ef)
 plot_model(linModEF,type = "pred", terms = c("EF", "Scale[2,30]", "Transmodality[-6,6]")) 
-
+FullnonlinModEF=gamm(AvgBetweenCon~s(Scale,k=3,fx=T)+s(Transmodality,k=3,fx=T)+s(Age,k=3,fx=T)+ti(Scale,Age,k=3,fx=T)+ti(Age,Transmodality,k=3,fx=T)+ti(Age,Transmodality,Scale,k=3,fx=T)+ti(Scale,EF,k=3,fx=T)+ti(EF,Transmodality,k=3,fx=T)+ti(EF,Scale,Transmodality,k=3,fx=T)+Sex+Motion+EF,random=list(bblid=~1),data=Melted_clevel_ef)
+PartialnonlinModEF=gamm(AvgBetweenCon~s(Scale,k=3,fx=T)+s(Transmodality,k=3,fx=T)+s(Age,k=3,fx=T)+ti(Scale,EF,k=3,fx=T)+ti(EF,Transmodality,k=3,fx=T)+ti(EF,Scale,Transmodality,k=3,fx=T)+Sex+Motion+EF,random=list(bblid=~1),data=Melted_clevel_ef)
 # more sophisticated version
 SophMod<-gamm(AvgBetweenCon~ti(Age,Scale,k=3)+Sex+Motion, random=list(bblid=~1),data=Melted_clevel_ef,REML=T)
 
