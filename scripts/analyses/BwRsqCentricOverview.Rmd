@@ -875,15 +875,165 @@ new_scale_color()+
 geom_text(aes(color=domnetvec),size=35,label="\u25D6",family="Arial Unicode MS")+ scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068'))
 ```
 
+```{r}
+#geom flow to show community emergence over scales
+library(ggalluvial)
+#data(vaccinations)
+#vaccinations <- transform(vaccinations,
+#                          response = factor(response, rev(levels(response))))
+#ggplot(vaccinations,
+#       aes(x = survey, stratum = response, alluvium = subject,
+#           y = freq,
+#           fill = response, label = response,alpha=response)) +
+#  scale_x_discrete(expand = c(.1, .1)) +
+#  geom_flow() +
+#  geom_stratum(alpha = .5) +
+#  geom_text(stat = "stratum", size = 3) +
+#  theme(legend.position = "none") +
+#  ggtitle("vaccination survey responses at three points in time")
+
+
+# need 20484 by 29 df, convert to long format, turn into 20484*29 by 4 df
+# load it in
+affils=data.frame(vroom('/cbica/projects/pinesParcels/data/SingleParcellation/SingleAtlas_Analysis/group_all_Ks.csv'))
+# remove rows that are all 0's (masked vertices)
+affils_masked=affils[(affils[,1]!=0),]
+# long format
+long_affils<-melt(affils_masked)
+colnames(long_affils)<-c('Garbage','Community')
+# make scales vector
+scalesvecRepped<-rep(2:30,each=17734)
+long_affils$Scale<-scalesvecRepped
+# make index of vertices (map same vertices onto each other across scales)
+vertVec<-rep(1:17734,29)
+long_affils$Vertex<-vertVec
+### apply alphavec and yeo17 vec to each vertex based on community numbering
+long_affils$firstInstance<-0
+long_affils$Yeo17<-as.character('0')
+long_affils$Yeo7<-as.character('0')
+long_affils$VertsInComm<-0
+long_affils$Transmodality<-0
+long_affils$CommunityReorder<-0
+for (i in 2:30){
+  # scale for which these community properties applies
+  scale<-i
+  # helping phriendly index
+  K_start=((scale-1)*(scale))/2
+  K_end=(((scale-1)*(scale))/2)+scale-1
+  Kind<-K_start:K_end
+  # community within that scale for which these properties apply
+  #alphavec is first instance
+  #domnetvec17 is yeo17 membership
+  # convert first isntance (alphavec) and yeo17 membership to matching within-scale community number
+  firstinstanceThisScale<-alphavec[Kind]
+  Yeo17ThisScale<-domnetvec17[Kind]
+  TransmodalityThisScale<-tmvec[Kind]
+  # get number of communities here
+  nummcoms=length(Kind)
+  # for reorganizing by transmodality within scale
+  TmOrder<-rank(TransmodalityThisScale)
+  # set each corresponding community property at this scale by indexing scale i and community c
+  for (c in 1:nummcoms){
+    # first instance marker
+    long_affils$firstInstance[long_affils$Scale==i & long_affils$Community == c] <- firstinstanceThisScale[c]
+    # y17 label
+    long_affils$Yeo17[long_affils$Scale==i & long_affils$Community == c]<- as.character(Yeo17ThisScale[c])
+    # number of vertices in this community
+    long_affils$VertsInComm[long_affils$Scale==i & long_affils$Community == c] <- dim(long_affils[long_affils$Scale==i & long_affils$Community == c,])[1]
+    # transmodality of this community
+    long_affils$Transmodality[long_affils$Scale==i & long_affils$Community == c]<- TransmodalityThisScale[c]
+    # reassign community order based on transmodality ranking
+    long_affils$CommunityReorder[long_affils$Scale==i & long_affils$Community == c]<- TmOrder[c]
+  }
+}
+
+# convert to lode format for better behavior
+long_affils$Vertex<-as.numeric(long_affils$Vertex)
+long_affils$Yeo17<-as.factor(long_affils$Yeo17)
+
+# each distinct combo of x and stratum occupy only 1 row
+#long_affilsUnique<-unique(long_affils[c("Scale","CommunityReorder","VertsInComm")])
+# remove column with unique values everywhere so we can remove duplicates
+long_affils<-long_affils[,-c(1)]
+long_affilsUnique<-long_affils[!duplicated(long_affils),]
+long_affilsUnique$CommunityReorder<-factor(long_affilsUnique$CommunityReorder,levels=seq(1:30))
+
+ggplot(long_affilsUnique,
+       aes(x = Scale, stratum = CommunityReorder, alluvium = Vertex,
+           #y = Transmodality,
+           fill = Yeo17, label = CommunityReorder, alpha=firstInstance)) +
+  geom_flow(alpha=.5) +
+  geom_stratum() +
+  geom_text(stat = "stratum", size = 3) +
+  scale_alpha_binned(range=c(.4,.7))+
+  theme(legend.position = "none") +
+  ggtitle("Community Emergence over Scales")+ scale_fill_manual(values=c('#dc8303','#8d2049','#596a85','#2d9a3d','#007938','#d9e200','#bc0943','#2b1f67','#48593a','#91a967','#4183a8','#00bb89','#3245a3','#9e3ca2','#eb75b3','#68126f','#d1001c'))+theme_classic()
+
+
+# organize by transmodality for community number
+```
 
 ```{r}
+## neural network format to show community emergence over scales
+#library(clusterGeneration)
+# 
+#seed.val<-2
+#set.seed(seed.val)
+# 
+#num.vars<-8
+#num.obs<-1000
+# 
+##input variables
+#cov.mat<-genPositiveDefMat(num.vars,covMethod=c("unifcorrmat"))$Sigma
+#rand.vars<-mvrnorm(num.obs,rep(0,num.vars),Sigma=cov.mat)
+# 
+##output variables
+#parms<-runif(num.vars,-10,10)
+#y1<-rand.vars %*% matrix(parms) + rnorm(num.obs,sd=20)
+#parms2<-runif(num.vars,-10,10)
+#y2<-rand.vars %*% matrix(parms2) + rnorm(num.obs,sd=20)
+# 
+##final datasets
+#rand.vars<-data.frame(rand.vars)
+#resp<-data.frame(y1,y2)
+#names(resp)<-c('Y1','Y2')
+#dat.in<-data.frame(resp,rand.vars)
+##nnet function from nnet package
+#library(nnet)
+#set.seed(seed.val)
+#mod1<-nnet(rand.vars,resp,data=dat.in,size=10,linout=T)
+# 
+##neuralnet function from neuralnet package, notice use of only one response
+#library(neuralnet)
+#form.in<-as.formula('Y1~X1+X2+X3+X4+X5+X6+X7+X8')
+#set.seed(seed.val)
+#mod2<-neuralnet(form.in,data=dat.in,hidden=10)
+# 
+##mlp function from RSNNS package
+#library(RSNNS)
+#set.seed(seed.val)
+#mod3<-mlp(rand.vars, resp, size=10,linOut=T)
+##import the function from Github
+#library(devtools)
+#source_url('https://gist.githubusercontent.com/fawda123/7471137/raw/466c1474d0a505ff044412703516c34f#1a4684a5/nnet_plot_update.r')
+# 
+##plot each model
+#plot.nnet(mod1)
+#mod.in<-c(13.12,1.49,0.16,-0.11,-0.19,-0.16,0.56,-0.52,0.81,0.56,-0.52,0.81,0.56,-0.52,0.81,.1,.1,.1#)
+#struct<-c(2,3,4) #two inputs, two hidden, one output 
+#plot.nnet(mod.in,struct=struct,bias=F)
+```
+
+```{r}
+
 # animations to show community emergence over scales
 library(gganimate)
+library(gifski)
 emergence_over_scales<-ggplot(bwdf,aes(x=tmvec,y=occvec,color=domnetvec)) + geom_point(size=10) + scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068'))+theme_classic()
 
-emergence_over_scales_anim<-agF_sc2 + transition_states(as.integer(scalesvec), state_length = 3)
+emergence_over_scales_anim<-emergence_over_scales + transition_states(as.integer(scalesvec), state_length = 10)
 
-anim_save('~/multiscale/emergence_over_scales_anim.gif',animation=emergence_over_scales_anim)
+anim_save('~/multiscale/emergence_over_scales_anim.gif',animation=emergence_over_scales_anim,render=gifski_renderer(),nframes=100,fps=3)
 ```
 
 ```{r}
