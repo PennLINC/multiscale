@@ -877,6 +877,16 @@ geom_text(aes(color=domnetvec),size=35,label="\u25D6",family="Arial Unicode MS")
 
 
 ```{r}
+# animations to show community emergence over scales
+library(gganimate)
+emergence_over_scales<-ggplot(bwdf,aes(x=tmvec,y=occvec,color=domnetvec)) + geom_point(size=10) + scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068'))+theme_classic()
+
+emergence_over_scales_anim<-agF_sc2 + transition_states(as.integer(scalesvec), state_length = 3)
+
+anim_save('~/multiscale/emergence_over_scales_anim.gif',animation=emergence_over_scales_anim)
+```
+
+```{r}
 library(lme4)
 # age effect duration w/ b/w
 # long df - replaced indexed master df with bwAvgCon, because bwAvgCon yields network-wise measures vs. pairwise
@@ -2867,7 +2877,7 @@ Melted_clevel_ef$Transmodality<-repTmVector
 Melted_clevel_ef$bblid<-as.factor(Melted_clevel_ef$bblid)
 Melted_clevel_ef$Sex<-as.factor(Melted_clevel_ef$Sex)
 
-ggplot(Melted_clevel_ef,aes(x=Transmodality,y=AvgBetweenCon))+geom_point()+geom_smooth()
+#ggplot(Melted_clevel_ef,aes(x=Transmodality,y=AvgBetweenCon))+geom_point()+geom_smooth()
 
 # 12/7/2- version
 linMod=lmer(AvgBetweenCon~Scale*Age*Transmodality+Sex+Motion+(1|bblid),Melted_clevel_ef)
@@ -2880,12 +2890,22 @@ nonlinMod=gamm(AvgBetweenCon~s(Scale,k=4,fx=T)+s(Transmodality,k=4,fx=T)+s(Age,k
 # for ef
 #linModEF=glmer(AvgBetweenCon~Scale*EF*Transmodality+Sex+Age+Motion+(1|bblid),Melted_clevel_ef)
 plot_model(linModEF,type = "pred", terms = c("EF", "Scale[2,30]", "Transmodality[-6,6]")) 
-FullnonlinModEF=gamm(AvgBetweenCon~s(Scale,k=3,fx=T)+s(Transmodality,k=3,fx=T)+s(Age,k=3,fx=T)+ti(Scale,Age,k=3,fx=T)+ti(Age,Transmodality,k=3,fx=T)+ti(Age,Transmodality,Scale,k=3,fx=T)+ti(Scale,EF,k=3,fx=T)+ti(EF,Transmodality,k=3,fx=T)+ti(EF,Scale,Transmodality,k=3,fx=T)+Sex+Motion+EF,random=list(bblid=~1),data=Melted_clevel_ef)
-PartialnonlinModEF=gamm(AvgBetweenCon~s(Scale,k=3,fx=T)+s(Transmodality,k=3,fx=T)+s(Age,k=3,fx=T)+ti(Scale,EF,k=3,fx=T)+ti(EF,Transmodality,k=3,fx=T)+ti(EF,Scale,Transmodality,k=3,fx=T)+Sex+Motion+EF,random=list(bblid=~1),data=Melted_clevel_ef)
-# more sophisticated version
-SophMod<-gamm(AvgBetweenCon~ti(Age,Scale,k=3)+Sex+Motion, random=list(bblid=~1),data=Melted_clevel_ef,REML=T)
+FullnonlinModEF=gamm(AvgBetweenCon~s(Scale,k=3,fx=F)+s(Transmodality,k=3,fx=F)+s(Age,k=3,fx=F)+ti(Scale,Age,k=3,fx=F)+ti(Age,Transmodality,k=3,fx=F)+ti(Age,Transmodality,Scale,k=3,fx=F)+ti(Scale,EF,k=3,fx=F)+ti(EF,Transmodality,k=3,fx=F)+ti(EF,Scale,Transmodality,k=3,fx=F)+Sex+Motion+s(EF,k=3,fx=F),random=list(bblid=~1),data=Melted_clevel_ef)
 
+PartialnonlinModEF=gamm(AvgBetweenCon~s(Scale,k=3,fx=T)+s(Transmodality,k=3,fx=T)+s(Age,k=3,fx=T)+ti(Scale,EF,k=3,fx=T)+ti(EF,Transmodality,k=3,fx=T)+ti(EF,Scale,Transmodality,k=3,fx=T)+Sex+Motion+s(EF,k=3,fx=T),random=list(bblid=~1),data=Melted_clevel_ef)
 
+# EF above and beyond age
+EFResid<-lm(F1_Exec_Comp_Cog_Accuracy~Age,data=masteref)$residuals
+repEFResidVector=rep(EFResid,times=464)
+Melted_clevel_ef$EFResid<-repEFResidVector
+# "Ageless" Ef model
+DualLevelnonlinModEF=gamm(AvgBetweenCon~s(Scale,k=3,fx=T)+s(Transmodality,k=3,fx=T)+ti(Scale,EFResid,k=3,fx=T)+ti(EFResid,Transmodality,k=3,fx=T)+ti(EFResid,Scale,Transmodality,k=3,fx=T)+Sex+Motion+s(EFResid,k=3,fx=T),random=list(bblid=~1),data=Melted_clevel_ef)
+plot_model(DualLevelnonlinModEF,type = "pred", terms = c("EFResid", "Scale[2,30]", "Transmodality[-6,6]"))
+
+#DualLevelnonlinModEF_TE=gamm(AvgBetweenCon~te(EFResid,Scale,Transmodality,k=3,fx=T)+Sex+Motion,random=list(bblid=~1),data=Melted_clevel_ef)
+plot_model(DualLevelnonlinModEF,type = "pred", terms = c("EFResid", "Scale[2,30]", "Transmodality[-6,6]"))
+
+#DualLevelnonlinModEF_MoreLin=gamm(AvgBetweenCon~s(Scale,k=3,fx=T)+Transmodality+ti(Scale,by=EFResid,k=3,fx=T)+EFResid*Transmodality+ti(Scale,by=c(EFResid,Transmodality),k=3,fx=T)+Sex+Motion+EFResid,random=list(bblid=~1),data=Melted_clevel_ef)
 # finally, run the model with GAMM
 ###simplif_EF_mod<-gamm(AvgBetweenCon~s(Age,k=3)+Sex+Motion+log(Scale)+EF*log(Scale), random=list(bblid=~1),data=Melted_clevel_ef,REML=T)
 summary(simplif_EF_mod$lme)
