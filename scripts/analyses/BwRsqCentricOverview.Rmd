@@ -927,6 +927,7 @@ for (i in 2:30){
   # convert first isntance (alphavec) and yeo17 membership to matching within-scale community number
   firstinstanceThisScale<-alphavec[Kind]
   Yeo17ThisScale<-domnetvec17[Kind]
+  Yeo7ThisScale<-domnetvec[Kind]
   TransmodalityThisScale<-tmvec[Kind]
   # get number of communities here
   nummcoms=length(Kind)
@@ -938,6 +939,8 @@ for (i in 2:30){
     long_affils$firstInstance[long_affils$Scale==i & long_affils$Community == c] <- firstinstanceThisScale[c]
     # y17 label
     long_affils$Yeo17[long_affils$Scale==i & long_affils$Community == c]<- as.character(Yeo17ThisScale[c])
+    # y7 label
+    long_affils$Yeo7[long_affils$Scale==i & long_affils$Community == c]<- as.character(Yeo7ThisScale[c])
     # number of vertices in this community
     long_affils$VertsInComm[long_affils$Scale==i & long_affils$Community == c] <- dim(long_affils[long_affils$Scale==i & long_affils$Community == c,])[1]
     # transmodality of this community
@@ -958,16 +961,20 @@ long_affils<-long_affils[,-c(1)]
 long_affilsUnique<-long_affils[!duplicated(long_affils),]
 long_affilsUnique$CommunityReorder<-factor(long_affilsUnique$CommunityReorder,levels=seq(1:30))
 
+
+#### THRESHOLD SUPER LOW VERTEX CARRYOVERS
 ggplot(long_affilsUnique,
        aes(x = Scale, stratum = CommunityReorder, alluvium = Vertex,
            #y = Transmodality,
-           fill = Yeo17, label = CommunityReorder, alpha=firstInstance)) +
+           fill = Yeo7, label = CommunityReorder)) +
   geom_flow(alpha=.5) +
   geom_stratum() +
   geom_text(stat = "stratum", size = 3) +
-  scale_alpha_binned(range=c(.4,.7))+
+  #scale_alpha_binned(range=c(.3,.9))+
   theme(legend.position = "none") +
-  ggtitle("Community Emergence over Scales")+ scale_fill_manual(values=c('#dc8303','#8d2049','#596a85','#2d9a3d','#007938','#d9e200','#bc0943','#2b1f67','#48593a','#91a967','#4183a8','#00bb89','#3245a3','#9e3ca2','#eb75b3','#68126f','#d1001c'))+theme_classic()
+  ggtitle("Community Emergence over Scales")+
+  scale_fill_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068'))
+  #scale_fill_manual(values=c('#dc8303','#8d2049','#596a85','#2d9a3d','#007938','#d9e200','#bc0943','#2b1f67','#48593a','#91a967','#4183a8','#00bb89','#3245a3','#9e3ca2','#eb75b3','#68126f','#d1001c'))+theme_classic()
 
 
 # organize by transmodality for community number

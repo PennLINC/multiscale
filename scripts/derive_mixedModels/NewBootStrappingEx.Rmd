@@ -1,0 +1,97 @@
+---
+title: "Untitled"
+author: "Adam"
+date: "12/12/2020"
+output: html_document
+---
+
+```{r}
+# getting a p-value by inverting bootstrap confidence interval
+# Sarah Weinstein 12/07/2020
+library(parallel)
+
+# X and Z are both distributed N(0,1)
+## want to test whether their means are equal
+set.seed(995214)
+n.sims<-100
+pvals.t<-rep(NA,n.sims)
+pvals.t.bs<-rep(NA,n.sims)
+
+## Simulate some data 200 times
+pb <- txtProgressBar(min = 0, max = n.sims, style = 3)
+for (i in 1:n.sims) {
+
+  n = 100 
+  X = rnorm(n,0,1) # X values are part of "group 0"
+  Z = rnorm(n,0.5,1) # Z values are part of "group 1" - make the mean the same as in X for the null
+  data = rbind(cbind(var = X, group = rep(0)),
+               cbind(var = Z, group = rep(1))) # nrow(data) = 2*n
+  head(data)
+
+  T_obs = t.test(data[,1] ~ data[,2])$statistic[[1]]
+  #print(T_obs) # 1.693866
+
+  # Studentized bootstrap confidence interval:
+  # based on Section 2 from https://www.stat.cmu.edu/~ryantibs/advmethods/notes/bootstrap.pdf
+
+  B = 1000 # number of bootstraps (slow if you do both the inner and outer bootstrap loops)
+
+  # initialize vectors where certain output will be saved
+  T_b = vector(mode = "numeric", length = B)
+  s_b = vector(mode = "numeric", length = B)
+  pivot = vector(mode = "numeric", length = B)
+
+  for (b in 1:B){
+    # bootstrap sample
+    resample_rows = sample(1:nrow(data), nrow(data), replace = T)
+    data_resamp = data[resample_rows,]
+    
+    # test statistic for the b'th bootstrap sample:
+    T_b[b] = t.test(data_resamp[,1] ~ data_resamp[,2])$statistic[[1]]
+    
+    # bootstrap the b'th bootstrap sample again to get standard deviation of test statistics from this sample:
+    ##  we can skip this inner loop if we just want to use 1,96 as the quantile for the C.I., but this doesn't do as well - see below.
+    T_bm = vector(mode = "numeric", length = B)
+    
+    for (m in 1:B){
+      resample_rows2 = sample(1:nrow(data), nrow(data), replace = T)
+      data_resamp2 = data_resamp[resample_rows2,]
+      T_bm[m] = t.test(data_resamp2[,1] ~ data_resamp2[,2])$statistic[[1]]
+    }
+    
+    s_b[b] = sd(T_bm) # standard deviation of test statistics after bootstrapping the b'th bootstrap sample
+    pivot[b] = (T_b[b] - T_obs)/s_b[b] # standard deviation in the denominator
+
+  }
+  
+
+  alpha = 0.05
+  q_low = quantile(pivot,alpha/2)
+  q_up = quantile(pivot,1-alpha/2)
+
+
+  CI_bound1 = T_obs - q_low*sqrt(var(T_b)/length(T_b))
+  CI_bound2 = T_obs + q_up*sqrt(var(T_b)/length(T_b))
+
+  if (CI_bound1 > 0 | CI_bound2 > 0){
+    pval = 2*pnorm(max(CI_bound1, CI_bound2), lower.tail = F) # getting the area above the upper bound of the CI
+  } else {
+    pval = 2*pnorm(min(CI_bound1, CI_bound2), lower.tail = T) # getting the area below the lower bound of the CI
+  }
+  pvals.t.bs[i]<-pval
+
+  # or use 1.96 as the quantile and then can skip the inner bootstrap loop (?)
+  CI_bound1 = T_obs - 1.96*sqrt(var(T_b)/length(T_b))
+  CI_bound2 = T_obs + 1.96*sqrt(var(T_b)/length(T_b))
+  if (CI_bound1 > 0 | CI_bound2 > 0){
+    pval = 2*pnorm(max(CI_bound1, CI_bound2), lower.tail = F)
+  } else{
+    pval = 2*pnorm(min(CI_bound1, CI_bound2), lower.tail = T)
+  }
+  pvals.t[i]<-pval
+  setTxtProgressBar(pb, i)
+}
+close(pb)
+
+save(pvals.t.bs,pvals.t, file="~/Desktop/takiout.RData")
+```
