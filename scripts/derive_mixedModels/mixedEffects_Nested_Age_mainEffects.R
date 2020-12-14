@@ -1,6 +1,5 @@
 ### for parallelizing over vertices, read in which vertex this should run on
 v=commandArgs(trailingOnly=TRUE)
-set.seed(1)
 
 ### load libraries
 library(mgcv)
@@ -74,12 +73,23 @@ NumberOfSubjects=693
 B = 1000 # number of bootstraps (slow if you do both the inner and outer bootstrap loops)
 # initialize vectors where certain output will be saved
 Motion_b = vector(mode = "numeric", length = B)
+Motion_s = vector(mode = "numeric", length = B)
+Motion_pivot = vector(mode = "numeric", length = B)
+
 Sex_b = vector(mode = "numeric", length = B)
+Sex_s = vector(mode = "numeric", length = B)
+Sex_pivot = vector(mode = "numeric", length = B)
+
 Scale_b = vector(mode = "numeric", length = B)
+Scale_s = vector(mode = "numeric", length = B)
+Scale_pivot = vector(mode = "numeric", length = B)
+
 Age_b = vector(mode = "numeric", length = B)
+Age_s = vector(mode = "numeric", length = B)
+Age_pivot = vector(mode = "numeric", length = B)
 
 for (b in 1:B){
-  print(paste(b,' out of ',B))
+  print(paste('Outer Loop # ',b,' out of ',B))
   # bootstrap sample
   resample_rows = sample(seq(1:NumberOfSubjects), NumberOfSubjects, replace = T)
   data_resamp = df_verts[resample_rows,]
@@ -101,10 +111,62 @@ for (b in 1:B){
   Scale_b[b]=gammtable['s(Scale)','F']
   Age_b[b]=gammtable['s(Age)','F']
   
+  # bootstrap the b'th bootstrap sample again to get standard deviation of test statistics from this sample:
+  ##  we can skip this inner loop if we just want to use 1,96 as the quantile for the C.I., but this doesn't do as well - see below.
+  Motion_bm = vector(mode = "numeric", length = B)
+  Sex_bm = vector(mode = "numeric", length = B)
+  Scale_bm = vector(mode = "numeric", length = B)
+  Age_bm = vector(mode = "numeric", length = B)
+  
+  for (m in 1:B){
+    resample_rows2 = sample(seq(1:NumberOfSubjects), NumberOfSubjects, replace = T)
+    data_resamp2 = df_verts[resample_rows2,]
+    # melt it back into submission 
+    mdf_verts<-melt(data_resamp,id=c(1,2,3,4,5))
+    mdf_verts$bblid<-as.factor(mdf_verts$bblid)
+    colnames(mdf_verts)[6]<-c('Scale')
+    mdf_verts$Scale<-as.integer(mdf_verts$Scale)
+    mdf_verts$Sex<-as.factor(mdf_verts$Sex)
+    mdf_verts$Age<-as.numeric(mdf_verts$Age)
+    # rerun model
+    model=gamm(value~Motion+Sex+s(Scale,k=3,fx=T)+s(Age,k=3,fx=T),random=list(bblid=~1),data=mdf_verts)
+    #### readout estimates
+    gammsum=summary(model$gam)
+    gammtable=gammsum$s.table
+    fe=fixef(model$lme)
+    Motion_bm[m]=fe['XMotion']
+    Sex_bm[m]=fe['XSex2']
+    Scale_bm[m]=gammtable['s(Scale)','F']
+    Age_bm[m]=gammtable['s(Age)','F']
+  }
+  
+  Motion_s[b] = sd(Motion_bm) # standard deviation of test statistics after bootstrapping the b'th bootstrap sample
+  Motion_pivot[b] = (Motion_b[b] - Motion_obs)/Motion_s[b] # standard deviation in the denominator
+  Sex_s[b] = sd(Sex_bm) # standard deviation of test statistics after bootstrapping the b'th bootstrap sample
+  Sex_pivot[b] = (Sex_b[b] - Sex_obs)/Sex_s[b] # standard deviation in the denominator
+  Scale_s[b] = sd(Scale_bm) # standard deviation of test statistics after bootstrapping the b'th bootstrap sample
+  Scale_pivot[b] = (Scale_b[b] - Scale_obs)/Scale_s[b] # standard deviation in the denominator
+  Age_s[b] = sd(Age_bm) # standard deviation of test statistics after bootstrapping the b'th bootstrap sample
+  Age_pivot[b] = (Age_b[b] - Age_obs)/Age_s[b] # standard deviation in the denominator
+  
 }
 
-Motion_CI_bound1 = Motion_obs - 1.96*sqrt(var(Motion_b)/length(Motion_b))
-Motion_CI_bound2 = Motion_obs + 1.96*sqrt(var(Motion_b)/length(Motion_b))
+# set alpha
+alpha = 0.05
+
+# quantile estimates for terms based off of 'pivot'
+Motion_q_low = quantile(Motion_pivot,alpha/2)
+Motion_q_up = quantile(Motion_pivot,1-alpha/2)
+Sex_q_low = quantile(Sex_pivot,alpha/2)
+Sex_q_up = quantile(Sex_pivot,1-alpha/2)
+Scale_q_low = quantile(Scale_pivot,alpha/2)
+Scale_q_up = quantile(Scale_pivot,1-alpha/2)
+Age_q_low = quantile(Age_pivot,alpha/2)
+Age_q_up = quantile(Age_pivot,1-alpha/2)
+
+
+Motion_CI_bound1 = Motion_obs - Motion_q_low*sqrt(var(Motion_b)/length(Motion_b))
+Motion_CI_bound2 = Motion_obs + Motion_q_up*sqrt(var(Motion_b)/length(Motion_b))
 outarray['BoStrCI_Low','Motion']=Motion_CI_bound1
 outarray['BoStrCI_Upp','Motion']=Motion_CI_bound2
 # now do the studentized p val calculation
@@ -115,8 +177,8 @@ if (Motion_CI_bound1 > 0 | Motion_CI_bound2 > 0){
 }
 outarray['StudentizedP','Motion']<-pval
 
-Sex_CI_bound1 = Sex_obs - 1.96*sqrt(var(Sex_b)/length(Sex_b))
-Sex_CI_bound2 = Sex_obs + 1.96*sqrt(var(Sex_b)/length(Sex_b))
+Sex_CI_bound1 = Sex_obs - Sex_q_low*sqrt(var(Sex_b)/length(Sex_b))
+Sex_CI_bound2 = Sex_obs + Sex_q_up*sqrt(var(Sex_b)/length(Sex_b))
 outarray['BoStrCI_Low','Sex']=Sex_CI_bound1
 outarray['BoStrCI_Upp','Sex']=Sex_CI_bound2
 # now do the studentized p val calculation
@@ -127,8 +189,8 @@ if (Sex_CI_bound1 > 0 | Sex_CI_bound2 > 0){
 }
 outarray['StudentizedP','Sex']<-pval
 
-Scale_CI_bound1 = Scale_obs - 1.96*sqrt(var(Scale_b)/length(Scale_b))
-Scale_CI_bound2 = Scale_obs + 1.96*sqrt(var(Scale_b)/length(Scale_b))
+Scale_CI_bound1 = Scale_obs - Scale_q_low*sqrt(var(Scale_b)/length(Scale_b))
+Scale_CI_bound2 = Scale_obs + Scale_q_up*sqrt(var(Scale_b)/length(Scale_b))
 outarray['BoStrCI_Low','s_Scale']=Scale_CI_bound1
 outarray['BoStrCI_Upp','s_Scale']=Scale_CI_bound2
 # now do the studentized p val calculation
@@ -139,8 +201,8 @@ if (Scale_CI_bound1 > 0 | Scale_CI_bound2 > 0){
 }
 outarray['StudentizedP','s_Scale']<-pval
 
-Age_CI_bound1 = Age_obs - 1.96*sqrt(var(Age_b)/length(Age_b))
-Age_CI_bound2 = Age_obs + 1.96*sqrt(var(Age_b)/length(Age_b))
+Age_CI_bound1 = Age_obs - Age_q_low*sqrt(var(Age_b)/length(Age_b))
+Age_CI_bound2 = Age_obs + Age_q_up*sqrt(var(Age_b)/length(Age_b))
 outarray['BoStrCI_Low','s_Age']=Age_CI_bound1
 outarray['BoStrCI_Upp','s_Age']=Age_CI_bound2
 # now do the studentized p val calculation
