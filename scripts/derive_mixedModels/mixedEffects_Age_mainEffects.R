@@ -35,7 +35,8 @@ colnames(verts)[30]<-'bblid'
 df_verts<-merge(df,verts,by="bblid")
 mdf_verts<-melt(df_verts,id=c(1,2,3,4,5))
 mdf_verts$bblid<-as.factor(mdf_verts$bblid)
-colnames(mdf_verts)[6]<-c('Scale')
+# +1 because it stats at K=1 (shift to real start at 2)
+colnames(mdf_verts)[6]<-c('Scale')+1
 mdf_verts$Scale<-as.integer(mdf_verts$Scale)
 mdf_verts$Sex<-as.factor(mdf_verts$Sex)
 mdf_verts$Age<-as.numeric(mdf_verts$Age)
@@ -43,7 +44,7 @@ mdf_verts$Age<-as.numeric(mdf_verts$Age)
 ### initialize output (change for continuous p-val, +1 row)
 ### MAIN EFFECTS VERSION - ADD INTERACTIONS FOR INTERACTION VERSIONS
 outputcolnames=c('s_Age','s_Scale','Motion','Sex')
-outputrownames=c('Coef','BoStrCI_Low','BoStr_CI_Upp','StudentizedP')
+outputrownames=c('Coef','BoStrCI_Low','BoStrCI_Upp','StudentizedP')
 outarray=matrix(1,nrow=4,ncol=4)
 colnames(outarray)=outputcolnames
 rownames(outarray)=outputrownames

@@ -98,7 +98,7 @@ ggarrange(tc,ni,dif,rc)
 
 # plot average recon error over scales
 mreconerr<-(colMeans(recon_err)[2:30])
-mcrecnerrdf<-data.frame(mreconerr,community_vec)
+mcrecnerrdf<-data.frame(mreconerr,community_vec,SelectedScales)
 ggplot(data=mcrecnerrdf,aes(y=mreconerr,x=community_vec))+geom_step(col='black',size=2)+theme_minimal(base_size = 28)+ scale_x_continuous(name ="# of Communitites",  breaks=seq(2, 30, 4))+ylab("Reconstruction Error (a.u.)")
 
 # Motion and Sex Replacing Age (characterize indep. relations before controlling for them)
@@ -186,6 +186,10 @@ selectvec[6]<-1
 selectvec[12]<-1
 selectvec[19]<-1
 mcrecnerrdf$select<-selectvec
+
+
+# FOR FIGURE 1
+ggplot(data=mcrecnerrdf,aes(y=mreconerr,x=community_vec))+geom_step(size=3,color='#262228')+geom_point(aes(y=mreconerr,x=community_vec,alpha=select),size=9) +scale_alpha(range=c(0,1))+ scale_x_continuous(name ="Number of Communitites",  breaks=seq(2,30,4))+labs(y='Reconstruction Error (a.u.)')+theme_classic(base_size = 30)+ theme(axis.title.y.left =  element_text(color = '#262228'),legend.position = 'none')
 
 # dual plot of recon error and variab.
 avgrecon_softParVar<-ggplot(data=mcrecnerrdf,aes(y=mreconerr,x=community_vec))+geom_step(size=3,color='#262228') +geom_step(aes(y=SoftVar*45e5,x=community_vec),size=3,color='#0375B4',alpha=.7) + scale_x_continuous(name ="# of Communitites",  breaks=seq(2,30,4))+scale_y_continuous(sec.axis=sec_axis(trans =as.formula(~./45e5),name = 'Variability (MAD)'))+labs(y='Reconstruction Error (a.u.)')+theme_minimal(base_size = 25)+ theme(axis.title.y.left =  element_text(color = '#262228'),axis.text.y.left =  element_text(color = '#262228'),axis.title.y.right = element_text(color = '#0375B4'), axis.text.y.right = element_text(color = '#0375B4'))#+ylim(108000,208000)
