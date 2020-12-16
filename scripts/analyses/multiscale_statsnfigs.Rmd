@@ -1108,6 +1108,27 @@ AgeEff_TM<-ggarrange(Segreg_age_tm,Segreg_age_tm_rdif,Segreg_age_tm_r2dif,Segreg
 ```
 
 ```{r}
+# segreg
+indiv_nsegcols_ind<-intersect(nsegcols,indiv)
+indiv_scalebynet_df<-masterdf[,indiv_nsegcols_ind]
+# ensure 464 length (number of scale by net features)
+length(indiv_scalebynet_df)
+
+SegregR2VecEst<-as.numeric(lapply(masterdf[,indiv_nsegcols_ind],DeltaR2EstVec))
+SegregPVecEst<-as.numeric(lapply(masterdf[,indiv_nsegcols_ind],DeltaPEstVec))
+
+segdf<-data.frame(tmvec,scalesvec,domnetvec,netpropvec,SegregR2VecEst,SegregPVecEst)
+
+####
+
+#fdr it
+SegregPFDR<-p.adjust(SegregPVecEst,method='fdr')
+segdf$FDRed<-SegregPFDR
+
+seg_age_tm<-ggplot(segdf,aes(tmvec,SegregR2VecEst,color=domnetvec,alpha=netpropvec^2)) + geom_point(size=6)+ scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068')) + xlab("Transmodality") + ylab(expression(paste(Delta,R^2[adj]))) +theme_classic(base_size = 28) + ggtitle('Segregation Variance Captured by Age') +guides(alpha=FALSE,color=guide_legend(title="Maximal Y7 Overlap"))+theme(legend.position="top")
+```
+
+```{r}
 # long df
 long_precursor<-data.frame(masterdf$bblid,masterdf$Age,masterdf$Sex,masterdf$Motion,masterdf[,indiv_nsegcols_ind])
 melt_long<-melt(long_precursor,id=c(1,2,3,4))
@@ -1155,8 +1176,9 @@ for (i in 1:length(masterdf[,indiv_nsegcols_ind])){
   derivInfo[i,]=derv$sig_deriv
   forSpline<-predict(igam, data = masterdf, type = "terms")
   # adding mean val because output values are centered
+  # jk, no centering in this version
   colOfInt<-unlist(masterdf[,indiv_nsegcols_ind][i])
-  NetSplines[i,]<-forSpline[,3]+coef(igam)[1]
+  NetSplines[i,]<-forSpline[,3]#+coef(igam)[1]
   if (mean(colOfInt)<.3){
     print(paste(x,mean(colOfInt)))
   }
@@ -1265,7 +1287,9 @@ LongAgeSpan_plotdf3$Age<-NetSplinesAgeSideCar693464/12
 
 
 # [1:4851] plots first 7 networks (693 points for each)
-ggplot(LongAgeSpan_plotdf3,aes(Age,Splines,color=Transmodality,group=Grouping)) +geom_line(size=1,alpha=.1) +labs(title='Network Segregation Effect Manifestation', x = 'Age', y = 'Predicted Segregation') +theme_classic(base_size = 28)+ xlim(c(8,23))+ scale_colour_gradient(low="#55185D", high="#ECB602")
+#ggplot(LongAgeSpan_plotdf3,aes(Age,Splines,color=Transmodality,group=Grouping)) +geom_line(size=1,alpha=.1) +labs(title='Network Segregation Effect Manifestation', x = 'Age', y = 'Predicted Segregation') +theme_classic(base_size = 28)+ xlim(c(8,23))+ scale_colour_gradient(low="#55185D", high="#ECB602")
+
+ggplot(LongAgeSpan_plotdf3,aes(Age,Splines,color=Transmodality,group=Grouping)) +geom_line(size=3,alpha=.4) +labs(x = 'Age', y = 'Between-Community Coupling') +theme_classic(base_size = 28)+ xlim(c(8,23))+ scale_colour_viridis(option="inferno",guide=guide_colorbar(barwidth = 22))+theme(legend.position="top")
 
 ```
 

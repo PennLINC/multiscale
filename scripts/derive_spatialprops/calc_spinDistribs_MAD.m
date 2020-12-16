@@ -58,4 +58,4 @@ for K=2:30
 	end
 end
 % write out distribution, R friendly format
-writetable(array2table(permHouse),strcat(outdir,'SpinTestDistrs.csv'),'Delimiter',',','QuoteStrings',true);
+writetable(array2table(permHouse),strcat(outdir,'SpinTestDistrs_MAD.csv'),'Delimiter',',','QuoteStrings',true);

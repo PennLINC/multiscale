@@ -68,7 +68,7 @@ fourscalescheme[12]<- '#cca300'
 fourscalescheme[19]<- '#a30000'
   
 # load in spin test distributions
-spinDistr<-read.csv('/cbica/projects/pinesParcels/results/aggregated_data/SpinTestDistrs.csv')
+spinDistr<-read.csv('/cbica/projects/pinesParcels/results/aggregated_data/SpinTestDistrs_MAD.csv')
 
 # melt this into 1001*29 columns 
 m_spinDistr<-melt(spinDistr)
@@ -80,6 +80,20 @@ repeatVector<-array(0,dim=c(1001,1))
 repeatVector[1]<-1
 m_spinDistr$RealCor<-rep(rep(c(1,0),c(1,1000)),times=29)
 m_spinDistr$Scale<-as.factor(m_spinDistr$Scale)
-ggplot(m_spinDistr[m_spinDistr$RealCor==0,], aes(x = value, y = Scale, group = Scale,fill=Scale))+xlab(expression(rho)) + geom_jitter(size = 0.75,alpha=.15) +geom_point(data=m_spinDistr[m_spinDistr$RealCor==1,],aes(x=value,y=Scale,color=Scale),size=3)+scale_fill_manual(values=fourscalescheme)+scale_color_manual(values=fourscalescheme)+theme_minimal(base_size = 17)+coord_flip()+theme(legend.position = "none")+xlim(c(0,.7))+ylab('# of Communities')
+ggplot(m_spinDistr[m_spinDistr$RealCor==0,], aes(x = value, y = Scale, group = Scale))+xlab(expression(rho)) + geom_jitter(size = 0.75,alpha=.15) +geom_point(data=m_spinDistr[m_spinDistr$RealCor==1,],aes(x=value,y=Scale),size=3)+scale_fill_manual(values=fourscalescheme)+theme_minimal(base_size = 17)+coord_flip()+theme(legend.position = "none")+xlim(c(-.285,.85))+ylab('# of Communities')
 
+# load in spin test distributions
+spinDistr_PG<-read.csv('/cbica/projects/pinesParcels/results/aggregated_data/SpinTestDistrs_MAD_PG.csv')
+
+# melt this into 1001*29 columns 
+m_spinDistr<-melt(spinDistr_PG)
+
+# add a "scale" column
+m_spinDistr$Scale<-rep(2:30,each=1001)
+# add a "realCor" boolean column
+repeatVector<-array(0,dim=c(1001,1))
+repeatVector[1]<-1
+m_spinDistr$RealCor<-rep(rep(c(1,0),c(1,1000)),times=29)
+m_spinDistr$Scale<-as.factor(m_spinDistr$Scale)
+ggplot(m_spinDistr[m_spinDistr$RealCor==0,], aes(x = value, y = Scale, group = Scale))+xlab(expression(rho)) + geom_jitter(size = 0.75,alpha=.15) +geom_point(data=m_spinDistr[m_spinDistr$RealCor==1,],aes(x=value,y=Scale),size=3)+scale_fill_manual(values=fourscalescheme)+theme_minimal(base_size = 17)+coord_flip()+theme(legend.position = "none")+xlim(c(-.285,.85))+ylab('# of Communities')
 ```
