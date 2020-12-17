@@ -34,12 +34,12 @@ df<-merge(subjects,ageSex,by="scanid")
 df<-merge(df,motiondf,by='bblid')
 
 
-SupVisVert<-read.csv('/cbica/projects/pinesParcels/results/exampleVertVisbw.csv')
-MotVert<-read.csv('/cbica/projects/pinesParcels/results/exampleVertMotbw.csv')
+SuperiorVisualVert<-read.csv('/cbica/projects/pinesParcels/results/exampleVertVisbw.csv')
+MotorVert<-read.csv('/cbica/projects/pinesParcels/results/exampleVertMotbw.csv')
 PFCVert<-read.csv('/cbica/projects/pinesParcels/results/exampleVertPFCbw.csv')
 
-colnames(SupVisVert)[30]<-'bblid'
-colnames(MotVert)[30]<-'bblid'
+colnames(SuperiorVisualVert)[30]<-'bblid'
+colnames(MotorVert)[30]<-'bblid'
 colnames(PFCVert)[30]<-'bblid'
 
 df_SupVisVert<-merge(df,SupVisVert,by="bblid")
@@ -53,6 +53,20 @@ mdf_PFCVert<-melt(df_PFCVert,id=c(1,2,3,4,5))
 ### NEED ACCESS TO indglobBw from MASTER multiscale_statsnfigs OR BwRqCent
 mdf_globalVerts<-melt(indglobBw,id=c(1,2,3,4))
 
+
+colnames(mdf_SupVisVert)<-c('bblid','scanid','Age','Sex','Motion','Scale','BW_FC')
+colnames(mdf_MotVert)<-c('bblid','scanid','Age','Sex','Motion','Scale','BW_FC')
+colnames(mdf_PFCVert)<-c('bblid','scanid','Age','Sex','Motion','Scale','BW_FC')
+colnames(mdf_SupVisVert)<-c('bblid','scanid','Age','Sex','Motion','Scale','BW_FC')
+colnames(mdf_globalVerts)<-c('bblid','Age','Sex','Motion','Scale','BW_FC')
+mdf_globalVerts$Scale<-as.numeric(as.character(mdf_globalVerts$Scale))
+mdf_SupVisVert$Scale<-mdf_globalVerts$Scale
+mdf_MotVert$Scale<-mdf_globalVerts$Scale
+mdf_PFCVert$Scale<-mdf_globalVerts$Scale
+saveRDS(mdf_MotVert,'LongFormat_MotorVert.rds')
+saveRDS(mdf_SupVisVert,'LongFormat_VisualVert.rds')
+saveRDS(mdf_PFCVert,'LongFormat_PFCVert.rds')
+saveRDS(mdf_globalVerts,'LongFormat_AvgVert.rds')
 
 # create plots
 visplot<-ggplot(data=mdf_SupVisVert,aes(x=variable,y=value,group=bblid,color=Age)) +geom_line(alpha = 0.3,size=1)+ scale_color_gradient2(low = "green", mid = 'green', high = "red") + theme_minimal()+labs(title="Avg B/w Con over scales - Single Vertex - Superior Visual Cortex")

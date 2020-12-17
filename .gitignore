@@ -22,3 +22,5 @@ scripts/highDim_mediation/PDM*
 scripts/highDim_mediation/*.csv
 pcPDM*_AllEdges
 *bart*
+scripts/analyses/LongFormat_AvgVert.rds
+scripts/analyses/LongFormat_*
