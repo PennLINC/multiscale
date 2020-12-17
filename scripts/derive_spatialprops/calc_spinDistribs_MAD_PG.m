@@ -42,7 +42,7 @@ for K=2:30
 	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	
 	%%% get permuted correlations
-	permutFile=strcat(outdir,'SpatChangePermuts_',num2str(K),'.mat');
+	permutFile=strcat(outdir,'MADPermuts_',num2str(K),'.mat');
 	permuts=load(permutFile);
 	permutsL=permuts.bigrotl;
 	permutsR=permuts.bigrotr;	
@@ -52,7 +52,7 @@ for K=2:30
 	% for each permutation
 	for P=1:1000
 		permutVals=[permutsL(P,:) permutsR(P,:)];
-		permrho=corr(madk',pg1','type','spearman', 'rows','complete');
+		permrho=corr(permutVals',pg1','type','spearman', 'rows','complete');
 		permHouse(1+P,(K-1))=permrho;
 	end
 end
