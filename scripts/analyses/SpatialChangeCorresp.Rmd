@@ -14,6 +14,9 @@ library(reshape2)
 L=read.csv('/cbica/projects/pinesParcels/results/aggregated_data/vertexWiseChange_LH.csv')
 R=read.csv('/cbica/projects/pinesParcels/results/aggregated_data/vertexWiseChange_RH.csv')
 
+LMAD=read.csv('/cbica/projects/pinesParcels/results/aggregated_data/vertexWiseMAD_LH.csv')
+RMAD=read.csv('/cbica/projects/pinesParcels/results/aggregated_data/vertexWiseMAD_RH.csv')
+
 # initialize vectors
 spatCorvec_L<-rep(0,30)
 spatCorvec_R<-rep(0,30)
@@ -21,12 +24,15 @@ spatCorvec<-rep(0,30)
 
 for (K in 2:30){
   x=data.frame(c(L[,K],R[,K]),c(L[,1],R[,1]))
+  MADx=data.frame(c(LMAD[,K],RMAD[,K]),c(L[,K],R[,K]))
   colnames(x)<-c('LoadingChange','GradChange')
-  print(ggplot(x,aes(x=LoadingChange,y=GradChange)) + geom_pointdensity(adjust=.001) + scale_color_viridis_c())
+  colnames(MADx)<-c('MAD','LoadingChange')
+  #print(ggplot(x,aes(x=LoadingChange,y=GradChange)) + geom_pointdensity(adjust=.001) + scale_color_viridis_c())
+  print(ggplot(MADx,aes(x=LoadingChange,y=MAD)) + geom_pointdensity(adjust=.001) + scale_color_viridis_c()+ggtitle(paste(K))+theme_classic())
   # definitely not normally distr.
-  spatCorvec_R[K]<-cor.test(R[,K],R[,1],method='spearman')$estimate
-  spatCorvec_L[K]<-cor.test(L[,K],L[,1],method='spearman')$estimate
-  spatCorvec[K]<-cor.test(x$LoadingChange,x$GradChange,method='spearman')$estimate
+  #spatCorvec_R[K]<-cor.test(R[,K],R[,1],method='spearman')$estimate
+  #spatCorvec_L[K]<-cor.test(L[,K],L[,1],method='spearman')$estimate
+  #spatCorvec[K]<-cor.test(x$LoadingChange,x$GradChange,method='spearman')$estimate
 }
 #for (K in 2:30){
 #  x=data.frame(L[,K],L[,1])

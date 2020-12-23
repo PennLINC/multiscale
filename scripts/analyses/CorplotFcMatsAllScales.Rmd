@@ -22,7 +22,7 @@ grid.col_y17=c(Control_A='#dc8303',Control_B='#8d2049',Control_C='#596a85',DA_A=
 
 
 Y7vec<-c('Motor','Visual','DA','VA','Limbic','FP','DM')
-y17vec<-levels(domnetvec17)
+## needs the big one to be run y17vec<-levels(domnetvec17)
 # set yeo colorset
 ycolors=c('#3281ab','#670068','#007500','#b61ad0','#b8cf86','#d77d00','#c1253c')
 y17colors=c('#dc8303','#8d2049','#596a85','#2d9a3d','#007938','#d9e200','#bc0943','#2b1f67','#48593a','#91a967','#4183a8','#00bb89','#3245a3','#9e3ca2','#eb75b3','#68126f','#d1001c')
@@ -40,8 +40,8 @@ for (K in 2:30){
   AgeEfMatFn=paste('/cbica/projects/pinesParcels/results/EffectMats/fc_ageMat_K',K,'.csv',sep='')
   AgeEfMat=as.matrix(read.csv(AgeEfMatFn))
   # requires domnetvec to be ran in other rmd
-  colnames(AgeEfMat)=domnetvec[Kind]
-  rownames(AgeEfMat)=domnetvec[Kind]
+  colnames(AgeEfMat)=domnetvec17[Kind]
+  rownames(AgeEfMat)=domnetvec17[Kind]
   # get tmvec to arrange matrix by transmodality
   curTmRank<-order(tmvec[Kind])
   
