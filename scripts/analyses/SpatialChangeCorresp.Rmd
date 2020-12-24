@@ -10,6 +10,8 @@ library(ggplot2)
 library(ggpointdensity)
 library(ggridges)
 library(reshape2)
+library(ggExtra)
+library(hexbin)
 
 L=read.csv('/cbica/projects/pinesParcels/results/aggregated_data/vertexWiseChange_LH.csv')
 R=read.csv('/cbica/projects/pinesParcels/results/aggregated_data/vertexWiseChange_RH.csv')
@@ -23,12 +25,15 @@ spatCorvec_R<-rep(0,30)
 spatCorvec<-rep(0,30)
 
 for (K in 2:30){
-  x=data.frame(c(L[,K],R[,K]),c(L[,1],R[,1]))
-  MADx=data.frame(c(LMAD[,K],RMAD[,K]),c(L[,K],R[,K]))
+  x=data.frame(scale(c(L[,K],R[,K])),scale(c(L[,1],R[,1])))
+  MADx=data.frame(scale(c(LMAD[,K],RMAD[,K])),scale(c(L[,K],R[,K])))
   colnames(x)<-c('LoadingChange','GradChange')
   colnames(MADx)<-c('MAD','LoadingChange')
-  #print(ggplot(x,aes(x=LoadingChange,y=GradChange)) + geom_pointdensity(adjust=.001) + scale_color_viridis_c())
-  print(ggplot(MADx,aes(x=LoadingChange,y=MAD)) + geom_pointdensity(adjust=.001) + scale_color_viridis_c()+ggtitle(paste(K))+theme_classic())
+  hexinfo <- hexbin(MADx$LoadingChange, MADx$MAD, xbins = 40)
+  data_hex <- data.frame(hcell2xy(hexinfo), count = hexinfo@count)
+  colnames(data_hex)<-c('LoadingChange','MAD','count')
+  #print(ggMarginal(ggplot(MADx,aes(x=LoadingChange,y=MAD)) + geom_hex(bins=30) + scale_color_viridis_c(option='inferno')+ggtitle(paste(K))+geom_point(alpha=0)+geom_smooth(method='lm',color='gray')+theme_classic()+theme(legend.position = "bottom")),type="density")
+  #print(ggMarginal(ggplot(MADx,aes(x=LoadingChange,y=MAD)) + geom_pointdensity(adjust=1) + scale_color_viridis_c(option='inferno')+ggtitle(paste(K))+geom_smooth(method='lm',color='gray')+theme_classic()+theme(legend.position = "bottom")),type="density")
   # definitely not normally distr.
   #spatCorvec_R[K]<-cor.test(R[,K],R[,1],method='spearman')$estimate
   #spatCorvec_L[K]<-cor.test(L[,K],L[,1],method='spearman')$estimate
@@ -86,6 +91,7 @@ repeatVector<-array(0,dim=c(1001,1))
 repeatVector[1]<-1
 m_spinDistr$RealCor<-rep(rep(c(1,0),c(1,1000)),times=29)
 m_spinDistr$Scale<-as.factor(m_spinDistr$Scale)
+
 ggplot(m_spinDistr[m_spinDistr$RealCor==0,], aes(x = value, y = Scale, group = Scale))+xlab(expression(rho)) + geom_jitter(size = 0.75,alpha=.25) +geom_point(data=m_spinDistr[m_spinDistr$RealCor==1,],aes(x=value,y=Scale),size=3)+scale_fill_manual(values=fourscalescheme)+theme_minimal(base_size = 17)+coord_flip()+theme(legend.position = "none")+xlim(c(-.285,.85))+ylab('# of Communities') +ggtitle('Func Transitions: Group atlas at K correlations with PG1')
 
 # load in spin test distributions
@@ -94,14 +100,20 @@ spinDistr_MAD<-read.csv('/cbica/projects/pinesParcels/results/aggregated_data/Sp
 # melt this into 1001*29 columns 
 m_spinDistr<-melt(spinDistr_MAD)
 
-# add a "scale" column
-m_spinDistr$Scale<-rep(2:30,each=1001)
 # add a "realCor" boolean column
 repeatVector<-array(0,dim=c(1001,1))
 repeatVector[1]<-1
 m_spinDistr$RealCor<-rep(rep(c(1,0),c(1,1000)),times=29)
 m_spinDistr$Scale<-as.factor(m_spinDistr$Scale)
-ggplot(m_spinDistr[m_spinDistr$RealCor==0,], aes(x = value, y = Scale, group = Scale))+xlab(expression(rho)) + geom_jitter(size = 0.75,alpha=.25) +geom_point(data=m_spinDistr[m_spinDistr$RealCor==1,],aes(x=value,y=Scale),size=3)+scale_fill_manual(values=fourscalescheme)+theme_minimal(base_size = 17)+coord_flip()+theme(legend.position = "none")+xlim(c(-.35,.85))+ylab('# of Communities')+ggtitle('Func Transitions: Group atlas at K correlations with MAD at K')
+for(K in c(4,7,13,20)){
+  m_spinDistr_Scale<-subset(m_spinDistr,Scale==K)
+  RealCorrelation<-m_spinDistr_Scale$value[1]
+  # starting at 2 because 1 is real
+  P_Value = length(which(m_spinDistr_Scale$value[2:1001] >= RealCorrelation)) / 1000;
+  ggplot(subset(m_spinDistr_Scale, RealCor==0),aes(x=value))+geom_density()+geom_vline(xintercept = RealCorrelation,linetype="dashed")+theme_classic(base_size=40)+ylab('')+xlab(expression(rho))+guides(y="none")
+}
+
+#ggplot(m_spinDistr[m_spinDistr$RealCor==0,], aes(x = value, y = Scale, group = Scale))+xlab(expression(rho)) + geom_jitter(size = 0.75,alpha=.25) +geom_point(data=m_spinDistr[m_spinDistr$RealCor==1,],aes(x=value,y=Scale),size=3)+scale_fill_manual(values=fourscalescheme)+theme_minimal(base_size = 17)+coord_flip()+theme(legend.position = "none")+xlim(c(-.35,.85))+ylab('# of Communities')+ggtitle('Func Transitions: Group atlas at K correlations with MAD at K')
 
 # load in spin test distributions for MAD and PG
 spinDistr_PG_MAD<-read.csv('/cbica/projects/pinesParcels/results/aggregated_data/SpinTestDistrs_MAD_PG1.csv')
@@ -116,5 +128,12 @@ repeatVector<-array(0,dim=c(1001,1))
 repeatVector[1]<-1
 m_spinDistr$RealCor<-rep(rep(c(1,0),c(1,1000)),times=29)
 m_spinDistr$Scale<-as.factor(m_spinDistr$Scale)
-ggplot(m_spinDistr[m_spinDistr$RealCor==0,], aes(x = value, y = Scale, group = Scale))+xlab(expression(rho)) + geom_jitter(size = 0.75,alpha=.25) +geom_point(data=m_spinDistr[m_spinDistr$RealCor==1,],aes(x=value,y=Scale),size=3)+scale_fill_manual(values=fourscalescheme)+theme_minimal(base_size = 17)+coord_flip()+theme(legend.position = "none")+xlim(c(-.35,.85))+ylab('# of Communities')+ggtitle('Func Transitions: PG1 correlations with MAD at K')
+for(K in c(4,7,13,20)){
+  m_spinDistr_Scale<-subset(m_spinDistr,Scale==K)
+  RealCorrelation<-m_spinDistr_Scale$value[1]
+  P_Value = length(which(m_spinDistr_Scale$ >= RealCorrelation)) / 1000;
+  ggplot(subset(m_spinDistr_Scale, RealCor==0),aes(x=value))+geom_density()+geom_vline(xintercept = RealCorrelation,linetype="dashed")+theme_classic(base_size=40)+ylab('')+xlab(expression(rho))+guides(y="none")
+}
+
+#ggplot(m_spinDistr[m_spinDistr$RealCor==0,], aes(x = value, y = Scale, group = Scale))+xlab(expression(rho)) + geom_jitter(size = 0.75,alpha=.25) +geom_point(data=m_spinDistr[m_spinDistr$RealCor==1,],aes(x=value,y=Scale),size=3)+scale_fill_manual(values=fourscalescheme)+theme_minimal(base_size = 17)+coord_flip()+theme(legend.position = "none")+xlim(c(-.35,.85))+ylab('# of Communities')+ggtitle('Func Transitions: PG1 correlations with MAD at K')
 ```
