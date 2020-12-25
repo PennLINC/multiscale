@@ -1253,7 +1253,7 @@ bwdf$domnetvecSig<-as.factor(bwdf$domnetvecSig)
 bwdf$domnetvecSig<-factor(bwdf$domnetvecSig,levels=c("Motor","Visual","DA","VA","Limbic","FP","DM","NonSig"),labels=c("Motor","Visual","DA","VA","Limbic","FP","DM","NonSig."))
 
 # figure 3 flag
-avgbw_age_tm_sig<-ggplot(bwdf,aes(tmvec,bwAgeCorVecs.avg_bw)) + geom_point(size=6,alpha=.8,aes(color=domnetvecSig))+ scale_color_manual(values=c('#3281ab','#670068','#007500','#b61ad0','#b8cf86','#d77d00','#c1253c','gray80')) + xlab("Transmodality") + ylab(expression(paste('Age Effect(',Delta,R^2[adj],')',sep=''))) +theme_classic(base_size = 40) +guides(color=guide_legend(title="Yeo 7 Overlap"))+theme(plot.margin=margin(b=3,t=.1,l=.1,r=.1, unit='cm'), legend.position=c(.42,-.24),legend.direction = "horizontal",legend.title=element_text(size=30),legend.text=element_text(size=30))+geom_smooth(method='lm',color='black')
+avgbw_age_tm_sig<-ggplot(bwdf,aes(tmvec,bwAgeCorVecs.avg_bw)) + geom_point(size=6,alpha=.8,aes(color=domnetvecSig))+ scale_color_manual(values=c('#3281ab','#670068','#007500','#b61ad0','#b8cf86','#d77d00','#c1253c','gray80')) + xlab("Transmodality") + ylab(expression(paste('Age Effect(',Delta,R^2[adj],')',sep=''))) +theme_classic(base_size = 40) +guides(color=guide_legend(title="Yeo 7 Overlap"))+theme(plot.margin=margin(b=3,t=.1,l=.1,r=.1, unit='cm'), legend.position=c(.42,-.24),legend.direction = "horizontal",legend.title=element_text(size=30),legend.text=element_text(size=30))+geom_smooth(method='lm',color='black',size=2)
 ```
 
 
@@ -1749,7 +1749,7 @@ scale20bwdfDif<-BwAgeCorTMDifDf[BwAgeCorTMDifDf$scalevec==20,]
 #ggplot(scale20bwdfDif,aes(tmdifvec,EFEfvec,color=domnetSig1)) + geom_text(size=9,label="\u25D6",family="Arial Unicode MS") + xlab('Transmodality Difference') + ylab('EF delta r^2') + ggtitle('EF: Scale 20')+scale_color_manual(values=ycolors,limits=Y7vec)+geom_text(aes(x=tmdifvec,y=EFEfvec,color=domnetSig2),size=9,label="\u25D7",family="Arial Unicode MS")+theme_classic()+xlim(0,12)
 
 #ggarrange(nonthresh,thresh)
-
+library(mgcViz)
 g <- gam(ageDR2vec ~ s(net1tmvec,net2tmvec),data = BwAgeCorTMDifDf)
 b<-getViz(g)
 plot(sm(b, 1)) + l_fitRaster() + l_fitContour() +scale_fill_gradient2(low = "blue",high = "red",mid = "white",midpoint = 0)+labs(fill = "Age Effect (dR2)")+ggtitle("")+xlab("Transmodality (node A)")+ylab("Transmodality (node B)")
@@ -1758,10 +1758,21 @@ BwAgeCorTMDifDf2<-BwAgeCorTMDifDf
 BwAgeCorTMDifDf2$net1tmvec<-BwAgeCorTMDifDf$net2tmvec
 BwAgeCorTMDifDf2$net2tmvec<-BwAgeCorTMDifDf$net1tmvec
 
-doubleBwAgeCorTMDifDf<-rbind(BwAgeCorTMDifDf,BwAgeCorTMDifDf2)
-g2 <- gam(ageDR2vec ~ s(net1tmvec,net2tmvec),data = doubleBwAgeCorTMDifDf)
-b<-getViz(g)
-plot(sm(b, 1)) + l_fitRaster() + l_fitContour() +scale_fill_gradient2(low = "blue",high = "red",mid = "white",midpoint = 0)+labs(fill = "Age Effect (dR2)")+ggtitle("")+xlab("Transmodality (node A)")+ylab("Transmodality (node B)")
+#library(plotly)
+library(pammtools)
+# figure 4 flag
+doubleBwAgeCorTMDifDf<-rbind(BwAgeCorTMDifDf2,BwAgeCorTMDifDf)
+# appears to only work proeprly when modeled at te
+g2 <- gam(ageDR2vec ~ te(net2tmvec,net1tmvec),data = doubleBwAgeCorTMDifDf)
+gg_tensor(g2)+theme_classic(base_size = 40) +scale_fill_gradient2(low = "blue",high = "red",mid = "white",midpoint = 0,name=expression(paste('Age Effect(',Delta,R^2[adj],')')),guide = guide_colorbar(title.position="top",ticks.colour = "gray",
+                                ticks.linewidth = 5) )+theme(legend.text=element_text(size=20),legend.key.height =unit(2.3,"cm"),legend.title = element_text(size=25))+ggtitle("")+guides(alpha=FALSE)+xlab("Community Transmodality")+ylab("Community Transmodality")
+
+
+# bart method
+b<-getViz(g2)
+plot(sm(b, 1))+ l_fitRaster() + l_fitContour() +scale_fill_gradient2(low = "blue",high = "red",mid = "white",midpoint = 0)+labs(fill = expression(paste('Age Effect(',Delta,R^2[adj],')')))+ggtitle("")+xlab("Community Transmodality")+ylab("Community Transmodality")
+
+#plot_ly(data=doubleBwAgeCorTMDifDf,x=net1tmvec,y=net2tmvec,z=ageDR2vec,type='contour',contours = list(coloring='heatmap'),colorscale=list(c(-.1,0,.1),c("blue","white","red")))
 
 # combine scalevec and transmodality dif vec for transmodality difference
 ScaleTMDifDf<-data.frame(tmdifvec,scalevec)
@@ -1826,10 +1837,10 @@ LongAgeSpan_plotdf2$WholeSplineSig<-derivSigWholeSpline
 # finally, make vector of where sig=F to make those segments transparent
 LongAgeSpan_plotdf2$AlphaSig<-1
 LongAgeSpan_plotdf2$AlphaSig[LongAgeSpan_plotdf2$derivs==0]<-0
-breaks=c(-.05,0,0.05)
+breaks=c(-.005,0,0.005)
 
 # figure 3 flag
-Bwspan<-ggplot(LongAgeSpan_plotdf2[derivSigWholeSpline,],aes(agespans,tmvecJit,color=derivs,group=CIgroupingInd,alpha=AlphaSig)) +geom_line(size=3) +labs(x = 'Age', y = 'Transmodality') +theme_classic(base_size = 40)+ xlim(c(8,23))+ scale_colour_gradientn(colours=c('#0b0bff','#8585ff','white','#ff9191','#ff0a0a'),values = c(0,.4,.5,.6,1),breaks=breaks, labels = breaks,limits=c(-.06,0.06),name="Change Per Year (B/w Con.)")+theme(legend.text=element_text(size=30),legend.title = element_text(size=30),legend.position="bottom",legend.key.width = unit(3, "cm"))+ylim(c(min(tmvecJit),max(tmvecJit)))+guides(alpha=FALSE,color = guide_colorbar(title.position="top",ticks.colour = "gray",
+Bwspan<-ggplot(LongAgeSpan_plotdf2[derivSigWholeSpline,],aes(agespans,tmvecJit,color=derivs,group=CIgroupingInd,alpha=AlphaSig)) +geom_line(size=3) +labs(x = 'Age', y = 'Transmodality') +theme_classic(base_size = 40)+ xlim(c(8,23))+ scale_colour_gradientn(colours=c('#0b0bff','#8585ff','white','#ff9191','#ff0a0a'),values = c(0,.4,.5,.6,1),breaks=breaks, labels = breaks,limits=c(-.006,0.006),name="Change Per Year (B/w Con.)")+theme(legend.text=element_text(size=30),legend.title = element_text(size=30),legend.position="bottom",legend.key.width = unit(3, "cm"))+ylim(c(min(tmvecJit),max(tmvecJit)))+guides(alpha=FALSE,color = guide_colorbar(title.position="top",ticks.colour = "gray",
                                 ticks.linewidth = 8))+geom_vline(xintercept = c(10,15,20),linetype='dashed')+ theme(legend.margin=margin(b=-.5,t = -.5, unit='cm')) + scale_x_continuous(
     limits = c(8, 23),
     expand = c(0, 0),
@@ -1882,55 +1893,7 @@ y17vec<-levels(domnetvec17)
 ycolors=c('#3281ab','#670068','#007500','#b61ad0','#b8cf86','#d77d00','#c1253c')
 y17colors=c('#dc8303','#8d2049','#596a85','#2d9a3d','#007938','#d9e200','#bc0943','#2b1f67','#48593a','#91a967','#4183a8','#00bb89','#3245a3','#9e3ca2','#eb75b3','#68126f','#d1001c')
 
-TMdifEF<-ggplot(BwAgeCorTMDifDf,aes(x=tmdifvec,y=noAge_EFEfVec,color=Net1Vec)) + geom_text(size=5,label="\u25D6",family="Arial Unicode MS") + xlab('Transmodality Difference') + ylab('EF Partial Correlation') + ggtitle('Pairwise Between-Network EF-FC Relations')+scale_color_manual(values=ycolors,limits=Y7vec)+geom_text(aes(x=tmdifvec,y=noAge_EFEfVec,color=Net2Vec),size=5,label="\u25D7",family="Arial Unicode MS")+theme_classic()+ stat_smooth(aes(group = 1),method = "gam", formula = y ~ s(x), size = 1)
-
-OccdifEF<-ggplot(BwAgeCorTMDifDf,aes(x=occdifvec,y=noAge_EFEfVec,color=Net1Vec)) + geom_text(size=5,label="\u25D6",family="Arial Unicode MS") + xlab('Occipality Difference') + ylab('EF Partial Correlation') + ggtitle('Pairwise Between-Network EF-FC Relations')+scale_color_manual(values=ycolors,limits=Y7vec)+geom_text(aes(x=occdifvec,y=noAge_EFEfVec,color=Net2Vec),size=5,label="\u25D7",family="Arial Unicode MS")+theme_classic()+ stat_smooth(aes(group = 1),method = "gam", formula = y ~ s(x), size = 1)
-
-GD_EF<-ggplot(BwAgeCorTMDifDf,aes(x=all3pgDifvec,y=noAge_EFEfVec,color=Net1Vec)) + geom_text(size=5,label="\u25D6",family="Arial Unicode MS") + xlab('Gradient Distance') + ylab('EF Partial Correlation') + ggtitle('Pairwise Between-Network EF-FC Relations')+scale_color_manual(values=ycolors,limits=Y7vec)+geom_text(aes(x=all3pgDifvec,y=noAge_EFEfVec,color=Net2Vec),size=5,label="\u25D7",family="Arial Unicode MS")+theme_classic()+ stat_smooth(aes(group = 1),method = "gam", formula = y ~ s(x), size = 1)
-
-#### Age controlled versions of same plots
-TMdifEF_agc<-ggplot(BwAgeCorTMDifDf,aes(x=tmdifvec,y=EFEfvec,color=Net1Vec)) + geom_text(size=5,label="\u25D6",family="Arial Unicode MS") + xlab('Transmodality Difference') + ylab('EF Partial Correlation') + ggtitle('Pairwise Between-Network EF-FC Relations:AgC')+scale_color_manual(values=ycolors,limits=Y7vec)+geom_text(aes(x=tmdifvec,y=EFEfvec,color=Net2Vec),size=5,label="\u25D7",family="Arial Unicode MS")+theme_classic()+ stat_smooth(aes(group = 1),method = "gam", formula = y ~ s(x), size = 1)
-
-OccdifEF_agc<-ggplot(BwAgeCorTMDifDf,aes(x=occdifvec,y=EFEfvec,color=Net1Vec)) + geom_text(size=5,label="\u25D6",family="Arial Unicode MS") + xlab('Occipality Difference') + ylab('EF Partial Correlation') + ggtitle('Pairwise Between-Network EF-FC Relations:AgC')+scale_color_manual(values=ycolors,limits=Y7vec)+geom_text(aes(x=occdifvec,y=EFEfvec,color=Net2Vec),size=5,label="\u25D7",family="Arial Unicode MS")+theme_classic()+ stat_smooth(aes(group = 1),method = "gam", formula = y ~ s(x), size = 1)
-
-GD_EF_agc<-ggplot(BwAgeCorTMDifDf,aes(x=all3pgDifvec,y=EFEfvec,color=Net1Vec)) + geom_text(size=5,label="\u25D6",family="Arial Unicode MS") + xlab('Gradient Distance') + ylab('EF Partial Correlation') + ggtitle('Pairwise Between-Network EF-FC Relations:AgC')+scale_color_manual(values=ycolors,limits=Y7vec)+geom_text(aes(x=all3pgDifvec,y=EFEfvec,color=Net2Vec),size=5,label="\u25D7",family="Arial Unicode MS")+theme_classic()+ stat_smooth(aes(group = 1),method = "gam", formula = y ~ s(x), size = 1)
-
-OccdifEF17<-ggplot(BwAgeCorTMDifDf,aes(x=occdifvec,y=EFEfvec,color=Net1Vec17)) + geom_text(size=5,label="\u25D6",family="Arial Unicode MS") + xlab('Occipality Difference') + ylab('EF Partial Correlation') + ggtitle('Pairwise Between-Network EF-FC Relations')+scale_color_manual(values=y17colors,limits=y17vec)+geom_text(aes(x=occdifvec,y=EFEfvec,color=Net2Vec17),size=5,label="\u25D7",family="Arial Unicode MS")+theme_classic()+ stat_smooth(aes(group = 1),method = "gam", formula = y ~ s(x), size = 1)
-
-# remove rows to get age aligned and age mitigaged dfs
-ageAligned<-as.logical(ageAligned)
-ageMitigated<-as.logical(ageMitigated)
-ageAligneddf<-BwAgeCorTMDifDf[c(ageAligned),]
-ageMitigateddf<-BwAgeCorTMDifDf[c(ageMitigated),]
-
-# thresholding
-ageAligned_stringent<-as.logical(ageAligned_stringent)
-ageMitigated_stringent<-as.logical(ageMitigated_stringent)
-ageAligneddf_stringent<-BwAgeCorTMDifDf[c(ageAligned_stringent),]
-ageMitigateddf_stringent<-BwAgeCorTMDifDf[c(ageMitigated_stringent),]
-
-
-agF_y7<-ggplot(ageAligneddf,aes(x=scalevec,y=noAge_EFEfVec,color=Net1Vec)) + geom_text(size=10,label="\u25D6",family="Arial Unicode MS",position=position_jitter(width=.2,height=.2)) + xlab('Scale') + ylab('EF Partial Correlation') + ggtitle('Pairwise Between-Network Age-aligned EF-FC Relations')+scale_color_manual(values=ycolors,limits=Y7vec)+geom_text(aes(x=scalevec,y=noAge_EFEfVec,color=Net2Vec),size=10,label="\u25D7",family="Arial Unicode MS",position=position_jitter(width=.2,height=.2))+theme_classic()+ylim(-.3,.3)
-
-agM_y7<-ggplot(ageMitigateddf,aes(x=scalevec,y=EFEfvec,color=Net1Vec)) + geom_text(size=10,label="\u25D6",family="Arial Unicode MS") + xlab('Transmodality Difference') + ylab('EF Partial Correlation') + ggtitle('Pairwise Between-Network Age-mitigated EF-FC Relations')+scale_color_manual(values=ycolors,limits=Y7vec)+geom_text(aes(x=scalevec,y=EFEfvec,color=Net2Vec),size=10,label="\u25D7",family="Arial Unicode MS")+theme_classic()+ylim(-.4,.4)
-
-agM_y7_age_relations<-ggplot(ageMitigateddf,aes(x=scalevec,y=ageEfvec,color=Net1Vec)) + geom_text(size=10,label="\u25D6",family="Arial Unicode MS") + xlab('Transmodality Difference') + ylab('Age Partial Correlation') + ggtitle('Pairwise Between-Network EF-Age-mitigated Age-FC Relations')+scale_color_manual(values=ycolors,limits=Y7vec)+geom_text(aes(x=scalevec,y=ageEfvec,color=Net2Vec),size=10,label="\u25D7",family="Arial Unicode MS")+theme_classic()+xlim(0,12)+ylim(-.4,.4)+geom_smooth(method='lm', formula= y~x,color='gray82',size=2)
-
-# more thresholding
-agF_y7_thresh<-ggplot(ageAligneddf_stringent,aes(x=scalevec,y=noAge_EFEfVec,color=Net1Vec)) + geom_text(size=10,label="\u25D6",family="Arial Unicode MS") + xlab('Transmodality Difference') + ylab('EF Partial Correlation') + ggtitle('Pairwise Between-Network Age-aligned EF-FC Relations')+scale_color_manual(values=ycolors,limits=Y7vec)+geom_text(aes(x=scalevec,y=noAge_EFEfVec,color=Net2Vec),size=10,label="\u25D7",family="Arial Unicode MS")+theme_classic()+xlim(0,12)+ylim(-.3,.3)
-
-agM_y7_thresh<-ggplot(ageMitigateddf_stringent,aes(x=scalevec,y=EFEfvec,color=Net1Vec)) + geom_text(size=10,label="\u25D6",family="Arial Unicode MS") + xlab('Transmodality Difference') + ylab('EF Partial Correlation') + ggtitle('Pairwise Between-Network Age-mitigated EF-FC Relations')+scale_color_manual(values=ycolors,limits=Y7vec)+geom_text(aes(x=scalevec,y=EFEfvec,color=Net2Vec),size=10,label="\u25D7",family="Arial Unicode MS")+theme_classic()+xlim(0,12)+ylim(-.3,.3)
-
-# yeo17
-
-agF_y17<-ggplot(ageAligneddf_stringent,aes(x=tmdifvec,y=noAge_EFEfVec,color=Net1Vec17)) + geom_text(size=10,label="\u25D6",family="Arial Unicode MS") + xlab('Transmodality Difference') + ylab('EF Partial Correlation') + ggtitle('Pairwise Between-Network Age-aligned EF-FC Relations: Yeo17')+scale_color_manual(values=y17colors,limits=y17vec)+geom_text(aes(x=tmdifvec,y=noAge_EFEfVec,color=Net2Vec17),size=10,label="\u25D7",family="Arial Unicode MS")+theme_classic()+xlim(0,12)+ylim(-.3,.3)
-
-agM_y17<-ggplot(ageMitigateddf_stringent,aes(x=tmdifvec,y=EFEfvec,color=Net1Vec17)) + geom_text(size=10,label="\u25D6",family="Arial Unicode MS") + xlab('Transmodality Difference') + ylab('EF Partial Correlation') + ggtitle('Pairwise Between-Network Age-mitigated EF-FC Relations: Yeo17')+scale_color_manual(values=y17colors,limits=y17vec)+geom_text(aes(x=tmdifvec,y=EFEfvec,color=Net2Vec17),size=10,label="\u25D7",family="Arial Unicode MS")+theme_classic()+xlim(0,12)+ylim(-.3,.3)
-
-ggarrange(agF_y7,agM_y7,agF_y7_thresh,agM_y7_thresh,agF_y17,agM_y17,nrow=3,ncol=2)
-
-AgeVsEFEffects_agF<-ggplot(BwAgeCorTMDifDf,aes(x=noAge_EFEfVec,y=ageEfvec,color=Net1Vec)) + geom_text(size=7,label="\u25D6",family="Arial Unicode MS") + xlab('EF Partial Correlation') + ylab('Age Partial Correlation') + ggtitle('Age vs. EF effects - no age control')+scale_color_manual(values=ycolors,limits=Y7vec)+geom_text(aes(x=noAge_EFEfVec,y=ageEfvec,color=Net2Vec),size=7,label="\u25D7",family="Arial Unicode MS")+theme_minimal()+theme(legend.position = "none")
-AgeVsEFEffects_agM<-ggplot(BwAgeCorTMDifDf,aes(x=EFEfvec,y=ageEfvec,color=Net1Vec)) + geom_text(size=7,label="\u25D6",family="Arial Unicode MS") + xlab('EF Partial Correlation') + ylab('Age Partial Correlation') + ggtitle('Age vs. Age-controlled EF effects')+scale_color_manual(values=ycolors,limits=Y7vec)+geom_text(aes(x=EFEfvec,y=ageEfvec,color=Net2Vec),size=7,label="\u25D7",family="Arial Unicode MS")+theme_minimal()+theme(legend.position = "none")
+# old location of ef- age facil/mitigated 9 panel breakdowns
 
 # for figure 4
 ### get null distribution for permtued p-value
@@ -1948,9 +1911,13 @@ for (permut in 1:1000){
 
 2*pnorm(realCor,mean(permutedCors),sd(permutedCors))
 
-ggplot(BwAgeCorTMDifDf[BwAgeCorTMDifDf$ageDR2Pvec<0.05,],aes(x=tmdifvec,y=ageDR2vec))+ geom_text(size=7,label="\u25D6",family="Arial Unicode MS",aes(color=Net1Vec))+scale_color_manual(values=ycolors,limits=Y7vec)+geom_text(aes(x=tmdifvec,y=ageDR2vec,color=Net2Vec),size=7,label="\u25D7",family="Arial Unicode MS")+theme(legend.position = "none") + xlab('Transmodality Difference') + ylab(expression(paste('Age Effect(',Delta,R^2[adj],')')))+theme_classic(base_size = 35)+geom_point(data=BwAgeCorTMDifDf[BwAgeCorTMDifDf$ageDR2Pvec>0.05,],aes(x=tmdifvec,y=ageDR2vec,fill=NULL),pch=21,color='grey',size=3)+theme(legend.position = "none")+geom_smooth(size=3,method='lm',color='black',formula=y~x)
+# figure 4 flag
+ggplot(BwAgeCorTMDifDf[BwAgeCorTMDifDf$ageDR2Pvec<0.05,],aes(x=tmdifvec,y=ageDR2vec))+ geom_text(size=8,label="\u25D6",family="Arial Unicode MS",aes(color=Net1Vec))+scale_color_manual(values=ycolors,limits=Y7vec)+geom_text(aes(x=tmdifvec,y=ageDR2vec,color=Net2Vec),size=8,label="\u25D7",family="Arial Unicode MS")+theme(legend.position = "none") + xlab('Transmodality Difference') + ylab(expression(paste('Age Effect(',Delta,R^2[adj],')')))+theme_classic(base_size = 40)+geom_point(data=BwAgeCorTMDifDf[BwAgeCorTMDifDf$ageDR2Pvec>0.05,],aes(x=tmdifvec,y=ageDR2vec,fill=NULL),pch=21,color='grey',size=3)+theme(legend.position = "none")+geom_smooth(size=3,method='lm',color='black',formula=y~x)
 
 ggplot(BwAgeCorTMDifDf[BwAgeCorTMDifDf$ageDR2Pvec<0.05,],aes(x=tmdifvec,y=ageDR2vec,color=Net1Vec17))+ geom_text(size=5,label="\u25D6",family="Arial Unicode MS")+scale_color_manual(values=y17colors,limits=y17vec)+geom_text(aes(x=tmdifvec,y=ageDR2vec,color=Net2Vec17),size=5,label="\u25D7",family="Arial Unicode MS")+theme(legend.position = "none") + xlab('Transmodality Difference') + ylab(expression(paste(Delta,R^2[adj])))+theme_classic(base_size = 28)
+
+# figure 5 flag
+ggplot(subset(BwAgeCorTMDifDf, Net1Vec == 'DA'),aes(y=tmdifvec,x=scalevec))+geom_point()+geom_smooth()
 ```
 
 ```{r}
@@ -3337,7 +3304,7 @@ NetSplinesAgeSideCar693464[((693*i)-692):(693*i)]<-masterdf$Age
 }
 LongAgeSpan_plotdf3$Age<-NetSplinesAgeSideCar693464/12
 # figure 3A flag
-ggplot(LongAgeSpan_plotdf3,aes(Age,Splines,color=Transmodality,group=Grouping)) +geom_line(size=3,alpha=.4) +labs(x = 'Age', y = 'Between-Community Coupling') +theme_classic(base_size = 40)+ scale_colour_viridis(option="inferno",guide=guide_colorbar(barwidth = 22,ticks.colour = "gray",ticks.linewidth = 8))+theme(legend.text=element_text(size=30),legend.title = element_text(size=30),legend.position="bottom",legend.key.width = unit(3, "cm"))+theme(legend.position="bottom")+ theme(legend.margin=margin(b=-.5,t = -.5, unit='cm')) + scale_x_continuous(
+ggplot(LongAgeSpan_plotdf3,aes(Age,Splines,color=Transmodality,group=Grouping)) +geom_line(size=3,alpha=.4) +labs(x = 'Age', y = 'Between-Community Connectivity') +theme_classic(base_size = 40)+ scale_colour_viridis(option="inferno",guide=guide_colorbar(barwidth = 22,ticks.colour = "gray",ticks.linewidth = 8))+theme(legend.text=element_text(size=30),legend.title = element_text(size=30),legend.position="bottom",legend.key.width = unit(3, "cm"))+theme(legend.position="bottom")+ theme(legend.margin=margin(b=-.5,t = -.5, l=-10,unit='cm')) + scale_x_continuous(
     limits = c(8, 23),
     expand = c(0, 0),
     breaks = seq(8,23,by=3)
