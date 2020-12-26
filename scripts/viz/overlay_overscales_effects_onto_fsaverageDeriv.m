@@ -6,9 +6,9 @@ vecsfp='/cbica/projects/pinesParcels/results/EffectVecs';
 %uncomment to switch to meanSegreg
 % _i is for individualized, added to look at individ. vs gro. partition effect differences
 % _g for group partitions
-vecs=dir([vecsfp '/Deriv20yoAt*']);
+vecs=dir([vecsfp '/Deriv15yoAt*']);
 % name
-effectname='Deriv20yoAt'
+effectname='Deriv15yoAt'
 % first two are . and ..
 sizevecs=size(vecs);
 for i=1:sizevecs(1)

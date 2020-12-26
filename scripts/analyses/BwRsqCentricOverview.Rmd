@@ -1072,6 +1072,7 @@ covariates=" ~s(Age,k=3)+Sex+Motion"
 lm_xM_covariates="~Age+Sex+Motion"
 lm_My_covariates="EF~Sex+Motion+Age+"
 
+# initialize community-level vectors, using nsegcols_ind for 1 community 1 value mapping
 minAgeEst<-rep(0,length=length(masterdf[,indiv_nsegcols_ind]))
 maxAgeEst<-rep(0,length=length(masterdf[,indiv_nsegcols_ind]))
 AB_Est<-rep(0,length=length(masterdf[,indiv_nsegcols_ind]))
@@ -1081,7 +1082,13 @@ InterceptVector<-rep(0,length=length(masterdf[,indiv_nsegcols_ind]))
 derivInfo<-array(0,dim=c(464,200))
 NetSplines<-array(0,dim=c(464,693))                  
 
-#
+# to get plot intercept
+gamPredictMeAt8<-data.frame(1,1)
+# 12 for months
+gamPredictMeAt8$Age<-(8.166667*12)
+gamPredictMeAt8$Motion<-mean(masterdf$Motion)
+gamPredictMeAt8$Sex<-2
+
 # borrowing colnames from indiv_nsegcols to keep network/scale ordering/mappings
 colnames(bwAvgCon)<-gsub("_seg_","_avgBw_",colnames(masterdf[,indiv_nsegcols_ind]))
 bwAvgCondf<-data.frame(bwAvgCon)
@@ -1104,7 +1111,8 @@ for (i in 1:(length(bwAvgCondf)-4)){
   form<-as.formula(paste("",x,"", covariates, sep=""))
   igam<-gam(formula = form,data=bwAvgCondf)
   SplineP[i]<-summary(igam)$s.pv
-  InterceptVector[i]<-summary(igam)$p.coeff['(Intercept)']
+  # changed to get intercept at 8 years old
+  InterceptVector[i]<-predict.gam(igam,gamPredictMeAt8)
   derv<-derivatives(igam,term='Age')
   derv<- derv %>%
   mutate(sig = !(0 >lower & 0 < upper))
@@ -1138,7 +1146,6 @@ for (i in 1:(length(bwAvgCondf)-4)){
   #if (mean(colOfInt)>0){
   #  print(paste(x,mean(colOfInt)))
   #}
-  
   
   # set to print deriv duration
   ###cat(sprintf("\nSig change: %1.2f - %1.2f\n",minAgeEst[i],maxAgeEst[i]))
@@ -1537,8 +1544,6 @@ ageDR2vec=rep(0,length(colnames(individ_scalebybw_df)))
 ageDR2Pvec=rep(0,length(colnames(individ_scalebybw_df)))
 EFDR2vec=rep(0,length(colnames(individ_scalebybw_df)))
 EFDR2Pvec=rep(0,length(colnames(individ_scalebybw_df)))
-EF_Bvec=rep(0,length(colnames(individ_scalebybw_df)))
-EF_BPvec=rep(0,length(colnames(individ_scalebybw_df)))
 EFDeltaEstVec_agelessvec=rep(0,length(colnames(individ_scalebybw_df)))
 EFDeltaPEstVec_agelessvec=rep(0,length(colnames(individ_scalebybw_df)))
 # for mediation
@@ -1554,7 +1559,7 @@ tmvecJit<-tmvec
 # make a scale vector to match transmodality difference values
 # this is to look at how finer scales confer networks that are less different
 scalevec=rep(0,length(colnames(individ_scalebybw_df)))
-
+# START vector for edge level intercept at 8 HERE
 
 # quick write of colnames for bw features for all scales as sep. files for matlab reading
 
@@ -1591,10 +1596,6 @@ for (i in 1:length(colnames(individ_scalebybw_df))){
     tm2=tmvec[Kind[as.numeric(net2)]]
     net1tmvec[i]<-tm1
     net2tmvec[i]<-tm2
-    oc1=occvec[Kind[as.numeric(net1)]]
-    oc2=occvec[Kind[as.numeric(net2)]]
-    atn1=attnmvec[Kind[as.numeric(net1)]]
-    atn2=attnmvec[Kind[as.numeric(net2)]]
     # absolute value as directionality is meaningless here
     tmdif=abs(tm1-tm2)
     # tiny shift to tmvalue for jitter plotting in bwspan
@@ -1631,26 +1632,12 @@ for (i in 1:length(colnames(individ_scalebybw_df))){
     pspearval=pcor(pcordf,method='spearman')$p.value
     # save to respective vectors
     tmdifvec[i]<-tmdif
-    occdifvec[i]<-occdif
-    all3pgDifvec[i]<-pg3dif
     ageEfvec[i]<-pspear[4]
     ageEfPvec[i]<-pspearval[4]
     motionEfvec[i]<-pspear[3,4]
     motioncorvec[i]<-cor.test(masterdf[,colindex],masterdf$Motion)$estimate
     # accompanying scalevec so we can look at the typical transmodality #difference at each scale
     scalevec[i]=scale
-    
-    # additional section for EF
-    # partial spearmans to extrac age relation
-    pspear=pcor(EFpcordf,method='spearman')$estimate
-    pspearval=pcor(EFpcordf,method='spearman')$p.value
-    EFEfvec[i]<-pspear[5]
-    EFEfPvec[i]<-pspearval[5]
-    
-    pspear=pcor(EFpcordf2,method='spearman')$estimate
-    noAge_EFEfVec[i]<-pspear[4]
-    pspearval=pcor(EFpcordf2,method='spearman')$p.value
-    noAge_EFEfPVec[i]<-pspearval[4]
     
     # record communities assayed in terms of yeo7
     y7lab1=domnetvec[Kind[as.numeric(net1)]]
@@ -1837,16 +1824,16 @@ LongAgeSpan_plotdf2$WholeSplineSig<-derivSigWholeSpline
 # finally, make vector of where sig=F to make those segments transparent
 LongAgeSpan_plotdf2$AlphaSig<-1
 LongAgeSpan_plotdf2$AlphaSig[LongAgeSpan_plotdf2$derivs==0]<-0
-breaks=c(-.005,0,0.005)
+breaks=c(-.002,0,0.002)
 
 # figure 3 flag
-Bwspan<-ggplot(LongAgeSpan_plotdf2[derivSigWholeSpline,],aes(agespans,tmvecJit,color=derivs,group=CIgroupingInd,alpha=AlphaSig)) +geom_line(size=3) +labs(x = 'Age', y = 'Transmodality') +theme_classic(base_size = 40)+ xlim(c(8,23))+ scale_colour_gradientn(colours=c('#0b0bff','#8585ff','white','#ff9191','#ff0a0a'),values = c(0,.4,.5,.6,1),breaks=breaks, labels = breaks,limits=c(-.006,0.006),name="Change Per Year (B/w Con.)")+theme(legend.text=element_text(size=30),legend.title = element_text(size=30),legend.position="bottom",legend.key.width = unit(3, "cm"))+ylim(c(min(tmvecJit),max(tmvecJit)))+guides(alpha=FALSE,color = guide_colorbar(title.position="top",ticks.colour = "gray",
+Bwspan<-ggplot(LongAgeSpan_plotdf2[derivSigWholeSpline,],aes(agespans,tmvecJit,color=derivs,group=CIgroupingInd,alpha=AlphaSig)) +geom_line(size=3) +labs(x = 'Age', y = 'Transmodality') +theme_classic(base_size = 40)+ xlim(c(8,23))+ scale_colour_gradientn(colours=c('#0b0bff','#8585ff','white','#ff9191','#ff0a0a'),values = c(0,.4,.5,.6,1),breaks=breaks, labels = breaks,limits=c(-.0031,0.0031),name="Change Per Year (B/w Con.)")+theme(legend.text=element_text(size=30),legend.title = element_text(size=30),legend.position="top",legend.key.width = unit(3, "cm"))+ylim(c(min(tmvecJit),max(tmvecJit)))+guides(alpha=FALSE,color = guide_colorbar(title.position="top",ticks.colour = "gray",
                                 ticks.linewidth = 8))+geom_vline(xintercept = c(10,15,20),linetype='dashed')+ theme(legend.margin=margin(b=-.5,t = -.5, unit='cm')) + scale_x_continuous(
     limits = c(8, 23),
     expand = c(0, 0),
     breaks = seq(8,23,by=3)
   ) +
-  theme(plot.margin=unit(c(.2,.6,.5,.2),"cm"))+scale_y_continuous(expand=c(0,.1))
+  theme(plot.margin=unit(c(.9,.6,.5,.3),"cm"))+scale_y_continuous(expand=c(0,.1))
   
 ```
 
@@ -1912,7 +1899,7 @@ for (permut in 1:1000){
 2*pnorm(realCor,mean(permutedCors),sd(permutedCors))
 
 # figure 4 flag
-ggplot(BwAgeCorTMDifDf[BwAgeCorTMDifDf$ageDR2Pvec<0.05,],aes(x=tmdifvec,y=ageDR2vec))+ geom_text(size=8,label="\u25D6",family="Arial Unicode MS",aes(color=Net1Vec))+scale_color_manual(values=ycolors,limits=Y7vec)+geom_text(aes(x=tmdifvec,y=ageDR2vec,color=Net2Vec),size=8,label="\u25D7",family="Arial Unicode MS")+theme(legend.position = "none") + xlab('Transmodality Difference') + ylab(expression(paste('Age Effect(',Delta,R^2[adj],')')))+theme_classic(base_size = 40)+geom_point(data=BwAgeCorTMDifDf[BwAgeCorTMDifDf$ageDR2Pvec>0.05,],aes(x=tmdifvec,y=ageDR2vec,fill=NULL),pch=21,color='grey',size=3)+theme(legend.position = "none")+geom_smooth(size=3,method='lm',color='black',formula=y~x)
+ggplot(BwAgeCorTMDifDf[BwAgeCorTMDifDf$ageDR2Pvec<0.05,],aes(x=tmdifvec,y=ageDR2vec))+ geom_text(size=10,label="\u25D6",family="Arial Unicode MS",aes(color=Net1Vec))+scale_color_manual(values=ycolors,limits=Y7vec)+geom_text(aes(x=tmdifvec,y=ageDR2vec,color=Net2Vec),size=10,label="\u25D7",family="Arial Unicode MS")+theme(legend.position = "none") + xlab('Transmodality Difference') + ylab(expression(paste('Age Effect(',Delta,R^2[adj],')')))+theme_classic(base_size = 40)+geom_point(data=BwAgeCorTMDifDf[BwAgeCorTMDifDf$ageDR2Pvec>0.05,],aes(x=tmdifvec,y=ageDR2vec,fill=NULL),pch=21,color='grey',size=3)+theme(legend.position = "none")+geom_smooth(size=3,method='lm',color='black',formula=y~x)
 
 ggplot(BwAgeCorTMDifDf[BwAgeCorTMDifDf$ageDR2Pvec<0.05,],aes(x=tmdifvec,y=ageDR2vec,color=Net1Vec17))+ geom_text(size=5,label="\u25D6",family="Arial Unicode MS")+scale_color_manual(values=y17colors,limits=y17vec)+geom_text(aes(x=tmdifvec,y=ageDR2vec,color=Net2Vec17),size=5,label="\u25D7",family="Arial Unicode MS")+theme(legend.position = "none") + xlab('Transmodality Difference') + ylab(expression(paste(Delta,R^2[adj])))+theme_classic(base_size = 28)
 
@@ -3274,6 +3261,7 @@ y7ver<-ggplot(LongAgeSpan_plotdf2,aes(agespans,tmvec,color=domnetvec,group=CIgro
 # With the smooths overlaid
 AgeSpan_plotdf3<-data.frame(tmvec,scalesvec,domnetvec,corVecEst,netpropvec,CIgroupingInd)
 LongAgeSpan_plotdf3<-data.frame(sapply(AgeSpan_plotdf3,rep.int,times=693))
+
 # assign same transmodality value to each point on same lines
 Transmodality693464<-array(dim=c(693*464,1))
 for (i in 1:464){
@@ -3310,6 +3298,14 @@ ggplot(LongAgeSpan_plotdf3,aes(Age,Splines,color=Transmodality,group=Grouping)) 
     breaks = seq(8,23,by=3)
   ) +
   theme(plot.margin=unit(c(.2,.6,.5,.2),"cm"))
+
+# just for matching colorbar
+LongAgeSpan_plotdf3$Intercept<-sample(c(-0.0330,0.0085))
+ML_CB_match<-ggplot(LongAgeSpan_plotdf3,aes(Age,Intercept)) +geom_point(size=3,alpha=.4,aes(color=Intercept)) +labs(x = 'Age', y = 'Between-Community Connectivity') +theme_classic(base_size = 40)+ scale_colour_viridis(direction=-1,option="inferno",guide=guide_colorbar(barwidth = 22,ticks.colour = "gray",ticks.linewidth = 8),breaks=c(-0.03,-0.02,-0.01,0),limits=c(-.033,0.0085))+theme(legend.text=element_text(size=30),legend.title = element_text(size=30),legend.position="bottom",legend.key.width = unit(3, "cm"))+theme(legend.position="bottom") + scale_x_continuous(
+    limits = c(8, 23),
+    expand = c(0, 0),
+    breaks = seq(8,23,by=3)
+)
   
 ```
 
