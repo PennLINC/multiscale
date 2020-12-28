@@ -35,8 +35,10 @@ for (K in 2:30){
   #print(ggMarginal(ggplot(MADx,aes(x=LoadingChange,y=MAD)) + geom_hex(bins=30) + scale_color_viridis_c(option='inferno')+ggtitle(paste(K))+geom_point(alpha=0)+geom_smooth(method='lm',color='gray')+theme_classic()+theme(legend.position = "bottom")),type="density")
   #print(ggMarginal(ggplot(MADx,aes(x=LoadingChange,y=MAD)) + geom_pointdensity(adjust=1) + scale_color_viridis_c(option='inferno')+ggtitle(paste(K))+geom_smooth(method='lm',color='gray')+theme_classic()+theme(legend.position = "bottom")),type="density")
   # definitely not normally distr.
-  #spatCorvec_R[K]<-cor.test(R[,K],R[,1],method='spearman')$estimate
-  #spatCorvec_L[K]<-cor.test(L[,K],L[,1],method='spearman')$estimate
+  spatCorvec_R[K]<-cor.test(R[,K],R[,1],method='spearman')$estimate
+  spatCorvec_L[K]<-cor.test(L[,K],L[,1],method='spearman')$estimate
+  spatCorvec[K]<-cor.test(MADx$LoadingChange,MADx$MAD,method='spearman')$estimate
+  # PG and loading change
   #spatCorvec[K]<-cor.test(x$LoadingChange,x$GradChange,method='spearman')$estimate
 }
 #for (K in 2:30){
@@ -99,7 +101,8 @@ spinDistr_MAD<-read.csv('/cbica/projects/pinesParcels/results/aggregated_data/Sp
 
 # melt this into 1001*29 columns 
 m_spinDistr<-melt(spinDistr_MAD)
-
+# add a "scale" column
+m_spinDistr$Scale<-rep(2:30,each=1001)
 # add a "realCor" boolean column
 repeatVector<-array(0,dim=c(1001,1))
 repeatVector[1]<-1
