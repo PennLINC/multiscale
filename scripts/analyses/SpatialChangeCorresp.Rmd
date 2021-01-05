@@ -19,6 +19,35 @@ R=read.csv('/cbica/projects/pinesParcels/results/aggregated_data/vertexWiseChang
 LMAD=read.csv('/cbica/projects/pinesParcels/results/aggregated_data/vertexWiseMAD_LH.csv')
 RMAD=read.csv('/cbica/projects/pinesParcels/results/aggregated_data/vertexWiseMAD_RH.csv')
 
+LPG=read.csv('/cbica/projects/pinesParcels/results/aggregated_data/vertexWisePG_LH.csv')
+RPG=read.csv('/cbica/projects/pinesParcels/results/aggregated_data/vertexWisePG_RH.csv')
+
+L10=read.csv('/cbica/projects/pinesParcels/results/aggregated_data/vertexWise_10_LH.csv')
+R10=read.csv('/cbica/projects/pinesParcels/results/aggregated_data/vertexWise_10_RH.csv')
+L21=read.csv('/cbica/projects/pinesParcels/results/aggregated_data/vertexWise_21_LH.csv')
+R21=read.csv('/cbica/projects/pinesParcels/results/aggregated_data/vertexWise_21_RH.csv')
+
+# part that is not over scales
+DF_10=data.frame(c(L10[,1],R10[,1]),unlist(c(LPG[1,],RPG[1,])))
+DF_21=data.frame(c(L21[,1],R21[,1]),unlist(c(LPG[1,],RPG[1,])))
+
+colnames(DF_10)<-c('Bw10','PG')
+colnames(DF_21)<-c('Bw21','PG')
+
+hexinfo <- hexbin(DF_10$Bw10, DF_10$PG, xbins = 40)
+data_hex <- data.frame(hcell2xy(hexinfo), count = hexinfo@count)
+colnames(data_hex)<-c('Bw10','PG','count')
+
+ggMarginal(ggplot(DF_10,aes(x=Bw10,y=PG)) + geom_hex(bins=40) + scale_color_viridis_c(option='inferno')+geom_point(alpha=0)+geom_smooth(method='lm',color='gray')+theme_classic()+theme(legend.position = "bottom")+ylim(c(-6.6,7))+xlim(c(-.047,0.027))+ggtitle('Bw@10'))
+
+hexinfo <- hexbin(DF_21$Bw21, DF_21$PG, xbins = 40)
+data_hex <- data.frame(hcell2xy(hexinfo), count = hexinfo@count)
+colnames(data_hex)<-c('Bw21','PG','count')
+
+ggMarginal(ggplot(DF_21,aes(x=Bw21,y=PG)) + geom_hex(bins=40) + scale_color_viridis_c(option='inferno')+geom_point(alpha=0)+geom_smooth(method='lm',color='gray')+theme_classic()+theme(legend.position = "bottom")+ylim(c(-6.6,7))+xlim(c(-.047,0.027))+ggtitle('Bw@21'))
+
+
+
 # initialize vectors
 spatCorvec_L<-rep(0,30)
 spatCorvec_R<-rep(0,30)
@@ -32,7 +61,7 @@ for (K in 2:30){
   hexinfo <- hexbin(MADx$LoadingChange, MADx$MAD, xbins = 40)
   data_hex <- data.frame(hcell2xy(hexinfo), count = hexinfo@count)
   colnames(data_hex)<-c('LoadingChange','MAD','count')
-  #print(ggMarginal(ggplot(MADx,aes(x=LoadingChange,y=MAD)) + geom_hex(bins=30) + scale_color_viridis_c(option='inferno')+ggtitle(paste(K))+geom_point(alpha=0)+geom_smooth(method='lm',color='gray')+theme_classic()+theme(legend.position = "bottom")),type="density")
+  print(ggMarginal(ggplot(MADx,aes(x=LoadingChange,y=MAD)) + geom_hex(bins=30) + scale_color_viridis_c(option='inferno')+ggtitle(paste(K))+geom_point(alpha=0)+geom_smooth(method='lm',color='gray')+theme_classic()+theme(legend.position = "bottom")),type="density")
   #print(ggMarginal(ggplot(MADx,aes(x=LoadingChange,y=MAD)) + geom_pointdensity(adjust=1) + scale_color_viridis_c(option='inferno')+ggtitle(paste(K))+geom_smooth(method='lm',color='gray')+theme_classic()+theme(legend.position = "bottom")),type="density")
   # definitely not normally distr.
   spatCorvec_R[K]<-cor.test(R[,K],R[,1],method='spearman')$estimate
