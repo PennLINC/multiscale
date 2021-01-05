@@ -114,6 +114,7 @@ for(K in c(4,7,13,20)){
   # starting at 2 because 1 is real
   P_Value = length(which(m_spinDistr_Scale$value[2:1001] >= RealCorrelation)) / 1000;
   ggplot(subset(m_spinDistr_Scale, RealCor==0),aes(x=value))+geom_density()+geom_vline(xintercept = RealCorrelation,linetype="dashed")+theme_classic(base_size=40)+ylab('')+xlab(expression(rho))+guides(y="none")
+  ggplot(subset(m_spinDistr_Scale, RealCor==0),aes(x=value))+geom_density(linetype='dashed',size=1.5)+geom_vline(xintercept =  RealCorrelation,size=2,color='#BC3754')+theme_classic(base_size=40)+ylab('')+xlab(expression(rho))+guides(y="none")
 }
 
 #ggplot(m_spinDistr[m_spinDistr$RealCor==0,], aes(x = value, y = Scale, group = Scale))+xlab(expression(rho)) + geom_jitter(size = 0.75,alpha=.25) +geom_point(data=m_spinDistr[m_spinDistr$RealCor==1,],aes(x=value,y=Scale),size=3)+scale_fill_manual(values=fourscalescheme)+theme_minimal(base_size = 17)+coord_flip()+theme(legend.position = "none")+xlim(c(-.35,.85))+ylab('# of Communities')+ggtitle('Func Transitions: Group atlas at K correlations with MAD at K')
@@ -134,8 +135,9 @@ m_spinDistr$Scale<-as.factor(m_spinDistr$Scale)
 for(K in c(4,7,13,20)){
   m_spinDistr_Scale<-subset(m_spinDistr,Scale==K)
   RealCorrelation<-m_spinDistr_Scale$value[1]
-  P_Value = length(which(m_spinDistr_Scale$ >= RealCorrelation)) / 1000;
-  ggplot(subset(m_spinDistr_Scale, RealCor==0),aes(x=value))+geom_density()+geom_vline(xintercept = RealCorrelation,linetype="dashed")+theme_classic(base_size=40)+ylab('')+xlab(expression(rho))+guides(y="none")
+  P_Value = length(which(m_spinDistr_Scale$value[2:1001] >= RealCorrelation)) / 1000;
+  ggplot(subset(m_spinDistr_Scale, RealCor==0),aes(x=value))+geom_density()+geom_point(data = m_spinDistr_Scale[1,],aes(y=0),size=7,color='#BC3754')+theme_classic(base_size=40)+ylab('')+xlab(expression(rho))+guides(y="none")
+  ggplot(subset(m_spinDistr_Scale, RealCor==0),aes(x=value))+geom_density(linetype='dashed',size=1.5)+geom_vline(xintercept =  RealCorrelation,size=2,color='#BC3754')+theme_classic(base_size=40)+ylab('')+xlab(expression(rho))+guides(y="none")
 }
 
 #ggplot(m_spinDistr[m_spinDistr$RealCor==0,], aes(x = value, y = Scale, group = Scale))+xlab(expression(rho)) + geom_jitter(size = 0.75,alpha=.25) +geom_point(data=m_spinDistr[m_spinDistr$RealCor==1,],aes(x=value,y=Scale),size=3)+scale_fill_manual(values=fourscalescheme)+theme_minimal(base_size = 17)+coord_flip()+theme(legend.position = "none")+xlim(c(-.35,.85))+ylab('# of Communities')+ggtitle('Func Transitions: PG1 correlations with MAD at K')

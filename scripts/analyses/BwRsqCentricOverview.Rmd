@@ -1099,16 +1099,22 @@ maxAgeEst<-rep(0,length=length(masterdf[,indiv_nsegcols_ind]))
 AB_Est<-rep(0,length=length(masterdf[,indiv_nsegcols_ind]))
 AB_P<-rep(0,length=length(masterdf[,indiv_nsegcols_ind]))
 SplineP<-rep(0,length=length(masterdf[,indiv_nsegcols_ind]))
-InterceptVector<-rep(0,length=length(masterdf[,indiv_nsegcols_ind]))
+InterceptVector10<-rep(0,length=length(masterdf[,indiv_nsegcols_ind]))
+InterceptVector21<-rep(0,length=length(masterdf[,indiv_nsegcols_ind]))
+Avg_BW_Vector<-rep(0,length=length(masterdf[,indiv_nsegcols_ind]))
 derivInfo<-array(0,dim=c(464,200))
 NetSplines<-array(0,dim=c(464,693))                  
 
 # to get plot intercept
-gamPredictMeAt8<-data.frame(1,1)
-# 12 for months
-gamPredictMeAt8$Age<-(8.166667*12)
-gamPredictMeAt8$Motion<-mean(masterdf$Motion)
-gamPredictMeAt8$Sex<-2
+gamPredictMeAt10<-data.frame(1,1)
+gamPredictMeAt21<-data.frame(1,1)
+# * 12 for months
+gamPredictMeAt10$Age<-(120)
+gamPredictMeAt10$Motion<-mean(masterdf$Motion)
+gamPredictMeAt10$Sex<-2
+gamPredictMeAt21$Age<-(252)
+gamPredictMeAt21$Motion<-mean(masterdf$Motion)
+gamPredictMeAt21$Sex<-2
 
 # borrowing colnames from indiv_nsegcols to keep network/scale ordering/mappings
 colnames(bwAvgCon)<-gsub("_seg_","_avgBw_",colnames(masterdf[,indiv_nsegcols_ind]))
@@ -1132,8 +1138,10 @@ for (i in 1:(length(bwAvgCondf)-4)){
   form<-as.formula(paste("",x,"", covariates, sep=""))
   igam<-gam(formula = form,data=bwAvgCondf)
   SplineP[i]<-summary(igam)$s.pv
-  # changed to get intercept at 8 years old
-  InterceptVector[i]<-predict.gam(igam,gamPredictMeAt8)
+  # changed to get intercept at 10 and 20 years old
+  InterceptVector10[i]<-predict.gam(igam,gamPredictMeAt10)
+  InterceptVector21[i]<-predict.gam(igam,gamPredictMeAt21)
+  Avg_BW_Vector[i]<-mean(bwAvgCondf[,i])
   derv<-derivatives(igam,term='Age')
   derv<- derv %>%
   mutate(sig = !(0 >lower & 0 < upper))
@@ -1386,12 +1394,12 @@ ggplot(bwR2EFdf,aes(scalesvec,BW_R2VecEst,color=domnetvec))+ scale_color_manual(
 # figure 6 v2
 bwR2EFdf$domnetvec17<-domnetvec17
 
-fig6v2<-ggplot(bwR2EFdf,aes(scalesvec,BW_R2VecEst,color=domnetvec17)) + xlab("# of Communities") + ylab(expression(paste('EF Effect (',Delta,R^2[adj],')'))) +theme_classic(base_size = 28) +guides(alpha=FALSE,color=guide_legend(title="Maximal Yeo Overlap"))+theme(legend.position='top')+geom_smooth(data=subset(bwR2EFdf,domnetvec17=='Somatomotor A'),method='gam',formula = y~s(x,k=4))+geom_smooth(data=subset(bwR2EFdf,domnetvec17=='DM_B'),method='gam',formula = y~s(x,k=4))+geom_point(data=subset(bwR2EFdf,domnetvec17=='Somatomotor A'),size=3)+geom_point(data=subset(bwR2EFdf,domnetvec17=='DM_B'),size=3)
+fig6v2<-ggplot(bwR2EFdf,aes(scalesvec,BW_R2VecEst,color=domnetvec17)) + xlab("# of Communities") + ylab(expression(paste('EF Effect (',Delta,R^2[adj],')'))) +theme_classic(base_size = 28) +guides(alpha=FALSE,color=guide_legend(title="Maximal Yeo Overlap"))+theme(legend.position='top')+geom_smooth(data=subset(bwR2EFdf,domnetvec17=='Somatomotor A'),method='gam',formula = y~s(x,k=3))+geom_smooth(data=subset(bwR2EFdf,domnetvec17=='DM_B'),method='gam',formula = y~s(x,k=3))+geom_point(data=subset(bwR2EFdf,domnetvec17=='Somatomotor A'),size=3)+geom_point(data=subset(bwR2EFdf,domnetvec17=='DM_B'),size=3)
 
 Somat_A_bwdf<-bwR2EFdf[domnetvec17=='Somatomotor A',]
 DM_B_bwdf<-bwR2EFdf[domnetvec17=='DM_B',]
-gamdm_B<-gam(BW_R2VecEst~s(scalesvec,k=4),data=DM_B_bwdf)
-gammot_A<-gam(BW_R2VecEst~s(scalesvec,k=4),data=Somat_A_bwdf)
+gamdm_B<-gam(BW_R2VecEst~s(scalesvec,k=3),data=DM_B_bwdf)
+gammot_A<-gam(BW_R2VecEst~s(scalesvec,k=3),data=Somat_A_bwdf)
 
 scale4bwdf<-bwR2EFdf[scalesvec==4,]
 ggplot(scale4bwdf,aes(tmvec,BW_R2VecEst,color=domnetSig)) + geom_point(size=6)+ scale_color_manual(values=c('#d77d00','#3281ab','#670068','gray80')) + xlab("Transmodality") + ylab(expression(paste('EF Effect (',Delta,R^2[adj],')'))) +theme_classic(base_size = 28) +guides(alpha=FALSE,color=guide_legend(title="Maximal Y7 Overlap"))+theme(legend.position='top')
@@ -1722,7 +1730,7 @@ for (i in 1:length(colnames(individ_scalebybw_df))){
     colnames(scaledf)<-c('Age','Sex','Motion','varofint')
     # age-included model for measuring difference
     AgeGam<-gam(varofint~Sex+Motion+s(Age,k=3),data=scaledf)
-    EdgeInterceptVector[i]<-predict.gam(AgeGam,gamPredictMeAt8)
+    #EdgeInterceptVector[i]<-predict.gam(AgeGam,gamPredictMeAt8)
     #####################################
     # back to EF
     EFDR2vec[i]<-EFDeltaR2EstVec(masterdf[,colindex])
@@ -1798,7 +1806,7 @@ nonthreshEF<-ggplot(BwAgeCorTMDifDf,aes(x=tmdifvec,y=EFEfvec)) + geom_point(alph
 
 nonthreshEF_OC<-ggplot(BwAgeCorTMDifDf,aes(x=occdifvec,y=EFEfvec)) + geom_point(alpha=.07,size=5) + xlab('Occipality Difference') + ylab('EF Partial Correlation') + ggtitle('Pairwise Between-Network EF-FC Relations')+ stat_smooth(method = "gam", formula = y ~ s(x), size = 1)
 
-thresh<-ggplot(BwAgeCorTMDifDf[fdr_ageEfPvec<0.05,],aes(x=tmdifvec,y=ageEfvec)) + geom_point(alpha=.07,size=5) + xlab('Transmodality Difference') + ylab('Age Partial Correlation') + ggtitle('Pairwise Between-Network Age-FC Relations: FDR Thresh.')
+thresh<-ggplot(BwAgeCorTMDifDf[fdr_EFEfPvec<0.05,],aes(x=tmdifvec,y=ageEfvec)) + geom_point(alpha=.07,size=5) + xlab('Transmodality Difference') + ylab('Age Partial Correlation') + ggtitle('Pairwise Between-Network Age-FC Relations: FDR Thresh.')
 
 # version at scale 4
 scale4bwdfDif<-BwAgeCorTMDifDf[BwAgeCorTMDifDf$scalevec==4,]
@@ -1900,7 +1908,7 @@ breaks=c(-.002,0,0.002)
 
 # figure 3 flag
 Bwspan<-ggplot(LongAgeSpan_plotdf2[derivSigWholeSpline,],aes(agespans,tmvecJit,color=derivs,group=CIgroupingInd,alpha=AlphaSig)) +geom_line(size=3) +labs(x = 'Age', y = 'Transmodality') +theme_classic(base_size = 40)+ xlim(c(8,23))+ scale_colour_gradientn(colours=c('#0b0bff','#8585ff','white','#ff9191','#ff0a0a'),values = c(0,.4,.5,.6,1),breaks=breaks, labels = breaks,limits=c(-.0031,0.0031),name="Change Per Year (B/w Con.)")+theme(legend.text=element_text(size=30),legend.title = element_text(size=30),legend.position="top",legend.key.width = unit(3, "cm"))+ylim(c(min(tmvecJit),max(tmvecJit)))+guides(alpha=FALSE,color = guide_colorbar(title.position="top",ticks.colour = "gray",
-                                ticks.linewidth = 8))+geom_vline(xintercept = c(10,15,20),linetype='dashed')+ theme(legend.margin=margin(b=-.5,t = -.5, unit='cm')) + scale_x_continuous(
+                                ticks.linewidth = 8))+geom_vline(xintercept = c(10,15,20),linetype='dashed',size=1.5)+ theme(legend.margin=margin(b=-.5,t = -.5, unit='cm')) + scale_x_continuous(
     limits = c(8, 23),
     expand = c(0, 0),
     breaks = seq(8,23,by=3)
@@ -2533,25 +2541,30 @@ bothFeats<-cbind(bothFeats,masteref$F1_Exec_Comp_Cog_Accuracy)
 
 ```{r}
 ######### Change to print out avg. intercept (b/w con), slope @ 10, slope @ 15, slope @ 20 of each community over scales
-BW_interceptVec<-rep(0,464)
+BW_Avg<-rep(0,464)
+BW_interceptVec10<-rep(0,464)
+BW_interceptVec21<-rep(0,464)
 BW_deriv10vec<-rep(0,464)
-BW_deriv15vec<-rep(0,464)
-BW_deriv20vec<-rep(0,464)
+BW_deriv16vec<-rep(0,464)
+BW_deriv21vec<-rep(0,464)
 
 # use calculated InterceptVector for intercept
-BW_interceptVec<-InterceptVector
+BW_interceptVec10<-InterceptVector10
+BW_interceptVec21<-InterceptVector21
+BW_Avg<-Avg_BW_Vector
 
+    
 # use calculated deriv info for slopes, age range is 178 months
 # 10 y.o. is 22/178 months into the 200 point derivs age-range
 deriv.point.10<-round((22/178)*200)
 # 15 y.o. 82/178 months in
-deriv.point.15<-round((82/178)*200)
+deriv.point.16<-round((94/178)*200)
 # 20 y.o. is 142/178 months in
-deriv.point.20<-round((142/178)*200)
+deriv.point.21<-round((154/178)*200)
 #derivInfo
 BW_deriv10vec<-derivInfo[,deriv.point.10]
-BW_deriv15vec<-derivInfo[,deriv.point.15]
-BW_deriv20vec<-derivInfo[,deriv.point.20]
+BW_deriv16vec<-derivInfo[,deriv.point.16]
+BW_deriv21vec<-derivInfo[,deriv.point.21]
 
 
 # write em out as an effect vector for each scale: restart here 11/21
@@ -2559,15 +2572,19 @@ for (K in 2:30){
       K_start=((K-1)*(K))/2
       K_end=(((K-1)*(K))/2)+K-1
       Kind<-K_start:K_end
-      Intercept=InterceptVector[Kind]
+      Intercept10=InterceptVector10[Kind]
+      Intercept21=InterceptVector21[Kind]
+      Avg=BW_Avg[Kind]
       at10=BW_deriv10vec[Kind]
-      at15=BW_deriv15vec[Kind]
-      at20=BW_deriv20vec[Kind]
+      at16=BW_deriv15vec[Kind]
+      at21=BW_deriv20vec[Kind]
       # write em out to cubic
-      write.table(Intercept,paste('/cbica/projects/pinesParcels/results/EffectVecs/BW_InterceptAt',K,sep=''),sep=',', col.names = F,quote = F,row.names=F)
+      write.table(Intercept10,paste('/cbica/projects/pinesParcels/results/EffectVecs/BW_InterceptAt10_k',K,sep=''),sep=',', col.names = F,quote = F,row.names=F)
+      write.table(Intercept21,paste('/cbica/projects/pinesParcels/results/EffectVecs/BW_InterceptAt21_k',K,sep=''),sep=',', col.names = F,quote = F,row.names=F)
+      write.table(Avg,paste('/cbica/projects/pinesParcels/results/EffectVecs/Avg_k',K,sep=''),sep=',', col.names = F,quote = F,row.names=F)
       write.table(at10,paste('/cbica/projects/pinesParcels/results/EffectVecs/Deriv10yoAt',K,sep=''),sep=',', col.names = F,quote = F,row.names=F)
-      write.table(at15,paste('/cbica/projects/pinesParcels/results/EffectVecs/Deriv15yoAt',K,sep=''),sep=',', col.names = F,quote = F,row.names=F)
-      write.table(at20,paste('/cbica/projects/pinesParcels/results/EffectVecs/Deriv20yoAt',K,sep=''),sep=',', col.names = F,quote = F,row.names=F)
+      write.table(at16,paste('/cbica/projects/pinesParcels/results/EffectVecs/Deriv16yoAt',K,sep=''),sep=',', col.names = F,quote = F,row.names=F)
+      write.table(at21,paste('/cbica/projects/pinesParcels/results/EffectVecs/Deriv21yoAt',K,sep=''),sep=',', col.names = F,quote = F,row.names=F)
 }
 
 ```
@@ -2977,28 +2994,28 @@ for (y in 1:7){
   violinDFP[1:length(ageEfvecP),y]<-ageEfvecP
 }
 # All ps
-meltedPs<-melt(violinDFP)
-#allPs<-na.omit(meltedPs$value)
-allPs_fdr<-p.adjust(meltedPs$value,method='fdr')
-violinDFP[,1]<-allPs_fdr[1:2000]
-violinDFP[,2]<-allPs_fdr[2001:4000]
-violinDFP[,3]<-allPs_fdr[4001:6000]
-violinDFP[,4]<-allPs_fdr[6001:8000]
-violinDFP[,5]<-allPs_fdr[8001:10000]
-violinDFP[,6]<-allPs_fdr[10001:12000]
-violinDFP[,7]<-allPs_fdr[12001:14000]
-
-# melt the dataframe to have a col for y7 identity 
-violinAgeEfVec<-NULL
-violinY7membVec<-NULL
-for (y in 1:7){
-  y7AgeEffects<-na.omit(violinDF[,y])
-  y7AgeEffectsP<-na.omit(violinDFP[,y])
-  y7AgeEffectsSig<-y7AgeEffects[y7AgeEffectsP<0.05]
-  violinAgeEfVec<-append(violinAgeEfVec,y7AgeEffectsSig)
-  violinY7membVec<-append(violinY7membVec,rep(Y7vec[y],length(y7AgeEffectsSig)))
-}
-violinDF2<-data.frame(violinAgeEfVec,violinY7membVec)
+#meltedPs<-melt(violinDFP)
+##allPs<-na.omit(meltedPs$value)
+#allPs_fdr<-p.adjust(meltedPs$value,method='fdr')
+#violinDFP[,1]<-allPs_fdr[1:2000]
+#violinDFP[,2]<-allPs_fdr[2001:4000]
+#violinDFP[,3]<-allPs_fdr[4001:6000]
+#violinDFP[,4]<-allPs_fdr[6001:8000]
+#violinDFP[,5]<-allPs_fdr[8001:10000]
+#violinDFP[,6]<-allPs_fdr[10001:12000]
+#violinDFP[,7]<-allPs_fdr[12001:14000]
+#
+## melt the dataframe to have a col for y7 identity 
+#violinAgeEfVec<-NULL
+#violinY7membVec<-NULL
+#for (y in 1:7){
+#  y7AgeEffects<-na.omit(violinDF[,y])
+#  y7AgeEffectsP<-na.omit(violinDFP[,y])
+#  y7AgeEffectsSig<-y7AgeEffects[y7AgeEffectsP<0.05]
+#  violinAgeEfVec<-append(violinAgeEfVec,y7AgeEffectsSig)
+#  violinY7membVec<-append(violinY7membVec,rep(Y7vec[y],length(y7AgeEffectsSig)))
+#}
+#violinDF2<-data.frame(violinAgeEfVec,violinY7membVec)
 # violin plot for figure 4: delta r^2 distributions for each FNET
 ggplot(data = violinDF2, aes(x = factor(violinY7membVec,levels = Y7vec), y = violinAgeEfVec,color=factor(violinY7membVec,levels = Y7vec))) +
   geom_violin(alpha = .7,size=1.5) +
