@@ -1289,7 +1289,7 @@ breaks=c(-.005,0,0.005)
 # manual jitter: minimum + or - to transmodality values for visibility
 
 
-Bwspan<-ggplot(LongAgeSpan_plotdf2[derivSigWholeSpline,],aes(agespans,tmvec,color=derivs,group=CIgroupingInd)) +geom_line(size=2) +labs(x = 'Age', y = 'Transmodality') +theme_classic(base_size = 28)+ xlim(c(8,23))+ scale_colour_gradientn(colours=c('#0b0bff','#8585ff','white','#ff9191','#ff0a0a'),values = c(0,.4,.5,.6,1),breaks=breaks, labels = breaks,limits=c(-.006,0.006),name="Change Per Year")+theme(legend.position="top",legend.key.width = unit(3, "cm"))+ylim(c(min(tmvec),max(tmvec)))
+Bwspan<-ggplot(LongAgeSpan_plotdf2[derivSigWholeSpline,],aes(agespans,tmvec,color=derivs,group=CIgroupingInd)) +geom_line(size=3) +labs(x = 'Age', y = 'Transmodality') +theme_classic(base_size = 28)+ xlim(c(8,23))+ scale_colour_gradientn(colours=c('#0b0bff','#8585ff','white','#ff9191','#ff0a0a'),values = c(0,.4,.5,.6,1),breaks=breaks, labels = breaks,limits=c(-.006,0.006),name="Change Per Year")+theme(legend.position="top",legend.key.width = unit(3, "cm"))+ylim(c(min(tmvec),max(tmvec)))
 
 
 
@@ -1907,8 +1907,8 @@ LongAgeSpan_plotdf2$AlphaSig[LongAgeSpan_plotdf2$derivs==0]<-0
 breaks=c(-.002,0,0.002)
 
 # figure 3 flag
-Bwspan<-ggplot(LongAgeSpan_plotdf2[derivSigWholeSpline,],aes(agespans,tmvecJit,color=derivs,group=CIgroupingInd,alpha=AlphaSig)) +geom_line(size=3) +labs(x = 'Age', y = 'Transmodality') +theme_classic(base_size = 40)+ xlim(c(8,23))+ scale_colour_gradientn(colours=c('#0b0bff','#8585ff','white','#ff9191','#ff0a0a'),values = c(0,.4,.5,.6,1),breaks=breaks, labels = breaks,limits=c(-.0031,0.0031),name="Change Per Year (B/w Con.)")+theme(legend.text=element_text(size=30),legend.title = element_text(size=30),legend.position="top",legend.key.width = unit(3, "cm"))+ylim(c(min(tmvecJit),max(tmvecJit)))+guides(alpha=FALSE,color = guide_colorbar(title.position="top",ticks.colour = "gray",
-                                ticks.linewidth = 8))+geom_vline(xintercept = c(10,15,20),linetype='dashed',size=1.5)+ theme(legend.margin=margin(b=-.5,t = -.5, unit='cm')) + scale_x_continuous(
+Bwspan<-ggplot(LongAgeSpan_plotdf2[derivSigWholeSpline,],aes(agespans,tmvecJit,color=derivs,group=CIgroupingInd,alpha=AlphaSig)) +geom_line(size=4) +labs(x = 'Age', y = 'Transmodality') +theme_classic(base_size = 40)+ xlim(c(8,23))+ scale_colour_gradientn(colours=c('#0b0bff','#8585ff','white','#ff9191','#ff0a0a'),values = c(0,.4,.5,.6,1),breaks=breaks, labels = breaks,limits=c(-.0031,0.0031),name="Change Per Year (B/w Con.)")+theme(legend.text=element_text(size=30),legend.title = element_text(size=30),legend.position="top",legend.key.width = unit(3, "cm"))+ylim(c(min(tmvecJit),max(tmvecJit)))+guides(alpha=FALSE,color = guide_colorbar(title.position="top",ticks.colour = "gray",
+                                ticks.linewidth = 8))+geom_vline(xintercept = c(10,16,21),linetype='dashed',size=1.5)+ theme(legend.margin=margin(b=-.5,t = -.5, unit='cm')) + scale_x_continuous(
     limits = c(8, 23),
     expand = c(0, 0),
     breaks = seq(8,23,by=3)
@@ -2557,9 +2557,9 @@ BW_Avg<-Avg_BW_Vector
 # use calculated deriv info for slopes, age range is 178 months
 # 10 y.o. is 22/178 months into the 200 point derivs age-range
 deriv.point.10<-round((22/178)*200)
-# 15 y.o. 82/178 months in
+# 16 y.o. 82/178 months in
 deriv.point.16<-round((94/178)*200)
-# 20 y.o. is 142/178 months in
+# 21 y.o. is 142/178 months in
 deriv.point.21<-round((154/178)*200)
 #derivInfo
 BW_deriv10vec<-derivInfo[,deriv.point.10]
@@ -2576,8 +2576,8 @@ for (K in 2:30){
       Intercept21=InterceptVector21[Kind]
       Avg=BW_Avg[Kind]
       at10=BW_deriv10vec[Kind]
-      at16=BW_deriv15vec[Kind]
-      at21=BW_deriv20vec[Kind]
+      at16=BW_deriv16vec[Kind]
+      at21=BW_deriv21vec[Kind]
       # write em out to cubic
       write.table(Intercept10,paste('/cbica/projects/pinesParcels/results/EffectVecs/BW_InterceptAt10_k',K,sep=''),sep=',', col.names = F,quote = F,row.names=F)
       write.table(Intercept21,paste('/cbica/projects/pinesParcels/results/EffectVecs/BW_InterceptAt21_k',K,sep=''),sep=',', col.names = F,quote = F,row.names=F)

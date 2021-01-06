@@ -33,21 +33,47 @@ DF_21=data.frame(c(L21[,1],R21[,1]),unlist(c(LPG[1,],RPG[1,])))
 
 colnames(DF_10)<-c('Bw10','PG')
 colnames(DF_21)<-c('Bw21','PG')
+cor.test(DF_10$Bw10,DF_10$PG,method='spearman')
+cor.test(DF_21$Bw21,DF_21$PG,method='spearman')
 
-hexinfo <- hexbin(DF_10$Bw10, DF_10$PG, xbins = 40)
+# 10
+hexinfo <- hexbin(DF_10$Bw10, DF_10$PG, xbins = 20)
 data_hex <- data.frame(hcell2xy(hexinfo), count = hexinfo@count)
 colnames(data_hex)<-c('Bw10','PG','count')
 
-ggMarginal(ggplot(DF_10,aes(x=Bw10,y=PG)) + geom_hex(bins=40) + scale_color_viridis_c(option='inferno')+geom_point(alpha=0)+geom_smooth(method='lm',color='gray')+theme_classic()+theme(legend.position = "bottom")+ylim(c(-6.6,7))+xlim(c(-.047,0.027))+ggtitle('Bw@10'))
+plot10<-ggMarginal(ggplot(DF_10,aes(x=Bw10,y=PG)) + geom_hex(bins=15) + scale_fill_viridis_c(option='inferno',rescaler = function(x, to = c(0, 1), from = NULL) {
+  ifelse(x<950,
+         scales::rescale(x,
+                         to=to,
+                         from=c(min(x,na.rm=T),950)),
+         1)})+geom_point(alpha=0)+geom_smooth(method='lm',color='gray')+theme_classic()+theme(legend.position = "bottom")+ylim(c(-6.6,7.3))+xlim(c(-.053,0.03))+ggtitle('Bw@10,r=-.82'))
 
-hexinfo <- hexbin(DF_21$Bw21, DF_21$PG, xbins = 40)
+plot10_pd<-ggMarginal(ggplot(DF_10,aes(x=Bw10,y=PG)) + geom_pointdensity(adjust=1) + scale_color_viridis_c(option='inferno')+geom_point(alpha=0)+geom_smooth(method='lm',color='gray')+theme_classic()+theme(legend.position = "bottom")+ylim(c(-6.6,7.3))+xlim(c(-.053,0.03))+ggtitle('Bw@10,r=-.82'))
+
+
+breaks=c(0,450,900)
+gray10<-ggplot(DF_10,aes(x=Bw10,y=PG)) + geom_hex(bins=20) + scale_fill_gradientn(colors=c('white','gray','black'),values=c(0,.5,1),breaks=breaks,labels=breaks,limits=c(0,900))+geom_point(alpha=0)+geom_smooth(method='lm',color='black')+theme_classic()+theme(legend.position = "bottom")+ylim(c(-6.6,7.3))+xlim(c(-.053,0.03))
+
+###### 21
+hexinfo <- hexbin(DF_21$Bw21, DF_21$PG, xbins = 20)
 data_hex <- data.frame(hcell2xy(hexinfo), count = hexinfo@count)
 colnames(data_hex)<-c('Bw21','PG','count')
 
-ggMarginal(ggplot(DF_21,aes(x=Bw21,y=PG)) + geom_hex(bins=40) + scale_color_viridis_c(option='inferno')+geom_point(alpha=0)+geom_smooth(method='lm',color='gray')+theme_classic()+theme(legend.position = "bottom")+ylim(c(-6.6,7))+xlim(c(-.047,0.027))+ggtitle('Bw@21'))
+plot21<-ggMarginal(ggplot(DF_21,aes(x=Bw21,y=PG)) + geom_hex(bins=20) + scale_fill_viridis_c(option='inferno',rescaler = function(x, to = c(0, 1), from = NULL) {
+  ifelse(x<950,
+         scales::rescale(x,
+                         to=to,
+                         from=c(min(x,na.rm=T),950)),
+         1)})+geom_point(alpha=0)+geom_smooth(method='lm',color='gray')+theme_classic()+theme(legend.position = "bottom")+ylim(c(-6.6,7.3))+xlim(c(-.053,0.03))+ggtitle('Bw@21,r=-.86'))
 
+plot21_pd<-ggMarginal(ggplot(DF_21,aes(x=Bw21,y=PG)) + geom_pointdensity(adjust=1) + scale_color_viridis_c(option='inferno')+geom_point(alpha=0)+geom_smooth(method='lm',color='gray')+theme_classic()+theme(legend.position = "bottom")+ylim(c(-5.7,7.2))+xlim(c(-.049,0.027))+ggtitle('Bw@21,r=-.86'))
 
+gray21<-ggplot(DF_21,aes(x=Bw21,y=PG)) + geom_hex(bins=15) + scale_fill_gradientn(colors=c('white','gray','black'),values=c(0,.5,1),breaks=breaks,labels=breaks,limits=c(0,900))+geom_point(alpha=0)+geom_smooth(method='lm',color='black')+theme_classic()+theme(legend.position = "bottom")+ylim(c(-6.6,7.3))+xlim(c(-.053,0.03))
 
+```
+
+```{r}
+# things that happen over scales
 # initialize vectors
 spatCorvec_L<-rep(0,30)
 spatCorvec_R<-rep(0,30)
@@ -170,4 +196,34 @@ for(K in c(4,7,13,20)){
 }
 
 #ggplot(m_spinDistr[m_spinDistr$RealCor==0,], aes(x = value, y = Scale, group = Scale))+xlab(expression(rho)) + geom_jitter(size = 0.75,alpha=.25) +geom_point(data=m_spinDistr[m_spinDistr$RealCor==1,],aes(x=value,y=Scale),size=3)+scale_fill_manual(values=fourscalescheme)+theme_minimal(base_size = 17)+coord_flip()+theme(legend.position = "none")+xlim(c(-.35,.85))+ylab('# of Communities')+ggtitle('Func Transitions: PG1 correlations with MAD at K')
+
+
+# load in spin test distributions
+spinDistr_PG_ageAt10<-read.csv('/cbica/projects/pinesParcels/results/aggregated_data/SpinTestDistrs_At10_PG1.csv')
+spinDistr_PG_ageAt21<-read.csv('/cbica/projects/pinesParcels/results/aggregated_data/SpinTestDistrs_At21_PG1.csv')
+
+# melt this into 1001*29 columns 
+m_spinDistr10<-melt(spinDistr_PG_ageAt10)
+m_spinDistr21<-melt(spinDistr_PG_ageAt21)
+
+# add a "realCor" boolean column
+repeatVector<-array(0,dim=c(1001,1))
+repeatVector[1]<-1
+m_spinDistr10$RealCor<-rep(rep(c(1,0),c(1,1000)),times=1)
+m_spinDistr21$RealCor<-rep(rep(c(1,0),c(1,1000)),times=1)
+
+RealCorrelation10<-m_spinDistr10$value[1]
+RealCorrelation21<-m_spinDistr21$value[1]
+
+# starting at 2 because 1 is real
+P_Value10 = length(which(m_spinDistr10$value[2:1001] >= RealCorrelation10)) / 1000
+P_Value21 = length(which(m_spinDistr21$value[2:1001] >= RealCorrelation21)) / 1000
+
+# figure 3 flag
+ggplot(subset(m_spinDistr10, RealCor==0),aes(x=value))+geom_density(linetype='dashed',size=1.5)+geom_vline(xintercept = RealCorrelation10,size=2,color='#BC3754')+theme_classic(base_size=40)+ylab('')+xlab(expression(rho))+guides(y="none")+xlim(c(-.865,.5))
+
+ggplot(subset(m_spinDistr21, RealCor==0),aes(x=value))+geom_density(linetype='dashed',size=1.5)+geom_vline(xintercept = RealCorrelation21,size=2,color='#BC3754')+theme_classic(base_size=40)+ylab('')+xlab(expression(rho))+guides(y="none")+xlim(c(-.865,.5))
+
+ggplot(subset(m_spinDistr_Scale, RealCor==0),aes(x=value))+geom_density(linetype='dashed',size=1.5)+geom_vline(xintercept =  RealCorrelation21,size=2,color='#BC3754')+theme_classic(base_size=40)+ylab('')+xlab(expression(rho))+guides(y="none")
+
 ```

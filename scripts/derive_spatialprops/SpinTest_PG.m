@@ -26,9 +26,9 @@ grad_lh_lh(mwIndVec_l)=100;
 grad_rh(mwIndVec_r)=100;
 % check to make sure mask size is appropriate/expected
 if ((length(mwIndVec_l))+(length(mwIndVec_r))==(20484-17734))
-	% write them out as a transposed csv for spin test to deal with		
-	writetable(table(grad_lh'),[outdir 'grad_L.csv'],'WriteVariableNames',0);
-	writetable(table(grad_rh'),[outdir 'grad_R.csv'],'WriteVariableNames',0);
+	% write them out as a csv for spin test to deal with		
+	writetable(table(grad_lh),[outdir 'grad_L.csv'],'WriteVariableNames',0);
+	writetable(table(grad_rh),[outdir 'grad_R.csv'],'WriteVariableNames',0);
 	% create permutations, save out to outFn
 	SpinPermuFS([outdir 'grad_L.csv'], [outdir 'grad_R.csv'], 1000, outFn);
 else
