@@ -823,7 +823,8 @@ ggplot(bwdf,aes(scalesvec,bwAgeCorVecs.avg_bw,color=domnetvec))+ scale_color_man
 gamdm<-gam(bwAgeCorVecs.avg_bw~s(scalesvec,k=4),data=DMbwdf)
 gammot<-gam(bwAgeCorVecs.avg_bw~s(scalesvec,k=4),data=motorbwdf)
 # figure 5 v2 flag
-fig5v2<-ggplot(bwdf,aes(scalesvec,bwAgeCorVecs.avg_bw,color=domnetvec17)) + xlab("# of Communities") + ylab(expression(paste('Age Effect (',Delta,R^2[adj],')'))) +theme_classic(base_size = 28) +guides(alpha=FALSE,color=guide_legend(title="Maximal Y7 Overlap"))+theme(legend.position='top')+geom_smooth(data=subset(bwdf,domnetvec17=='Somatomotor A'),method='gam',formula = y~s(x,k=3))+geom_smooth(data=subset(bwdf,domnetvec17=='DM_B'),method='gam',formula = y~s(x,k=3))+geom_point(data=subset(bwdf,domnetvec17=='Somatomotor A'),size=3)+geom_point(data=subset(bwdf,domnetvec17=='DM_B'),size=3)
+bwdf$domnetvec17[bwdf$domnetvec17=='DM_B']<-'Default B'
+fig5v2<-ggplot(bwdf,aes(scalesvec,bwAgeCorVecs.avg_bw,color=domnetvec17)) + xlab("# of Communities") + ylab(expression(paste('Age Effect (',Delta,R^2[adj],')'))) +theme_classic(base_size = 28) +guides(alpha=FALSE,color=guide_legend(title="Yeo 17 Overlap"))+theme(legend.position='top',legend.text = element_text(size=20),legend.title = element_text(size=24))+geom_smooth(data=subset(bwdf,domnetvec17=='Somatomotor A'),method='gam',formula = y~s(x,k=3))+geom_smooth(data=subset(bwdf,domnetvec17=='DM_B'),method='gam',formula = y~s(x,k=3))+geom_point(data=subset(bwdf,domnetvec17=='Somatomotor A'),size=4)+geom_point(data=subset(bwdf,domnetvec17=='DM_B'),size=4)+scale_color_manual(values=c('#bc0943','#4183a8'),labels=c('Default Mode B','Somatomotor A'))+scale_x_continuous(breaks=c(4,10,16,22,28))
 
 Somat_A_bwdf<-bwdf[domnetvec17=='Somatomotor A',]
 DM_B_bwdf<-bwdf[domnetvec17=='DM_B',]
@@ -838,7 +839,6 @@ ggplot(bwdf,aes(scalesvec,bwAgeCorVecs.avg_bw,color=domnetvec17)) + xlab("# of C
 gamdm<-gam(bwAgeCorVecs.avg_bw~s(scalesvec,k=4),data=DMbwdf)
 gammot<-gam(bwAgeCorVecs.avg_bw~s(scalesvec,k=4),data=motorbwdf)
 
-#
 
 ggplot(DMbwdf,aes(scalesvec,bwAgeCorVecs.avg_bw,color=domnetvec))+ scale_color_manual(values=c('#c1253c','#b61ad0','#670068')) + xlab("# of Communities") + ylab(expression(paste('Age Effect (',Delta,R^2[adj],')'))) +theme_classic(base_size = 28) +guides(alpha=FALSE,color=guide_legend(title="Maximal Y7 Overlap"))+theme(legend.position='top')+geom_smooth(method='gam',formula = y~s(x,k=3))
 
@@ -1028,17 +1028,6 @@ mcrecnerrdf$select<-selectvec
 ggplot(data=mcrecnerrdf,aes(y=mreconerr,x=community_vec))+geom_line(size=3,color='#262228')+geom_point(aes(y=mreconerr,x=community_vec,alpha=select),size=9) +scale_alpha(range=c(0,1))+ scale_x_continuous(name ="Number of Communitites",  breaks=seq(2,30,2))+labs(y='Reconstruction Error (a.u.)')+theme_classic(base_size = 40)+ theme(axis.title.y.left =  element_text(color = '#262228'),legend.position = 'none')
 ```
 
-```{r}
-
-## animations to show community emergence over scales
-#library(gganimate)
-#library(gifski)
-#emergence_over_scales<-ggplot(bwdf,aes(x=tmvec,y=occvec,color=domnetvec)) + geom_point(size=10) + #scale_color_manual(values=c('#007500','#c1253c','#d77d00','#b8cf86','#3281ab','#b61ad0','#670068'))+#theme_classic()
-#
-#emergence_over_scales_anim<-emergence_over_scales + transition_states(as.integer(scalesvec), #state_length = 10)
-#
-#anim_save('~/multiscale/emergence_over_scales_anim.gif',animation=emergence_over_scales_anim,render=gifski_renderer(),nframes=100,fps=3)
-```
 
 ```{r}
 library(lme4)
@@ -1232,7 +1221,8 @@ gammot<-gam(AB_Est~s(scalesvec,k=3),data=motorbwdfMed)
 
 # figure 7 v2
 MediationDF$domnetvec17<-domnetvec17
-fig7v2<-ggplot(MediationDF,aes(scalesvec,AB_Est,color=domnetvec17)) + xlab("# of Communities") + ylab('AB Path Coefficient') +theme_classic(base_size = 28) +guides(alpha=FALSE,color=guide_legend(title="Maximal Y17 Overlap"))+theme(legend.position='top')+geom_smooth(data=subset(MediationDF,domnetvec17=='Somatomotor A'),method='gam',formula = y~s(x,k=3))+geom_smooth(data=subset(MediationDF,domnetvec17=='DM_B'),method='gam',formula = y~s(x,k=3))+geom_point(data=subset(MediationDF,domnetvec17=='Somatomotor A'),size=3)+geom_point(data=subset(MediationDF,domnetvec17=='DM_B'),size=3)
+fig7v2<-ggplot(MediationDF,aes(scalesvec,AB_Est,color=domnetvec17)) + xlab("# of Communities") + ylab('AB Path Coefficient') +theme_classic(base_size = 30) +guides(alpha=FALSE,color=guide_legend(title=" Yeo17 Overlap"))+theme(legend.position='top')+geom_smooth(data=subset(MediationDF,domnetvec17=='Somatomotor A'),method='gam',formula = y~s(x,k=3))+geom_smooth(data=subset(MediationDF,domnetvec17=='DM_B'),method='gam',formula = y~s(x,k=3))+geom_point(data=subset(MediationDF,domnetvec17=='Somatomotor A'),size=4)+geom_point(data=subset(MediationDF,domnetvec17=='DM_B'),size=4)+theme(legend.position='top',legend.text = element_text(size=22),legend.title = element_text(size=26))+scale_x_continuous(breaks=c(4,10,16,22,28))+scale_color_manual(values=c('#bc0943','#4183a8'),labels=c('Default Mode B','Somatomotor A'))
+
 
 Somat_A_bwdf<-MediationDF[domnetvec17=='Somatomotor A',]
 DM_B_bwdf<-MediationDF[domnetvec17=='DM_B',]
@@ -1345,8 +1335,9 @@ raw2<-ggplot(bwR2EFdf,aes(tmvec,BW_R2VecEst,color=domnetSig)) + scale_color_manu
 # figure 5 v2 flag
 Somat_A_bwdf<-bwdf[domnetvec17=='Somatomotor A',]
 DM_B_bwdf<-bwdf[domnetvec17=='DM_B',]
-
-fig5Cv2<-ggplot(bwdf,aes(scalesvec,bwAgeCorVecs.avg_bw,color=domnetvec17)) + xlab("# of Communities") + ylab(expression(paste('Age Effect (',Delta,R^2[adj],')'))) +theme_classic(base_size = 28) +guides(alpha=FALSE,color=guide_legend(title="Maximal Y7 Overlap"))+theme(legend.position='top')+geom_smooth(data=subset(bwdf,domnetvec17=='Somatomotor A'),method='gam',formula = y~s(x,k=4))+geom_smooth(data=subset(bwdf,domnetvec17=='DM_B'))+geom_point(data=subset(bwdf,domnetvec17=='Somatomotor A'),size=3)+geom_point(data=subset(bwdf,domnetvec17=='DM_B'),size=3)
+# for underscoreless label
+bwdf$domnetvec17='DM B'
+fig5Cv2<-ggplot(bwdf,aes(scalesvec,bwAgeCorVecs.avg_bw,color=domnetvec17)) + xlab("# of Communities") + ylab(expression(paste('Age Effect (',Delta,R^2[adj],')'))) +theme_classic(base_size = 28) +guides(alpha=FALSE,color=guide_legend(title="Maximal Y7 Overlap"))+theme(legend.position='top')+geom_smooth(data=subset(bwdf,domnetvec17=='Somatomotor A'),method='gam',formula = y~s(x,k=4))+geom_smooth(data=subset(bwdf,domnetvec17=='DM_B'))+geom_point(data=subset(bwdf,domnetvec17=='Somatomotor A'),size=3)+geom_point(data=subset(bwdf,domnetvec17=='DM_B'),size=3)+scale_color_manual(values=c('#bc0943','#4183a8'))
 
 motorbwdf<-bwR2EFdf[domnetvec=='Motor',]
 DMbwdf<-bwR2EFdf[domnetvec=='DM',]
@@ -1394,7 +1385,7 @@ ggplot(bwR2EFdf,aes(scalesvec,BW_R2VecEst,color=domnetvec))+ scale_color_manual(
 # figure 6 v2
 bwR2EFdf$domnetvec17<-domnetvec17
 
-fig6v2<-ggplot(bwR2EFdf,aes(scalesvec,BW_R2VecEst,color=domnetvec17)) + xlab("# of Communities") + ylab(expression(paste('EF Effect (',Delta,R^2[adj],')'))) +theme_classic(base_size = 28) +guides(alpha=FALSE,color=guide_legend(title="Maximal Yeo Overlap"))+theme(legend.position='top')+geom_smooth(data=subset(bwR2EFdf,domnetvec17=='Somatomotor A'),method='gam',formula = y~s(x,k=3))+geom_smooth(data=subset(bwR2EFdf,domnetvec17=='DM_B'),method='gam',formula = y~s(x,k=3))+geom_point(data=subset(bwR2EFdf,domnetvec17=='Somatomotor A'),size=3)+geom_point(data=subset(bwR2EFdf,domnetvec17=='DM_B'),size=3)
+fig6v2<-ggplot(bwR2EFdf,aes(scalesvec,BW_R2VecEst,color=domnetvec17)) + xlab("# of Communities") + ylab(expression(paste('EF Effect (',Delta,R^2[adj],')'))) +theme_classic(base_size = 28) +guides(alpha=FALSE,color=guide_legend(title="Yeo 17 Overlap"))+theme(legend.position='top',legend.text = element_text(size=20),legend.title = element_text(size=24))+geom_smooth(data=subset(bwR2EFdf,domnetvec17=='Somatomotor A'),method='gam',formula = y~s(x,k=3))+geom_smooth(data=subset(bwR2EFdf,domnetvec17=='DM_B'),method='gam',formula = y~s(x,k=3))+geom_point(data=subset(bwR2EFdf,domnetvec17=='Somatomotor A'),size=4)+geom_point(data=subset(bwR2EFdf,domnetvec17=='DM_B'),size=4)+scale_color_manual(values=c('#bc0943','#4183a8'),labels=c('Default Mode B','Somatomotor A'))+scale_x_continuous(breaks=c(4,10,16,22,28))
 
 Somat_A_bwdf<-bwR2EFdf[domnetvec17=='Somatomotor A',]
 DM_B_bwdf<-bwR2EFdf[domnetvec17=='DM_B',]
@@ -1829,15 +1820,15 @@ BwAgeCorTMDifDf2$net2tmvec<-BwAgeCorTMDifDf$net1tmvec
 library(pammtools)
 # figure 4 flag
 doubleBwAgeCorTMDifDf<-rbind(BwAgeCorTMDifDf2,BwAgeCorTMDifDf)
-# appears to only work proeprly when modeled at te
+# only works proper when modeled at te()
 g2 <- gam(ageDR2vec ~ te(net2tmvec,net1tmvec),data = doubleBwAgeCorTMDifDf)
-gg_tensor(g2)+theme_classic(base_size = 40) +scale_fill_gradient2(low = "blue",high = "red",mid = "white",midpoint = 0,name=expression(paste('Age Effect(',Delta,R^2[adj],')')),guide = guide_colorbar(title.position="top",ticks.colour = "gray",
-                                ticks.linewidth = 5) )+theme(legend.text=element_text(size=20),legend.key.height =unit(2.3,"cm"),legend.title = element_text(size=25))+ggtitle("")+guides(alpha=FALSE)+xlab("Community Transmodality")+ylab("Community Transmodality")
+gg_tensor(g2)+theme_classic(base_size = 40) +theme(legend.text=element_text(size=30),legend.key.width =unit(3.5,"cm"),legend.title = element_text(size=30))+scale_fill_gradient2(low = "blue",high = "red",mid = "white",midpoint = 0,name=expression(paste('Age Effect(',Delta,R^2[adj],')')),guide = guide_colorbar(legend.position='top',title.position="top",ticks.colour = "gray50", ticks.linewidth = 7))+ggtitle("")+xlab("Community Transmodality")+ylab("Community Transmodality")+geom_vline(xintercept = mean(range(doubleBwAgeCorTMDifDf$net1tmvec)),linetype='dashed',size=1.5)+geom_hline(yintercept = mean(range(doubleBwAgeCorTMDifDf$net1tmvec)),linetype='dashed',size=1.5)+theme(legend.position='top')
+# printed out at 1250x1625
 
 
 # bart method
 b<-getViz(g2)
-plot(sm(b, 1))+ l_fitRaster() + l_fitContour() +scale_fill_gradient2(low = "blue",high = "red",mid = "white",midpoint = 0)+labs(fill = expression(paste('Age Effect(',Delta,R^2[adj],')')))+ggtitle("")+xlab("Community Transmodality")+ylab("Community Transmodality")
+plot(sm(b, 1))+ l_fitRaster() + l_fitContour() +scale_fill_gradient2(low = "blue",high = "red",mid = "white",midpoint = 0)+labs(fill = expression(paste('Age Effect(',Delta,R^2[adj],')')))+ggtitle("")+xlab("Community Transmodality")+ylab("Community Transmodality")+geom_vline(xintercept = mean(range(doubleBwAgeCorTMDifDf$net1tmvec)),linetype='dashed')
 
 #plot_ly(data=doubleBwAgeCorTMDifDf,x=net1tmvec,y=net2tmvec,z=ageDR2vec,type='contour',contours = list(coloring='heatmap'),colorscale=list(c(-.1,0,.1),c("blue","white","red")))
 

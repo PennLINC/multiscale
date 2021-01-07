@@ -52,7 +52,8 @@ plot10_pd<-ggMarginal(ggplot(DF_10,aes(x=Bw10,y=PG)) + geom_pointdensity(adjust=
 
 
 breaks=c(0,450,900)
-gray10<-ggplot(DF_10,aes(x=Bw10,y=PG)) + geom_hex(bins=20) + scale_fill_gradientn(colors=c('white','gray','black'),values=c(0,.5,1),breaks=breaks,labels=breaks,limits=c(0,900))+geom_point(alpha=0)+geom_smooth(method='lm',color='black')+theme_classic()+theme(legend.position = "bottom")+ylim(c(-6.6,7.3))+xlim(c(-.053,0.03))
+# figure 3 flag
+gray10<-ggplot(DF_10,aes(x=PG,y=Bw10)) + geom_hex(bins=15) + scale_fill_gradientn(colors=c('grey98','gray','black'),values=c(0,.5,1),breaks=breaks,labels=breaks,limits=c(0,900))+geom_point(alpha=0)+geom_smooth(method='lm',color='black')+theme_classic(base_size=28)+theme(legend.position = "bottom")+xlim(c(-6.6,7.3))+ylim(c(-.053,0.03))+ylab("B/w")
 
 ###### 21
 hexinfo <- hexbin(DF_21$Bw21, DF_21$PG, xbins = 20)
@@ -68,7 +69,8 @@ plot21<-ggMarginal(ggplot(DF_21,aes(x=Bw21,y=PG)) + geom_hex(bins=20) + scale_fi
 
 plot21_pd<-ggMarginal(ggplot(DF_21,aes(x=Bw21,y=PG)) + geom_pointdensity(adjust=1) + scale_color_viridis_c(option='inferno')+geom_point(alpha=0)+geom_smooth(method='lm',color='gray')+theme_classic()+theme(legend.position = "bottom")+ylim(c(-5.7,7.2))+xlim(c(-.049,0.027))+ggtitle('Bw@21,r=-.86'))
 
-gray21<-ggplot(DF_21,aes(x=Bw21,y=PG)) + geom_hex(bins=15) + scale_fill_gradientn(colors=c('white','gray','black'),values=c(0,.5,1),breaks=breaks,labels=breaks,limits=c(0,900))+geom_point(alpha=0)+geom_smooth(method='lm',color='black')+theme_classic()+theme(legend.position = "bottom")+ylim(c(-6.6,7.3))+xlim(c(-.053,0.03))
+# figure 3 flag
+gray21<-ggplot(DF_21,aes(x=PG,y=Bw21)) + geom_hex(bins=15) + scale_fill_gradientn(colors=c('grey98','gray','black'),values=c(0,.5,1),breaks=breaks,labels=breaks,limits=c(0,900))+geom_point(alpha=0)+geom_smooth(method='lm',color='black')+theme_classic(base_size = 28)+theme(legend.position = "bottom")+xlim(c(-6.6,7.3))+ylim(c(-.053,0.03))+ylab("B/w")
 
 ```
 
@@ -220,10 +222,10 @@ P_Value10 = length(which(m_spinDistr10$value[2:1001] >= RealCorrelation10)) / 10
 P_Value21 = length(which(m_spinDistr21$value[2:1001] >= RealCorrelation21)) / 1000
 
 # figure 3 flag
-ggplot(subset(m_spinDistr10, RealCor==0),aes(x=value))+geom_density(linetype='dashed',size=1.5)+geom_vline(xintercept = RealCorrelation10,size=2,color='#BC3754')+theme_classic(base_size=40)+ylab('')+xlab(expression(rho))+guides(y="none")+xlim(c(-.865,.5))
+spin10<-ggplot(subset(m_spinDistr10, RealCor==0),aes(x=value))+geom_density(linetype='dashed',size=1.5)+geom_vline(xintercept = RealCorrelation10,size=2,color='#BC3754')+theme_classic(base_size=40)+ylab('')+xlab('r')+guides(y="none")+xlim(c(-.865,.5))
 
-ggplot(subset(m_spinDistr21, RealCor==0),aes(x=value))+geom_density(linetype='dashed',size=1.5)+geom_vline(xintercept = RealCorrelation21,size=2,color='#BC3754')+theme_classic(base_size=40)+ylab('')+xlab(expression(rho))+guides(y="none")+xlim(c(-.865,.5))
+spin21<-ggplot(subset(m_spinDistr21, RealCor==0),aes(x=value))+geom_density(linetype='dashed',size=1.5)+geom_vline(xintercept = RealCorrelation21,size=2,color='#BC3754')+theme_classic(base_size=28)+ylab('')+xlab('r')+guides(y="none")+xlim(c(-.865,.5))
 
-ggplot(subset(m_spinDistr_Scale, RealCor==0),aes(x=value))+geom_density(linetype='dashed',size=1.5)+geom_vline(xintercept =  RealCorrelation21,size=2,color='#BC3754')+theme_classic(base_size=40)+ylab('')+xlab(expression(rho))+guides(y="none")
+ggplot(subset(m_spinDistr_Scale, RealCor==0),aes(x=value))+geom_density(linetype='dashed',size=1.5)+geom_vline(xintercept =  RealCorrelation21,size=2,color='#BC3754')+theme_classic(base_size=28)+ylab('')+xlab('r')+guides(y="none")
 
 ```
