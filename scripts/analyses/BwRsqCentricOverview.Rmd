@@ -4,6 +4,22 @@ author: "Adam"
 date: "9/7/2020"
 output: github_document
 ---
+```{r}
+# dumb quick section just to fdr some p values (from GEEs) because matlab keeps running on of "licenses to FDR" on cubic
+Vert_Scale_Ps=read.csv('/cbica/projects/pinesParcels/results/aggregated_data/Scale_GEE_vertPs.csv')
+Vert_ScaleAge_Ps=read.csv('/cbica/projects/pinesParcels/results/aggregated_data/AgexScale_GEE_vertPs.csv')
+Vert_ScaleEF_Ps=read.csv('/cbica/projects/pinesParcels/results/aggregated_data/EFxScale_GEE_vertPs.csv')
+
+# fdr em
+ScaleFDRed=p.adjust(Vert_Scale_Ps$Var1,method='fdr')
+ScaleAgeFDRed=p.adjust(Vert_ScaleAge_Ps$Var1,method='fdr')
+ScaleEFFDRed=p.adjust(Vert_ScaleEF_Ps$Var1,method='fdr')
+
+# save for matlab friendly format
+write.table(ScaleFDRed,'/cbica/projects/pinesParcels/results/EffectVecs/ScaleP_FDRed',sep=',', col.names = F,quote = F,row.names=F)
+write.table(ScaleAgeFDRed,'/cbica/projects/pinesParcels/results/EffectVecs/ScaleAgeP_FDRed',sep=',', col.names = F,quote = F,row.names=F)
+write.table(ScaleEFFDRed,'/cbica/projects/pinesParcels/results/EffectVecs/ScaleEFP_FDRed',sep=',', col.names = F,quote = F,row.names=F)
+```
 
 ```{r include=FALSE}
 knitr::read_chunk('~/cbica/projects/pinesParcels/multiscale/scripts/analyses/correlations_over_scalesplot.R')
@@ -3274,7 +3290,7 @@ NetSplinesAgeSideCar693464[((693*i)-692):(693*i)]<-masterdf$Age
 }
 LongAgeSpan_plotdf3$Age<-NetSplinesAgeSideCar693464/12
 # figure 3A flag
-ggplot(LongAgeSpan_plotdf3,aes(Age,Splines,color=Transmodality,group=Grouping)) +geom_line(size=3,alpha=.4) +labs(x = 'Age', y = 'Between-Community Connectivity') +theme_classic(base_size = 40)+ scale_colour_viridis(option="inferno",guide=guide_colorbar(barwidth = 22,ticks.colour = "gray",ticks.linewidth = 8))+theme(legend.text=element_text(size=30),legend.title = element_text(size=30),legend.position="bottom",legend.key.width = unit(3, "cm"))+theme(legend.position="bottom")+ theme(legend.margin=margin(b=-.5,t = -.5, l=-10,unit='cm')) + scale_x_continuous(
+ggplot(LongAgeSpan_plotdf3,aes(Age,Splines,color=Transmodality,group=Grouping)) +geom_line(size=3,alpha=.4) +labs(x = 'Age', y = 'Between-Community Connectivity') +theme_classic(base_size = 40)+ scale_colour_viridis(option="inferno",guide=guide_colorbar(barwidth = 22,ticks.colour = "gray",ticks.linewidth = 8))+theme(legend.text=element_text(size=30),legend.title = element_text(size=30),legend.position="bottom",legend.key.width = unit(3, "cm"))+theme(legend.position="bottom",legend.title = 'Community Transmodality')+ theme(legend.margin=margin(b=-.5,t = -.5, l=-10,unit='cm')) + scale_x_continuous(
     limits = c(8, 23),
     expand = c(0, 0),
     breaks = seq(8,23,by=3)
