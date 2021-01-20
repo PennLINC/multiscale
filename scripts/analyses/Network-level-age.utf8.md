@@ -15,88 +15,12 @@ library(gratia)
 library(ggplot2)
 library(reshape2)
 library(dplyr)
-```
-
-```
-## 
-## Attaching package: 'dplyr'
-```
-
-```
-## The following objects are masked from 'package:stats':
-## 
-##     filter, lag
-```
-
-```
-## The following objects are masked from 'package:base':
-## 
-##     intersect, setdiff, setequal, union
-```
-
-```r
 library(ggpubr)
 library(vroom)
 library(data.table)
-```
-
-```
-## 
-## Attaching package: 'data.table'
-```
-
-```
-## The following objects are masked from 'package:dplyr':
-## 
-##     between, first, last
-```
-
-```
-## The following objects are masked from 'package:reshape2':
-## 
-##     dcast, melt
-```
-
-```r
 library(mgcv)
-```
-
-```
-## Loading required package: nlme
-```
-
-```
-## 
-## Attaching package: 'nlme'
-```
-
-```
-## The following object is masked from 'package:dplyr':
-## 
-##     collapse
-```
-
-```
-## This is mgcv 1.8-33. For overview type 'help("mgcv-package")'.
-```
-
-```r
 library(ppcor)
-```
-
-```
-## Loading required package: MASS
-```
-
-```
-## 
-## Attaching package: 'MASS'
-```
-
-```
-## The following object is masked from 'package:dplyr':
-## 
-##     select
+library(viridis)
 ```
 
 
@@ -493,7 +417,7 @@ bwdf<-data.frame(tmvec,scalesvec,domnetvec,domnetvec17,netpropvec,avg_bw_deltaR2
 
 
 ```r
-# Age * B/w - final setup
+# Age * Transmodality - final setup
 # Map nonsig to grey
 bwdf$domnetvecSig<-'NonSig'
 # sig where CL_vec indicates
@@ -516,10 +440,254 @@ ggplot(bwdf,aes(tmvec,avg_bw_deltaR2)) + geom_point(size=6,alpha=.8,aes(color=do
 
 
 ```r
-# Age Effect * Transmodality
+# convert loop output to years format
+minAgeEst<-minAgeEst/12
+maxAgeEst<-maxAgeEst/12
+derivInfo<-derivInfo*12
+
+# an index to group spline values for each network together
+CIgroupingInd<-as.factor(1:464)
+
+# get a vector of the age span split into 200 intervals to match the derivative values
+agerange<-range(masterdf$Age)/12
+agerange200<-seq(agerange[1],agerange[2],length.out = 200)
+
+# long format dataframe: each network at each scale has 200 values (for each interval of age span)
+AgeSpan_plotdf<-data.frame(tmvec,scalesvec,domnetvec,netpropvec,CIgroupingInd)
+
+# repeat age range 464 times (into a spot for each network) before progressing to next age interval
+#initialize
+agerange200464<-array(dim=c(200*464,1))
+#populate
+for (i in 1:length(agerange200)){
+agerange200464[((464*i)-463):(464*i)]<-rep(agerange200[i],464)
+}
+
+# now we need deriv valuess of same format, but they will change for every network at every age bracket.
+deriv200464<-array(dim=c(200*464,1))
+for (i in 1:length(agerange200)){
+deriv200464[((464*i)-463):(464*i)]<-derivInfo[,i]
+}
+
+# now bring 'em together into a long dataframe for plottin
+AgeSpan_plotdf2<-data.frame(tmvec,scalesvec,domnetvec,netpropvec,CIgroupingInd)
+LongAgeSpan_plotdf2<-data.frame(sapply(AgeSpan_plotdf2,rep.int,times=200))
+LongAgeSpan_plotdf2$agespans<-agerange200464
+LongAgeSpan_plotdf2$derivs<-deriv200464
+```
+
+
+```r
+# B/w * Age * Transmodality - final setup
+# we will come back to LongAgeSpan_plotdf2.... time to make LongAgeSpan_plotdf3
+# for overlaying the smooth GAM estimates
+AgeSpan_plotdf3<-data.frame(tmvec,scalesvec,domnetvec,netpropvec,CIgroupingInd)
+LongAgeSpan_plotdf3<-data.frame(sapply(AgeSpan_plotdf3,rep.int,times=693))
+
+# assign same transmodality value to each point on same lines
+Transmodality693464<-array(dim=c(693*464,1))
+for (i in 1:464){
+Transmodality693464[((693*i)-692):(693*i)]<-tmvec[i]
+}
+LongAgeSpan_plotdf3$Transmodality<-Transmodality693464
+
+# grouping index so all points of same line have CIgroupingInd in common
+GroupingInd693464<-array(dim=c(693*464,1))
+for (i in 1:464){
+GroupingInd693464[((693*i)-692):(693*i)]<-CIgroupingInd[i]
+}
+LongAgeSpan_plotdf3$Grouping<-GroupingInd693464
+
+# ports actual splines in - only for networks that significantly change over this age range
+NetSplines693464<-array(dim=c(693*464,1))
+for (i in 1:464){
+  if (NL_sigVec[i]==TRUE){
+  # scale added 11/16/20
+  NetSplines693464[((693*i)-692):(693*i)]<-NetSplines[i,]
+  } else {
+    # uncomment for sanity check
+    # print(paste(i,'is not significant'))
+  }
+}
+LongAgeSpan_plotdf3$Splines<-NetSplines693464
+
+# put this guy through the same wrangling ringer as the "estimated age", which is how the spline is ported in
+NetSplinesAgeSideCar693464<-array(dim=c(693*464,1))
+for (i in 1:464){
+NetSplinesAgeSideCar693464[((693*i)-692):(693*i)]<-masterdf$Age
+}
+# convert to years
+LongAgeSpan_plotdf3$Age<-NetSplinesAgeSideCar693464/12
+```
+
+
+```r
+ggplot(LongAgeSpan_plotdf3,aes(Age,Splines,color=Transmodality,group=Grouping)) +geom_line(size=3,alpha=.4) +labs(x = 'Age', y = 'Between-Network Coupling') +theme_classic(base_size = 40)+ scale_colour_viridis(option="inferno",guide=guide_colorbar(barwidth = 22,ticks.colour = "gray",ticks.linewidth = 8))+theme(legend.text=element_text(size=30),legend.title = element_text(size=30),legend.position="bottom",legend.key.width = unit(3, "cm"))+theme(legend.position="bottom")+ theme(legend.margin=margin(b=-.5,t = -.5, l=-10,unit='cm'))+geom_vline(xintercept = c(10,21),linetype='dashed',size=1.5) + scale_x_continuous(
+    limits = c(8, 23),
+    expand = c(0, 0),
+    breaks = seq(8,23,by=3)
+  ) +
+  theme(plot.margin=unit(c(.2,.6,.5,.2),"cm"))+labs(color='Network Transmodality')
+```
+
+```
+## Warning: Removed 57519 row(s) containing missing values (geom_path).
+```
+
+![](Network-level-age_files/figure-markdown_github/unnamed-chunk-11-1.png)
+
+
+
+
+```r
+# Age Effect Derivative * Age * Transmodality
+
+# This one uses manual jitter, so unfortunately it requires iterating over every edge to compare network transmodality values at each scale
+
+# for minimal manual jitter of tmvec in instances w/ very similar tm values
+tmvecJit<-tmvec
+
+# for recording net1 and net2 tm
+net1tmvec=rep(0,length(colnames(individ_scalebybw_df)))
+net2tmvec=rep(0,length(colnames(individ_scalebybw_df)))
+Net1Vec=rep(0,length(colnames(individ_scalebybw_df)))
+Net2Vec=rep(0,length(colnames(individ_scalebybw_df)))
+Net1Vec17=rep(0,length(colnames(individ_scalebybw_df)))
+Net2Vec17=rep(0,length(colnames(individ_scalebybw_df)))
+
+for (i in 1:length(colnames(individ_scalebybw_df))){
+    # extract column name. Will parse column name to determine nature of #connection
+    curcolname<-colnames(individ_scalebybw_df)[i]
+    splitname<-unlist(strsplit(curcolname,'_'))
+    scalefield=splitname[4]
+    net1field=splitname[5]
+    net2field=splitname[7]
+    # doctor up scale and net1field so they are exclusively the value of #interest
+    scale=as.numeric(unlist(strsplit(scalefield,'e'))[2])
+    net1=unlist(strsplit(net1field,'s'))[2]
+    net2=net2field 
+    # helping phriendly index
+    K_start=((scale-1)*(scale))/2
+    K_end=(((scale-1)*(scale))/2)+scale-1
+    Kind<-K_start:K_end
+    # get TM values of both nets at this scale
+    tm1=tmvec[Kind[as.numeric(net1)]]
+    tm2=tmvec[Kind[as.numeric(net2)]]
+    net1tmvec[i]<-tm1
+    net2tmvec[i]<-tm2
+    # absolute value as directionality is meaningless here
+    tmdif=abs(tm1-tm2)
+    # tiny shift to tmvalue for jitter plotting in bwspan
+    if (tmdif < .05){
+      # if tm1 is more transmodal, juxtapose them a little more in that direction
+      if (tm1>tm2){
+        tmvecJit[Kind[as.numeric(net1)]]<-tmvecJit[Kind[as.numeric(net1)]]+0.02
+        tmvecJit[Kind[as.numeric(net2)]]<-tmvecJit[Kind[as.numeric(net2)]]-0.02
+      }
+      # opposite if tm2 is more transmodal{
+      else if (tm2>tm1){
+        tmvecJit[Kind[as.numeric(net1)]]<-tmvecJit[Kind[as.numeric(net1)]]-0.02
+        tmvecJit[Kind[as.numeric(net2)]]<-tmvecJit[Kind[as.numeric(net2)]]+0.02
+      }
+    }
+    # get position in master df of this column (need to use \b for exact matches #only)
+    # added first b 11-9, works if remove
+    curcolnameexact<-paste('\\b',curcolname,'\\b',sep='')
+    colindex<-grep(curcolnameexact,colnames(masterdf))
+
+    # record Networks assayed in terms of yeo7
+    y7lab1=domnetvec[Kind[as.numeric(net1)]]
+    y7lab2=domnetvec[Kind[as.numeric(net2)]]
+    y17lab1=domnetvec17[Kind[as.numeric(net1)]]
+    y17lab2=domnetvec17[Kind[as.numeric(net2)]]
+    Net1Vec[i]<-as.character(y7lab1)
+    Net2Vec[i]<-as.character(y7lab2)
+    Net1Vec17[i]<-as.character(y17lab1)
+    Net2Vec17[i]<-as.character(y17lab2)
+}
+
+# jitter added manually - one more loop over to space Networks that got respaced to be proxmiate to each other
+for (i in 1:length(colnames(individ_scalebybw_df))){
+  curcolname<-colnames(individ_scalebybw_df)[i]
+  splitname<-unlist(strsplit(curcolname,'_'))
+  scalefield=splitname[4]
+  net1field=splitname[5]
+  net2field=splitname[7]
+  scale=as.numeric(unlist(strsplit(scalefield,'e'))[2])
+  net1=unlist(strsplit(net1field,'s'))[2]
+  net2=net2field
+  K_start=((scale-1)*(scale))/2
+  K_end=(((scale-1)*(scale))/2)+scale-1
+  Kind<-K_start:K_end
+  # start with 1-jitter iteration this time
+  tm1=tmvecJit[Kind[as.numeric(net1)]]
+  tm2=tmvecJit[Kind[as.numeric(net2)]]
+  net1tmvec[i]<-tm1
+  net2tmvec[i]<-tm2
+  tmdif=abs(tm1-tm2)
+  if (tmdif < .05){
+    if (tm1>tm2){
+      tmvecJit[Kind[as.numeric(net1)]]<-tmvecJit[Kind[as.numeric(net1)]]+0.02
+      tmvecJit[Kind[as.numeric(net2)]]<-tmvecJit[Kind[as.numeric(net2)]]-0.02
+    }
+    else if (tm2>tm1){
+      tmvecJit[Kind[as.numeric(net1)]]<-tmvecJit[Kind[as.numeric(net1)]]-0.02
+      tmvecJit[Kind[as.numeric(net2)]]<-tmvecJit[Kind[as.numeric(net2)]]+0.02
+    }
+  }
+}
+```
+
+
+```r
+# Age Effect Derivative * Age * Transmodality - final setup
+
+# now we need deriv vals of same format, but they will change for every network at every age bracket. Using sig change should take care of whitening out zeros
+deriv200464<-array(dim=c(200*464,1))
+derivSigWholeSpline<-array(dim=c(200*464,1))
+for (i in 1:length(agerange200)){
+deriv200464[((464*i)-463):(464*i)]<-derivInfo[,i]
+derivSigWholeSpline[((464*i)-463):(464*i)]<-NL_sigVec[i]
+}
+
+
+
+# bring it together into df
+AgeSpan_plotdf2<-data.frame(tmvecJit,scalesvec,domnetvec,netpropvec,CIgroupingInd)
+# repeat in order to match length of derivatives at each age interval for each network for each scale
+LongAgeSpan_plotdf2<-data.frame(sapply(AgeSpan_plotdf2,rep.int,times=200))
+LongAgeSpan_plotdf2$agespans<-agerange200464
+LongAgeSpan_plotdf2$derivs<-deriv200464
+LongAgeSpan_plotdf2$WholeSplineSig<-derivSigWholeSpline
+
+# finally, make vector of where sig=F to make those segments transparent
+LongAgeSpan_plotdf2$AlphaSig<-1
+LongAgeSpan_plotdf2$AlphaSig[LongAgeSpan_plotdf2$derivs==0]<-0
+
+# set breaks for plot
+breaks=c(-.002,0,0.002)
 ```
 
 
 ```r
 # Age Effect Derivatives * Age * Transmodality
+ggplot(LongAgeSpan_plotdf2[derivSigWholeSpline,],aes(agespans,tmvecJit,color=derivs,group=CIgroupingInd,alpha=AlphaSig)) +geom_line(size=4) +labs(x = 'Age', y = 'Transmodality') +theme_classic(base_size = 40)+ xlim(c(8,23))+ scale_colour_gradientn(colours=c('#0b0bff','#8585ff','white','#ff9191','#ff0a0a'),values = c(0,.4,.5,.6,1),breaks=breaks, labels = breaks,limits=c(-.0031,0.0031),name="Change Per Year: Between-Network Coupling")+theme(legend.text=element_text(size=30),legend.title = element_text(size=30),legend.position="top",legend.key.width = unit(4.3, "cm"))+ylim(c(min(tmvecJit),max(tmvecJit)))+guides(alpha=FALSE,color = guide_colorbar(title.position="top",ticks.colour = "gray",
+                                ticks.linewidth = 8))+geom_vline(xintercept = c(10,16,21),linetype='dashed',size=1.5)+ theme(legend.margin=margin(b=-.5,t = -.5, unit='cm')) + scale_x_continuous(
+    limits = c(8, 23),
+    expand = c(0, 0),
+    breaks = seq(8,23,by=3)
+  ) +
+  theme(plot.margin=unit(c(.9,.6,.5,.3),"cm"))+scale_y_continuous(expand=c(0,.1))
 ```
+
+```
+## Scale for 'x' is already present. Adding another scale for 'x', which will
+## replace the existing scale.
+```
+
+```
+## Scale for 'y' is already present. Adding another scale for 'y', which will
+## replace the existing scale.
+```
+
+![](Network-level-age_files/figure-markdown_github/unnamed-chunk-14-1.png)
