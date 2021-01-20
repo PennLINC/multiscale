@@ -35,7 +35,7 @@
 
 # Step 2: Network-level: Age
 ## 2A) Network-level Generalzied Additive Models - Figure 3
-All within _Network-level-age.rmd_
+All within [_Network-level-age.rmd_](https://github.com/PennLINC/multiscale/blob/master/scripts/analyses/Network-level-age.utf8.md)
 ###### B/w * Age - for figure 3B
 ###### Age Effect * Transmodality - for figure 3C
 ###### Age Effect derivative over Age (* Transmodality) - for figure 3D
