@@ -30,8 +30,8 @@
 ###### scripts/derive_spatialprops/calc_spinDistribs_MAD.m - Calculate real and permuted MAD-SpatChange correlations - for figure 2C	
 
 ## 1D) Extract FC values from individual parcels and .mgh timeseries
-###### fc_to_csv.m - likely the densest script in the entire project. Designed to take in fake data and spit out corresponding FC matrices + summary columns for sanity check.
-###### round_master_fcfeats.r - file takes fuckin' forever to load - almost a 10 minute thing without rounding. no need for 12 decimals points or w/e matlab spits out.
+###### scripts/derive_netstatsfc_to_csv.m - likely the densest script in the entire project. Designed to take in fake data and spit out corresponding FC matrices + summary columns for sanity check.
+###### scripts/derive_netstatsround_master_fcfeats.r - file takes fuckin' forever to load - almost a 10 minute thing without rounding. no need for 12 decimals points or w/e matlab spits out.
 
 # Step 2: Network-level: Age
 ## 2A) Network-level Generalzied Additive Models - Figure 3
