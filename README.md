@@ -35,7 +35,7 @@
 
 # Step 2: Network-level: Age
 ## 2A) Network-level Generalzied Additive Models - Figure 3
-All within [_Network-level-age.rmd_](https://github.com/PennLINC/multiscale/blob/master/scripts/analyses/Network-level-age.md)
+All within [_Network-level-age.md_](https://github.com/PennLINC/multiscale/blob/master/scripts/analyses/Network-level-age.md)
 ###### B/w * Age - for figure 3B
 ###### Age Effect * Transmodality - for figure 3C
 ###### Age Effect derivative over Age (* Transmodality) - for figure 3D
@@ -44,6 +44,10 @@ All within [_Network-level-age.rmd_](https://github.com/PennLINC/multiscale/blob
 ## 2B)	Cross-scale averaging & vertex-mapping - Figure 3
 
 # Step 3: Network-level : Executive Function
+All within [_Network-level-ef.md_](https://github.com/PennLINC/multiscale/blob/master/scripts/analyses/Network-level-EF.knit.md)
+###### EF Effect * Transmodality - for figure 6C
+###### Scale Effect on EF Effect (* Transmodality) - for figure 6D
+
 # Step 4: Network-level : Mediation
 # Step 5: Vertex-level : Age
 # Step 6: Vertex-level : Executive Function
