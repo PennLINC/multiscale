@@ -51,7 +51,7 @@ All within [_Network-level-ef.md_](https://github.com/PennLINC/multiscale/blob/m
 
 # Step 4: Network-level : Mediation
 ## 4A) Network-level Generalzied Additive Models - Figure 7
-All within [_Network-level-mediation.md_](404)
+All within [_Network-level-mediation.md_](https://github.com/PennLINC/multiscale/blob/master/scripts/analyses/Network-level-Mediation.knit.md)
 ###### Mediation Weight * Transmodality - for figure 6C
 ###### Scale Effect on Mediation Weight (* Transmodality) - for figure 6D
 
