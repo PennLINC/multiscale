@@ -108,8 +108,6 @@ fc<-vroom('/cbica/projects/pinesParcels/results/aggregated_data/fc/master_fcfeat
 
     ## New names:
     ## * `` -> ...1
-    ## * Subjects -> Subjects...5455
-    ## * Subjects -> Subjects...10908
 
     ## Rows: 695
     ## Columns: 16,360
@@ -659,3 +657,22 @@ ggplot(LongAgeSpan_plotdf2[derivSigWholeSpline,],aes(agespans,tmvecJit,color=der
     ## replace the existing scale.
 
 ![](Network-level-age_files/figure-markdown_github/unnamed-chunk-14-1.png)
+
+``` r
+# figure 5c stuff - Age Effect * Scale * Transmodality
+# convert yeo17 membership to vector capturing only sig. yeo17 networks, graying out nonsig.
+domnetSig17<-domnetvec17
+levels(domnetSig17)<-c(levels(domnetSig17),'zNonSig')
+bwdf$domnetvec17Sig<-as.character(domnetvec17)
+bwdf$domnetvec17Sig[NL_sigVec==FALSE]='zNonSig'
+```
+
+``` r
+ggplot(bwdf,aes(scalesvec,avg_bw_deltaR2)) + xlab("# of Networks") + ylab(expression(paste('Age Effect (',Delta,R^2[adj],')'))) +theme_classic(base_size = 28) +guides(alpha=FALSE,color=guide_legend(title="Yeo 17 Overlap"))+theme(legend.position=c(.39,-.19),legend.direction = "horizontal",legend.text = element_text(size=20),legend.title = element_text(size=24))+
+geom_smooth(data=subset(bwdf,domnetvec17=='Somatomotor A'),method='gam',formula = y~s(x,k=3),aes(color=domnetvec17),fill="gray82")+geom_smooth(data=subset(bwdf,domnetvec17=='DM_B'),method='gam',formula = y~s(x,k=3),aes(color=domnetvec17),fill="gray82")+scale_color_manual(values=c('#bc0943','#4183a8'))+geom_point(data=subset(bwdf,domnetvec17=='Somatomotor A'),aes(color=domnetvec17Sig),size=5)+geom_point(data=subset(bwdf,domnetvec17=='DM_B'),aes(color=domnetvec17Sig),size=5)+scale_color_manual(values=c('#bc0943','#4183a8','gray70'),labels=c('Default Mode B','Somatomotor A','NonSig.'))+scale_x_continuous(breaks=c(4,10,16,22,28))+theme(plot.margin=unit(c(.9,.6,2,.6),"cm"))
+```
+
+    ## Scale for 'colour' is already present. Adding another scale for 'colour',
+    ## which will replace the existing scale.
+
+![](Network-level-age_files/figure-markdown_github/unnamed-chunk-16-1.png)
