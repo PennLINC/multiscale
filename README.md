@@ -34,7 +34,7 @@
 ###### scripts/derive_netstats/round_master_fcfeats.r - file takes fuckin' forever to load - almost a 10 minute thing without rounding. no need for 12 decimals points or w/e matlab spits out.
 
 # Step 2: Network-level: Age
-## 2A) Network-level Generalzied Additive Models - Figure 3
+## 2A) Network-level Generalzied Additive Models - Figure 3 and 5
 All within [_Network-level-age.md_](https://github.com/PennLINC/multiscale/blob/master/scripts/analyses/Network-level-age.md)
 ###### B/w * Age - for figure 3B
 ###### Age Effect * Transmodality - for figure 3C
@@ -44,11 +44,17 @@ All within [_Network-level-age.md_](https://github.com/PennLINC/multiscale/blob/
 ## 2B)	Cross-scale averaging & vertex-mapping - Figure 3
 
 # Step 3: Network-level : Executive Function
+## 3A) Network-level Generalzied Additive Models - Figure 6
 All within [_Network-level-ef.md_](https://github.com/PennLINC/multiscale/blob/master/scripts/analyses/Network-level-EF.knit.md)
 ###### EF Effect * Transmodality - for figure 6C
 ###### Scale Effect on EF Effect (* Transmodality) - for figure 6D
 
 # Step 4: Network-level : Mediation
+## 4A) Network-level Generalzied Additive Models - Figure 7
+All within [_Network-level-mediation.md_](404)
+###### Mediation Weight * Transmodality - for figure 6C
+###### Scale Effect on Mediation Weight (* Transmodality) - for figure 6D
+
 # Step 5: Vertex-level : Age
 # Step 6: Vertex-level : Executive Function
 # Step 7: Vertex-level : Scale
