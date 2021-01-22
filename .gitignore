@@ -11,6 +11,7 @@ readme.txt
 requiredMCRProducts.txt
 subj_vert_fc_vertexwise_output_matlab_compile
 *.sh.e*
+*.utf8*
 *.sh.o*
 Long_bblidAgeSexMotionSegreg
 scripts/derive_percygrads/fcmat_to_threshCosSim.py.o*
