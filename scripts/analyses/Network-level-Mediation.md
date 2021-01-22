@@ -1,11 +1,9 @@
----
-title: "Network-level-EF"
-author: "Adam"
-date: "1/19/2021"
-output: github_document
----
+Network-level-EF
+================
+Adam
+1/19/2021
 
-```{r, message=FALSE}
+``` r
 #libraries
 
 
@@ -22,7 +20,7 @@ library(ppcor)
 library(viridis)
 ```
 
-```{r}
+``` r
 # load 'erry thang
 
 
@@ -55,6 +53,20 @@ community_vec<-seq(2,30)
 
 # big load - output of fc_to_csv.m (all coupling/FC data, pre-organized)
 fc<-vroom('/cbica/projects/pinesParcels/results/aggregated_data/fc/master_fcfeats_rounded.csv')
+```
+
+    ## New names:
+    ## * `` -> ...1
+
+    ## Rows: 695
+    ## Columns: 16,360
+    ## Delimiter: ","
+    ## dbl [16360]: ...1, bblid, ind_globseg_scale2, ind_globseg_scale3, ind_globseg_scale4, ind_globse...
+    ## 
+    ## Use `spec()` to retrieve the guessed column specification
+    ## Pass a specification to the `col_types` argument to quiet this message
+
+``` r
 # First row gotta go
 fc<-fc[-c(1)]
 # isolate shams
@@ -101,7 +113,7 @@ for (i in 1:length(tmclass)){
 }
 ```
 
-```{r}
+``` r
 # parse fields of interest 
 
 
@@ -136,7 +148,7 @@ individ_scalebywin_df<-masterdf[,indiv_wincols_ind]
 wincolnames<-colnames(individ_scalebywin_df)
 ```
 
-```{r}
+``` r
 # get average between-network connectivity of each network (average over each network's edges at each scale)
 
 
@@ -259,11 +271,12 @@ for (i in 1:2){
   }
   
 }
-
-
 ```
 
-```{r}
+    ## [1] "unimodal"
+    ## [1] "transmodal"
+
+``` r
 # calculate EF effects
 # set covariates formula for iterating over in the loop
 lm_xM_covariates="~Age+Sex+Motion"
@@ -321,7 +334,7 @@ NL_sigVec[corrected<0.05]<-TRUE
 bwdf<-data.frame(tmvec,scalesvec,domnetvec,domnetvec17,netpropvec,AB_Est)
 ```
 
-```{r}
+``` r
 # Mediation * Transmodality - final setup
 # Map nonsig to grey
 bwdf$domnetvecSig<-'NonSig'
@@ -332,12 +345,13 @@ bwdf$domnetvecSig<-as.factor(bwdf$domnetvecSig)
 bwdf$domnetvecSig<-factor(bwdf$domnetvecSig,levels=c("Motor","Visual","DA","VA","Limbic","FP","DM","NonSig"),labels=c("Motor","Visual","DA","VA","Limbic","FP","DM","NonSig."))
 ```
 
-```{r, fig.width=11,fig.height=11}
+``` r
 ggplot(bwdf,aes(tmvec,AB_Est)) + geom_point(size=6,alpha=.8,aes(color=domnetvecSig))+ scale_color_manual(values=c('#3281ab','#670068','#007500','#b61ad0','#b8cf86','#d77d00','#c1253c','gray80')) + xlab("Transmodality") + ylab('AB Path Coefficient') +theme_classic(base_size = 40) +guides(color=guide_legend(title="Yeo 7 Overlap"))+theme(plot.margin=margin(b=3,t=.1,l=.1,r=.1, unit='cm'), legend.position=c(.42,-.24),legend.direction = "horizontal",legend.title=element_text(size=30),legend.text=element_text(size=30))
 ```
 
+![](Network-level-Mediation_files/figure-markdown_github/unnamed-chunk-7-1.png)
 
-```{r}
+``` r
 # figure 7 stuff - Mediation Effect * Scale * Transmodality
 
 # convert yeo17 membership to vector capturing only sig. yeo17 networks, graying out nonsig.
@@ -349,8 +363,12 @@ bwdf$domnetvec17<-domnetvec17
 bwdf$Med_domnetSig17<-Med_domnetSig17
 ```
 
-```{r, fig.width=9,fig.height=9}
+``` r
 ggplot(bwdf,aes(scalesvec,AB_Est)) + xlab("# of Networks") + ylab('AB Path Coefficient') +theme_classic(base_size = 28) +guides(alpha=FALSE,color=guide_legend(title="Yeo 17 Overlap"))+theme(legend.position=c(.46,-.15),legend.direction = "horizontal",legend.text = element_text(size=20),legend.title = element_text(size=24))+
 geom_smooth(data=subset(bwdf,domnetvec17=='Somatomotor A'),method='gam',formula = y~s(x,k=3),aes(color=domnetvec17),fill="gray82")+geom_smooth(data=subset(bwdf,domnetvec17=='DM_B'),method='gam',formula = y~s(x,k=3),aes(color=domnetvec17),fill="gray82")+scale_color_manual(values=c('#bc0943','#4183a8'))+geom_point(data=subset(bwdf,domnetvec17=='Somatomotor A'),aes(color=Med_domnetSig17),size=6)+geom_point(data=subset(bwdf,domnetvec17=='DM_B'),aes(color=Med_domnetSig17),size=6)+scale_color_manual(values=c('#bc0943','#4183a8','gray70'),labels=c('Default Mode B','Somatomotor A','NonSig.'))+scale_x_continuous(breaks=c(4,10,16,22,28))+theme(plot.margin=unit(c(.9,.6,2,.6),"cm"))
-
 ```
+
+    ## Scale for 'colour' is already present. Adding another scale for 'colour',
+    ## which will replace the existing scale.
+
+![](Network-level-Mediation_files/figure-markdown_github/unnamed-chunk-9-1.png)
