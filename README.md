@@ -6,7 +6,7 @@
 
 ## 1A) Derive group parcels:
 ###### scripts/derive_parcels/iterate_nmf_overscales.m - parent loop for group/single-subject parcellations over scales
-###### /scripts/derive_parcels/Step_2nd_SingleParcellation/Step_1st_CreatePrepData_AP.m - prepare data for pipeline
+###### scripts/derive_parcels/Step_2nd_SingleParcellation/Step_1st_CreatePrepData_AP.m - prepare data for pipeline
 ###### Step_2nd_ParcellationInitialize_AP.m - group consensus (takes > 6 weeks to run over all scales w/ cubic limitations)
 ###### Step_3rd_SelRobustInit_AP.m - prepare individ. data for parcels
 ###### Step_4th_IndividualParcel_AP.m - individualization
@@ -30,6 +30,8 @@
 ###### scripts/derive_spatialprops/calc_spinDistribs_MAD.m - Calculate real and permuted MAD-SpatChange correlations - for figure 2C	
 
 ## 1D) Extract FC values from individual parcels and .mgh timeseries
+###### scripts/derive_netstats/iterate_vert_fc.m - script to iterate qsubs over FC matrix derivations from subject time series and individualized parcels
+###### scripts/derive_netstats/vert_fc.m - the individual-level script ran on individual compute nodes *compiled (c++) version exists to deal with paucity of stats toolbox licenses available, not reccomended for small runs unless licenses unavailable* 
 ###### scripts/derive_netstats/fc_to_csv.m - likely the densest script in the entire project. Designed to take in fake data and spit out corresponding FC matrices + summary columns for sanity check.
 ###### scripts/derive_netstats/round_master_fcfeats.r - file takes fuckin' forever to load - almost a 10 minute thing without rounding. no need for 12 decimals points or w/e matlab spits out.
 
