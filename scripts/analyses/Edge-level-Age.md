@@ -1,11 +1,9 @@
----
-title: "Network-level-EF"
-author: "Adam"
-date: "1/19/2021"
-output: github_document
----
+Network-level-EF
+================
+Adam
+1/19/2021
 
-```{r, message=FALSE}
+``` r
 #libraries
 
 
@@ -22,7 +20,7 @@ library(ppcor)
 library(viridis)
 ```
 
-```{r}
+``` r
 # functions for delta r ^ 2
 # difference in R2
 DeltaR2EstVec<-function(x){
@@ -70,10 +68,9 @@ DeltaPEstVec<-function(x){
   return(anovaP2[2])
   
 }
-
 ```
 
-```{r}
+``` r
 # load 'erry thang
 
 
@@ -106,6 +103,20 @@ community_vec<-seq(2,30)
 
 # big load - output of fc_to_csv.m (all coupling/FC data, pre-organized)
 fc<-vroom('/cbica/projects/pinesParcels/results/aggregated_data/fc/master_fcfeats_rounded.csv')
+```
+
+    ## New names:
+    ## * `` -> ...1
+
+    ## Rows: 695
+    ## Columns: 16,360
+    ## Delimiter: ","
+    ## dbl [16360]: ...1, bblid, ind_globseg_scale2, ind_globseg_scale3, ind_globseg_scale4, ind_globse...
+    ## 
+    ## Use `spec()` to retrieve the guessed column specification
+    ## Pass a specification to the `col_types` argument to quiet this message
+
+``` r
 # First row gotta go
 fc<-fc[-c(1)]
 # isolate shams
@@ -156,7 +167,7 @@ for (i in 1:length(tmclass)){
 }
 ```
 
-```{r}
+``` r
 # parse fields of interest 
 
 
@@ -191,7 +202,7 @@ individ_scalebywin_df<-masterdf[,indiv_wincols_ind]
 wincolnames<-colnames(individ_scalebywin_df)
 ```
 
-```{r}
+``` r
 # Framework for pairwise age patterns
 # Transmodality Dif and Age-relation
 indiv_bwcols_ind<-intersect(bwcol,indiv)
@@ -306,14 +317,19 @@ domnetSigAge2[ageDR2Pvec>0.05]='NonSig'
 BwAgeCorTMDifDf<-data.frame(tmdifvec,scalevec,Net1Vec,Net2Vec,Net1Vec17,Net2Vec17,fdrAgeDR2,ageDR2vec,domnetSig1,domnetSig2,domnetSigAge1,domnetSigAge2,net1tmvec,net2tmvec)
 ```
 
-
-```{r, fig.width=10,fig.height=10}
+``` r
 # plot edge-wise age effects
 ggplot(BwAgeCorTMDifDf[BwAgeCorTMDifDf$fdrAgeDR2<0.05,],aes(x=tmdifvec,y=ageDR2vec))+geom_point(data=BwAgeCorTMDifDf[BwAgeCorTMDifDf$fdrAgeDR2>0.05,],aes(x=tmdifvec,y=ageDR2vec,alpha=.5),color='grey80',size=3,alpha=.8)+ geom_text(size=10,label="\u25D6",family="Arial Unicode MS",aes(color=Net1Vec))+scale_color_manual(values=ycolors,limits=Y7vec)+geom_text(aes(x=tmdifvec,y=ageDR2vec,color=Net2Vec),size=10,label="\u25D7",family="Arial Unicode MS")+theme(legend.position = "none") + xlab('Transmodality Difference') + ylab(expression(paste('Age Effect(',Delta,R^2[adj],')')))+theme_classic(base_size = 40)+theme(legend.position = "none")+geom_smooth(size=3,method='lm',color='black',formula=y~x)
 ```
 
-```{r, fig.width=10,fig.height=10}
+![](Edge-level-Age_files/figure-markdown_github/unnamed-chunk-6-1.png)
+
+``` r
 # edge-wise 8 y.o. intercept
 edgeInt<-data.frame(EdgeInterceptVector,tmdifvec,Net1Vec,Net2Vec,fdrAgeDR2)
 ggplot(edgeInt[edgeInt$fdrAgeDR2<0.05,],aes(x=tmdifvec,y=EdgeInterceptVector))+geom_point(data=edgeInt[edgeInt$fdrAgeDR2>0.05,],aes(x=tmdifvec,y=EdgeInterceptVector,alpha=.8),color='gray80',size=3)+theme_classic(base_size=40)+ geom_text(size=10,label="\u25D6",family="Arial Unicode MS",aes(color=Net1Vec))+scale_color_manual(values=ycolors,limits=Y7vec)+geom_text(aes(color=Net2Vec),size=10,label="\u25D7",family="Arial Unicode MS")+geom_smooth(method='lm',size=3,color='black')+ylab("Initial Between-Community Connectivity")+xlab("Transmodality Difference")+theme(plot.margin=margin(b=3.5,t=.1,l=1,r=1, unit='cm'),legend.position=c(.42,-.2),legend.direction = "horizontal")+guides(alpha=FALSE,color=guide_legend(title="Yeo 7 Overlap"))
 ```
+
+    ## `geom_smooth()` using formula 'y ~ x'
+
+![](Edge-level-Age_files/figure-markdown_github/unnamed-chunk-7-1.png)
