@@ -32,6 +32,7 @@
 ## 1D) Extract FC values from individual parcels and .mgh timeseries
 ###### scripts/derive_netstats/iterate_vert_fc.m - script to iterate qsubs over FC matrix derivations from subject time series and individualized parcels
 ###### scripts/derive_netstats/vert_fc.m - the individual-level script ran on individual compute nodes *compiled (c++) version exists to deal with paucity of stats toolbox licenses available, not reccomended for small runs unless licenses unavailable* 
+###### scripts/derive_netstats/merge_ind_fc.m - merge individual derivations into cross-subject, cross-scale 3D matrices (matlab struct)
 ###### scripts/derive_netstats/fc_to_csv.m - likely the densest script in the entire project. Designed to take in fake data and spit out corresponding FC matrices + summary columns for sanity check.
 ###### scripts/derive_netstats/round_master_fcfeats.r - file takes fuckin' forever to load - almost a 10 minute thing without rounding. no need for 12 decimals points or w/e matlab spits out.
 
@@ -58,6 +59,20 @@ All within [_Network-level-mediation.md_](https://github.com/PennLINC/multiscale
 ###### Scale Effect on Mediation Weight (* Transmodality) - for figure 6D
 
 # Step 5: Vertex-level : Age
+###### scripts/xxx - Prepare "forMLpc.csv" in R (for matlab) 
+###### scripts/derive_netstats/Win_Bw_Age_vertwise.m - save out cross-scale values for each subject for each vertex, bringing matrix dimensionality back down to 2
+###### scp all vertex-level .csv files to pmacs
+###### xbash module load R/3.6.3 - for consistent versioning of mgcv, doBy, geepack, reshape2. Should also take you to a bbl/linc compute node
+###### loop over qsub_vertWise.sh - i.e: 
+> for i in {1..17734}; do bsub ./qsub_vertWise.sh $i; echo $i; done
+###### the command above iterates over scripts/vert_GEE_looper.r
+###### scp all vertex-level GEE stats back out to cubic
+###### scripts/derive_GEE_stats/aggregate_GEE_Effects.m - pull all vertex-level stats into one dataframe
+###### scripts/derive_GEE_stats/FDR_GEEs_pt1 - print out effects in R-friendly format for FDR correction. This is due to matlab limitation in available stat toolbox licenses.
+###### scripts/xxx FDR correct in R
+###### scripts/derive_GEE_stats/FDR_GEEs_pt2 - re-aggregate FDR-corrected vertices
+###### scripts/derive_parcels/Toolbox/PBP/PBP_final/PBP_vertWiseEffect4View.m - run with fdr-corrected vertices for final brainmaps
+
 # Step 6: Vertex-level : Executive Function
 # Step 7: Vertex-level : Scale
 # Step 8: Age: Edge-level
@@ -65,15 +80,10 @@ All within [_Network-level-mediation.md_](https://github.com/PennLINC/multiscale
 [Still needs surface plot](https://github.com/PennLINC/multiscale/blob/master/scripts/analyses/Edge-level-Age.md)
 
 analyses - 5 - Nearly pure analytical scripts, written in R, to be executed on matlab outputs
-
 derive_netstats - 2 - Various calculations of network statistics
-
 derive_parcels - 1 - Delineating individualized community structures across scales
-
 derive_percygrads - 4 - Personalized gradients
-
 derive_spatialprops - 3 - Spatial properties of communities
-
 viz - 6 - Visualization scripts for figures outside of .rmd files 
 
 Python environment:
@@ -82,3 +92,5 @@ source activate mv_preds
 
 Python environment:
 source activate mv_preds
+
+
