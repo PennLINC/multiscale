@@ -353,12 +353,11 @@ ggplot(bwdf,aes(tmvec,AB_Est)) + geom_point(size=6,alpha=.8,aes(color=domnetvecS
 
 ``` r
 # figure 7 stuff - Mediation Effect * Scale * Transmodality
-
 # convert yeo17 membership to vector capturing only sig. yeo17 networks, graying out nonsig.
 Med_domnetSig17<-domnetvec17
 levels(Med_domnetSig17)<-c(levels(domnetvec17),'zNonSig')
-Med_domnetSig17[NL_sigVec>0.05]='zNonSig'
-
+# Set every instance of nonSig mediation to 'zNonSig' (z is there for alphabetical order for ggplot, dumb solution)
+Med_domnetSig17[NL_sigVec==FALSE]='zNonSig'
 bwdf$domnetvec17<-domnetvec17
 bwdf$Med_domnetSig17<-Med_domnetSig17
 ```
