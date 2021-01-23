@@ -60,7 +60,7 @@ All within [_Network-level-mediation.md_](https://github.com/PennLINC/multiscale
 # Step 7: Vertex-level : Scale
 # Step 8: Age: Edge-level
 ## 8A) Edge-level Generalized Additive Models - Figure 4
-[In the works](https://github.com/PennLINC/multiscale/blob/master/scripts/analyses/Edge-level-Age.knit.md)
+[Still needs surface plot](https://github.com/PennLINC/multiscale/blob/master/scripts/analyses/Edge-level-Age.md)
 
 analyses - 5 - Nearly pure analytical scripts, written in R, to be executed on matlab outputs
 
