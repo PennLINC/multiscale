@@ -14,7 +14,7 @@ grad_rh=gradChangeR.VertexChange;
 pg1=[grad_lh grad_rh];
 % initialize permutation house for correlations for 1000 spins across scales, +1 row for real correlation
 permHouse=zeros(1001,29);
-% for each scale, get disitribution of spatial correlations with PG1
+% for each scale, get distribution of spatial correlations with PG1
 for K=2:30
 	disp(K)
 	%%% get real correlation
