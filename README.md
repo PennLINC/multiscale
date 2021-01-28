@@ -60,19 +60,20 @@ All within [_Network-level-mediation.md_](https://github.com/PennLINC/multiscale
 ###### Scale Effect on Mediation Weight (* Transmodality) - for figure 6D
 
 # Step 5: Vertex-level : Age
-###### scripts/xxx - Prepare "forMLpc.csv" in R (for matlab) 
-###### scripts/derive_netstats/Win_Bw_Age_vertwise.m - save out cross-scale values for each subject for each vertex, bringing matrix dimensionality back down to 2
+###### [scripts/derive_GEE_stats/DemoData_to_Matlab.R](https://github.com/PennLINC/multiscale/blob/master/scripts/derive_GEE_stats/DemoData_to_Matlab.R) - Prepare "forMLpc.csv" in R (for matlab) 
+###### [scripts/derive_netstats/Win_Bw_Age_vertwise.m](https://github.com/PennLINC/multiscale/blob/master/scripts/derive_netstats/Win_Bw_Age_vertwise.m) - save out cross-scale values for each subject for each vertex, bringing matrix dimensionality back down to 2
 ###### scp all vertex-level .csv files to pmacs
 ###### xbash module load R/3.6.3 - for consistent versioning of mgcv, doBy, geepack, reshape2. Should also take you to a bbl/linc compute node
 ###### loop over qsub_vertWise.sh - i.e: 
 > for i in {1..17734}; do bsub ./qsub_vertWise.sh $i; echo $i; done
-###### the command above iterates over scripts/vert_GEE_looper.r
+###### the command above iterates over [scripts/vert_GEE_looper.r](https://github.com/PennLINC/multiscale/blob/master/scripts/derive_GEE_stats/vert_GEE_looper.R)
+###### Thank Sarah for being a benevolent stats wizard
 ###### scp all vertex-level GEE stats back out to cubic
-###### scripts/derive_GEE_stats/aggregate_GEE_Effects.m - pull all vertex-level stats into one dataframe
-###### scripts/derive_GEE_stats/FDR_GEEs_pt1 - print out effects in R-friendly format for FDR correction. This is due to matlab limitation in available stat toolbox licenses.
-###### scripts/xxx FDR correct in R
-###### scripts/derive_GEE_stats/FDR_GEEs_pt2 - re-aggregate FDR-corrected vertices
-###### scripts/derive_parcels/Toolbox/PBP/PBP_final/PBP_vertWiseEffect4View.m - run with fdr-corrected vertices for final brainmaps
+###### [scripts/derive_GEE_stats/aggregate_GEE_Effects.m](https://github.com/PennLINC/multiscale/blob/master/scripts/derive_GEE_stats/aggregate_GEE_Effects.m) - pull all vertex-level stats into one dataframe
+###### [scripts/derive_GEE_stats/FDR_GEEs_pt1.m](https://github.com/PennLINC/multiscale/blob/master/scripts/derive_GEE_stats/FDR_GEEs_pt1.m) - print out effects in R-friendly format for FDR correction. This is due to matlab limitation in available stat toolbox licenses.
+###### [scripts/derive_GEE_stats/FDR_GEEs_1point5.R](https://github.com/PennLINC/multiscale/blob/master/scripts/derive_GEE_stats/FDR_GEEs_1point5.R) FDR correct in R
+###### [scripts/derive_GEE_stats/FDR_GEEs_pt2](https://github.com/PennLINC/multiscale/blob/master/scripts/derive_GEE_stats/FDR_GEEs_pt2.m) - re-aggregate FDR-corrected vertices
+###### scripts/derive_parcels/Toolbox/PBP/PBP_final/PBP_vertWiseEffect4View.m* - run with fdr-corrected vertices for final brainmaps
 
 # Step 6: Vertex-level : Executive Function
 # Step 7: Vertex-level : Scale
