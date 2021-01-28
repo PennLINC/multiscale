@@ -1,5 +1,15 @@
 # neurodevelopmental functional community organization across scales
 
+analyses - Nearly pure results-level analytical scripts, written in R, to be executed on matlab outputs
+
+derive_netstats - Various calculations of network statistics
+
+derive_parcels - Delineating individualized community structures across scales, some external code resources lie within this directory
+
+derive_spatialprops - Spatial properties of communities
+
+viz - Visualization scripts for figures outside of .rmd files 
+
 ###### Final common pathway / analyses are in [scripts/analyses/BwRsqCentricOverview.Rmd](https://github.com/PennLINC/multiscale/blob/master/scripts/analyses/BwRsqCentricOverview.Rmd). Precursor scripts/ordering listed below. 
 
 # Step 1: Derive Group/Individual Parcels, Derive Parcel Properties, Extract FC
@@ -76,22 +86,42 @@ All within [_Network-level-mediation.md_](https://github.com/PennLINC/multiscale
 ###### scripts/derive_parcels/Toolbox/PBP/PBP_final/PBP_vertWiseEffect4View.m* - run with fdr-corrected vertices for final brainmaps
 
 # Step 6: Vertex-level : Executive Function
+###### [scripts/derive_GEE_stats/DemoData_to_Matlab.R](https://github.com/PennLINC/multiscale/blob/master/scripts/derive_GEE_stats/DemoData_to_Matlab.R) - Prepare "forMLpc.csv" in R (for matlab) 
+###### [scripts/derive_netstats/Win_Bw_Age_vertwise.m](https://github.com/PennLINC/multiscale/blob/master/scripts/derive_netstats/Win_Bw_Age_vertwise.m) - save out cross-scale values for each subject for each vertex, bringing matrix dimensionality back down to 2
+###### scp all vertex-level .csv files to pmacs
+###### xbash module load R/3.6.3 - for consistent versioning of mgcv, doBy, geepack, reshape2. Should also take you to a bbl/linc compute node
+###### loop over qsub_vertWise.sh - i.e: 
+> for i in {1..17734}; do bsub ./qsub_vertWise.sh $i; echo $i; done
+###### the command above iterates over [scripts/vert_GEE_looper.r](https://github.com/PennLINC/multiscale/blob/master/scripts/derive_GEE_stats/vert_GEE_looper.R)
+###### Thank Sarah for being a benevolent stats wizard
+###### scp all vertex-level GEE stats back out to cubic
+###### [scripts/derive_GEE_stats/aggregate_GEE_Effects.m](https://github.com/PennLINC/multiscale/blob/master/scripts/derive_GEE_stats/aggregate_GEE_Effects.m) - pull all vertex-level stats into one dataframe
+###### [scripts/derive_GEE_stats/FDR_GEEs_pt1.m](https://github.com/PennLINC/multiscale/blob/master/scripts/derive_GEE_stats/FDR_GEEs_pt1.m) - print out effects in R-friendly format for FDR correction. This is due to matlab limitation in available stat toolbox licenses.
+###### [scripts/derive_GEE_stats/FDR_GEEs_1point5.R](https://github.com/PennLINC/multiscale/blob/master/scripts/derive_GEE_stats/FDR_GEEs_1point5.R) FDR correct in R
+###### [scripts/derive_GEE_stats/FDR_GEEs_pt2](https://github.com/PennLINC/multiscale/blob/master/scripts/derive_GEE_stats/FDR_GEEs_pt2.m) - re-aggregate FDR-corrected vertices
+###### scripts/derive_parcels/Toolbox/PBP/PBP_final/PBP_vertWiseEffect4View.m* - run with fdr-corrected vertices for final brainmaps
+
 # Step 7: Vertex-level : Scale
+###### [scripts/derive_GEE_stats/DemoData_to_Matlab.R](https://github.com/PennLINC/multiscale/blob/master/scripts/derive_GEE_stats/DemoData_to_Matlab.R) - Prepare "forMLpc.csv" in R (for matlab) 
+###### [scripts/derive_netstats/Win_Bw_Age_vertwise.m](https://github.com/PennLINC/multiscale/blob/master/scripts/derive_netstats/Win_Bw_Age_vertwise.m) - save out cross-scale values for each subject for each vertex, bringing matrix dimensionality back down to 2
+###### scp all vertex-level .csv files to pmacs
+###### xbash module load R/3.6.3 - for consistent versioning of mgcv, doBy, geepack, reshape2. Should also take you to a bbl/linc compute node
+###### loop over qsub_vertWise.sh - i.e: 
+> for i in {1..17734}; do bsub ./qsub_vertWise.sh $i; echo $i; done
+###### the command above iterates over [scripts/vert_GEE_looper.r](https://github.com/PennLINC/multiscale/blob/master/scripts/derive_GEE_stats/vert_GEE_looper.R)
+###### Thank Sarah for being a benevolent stats wizard
+###### scp all vertex-level GEE stats back out to cubic
+###### [scripts/derive_GEE_stats/aggregate_GEE_Effects.m](https://github.com/PennLINC/multiscale/blob/master/scripts/derive_GEE_stats/aggregate_GEE_Effects.m) - pull all vertex-level stats into one dataframe
+###### [scripts/derive_GEE_stats/FDR_GEEs_pt1.m](https://github.com/PennLINC/multiscale/blob/master/scripts/derive_GEE_stats/FDR_GEEs_pt1.m) - print out effects in R-friendly format for FDR correction. This is due to matlab limitation in available stat toolbox licenses.
+###### [scripts/derive_GEE_stats/FDR_GEEs_1point5.R](https://github.com/PennLINC/multiscale/blob/master/scripts/derive_GEE_stats/FDR_GEEs_1point5.R) FDR correct in R
+###### [scripts/derive_GEE_stats/FDR_GEEs_pt2](https://github.com/PennLINC/multiscale/blob/master/scripts/derive_GEE_stats/FDR_GEEs_pt2.m) - re-aggregate FDR-corrected vertices
+###### scripts/derive_parcels/Toolbox/PBP/PBP_final/PBP_vertWiseEffect4View.m* - run with fdr-corrected vertices for final brainmaps
+
 # Step 8: Age: Edge-level
 ## 8A) Edge-level Generalized Additive Models - Figure 4
 [Still needs surface plot](https://github.com/PennLINC/multiscale/blob/master/scripts/analyses/Edge-level-Age.md)
 
-analyses - Nearly pure results-level analytical scripts, written in R, to be executed on matlab outputs
-derive_netstats - Various calculations of network statistics
-derive_parcels - Delineating individualized community structures across scales, some external code resources lie within this directory
-derive_spatialprops - Spatial properties of communities
-viz - Visualization scripts for figures outside of .rmd files 
-
 Python environment:
 source activate mv_preds
 
-
-Python environment:
-source activate mv_preds
-
-* scripts not linked are intentionally hidden by .gitignore. These files are predominantly the result of someone else's hard work, typically from a different lab, and cannot be published here under Adam's name in good conscience
+\* scripts not linked are intentionally hidden by .gitignore. These files are predominantly the result of someone else's hard work, typically from a different lab, and cannot be published here under Adam's name in good conscience
