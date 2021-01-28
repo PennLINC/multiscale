@@ -1185,7 +1185,7 @@ levels(Med_domnetSig17)<-c(levels(domnetvec17),'zNonSig')
 Med_domnetSig17[P_EstFDR>0.05]='zNonSig'
 
 # plot of mediation effects
-MediationDF<-data.frame(tmvec,scalesvec,occvec,domnetvec,netpropvec,AB_Est,P_EstFDR,Med_domnetSig)
+MediationDF<-data.frame(tmvec,scalesvec,domnetvec,netpropvec,AB_Est,P_EstFDR,Med_domnetSig)
 ggplot(MediationDF,aes(scalesvec,AB_Est,color=domnetvec))+ scale_color_manual(values=c('#c1253c','#3281ab')) + xlab("# of Networks") + ylab('AB Path Coefficient') +theme_classic(base_size = 28) +guides(alpha=FALSE,color=guide_legend(title="Yeo 7 Overlap"))+theme(legend.position='top')+geom_smooth(data=subset(MediationDF,domnetvec=='Motor'),method='gam',formula = y~s(x,k=4))+geom_smooth(data=subset(MediationDF,domnetvec=='DM'),method='gam',formula = y~s(x,k=4))
 
 # figure 7 flag

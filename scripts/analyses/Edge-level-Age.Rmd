@@ -1,5 +1,5 @@
 ---
-title: "Network-level-EF"
+title: "Edge-level-Age"
 author: "Adam"
 date: "1/19/2021"
 output: github_document
@@ -20,6 +20,8 @@ library(data.table)
 library(mgcv)
 library(ppcor)
 library(viridis)
+library(mgcViz)
+library(pammtools)
 ```
 
 ```{r}
@@ -316,4 +318,25 @@ ggplot(BwAgeCorTMDifDf[BwAgeCorTMDifDf$fdrAgeDR2<0.05,],aes(x=tmdifvec,y=ageDR2v
 # edge-wise 8 y.o. intercept
 edgeInt<-data.frame(EdgeInterceptVector,tmdifvec,Net1Vec,Net2Vec,fdrAgeDR2)
 ggplot(edgeInt[edgeInt$fdrAgeDR2<0.05,],aes(x=tmdifvec,y=EdgeInterceptVector))+geom_point(data=edgeInt[edgeInt$fdrAgeDR2>0.05,],aes(x=tmdifvec,y=EdgeInterceptVector,alpha=.8),color='gray80',size=3)+theme_classic(base_size=40)+ geom_text(size=10,label="\u25D6",family="Arial Unicode MS",aes(color=Net1Vec))+scale_color_manual(values=ycolors,limits=Y7vec)+geom_text(aes(color=Net2Vec),size=10,label="\u25D7",family="Arial Unicode MS")+geom_smooth(method='lm',size=3,color='black')+ylab("Initial Between-Community Connectivity")+xlab("Transmodality Difference")+theme(plot.margin=margin(b=3.5,t=.1,l=1,r=1, unit='cm'),legend.position=c(.42,-.2),legend.direction = "horizontal")+guides(alpha=FALSE,color=guide_legend(title="Yeo 7 Overlap"))
+```
+
+
+```{r}
+# gam surface
+
+# make a double df for symmetry - net1 and net2tmvec repeated in opposite ordering
+BwAgeCorTMDifDf2<-BwAgeCorTMDifDf
+BwAgeCorTMDifDf2$net1tmvec<-BwAgeCorTMDifDf$net2tmvec
+BwAgeCorTMDifDf2$net2tmvec<-BwAgeCorTMDifDf$net1tmvec
+
+# "stacked" df
+doubleBwAgeCorTMDifDf<-rbind(BwAgeCorTMDifDf2,BwAgeCorTMDifDf)
+
+# model the surface
+g2 <- gam(ageDR2vec ~ te(net2tmvec,net1tmvec),data = doubleBwAgeCorTMDifDf)
+```
+
+```{r, fig.width=10,fig.height=10}
+gg_tensor(g2)+theme_classic(base_size = 40) +theme(legend.text=element_text(size=30),legend.key.width =unit(3.5,"cm"),legend.title = element_text(size=30))+scale_fill_gradient2(low = "blue",high = "red",mid = "white",midpoint = 0,name=expression(paste('Age Effect(',Delta,R^2[adj],')')),guide = guide_colorbar(legend.position='top',title.position="top",ticks.colour = "gray50", ticks.linewidth = 7))+ggtitle("")+xlab("Network Transmodality")+ylab("Network Transmodality")+geom_vline(xintercept = mean(range(doubleBwAgeCorTMDifDf$net1tmvec)),linetype='dashed',size=1.5)+geom_hline(yintercept = mean(range(doubleBwAgeCorTMDifDf$net1tmvec)),linetype='dashed',size=1.5)+theme(legend.position='top')
+
 ```
