@@ -330,6 +330,7 @@ covariates=" ~s(Age,k=3)+Sex+Motion"
 minAgeEst<-rep(0,length=length(masterdf[,indiv_nsegcols_ind]))
 maxAgeEst<-rep(0,length=length(masterdf[,indiv_nsegcols_ind]))
 SplineP<-rep(0,length=length(masterdf[,indiv_nsegcols_ind]))
+Avg_BW_Vector<-rep(0,length=length(masterdf[,indiv_nsegcols_ind]))
 InterceptVector10<-rep(0,length=length(masterdf[,indiv_nsegcols_ind]))
 InterceptVector21<-rep(0,length=length(masterdf[,indiv_nsegcols_ind]))
 derivInfo<-array(0,dim=c(464,200))
@@ -367,7 +368,9 @@ for (i in 1:(length(bwAvgCondf)-3)){
   form<-as.formula(paste("",x,"", covariates, sep=""))
   igam<-gam(formula = form,data=bwAvgCondf)
   SplineP[i]<-summary(igam)$s.pv
-  # changed to get intercept at 10 and 20 years old
+  # get average b/w con
+  Avg_BW_Vector[i]<-mean(bwAvgCondf[,i])
+  # get intercept at 10 and 21 years old
   InterceptVector10[i]<-predict.gam(igam,gamPredictMeAt10)
   InterceptVector21[i]<-predict.gam(igam,gamPredictMeAt21)
   derv<-derivatives(igam,term='Age')
@@ -408,15 +411,20 @@ bwdf$domnetvecSig[NL_sigVec]<-as.character(bwdf$domnetvec[NL_sigVec])
 # order for plot legend
 bwdf$domnetvecSig<-as.factor(bwdf$domnetvecSig)
 bwdf$domnetvecSig<-factor(bwdf$domnetvecSig,levels=c("Motor","Visual","DA","VA","Limbic","FP","DM","NonSig"),labels=c("Motor","Visual","DA","VA","Limbic","FP","DM","NonSig."))
+
+# stats for fig-gam
+Age_net_gam<-gam(avg_bw_deltaR2~s(tmvec,k=3),data=bwdf)
 ```
 
 ``` r
-ggplot(bwdf,aes(tmvec,avg_bw_deltaR2)) + geom_point(size=6,alpha=.8,aes(color=domnetvecSig))+ scale_color_manual(values=c('#3281ab','#670068','#007500','#b61ad0','#b8cf86','#d77d00','#c1253c','gray80')) + xlab("Transmodality") + ylab(expression(paste('Age Effect(',Delta,R^2[adj],')',sep=''))) +theme_classic(base_size = 40) +guides(color=guide_legend(title="Yeo 7 Overlap"))+theme(plot.margin=margin(b=3,t=.1,l=.1,r=.1, unit='cm'), legend.position=c(.42,-.24),legend.direction = "horizontal",legend.title=element_text(size=30),legend.text=element_text(size=30))+geom_smooth(method='lm',color='black',size=2)
+ggplot(bwdf,aes(tmvec,avg_bw_deltaR2)) + geom_point(size=6,alpha=.8,aes(color=domnetvecSig))+ scale_color_manual(values=c('#3281ab','#670068','#007500','#b61ad0','#b8cf86','#d77d00','#c1253c','gray80')) + xlab("Transmodality") + ylab(expression(paste('Age Effect (',Delta,R^2[adj],')',sep=''))) +theme_classic(base_size = 40) +guides(color=guide_legend(title="Yeo 7 Overlap"))+theme(plot.margin=margin(b=3,t=.1,l=.1,r=.1, unit='cm'), legend.position=c(.42,-.24),legend.direction = "horizontal",legend.title=element_text(size=30),legend.text=element_text(size=30))+geom_smooth(method='gam',formula = y~s(x,k=3),color='black')
 ```
 
-    ## `geom_smooth()` using formula 'y ~ x'
-
 ![](Network-level-age_files/figure-markdown_github/unnamed-chunk-8-1.png)
+
+``` r
+#+geom_smooth(method='lm',color='black',size=2)
+```
 
 ``` r
 # convert loop output to years format
@@ -676,3 +684,60 @@ geom_smooth(data=subset(bwdf,domnetvec17=='Somatomotor A'),method='gam',formula 
     ## which will replace the existing scale.
 
 ![](Network-level-age_files/figure-markdown_github/unnamed-chunk-16-1.png)
+
+``` r
+# section to write out each network's age effect at each scale. In matlab, each age effect of each network at each scale will be averaged for each vertex - according the discrete network membership of that vertex as each scale.
+
+####### initialize vectors
+# Average B/w Con.
+BW_Avg<-rep(0,464)
+# Estimated B/w Con. at 10 years old
+BW_interceptVec10<-rep(0,464)
+# Estimated B/w Con. at 21 years old
+BW_interceptVec21<-rep(0,464)
+# Estimated B/w Con * Age effect slope at 10 years old
+BW_deriv10vec<-rep(0,464)
+# Estimated B/w Con * Age effect slope at 16 years old
+BW_deriv16vec<-rep(0,464)
+# Estimated B/w Con * Age effect slope at 21 years old
+BW_deriv21vec<-rep(0,464)
+
+# use calculated InterceptVectors for intercepts
+BW_interceptVec10<-InterceptVector10
+BW_interceptVec21<-InterceptVector21
+BW_Avg<-Avg_BW_Vector
+
+    
+# use calculated deriv info for slopes, age range is 178 months
+# 10 y.o. is 22/178 months into the 200 point derivs age-range
+deriv.point.10<-round((22/178)*200)
+# 16 y.o. 82/178 months in
+deriv.point.16<-round((94/178)*200)
+# 21 y.o. is 142/178 months in
+deriv.point.21<-round((154/178)*200)
+#derivInfo
+BW_deriv10vec<-derivInfo[,deriv.point.10]
+BW_deriv16vec<-derivInfo[,deriv.point.16]
+BW_deriv21vec<-derivInfo[,deriv.point.21]
+
+
+# write em out as an effect vector for each scale: restart here 11/21
+for (K in 2:30){
+      K_start=((K-1)*(K))/2
+      K_end=(((K-1)*(K))/2)+K-1
+      Kind<-K_start:K_end
+      Intercept10=InterceptVector10[Kind]
+      Intercept21=InterceptVector21[Kind]
+      Avg=BW_Avg[Kind]
+      at10=BW_deriv10vec[Kind]
+      at16=BW_deriv16vec[Kind]
+      at21=BW_deriv21vec[Kind]
+      # write em out to cubic
+      write.table(Intercept10,paste('/cbica/projects/pinesParcels/results/EffectVecs/BW_InterceptAt10_k',K,sep=''),sep=',', col.names = F,quote = F,row.names=F)
+      write.table(Intercept21,paste('/cbica/projects/pinesParcels/results/EffectVecs/BW_InterceptAt21_k',K,sep=''),sep=',', col.names = F,quote = F,row.names=F)
+      write.table(Avg,paste('/cbica/projects/pinesParcels/results/EffectVecs/Avg_k',K,sep=''),sep=',', col.names = F,quote = F,row.names=F)
+      write.table(at10,paste('/cbica/projects/pinesParcels/results/EffectVecs/Deriv10yoAt',K,sep=''),sep=',', col.names = F,quote = F,row.names=F)
+      write.table(at16,paste('/cbica/projects/pinesParcels/results/EffectVecs/Deriv16yoAt',K,sep=''),sep=',', col.names = F,quote = F,row.names=F)
+      write.table(at21,paste('/cbica/projects/pinesParcels/results/EffectVecs/Deriv21yoAt',K,sep=''),sep=',', col.names = F,quote = F,row.names=F)
+}
+```

@@ -1,4 +1,4 @@
-Network-level-EF
+Edge-level-Age
 ================
 Adam
 1/19/2021
@@ -18,6 +18,8 @@ library(data.table)
 library(mgcv)
 library(ppcor)
 library(viridis)
+library(mgcViz)
+library(pammtools)
 ```
 
 ``` r
@@ -333,3 +335,41 @@ ggplot(edgeInt[edgeInt$fdrAgeDR2<0.05,],aes(x=tmdifvec,y=EdgeInterceptVector))+g
     ## `geom_smooth()` using formula 'y ~ x'
 
 ![](Edge-level-Age_files/figure-markdown_github/unnamed-chunk-7-1.png)
+
+``` r
+# gam surface
+
+# make a double df for symmetry - net1 and net2tmvec repeated in opposite ordering
+BwAgeCorTMDifDf2<-BwAgeCorTMDifDf
+BwAgeCorTMDifDf2$net1tmvec<-BwAgeCorTMDifDf$net2tmvec
+BwAgeCorTMDifDf2$net2tmvec<-BwAgeCorTMDifDf$net1tmvec
+
+# "stacked" df
+doubleBwAgeCorTMDifDf<-rbind(BwAgeCorTMDifDf2,BwAgeCorTMDifDf)
+```
+
+    ## Warning in `[<-.factor`(`*tmp*`, ri, value = structure(c("DM", "Motor", :
+    ## invalid factor level, NA generated
+
+    ## Warning in `[<-.factor`(`*tmp*`, ri, value = structure(c("DM", "Motor", :
+    ## invalid factor level, NA generated
+
+    ## Warning in `[<-.factor`(`*tmp*`, ri, value = structure(c("DM", "Motor", :
+    ## invalid factor level, NA generated
+
+    ## Warning in `[<-.factor`(`*tmp*`, ri, value = structure(c("DM", "Motor", :
+    ## invalid factor level, NA generated
+
+``` r
+# model the surface
+g2 <- gam(ageDR2vec ~ te(net2tmvec,net1tmvec),data = doubleBwAgeCorTMDifDf)
+```
+
+``` r
+gg_tensor(g2)+theme_classic(base_size = 40) +theme(legend.text=element_text(size=30),legend.key.width =unit(3.5,"cm"),legend.title = element_text(size=30))+scale_fill_gradient2(low = "blue",high = "red",mid = "white",midpoint = 0,name=expression(paste('Age Effect(',Delta,R^2[adj],')')),guide = guide_colorbar(legend.position='top',title.position="top",ticks.colour = "gray50", ticks.linewidth = 7))+ggtitle("")+xlab("Network Transmodality")+ylab("Network Transmodality")+geom_vline(xintercept = mean(range(doubleBwAgeCorTMDifDf$net1tmvec)),linetype='dashed',size=1.5)+geom_hline(yintercept = mean(range(doubleBwAgeCorTMDifDf$net1tmvec)),linetype='dashed',size=1.5)+theme(legend.position='top')
+```
+
+    ## Scale for 'fill' is already present. Adding another scale for 'fill', which
+    ## will replace the existing scale.
+
+![](Edge-level-Age_files/figure-markdown_github/unnamed-chunk-9-1.png)
