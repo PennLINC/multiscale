@@ -48,7 +48,7 @@ viz - Visualization scripts for figures outside of .rmd files
 ###### [scripts/derive_netstats/round_master_fcfeats.r](https://github.com/PennLINC/multiscale/blob/master/scripts/derive_netstats/round_master_fcfeats.r) - file takes fuckin' forever to load - almost a 10 minute thing without rounding. no need for 12 decimals points or w/e matlab spits out.
 
 # Step 2: Network-level: Age
-## 2A) Network-level Generalzied Additive Models - Figure 3 and 5
+## 2A) Network-level Generalzied Additive Models - Figures 3 and 5
 All within [_Network-level-age.md_](https://github.com/PennLINC/multiscale/blob/master/scripts/analyses/Network-level-age.md)
 ###### B/w * Age - for figure 3B
 ###### Age Effect * Transmodality - for figure 3C
@@ -56,6 +56,11 @@ All within [_Network-level-age.md_](https://github.com/PennLINC/multiscale/blob/
 ###### Scale Effect on Age Effect (* Transmodality) - for figure 5C
 
 ## 2B)	Cross-scale averaging & vertex-mapping - Figure 3
+###### *All vectors to be visualized (Predicted b.w. at ages 10 and 21, age effect derivatives at 10,16,21) are printed out from [_Network-level-age.md_](https://github.com/PennLINC/multiscale/blob/master/scripts/analyses/Network-level-age.md) above: to aggregate visualize these vectors into a single scale-wise matlab structure, use these matlab scripts:
+###### [scripts/viz/overlay_overscales_effects_onto_fsaverage_intercept.m](https://github.com/PennLINC/multiscale/blob/master/scripts/viz/overlay_overscales_effects_onto_fsaverage_intercept.m) - to overlay estimated b.w. at ages 10 and 21
+###### [scripts/viz/overlay_overscales_effects_onto_fsaverageDeriv.m](https://github.com/PennLINC/multiscale/blob/master/scripts/viz/overlay_overscales_effects_onto_fsaverageDeriv.m) - to overlay age effect derivatives at ages 10, 16 and 21
+###### to plot scale-wise matlab structures, the scripts above will leverage the following script:
+###### scripts/derive_parcels/Toolbox/PBP/PBP_final/PBP_effect_msOverlay_2View_R_lPFC.m*
 
 # Step 3: Network-level : Executive Function
 ## 3A) Network-level Generalzied Additive Models - Figure 6
