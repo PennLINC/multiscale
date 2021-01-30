@@ -119,7 +119,7 @@ All within [_Network-level-mediation.md_](https://github.com/PennLINC/multiscale
 
 # Step 8: Age: Edge-level
 ## 8A) Edge-level Generalized Additive Models - Figure 4
-[Still needs surface plot](https://github.com/PennLINC/multiscale/blob/master/scripts/analyses/Edge-level-Age.md)
+All within [_Edge-level-age.md_](https://github.com/PennLINC/multiscale/blob/master/scripts/analyses/Edge-level-Age.md)
 
 Python environment:
 source activate mv_preds
