@@ -336,7 +336,7 @@ doubleBwAgeCorTMDifDf<-rbind(BwAgeCorTMDifDf2,BwAgeCorTMDifDf)
 g2 <- gam(ageDR2vec ~ te(net2tmvec,net1tmvec),data = doubleBwAgeCorTMDifDf)
 ```
 
-```{r, fig.width=5,fig.height=9}
+```{r, fig.width=8,fig.height=15}
 gg_tensor(g2)+theme_classic(base_size = 40) +theme(legend.text=element_text(size=30),legend.key.width =unit(3.5,"cm"),legend.title = element_text(size=30))+scale_fill_gradient2(low = "blue",high = "red",mid = "white",midpoint = 0,name=expression(paste('Age Effect(',Delta,R^2[adj],')')),guide = guide_colorbar(legend.position='top',title.position="top",ticks.colour = "gray50", ticks.linewidth = 7))+ggtitle("")+xlab("Network Transmodality")+ylab("Network Transmodality")+geom_vline(xintercept = mean(range(doubleBwAgeCorTMDifDf$net1tmvec)),linetype='dashed',size=1.5)+geom_hline(yintercept = mean(range(doubleBwAgeCorTMDifDf$net1tmvec)),linetype='dashed',size=1.5)+theme(legend.position='top')
 
 ```
