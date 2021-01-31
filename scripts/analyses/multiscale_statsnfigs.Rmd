@@ -98,7 +98,7 @@ ggarrange(tc,ni,dif,rc)
 
 # plot average recon error over scales
 mreconerr<-(colMeans(recon_err)[2:30])
-mcrecnerrdf<-data.frame(mreconerr,community_vec,SelectedScales)
+#crecnerrdf<-data.frame(mreconerr,community_vec,SelectedScales)
 ggplot(data=mcrecnerrdf,aes(y=mreconerr,x=community_vec))+geom_step(col='black',size=2)+theme_minimal(base_size = 28)+ scale_x_continuous(name ="# of Communitites",  breaks=seq(2, 30, 4))+ylab("Reconstruction Error (a.u.)")
 
 # Motion and Sex Replacing Age (characterize indep. relations before controlling for them)
@@ -603,105 +603,105 @@ for (i in 1:29){
   pspear=pcor(scaledf,method='spearman')$estimate
   gro_segcors[i,2]<-pspear[4]
 }
-
-youngindagecor<-correlations_over_scalesplot(ind_segcors,'Segregation-Age Correlation: 8-13 Years')
-
-ind_segcors_df<-data.frame(ind_segcors)
-gro_segcors_df<-data.frame(gro_segcors)
-mergeddf<-merge(ind_segcors_df,gro_segcors_df,by="X1")
-colnames(mergeddf)<-c("X1","Individualized","Consensus")
-x<-melt(mergeddf,id="X1")
-colnames(x)<-c("X1","Partitioning","value")
-young<-ggplot(x,aes(X1,value,group=Partitioning,color=Partitioning)) + geom_step(size=3)+ylab('Segregation-Age Correlation')+
-    theme_minimal(base_size = 28)+
-    theme(axis.text=element_text(), axis.title = element_text(),panel.grid.minor = element_blank(), plot.title = element_text())+
-    xlab("# of Communities") + scale_x_continuous(breaks=seq(2, 30, 4)) +
-    geom_hline(aes(yintercept=.098), linetype="dashed", col='#55185D',size=2.5) +
-    geom_hline(aes(yintercept=-.098), linetype="dashed", col='#55185D',size=2.5) +
-    geom_hline(aes(yintercept=.125), linetype="dashed", col='#ECB602',size=2.5) +
-    geom_hline(aes(yintercept=-.125), linetype="dashed", col='#ECB602',size=2.5) + scale_color_manual(values = c("black", "grey"))+ggtitle("Global Segregation and Age Correlation Over Scales - 8-13 Years")
-
-###########mids##############
-ind_segcorsm<-matrix(0,29,2)
-ind_segcorsm[,1]<-2:30
-for (i in 1:29){
-  # i+4 because first column is scanid, second is age, third is sex, 4th is motion
-  # 7/11 - testing across age ranges for that dependence
-  
-  # relevant df
-  scaledf<-cbind(indglobseg_1318$Age,indglobseg_1318$Sex,indglobseg_1318$Motion,indglobseg_1318[,i+4])
-  # partial spearmans to extrac age relation
-  pspear=pcor(scaledf,method='spearman')$estimate
-  ind_segcors[i,2]<-pspear[4]
-  ind_segcorsm[i,2]<-pspear[4]
-}
-for (i in 1:29){
-  scaledf<-cbind(groglobseg_1318$Age,groglobseg_1318$Sex,groglobseg_1318$Motion,groglobseg_1318[,i+4])
-  # partial spearmans to extrac age relation
-  pspear=pcor(scaledf,method='spearman')$estimate
-  gro_segcors[i,2]<-pspear[4]
-}
-
-midindagecor<-correlations_over_scalesplot(ind_segcors,'Segregation-Age Correlation: 13-18 Years')
-
-ind_segcors_df<-data.frame(ind_segcors)
-gro_segcors_df<-data.frame(gro_segcors)
-mergeddf<-merge(ind_segcors_df,gro_segcors_df,by="X1")
-colnames(mergeddf)<-c("X1","Individualized","Consensus")
-x<-melt(mergeddf,id="X1")
-colnames(x)<-c("X1","Partitioning","value")
-mid<-ggplot(x,aes(X1,value,group=Partitioning,color=Partitioning)) + geom_step(size=3)+ylab('Segregation-Age Correlation')+
-    theme_minimal(base_size = 28)+
-    theme(axis.text=element_text(), axis.title = element_text(),panel.grid.minor = element_blank(), plot.title = element_text())+
-    xlab("# of Communities") + scale_x_continuous(breaks=seq(2, 30, 4)) +
-    geom_hline(aes(yintercept=.098), linetype="dashed", col='#55185D',size=2.5) +
-    geom_hline(aes(yintercept=-.098), linetype="dashed", col='#55185D',size=2.5) +
-    geom_hline(aes(yintercept=.125), linetype="dashed", col='#ECB602',size=2.5) +
-    geom_hline(aes(yintercept=-.125), linetype="dashed", col='#ECB602',size=2.5) + scale_color_manual(values = c("black", "grey"))+ggtitle("Global Segregation and Age Correlation Over Scales - 13-18 Years")
-
-
-###########geezers##########
-ind_segcorsg<-matrix(0,29,2)
-ind_segcorsg[,1]<-2:30
-for (i in 1:29){
-  # i+4 because first column is scanid, second is age, third is sex, 4th is motion
-  # 7/11 - testing across age ranges for that dependence
-  
-  # relevant df
-  scaledf<-cbind(indglobseg_1823$Age,indglobseg_1823$Sex,indglobseg_1823$Motion,indglobseg_1823[,i+4])
-  # partial spearmans to extrac age relation
-  pspear=pcor(scaledf,method='spearman')$estimate
-  ind_segcors[i,2]<-pspear[4]
-  ind_segcorsg[i,2]<-pspear[4]
-}
-
-for (i in 1:29){
-  scaledf<-cbind(groglobseg_1823$Age,groglobseg_1823$Sex,groglobseg_1823$Motion,groglobseg_1823[,i+4])
-  # partial spearmans to extrac age relation
-  pspear=pcor(scaledf,method='spearman')$estimate
-  gro_segcors[i,2]<-pspear[4]
-}
-
-oldindagecor<-correlations_over_scalesplot(ind_segcors,'Segregation-Age Correlation: 18-23 Years')
-
-
-ind_segcors_df<-data.frame(ind_segcors)
-gro_segcors_df<-data.frame(gro_segcors)
-mergeddf<-merge(ind_segcors_df,gro_segcors_df,by="X1")
-colnames(mergeddf)<-c("X1","Individualized","Consensus")
-x<-melt(mergeddf,id="X1")
-colnames(x)<-c("X1","Partitioning","value")
-old<-ggplot(x,aes(X1,value,group=Partitioning,color=Partitioning)) + geom_step(size=3)+ylab('Segregation-Age Correlation')+
-    theme_minimal(base_size = 28)+
-    theme(axis.text=element_text(), axis.title = element_text(),panel.grid.minor = element_blank(), plot.title = element_text())+
-    xlab("# of Communities") + scale_x_continuous(breaks=seq(2, 30, 4)) +
-    geom_hline(aes(yintercept=.098), linetype="dashed", col='#55185D',size=2.5) +
-    geom_hline(aes(yintercept=-.098), linetype="dashed", col='#55185D',size=2.5) +
-    geom_hline(aes(yintercept=.125), linetype="dashed", col='#ECB602',size=2.5) +
-    geom_hline(aes(yintercept=-.125), linetype="dashed", col='#ECB602',size=2.5) + scale_color_manual(values = c("black", "grey"))+ggtitle("Global Segregation and Age Correlation Over Scales - 18-23 Years")
-
-ageBreakDown<-ggarrange(indagecor,youngindagecor,midindagecor,oldindagecor)
-gro_vs_ind<-ggarrange(all,young,mid,old)
+#
+#youngindagecor<-correlations_over_scalesplot(ind_segcors,'Segregation-Age Correlation: 8-13 Years')
+#
+#ind_segcors_df<-data.frame(ind_segcors)
+#gro_segcors_df<-data.frame(gro_segcors)
+#mergeddf<-merge(ind_segcors_df,gro_segcors_df,by="X1")
+#colnames(mergeddf)<-c("X1","Individualized","Consensus")
+#x<-melt(mergeddf,id="X1")
+#colnames(x)<-c("X1","Partitioning","value")
+#young<-ggplot(x,aes(X1,value,group=Partitioning,color=Partitioning)) + geom_step(size=3)+ylab('Segregation-Age Correlation')+
+#    theme_minimal(base_size = 28)+
+#    theme(axis.text=element_text(), axis.title = element_text(),panel.grid.minor = element_blank(), plot.title = #element_text())+
+#    xlab("# of Communities") + scale_x_continuous(breaks=seq(2, 30, 4)) +
+#    geom_hline(aes(yintercept=.098), linetype="dashed", col='#55185D',size=2.5) +
+#    geom_hline(aes(yintercept=-.098), linetype="dashed", col='#55185D',size=2.5) +
+#    geom_hline(aes(yintercept=.125), linetype="dashed", col='#ECB602',size=2.5) +
+#    geom_hline(aes(yintercept=-.125), linetype="dashed", col='#ECB602',size=2.5) + scale_color_manual(values = c("black", #"grey"))+ggtitle("Global Segregation and Age Correlation Over Scales - 8-13 Years")
+#
+############mids##############
+#ind_segcorsm<-matrix(0,29,2)
+#ind_segcorsm[,1]<-2:30
+#for (i in 1:29){
+#  # i+4 because first column is scanid, second is age, third is sex, 4th is motion
+#  # 7/11 - testing across age ranges for that dependence
+#  
+#  # relevant df
+#  scaledf<-cbind(indglobseg_1318$Age,indglobseg_1318$Sex,indglobseg_1318$Motion,indglobseg_1318[,i+4])
+#  # partial spearmans to extrac age relation
+#  pspear=pcor(scaledf,method='spearman')$estimate
+#  ind_segcors[i,2]<-pspear[4]
+#  ind_segcorsm[i,2]<-pspear[4]
+#}
+#for (i in 1:29){
+#  scaledf<-cbind(groglobseg_1318$Age,groglobseg_1318$Sex,groglobseg_1318$Motion,groglobseg_1318[,i+4])
+#  # partial spearmans to extrac age relation
+#  pspear=pcor(scaledf,method='spearman')$estimate
+#  gro_segcors[i,2]<-pspear[4]
+#}
+#
+#midindagecor<-correlations_over_scalesplot(ind_segcors,'Segregation-Age Correlation: 13-18 Years')
+#
+#ind_segcors_df<-data.frame(ind_segcors)
+#gro_segcors_df<-data.frame(gro_segcors)
+#mergeddf<-merge(ind_segcors_df,gro_segcors_df,by="X1")
+#colnames(mergeddf)<-c("X1","Individualized","Consensus")
+#x<-melt(mergeddf,id="X1")
+#colnames(x)<-c("X1","Partitioning","value")
+#mid<-ggplot(x,aes(X1,value,group=Partitioning,color=Partitioning)) + geom_step(size=3)+ylab('Segregation-Age Correlation')+
+#    theme_minimal(base_size = 28)+
+#    theme(axis.text=element_text(), axis.title = element_text(),panel.grid.minor = element_blank(), plot.title = #element_text())+
+#    xlab("# of Communities") + scale_x_continuous(breaks=seq(2, 30, 4)) +
+#    geom_hline(aes(yintercept=.098), linetype="dashed", col='#55185D',size=2.5) +
+#    geom_hline(aes(yintercept=-.098), linetype="dashed", col='#55185D',size=2.5) +
+#    geom_hline(aes(yintercept=.125), linetype="dashed", col='#ECB602',size=2.5) +
+#    geom_hline(aes(yintercept=-.125), linetype="dashed", col='#ECB602',size=2.5) + scale_color_manual(values = c("black", #"grey"))+ggtitle("Global Segregation and Age Correlation Over Scales - 13-18 Years")
+#
+#
+############geezers##########
+#ind_segcorsg<-matrix(0,29,2)
+#ind_segcorsg[,1]<-2:30
+#for (i in 1:29){
+#  # i+4 because first column is scanid, second is age, third is sex, 4th is motion
+#  # 7/11 - testing across age ranges for that dependence
+#  
+#  # relevant df
+#  scaledf<-cbind(indglobseg_1823$Age,indglobseg_1823$Sex,indglobseg_1823$Motion,indglobseg_1823[,i+4])
+#  # partial spearmans to extrac age relation
+#  pspear=pcor(scaledf,method='spearman')$estimate
+#  ind_segcors[i,2]<-pspear[4]
+#  ind_segcorsg[i,2]<-pspear[4]
+#}
+#
+#for (i in 1:29){
+#  scaledf<-cbind(groglobseg_1823$Age,groglobseg_1823$Sex,groglobseg_1823$Motion,groglobseg_1823[,i+4])
+#  # partial spearmans to extrac age relation
+#  pspear=pcor(scaledf,method='spearman')$estimate
+#  gro_segcors[i,2]<-pspear[4]
+#}
+#
+#oldindagecor<-correlations_over_scalesplot(ind_segcors,'Segregation-Age Correlation: 18-23 Years')
+#
+#
+#ind_segcors_df<-data.frame(ind_segcors)
+#gro_segcors_df<-data.frame(gro_segcors)
+#mergeddf<-merge(ind_segcors_df,gro_segcors_df,by="X1")
+#colnames(mergeddf)<-c("X1","Individualized","Consensus")
+#x<-melt(mergeddf,id="X1")
+#colnames(x)<-c("X1","Partitioning","value")
+#old<-ggplot(x,aes(X1,value,group=Partitioning,color=Partitioning)) + geom_step(size=3)+ylab('Segregation-Age Correlation')+
+#    theme_minimal(base_size = 28)+
+#    theme(axis.text=element_text(), axis.title = element_text(),panel.grid.minor = element_blank(), plot.title = #element_text())+
+#    xlab("# of Communities") + scale_x_continuous(breaks=seq(2, 30, 4)) +
+#    geom_hline(aes(yintercept=.098), linetype="dashed", col='#55185D',size=2.5) +
+#    geom_hline(aes(yintercept=-.098), linetype="dashed", col='#55185D',size=2.5) +
+#    geom_hline(aes(yintercept=.125), linetype="dashed", col='#ECB602',size=2.5) +
+#    geom_hline(aes(yintercept=-.125), linetype="dashed", col='#ECB602',size=2.5) + scale_color_manual(values = c("black", #"grey"))+ggtitle("Global Segregation and Age Correlation Over Scales - 18-23 Years")
+#
+#ageBreakDown<-ggarrange(indagecor,youngindagecor,midindagecor,oldindagecor)
+#gro_vs_ind<-ggarrange(all,young,mid,old)
 
 ```
 
