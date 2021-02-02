@@ -1,0 +1,101 @@
+---
+title: "Edge-level-Age"
+author: "Adam"
+date: "1/19/2021"
+output: github_document
+---
+
+```{r, message=FALSE}
+#libraries
+library(vroom)
+library(mgcv)
+```
+
+```{r}
+### This script both writes out EF and FC values for ridge (scikit-learn), and reads the resulting predictions back in for visualization
+
+# pre-ridge
+
+### load in demograhics
+demo<-read.csv('/cbica/projects/pinesParcels/data/pnc_demo.csv')
+ageSex<-data.frame(demo$ageAtScan1,as.factor(demo$sex),demo$scanid,demo$bblid)
+subjects<-read.csv('/cbica/projects/pinesParcels/data/participants.txt',header = F)
+# get EF in here
+subjbehav<-read.csv("~/Downloads/n9498_cnb_factor_scores_fr_20170202.csv")
+ef<-data.frame(subjbehav$NAR_F1_Exec_Comp_Cog_Accuracy,subjbehav$bblid)
+
+### Collapse Motion metric 
+# read in
+Rest_Motion_Data <- read.csv("/cbica/projects/pinesParcels/data/n1601_RestQAData_20170714.csv")
+NBack_Motion_Data <- read.csv("/cbica/projects/pinesParcels/data/n1601_NBACKQAData_20181001.csv")
+Idemo_Motion_Data <- read.csv("/cbica/projects/pinesParcels/data/n1601_idemo_FinalQA_092817.csv")
+# combine
+motmerge<-merge(Rest_Motion_Data,NBack_Motion_Data,by='bblid')
+motmerge<-merge(motmerge,Idemo_Motion_Data,by='bblid')
+motmerge$Motion <- (motmerge$restRelMeanRMSMotion + motmerge$nbackRelMeanRMSMotion + motmerge$idemoRelMeanRMSMotion)/3;
+motiondf<-data.frame(motmerge$bblid,motmerge$Motion)
+colnames(motiondf)<-c('bblid','Motion')
+
+### combine non-fMR data
+colnames(subjects)<-c("scanid")
+colnames(ageSex)<-c("Age","Sex","scanid","bblid")
+df<-merge(subjects,ageSex,by="scanid")
+df<-merge(df,motiondf,by='bblid')
+
+### community solutions guaged in this iteration
+community_vec<-seq(2,30)
+
+# big load - output of fc_to_csv.m (all coupling/FC data, pre-organized)
+fc<-vroom('/cbica/projects/pinesParcels/results/aggregated_data/fc/master_fcfeats_rounded.csv')
+# First row gotta go
+fc<-fc[-c(1)]
+# isolate shams
+shams<-fc[694:695,]
+# Merge with non-fMR data into master data frame
+masterdf<-merge(fc,df,by='bblid')
+# add EF
+subjbehav<-read.csv("~/Downloads/n9498_cnb_factor_scores_fr_20170202.csv")
+#ef<-data.frame(subjbehav$F1_Exec_Comp_Cog_Accuracy,subjbehav$bblid)
+ef<-data.frame(subjbehav$NAR_F1_Exec_Comp_Cog_Accuracy,subjbehav$bblid)
+colnames(ef)<-c('F1_Exec_Comp_Cog_Accuracy','bblid')
+# merge in
+masteref<-merge(masterdf,ef,by='bblid')
+
+```
+
+```{r}
+# regress motion out of EF
+MotRegrEF<-gam(F1_Exec_Comp_Cog_Accuracy~Motion,data=masteref)$residuals
+# regress motion and age out of EF
+AgeMotRegrEF<-gam(F1_Exec_Comp_Cog_Accuracy~s(Age,k=3)+Motion,data=masteref)$residuals
+AgeDepEF<-cbind(masterdf[,indiv_bwcols_ind],MotRegrEF)
+AgeIndepEF<-cbind(masterdf[,indiv_bwcols_ind],AgeMotRegrEF)
+write.table(AgeDepEF,'/cbica/projects/pinesParcels/results/EffectVecs/AgeDepEF',sep=',', col.names = F,quote = F,row.names=F)
+write.table(AgeIndepEF,'/cbica/projects/pinesParcels/results/EffectVecs/AgeIndepEF',sep=',', col.names = F,quote = F,row.names=F)
+```
+
+```{r}
+# post-ridge
+```
+```{r}
+predEF_ADcsv<-read.csv('/cbica/projects/pinesParcels/data/aggregated_data/SubjPreds_AD.csv',header=F)
+predEF_AIcsv<-read.csv('/cbica/projects/pinesParcels/data/aggregated_data/SubjPreds_AI.csv',header=F)
+predEF_ADLcsv<-read.csv('/cbica/projects/pinesParcels/data/aggregated_data/SubjPreds_ADL.csv',header=F)
+predEF_AILcsv<-read.csv('/cbica/projects/pinesParcels/data/aggregated_data/SubjPreds_AIL.csv',header=F)
+# convert to average predicted EF over all folds
+#predEF_ADcsv<-predEFcsv[,1]/predEFcsv[,2]
+predEF_AD<-predEF_ADcsv[,1]/predEF_ADcsv[,2]
+predEF_AI<-predEF_AIcsv[,1]/predEF_AIcsv[,2]
+predEF_ADL<-predEF_ADLcsv[,1]/predEF_ADLcsv[,2]
+predEF_AIL<-predEF_AILcsv[,1]/predEF_AILcsv[,2]
+# pred ef vs. age
+plot(masteref$Age,predEF_AD)
+cor.test(masteref$Age,predEF_AD,method='spearman')
+plot(masteref$Age,predEF_AI)
+cor.test(masteref$Age,predEF_AI,method='spearman')
+# pred ef vs. ef
+plot(MotRegrEF,predEF_AD)
+cor.test(MotRegrEF,predEF_AD,method='spearman')
+plot(AgeMotRegrEF,predEF_AI)
+cor.test(AgeMotRegrEF,predEF_AI,method='spearman')
+```
