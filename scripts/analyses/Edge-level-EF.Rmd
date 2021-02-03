@@ -13,6 +13,7 @@ library(ggplot2)
 library(hexbin)
 library(ggExtra)
 library(tidyverse)
+library(Metrics)
 ```
 
 ```{r}
@@ -129,28 +130,18 @@ write.table(AgeIndepEF,'/cbica/projects/pinesParcels/results/EffectVecs/AgeIndep
 ```
 
 ```{r}
-predEF_ADcsv<-read.csv('/cbica/projects/pinesParcels/data/aggregated_data/SubjPreds_AD.csv',header=F)
 predEF_AIcsv<-read.csv('/cbica/projects/pinesParcels/data/aggregated_data/SubjPreds_AI.csv',header=F)
-predEF_ADLcsv<-read.csv('/cbica/projects/pinesParcels/data/aggregated_data/SubjPreds_ADL.csv',header=F)
-predEF_AILcsv<-read.csv('/cbica/projects/pinesParcels/data/aggregated_data/SubjPreds_AIL.csv',header=F)
 # convert to average predicted EF over all folds
 #predEF_ADcsv<-predEFcsv[,1]/predEFcsv[,2]
-predEF_AD<-predEF_ADcsv[,1]/predEF_ADcsv[,2]
 predEF_AI<-predEF_AIcsv[,1]/predEF_AIcsv[,2]
-predEF_ADL<-predEF_ADLcsv[,1]/predEF_ADLcsv[,2]
-predEF_AIL<-predEF_AILcsv[,1]/predEF_AILcsv[,2]
 # pred ef vs. age
-plot(masteref$Age,predEF_AD)
-cor.test(masteref$Age,predEF_AD,method='spearman')
 plot(masteref$Age,predEF_AI)
 cor.test(masteref$Age,predEF_AI,method='spearman')
 # pred ef vs. ef
-plot(MotRegrEF,predEF_AD)
-cor.test(MotRegrEF,predEF_AD,method='spearman')
 plot(AgeMotRegrEF,predEF_AI)
-cor.test(AgeMotRegrEF,predEF_AI,method='spearman')
+cor.test(AgeMotRegrEF,predEF_AI)
 
-
+mae(AgeMotRegrEF,predEF_AI)
 ```
 
 ```{r}
@@ -172,7 +163,7 @@ plasma_pal <- c("grey45", viridis::plasma(n = 25))
 #         1)})+geom_point(alpha=0)+geom_smooth(method='lm',color='gray')+theme_classic(base_size=40)+th#eme(legend.position = "left") + xlab("Observed") + ylab("Predicted")+ggtitle('Executive Function'))
 ```
 
-```{r, fig.width=10,fig.height=10}
-ggplot(plotdf,aes(x=AgeMotRegrEF,y=predEF_AI)) + geom_hex(bins=15) + scale_fill_gradientn(colors=plasma_pal)+geom_point(alpha=0)+geom_smooth(method='lm',color='black',size=4)+theme_classic(base_size=40)+theme(legend.position = "right") + xlab("Observed") + ylab("Predicted")+ggtitle('Executive Function')
+```{r, fig.width=12,fig.height=10}
+ggplot(plotdf,aes(x=AgeMotRegrEF,y=predEF_AI)) + geom_hex(bins=15) + scale_fill_gradientn(colors=plasma_pal)+geom_point(alpha=0)+geom_smooth(method='lm',color='black',size=4)+theme_classic(base_size=25)+theme(legend.key.width = unit(2.1,"cm"),legend.position=c(.35,-.27),legend.direction = 'horizontal',plot.margin=margin(b=2.3,t=.1,l=.1,r=.1, unit='cm')) + xlab("Observed") + ylab("Predicted")+ggtitle('Executive Function')
 #+guides(color=guide_legend(title="Yeo 7 Overlap"))+theme(plot.margin=margin(b=3,t=.1,l=.1,r=.1, unit='cm'), legend.position=c(.42,-.24),legend.direction = "horizontal",legend.title=element_text(size=30),legend.text=element_text(size=30))+geom_smooth(method='gam',formula = y~s(x,k=3),color='black')
 ```

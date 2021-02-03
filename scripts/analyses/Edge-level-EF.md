@@ -11,6 +11,7 @@ library(ggplot2)
 library(hexbin)
 library(ggExtra)
 library(tidyverse)
+library(Metrics)
 ```
 
 ``` r
@@ -140,44 +141,15 @@ write.table(AgeIndepEF,'/cbica/projects/pinesParcels/results/EffectVecs/AgeIndep
 ```
 
 ``` r
-predEF_ADcsv<-read.csv('/cbica/projects/pinesParcels/data/aggregated_data/SubjPreds_AD.csv',header=F)
 predEF_AIcsv<-read.csv('/cbica/projects/pinesParcels/data/aggregated_data/SubjPreds_AI.csv',header=F)
-predEF_ADLcsv<-read.csv('/cbica/projects/pinesParcels/data/aggregated_data/SubjPreds_ADL.csv',header=F)
-predEF_AILcsv<-read.csv('/cbica/projects/pinesParcels/data/aggregated_data/SubjPreds_AIL.csv',header=F)
 # convert to average predicted EF over all folds
 #predEF_ADcsv<-predEFcsv[,1]/predEFcsv[,2]
-predEF_AD<-predEF_ADcsv[,1]/predEF_ADcsv[,2]
 predEF_AI<-predEF_AIcsv[,1]/predEF_AIcsv[,2]
-predEF_ADL<-predEF_ADLcsv[,1]/predEF_ADLcsv[,2]
-predEF_AIL<-predEF_AILcsv[,1]/predEF_AILcsv[,2]
 # pred ef vs. age
-plot(masteref$Age,predEF_AD)
-```
-
-![](Edge-level-EF_files/figure-markdown_github/unnamed-chunk-8-1.png)
-
-``` r
-cor.test(masteref$Age,predEF_AD,method='spearman')
-```
-
-    ## Warning in cor.test.default(masteref$Age, predEF_AD, method = "spearman"):
-    ## Cannot compute exact p-value with ties
-
-    ## 
-    ##  Spearman's rank correlation rho
-    ## 
-    ## data:  masteref$Age and predEF_AD
-    ## S = 35134219, p-value < 2.2e-16
-    ## alternative hypothesis: true rho is not equal to 0
-    ## sample estimates:
-    ##       rho 
-    ## 0.3665932
-
-``` r
 plot(masteref$Age,predEF_AI)
 ```
 
-![](Edge-level-EF_files/figure-markdown_github/unnamed-chunk-8-2.png)
+![](Edge-level-EF_files/figure-markdown_github/unnamed-chunk-8-1.png)
 
 ``` r
 cor.test(masteref$Age,predEF_AI,method='spearman')
@@ -198,44 +170,32 @@ cor.test(masteref$Age,predEF_AI,method='spearman')
 
 ``` r
 # pred ef vs. ef
-plot(MotRegrEF,predEF_AD)
-```
-
-![](Edge-level-EF_files/figure-markdown_github/unnamed-chunk-8-3.png)
-
-``` r
-cor.test(MotRegrEF,predEF_AD,method='spearman')
-```
-
-    ## 
-    ##  Spearman's rank correlation rho
-    ## 
-    ## data:  MotRegrEF and predEF_AD
-    ## S = 24028818, p-value < 2.2e-16
-    ## alternative hypothesis: true rho is not equal to 0
-    ## sample estimates:
-    ##       rho 
-    ## 0.5668036
-
-``` r
 plot(AgeMotRegrEF,predEF_AI)
 ```
 
-![](Edge-level-EF_files/figure-markdown_github/unnamed-chunk-8-4.png)
+![](Edge-level-EF_files/figure-markdown_github/unnamed-chunk-8-2.png)
 
 ``` r
-cor.test(AgeMotRegrEF,predEF_AI,method='spearman')
+cor.test(AgeMotRegrEF,predEF_AI)
 ```
 
     ## 
-    ##  Spearman's rank correlation rho
+    ##  Pearson's product-moment correlation
     ## 
     ## data:  AgeMotRegrEF and predEF_AI
-    ## S = 25336488, p-value < 2.2e-16
-    ## alternative hypothesis: true rho is not equal to 0
+    ## t = 16.542, df = 691, p-value < 2.2e-16
+    ## alternative hypothesis: true correlation is not equal to 0
+    ## 95 percent confidence interval:
+    ##  0.4770637 0.5839297
     ## sample estimates:
-    ##       rho 
-    ## 0.5432286
+    ##       cor 
+    ## 0.5326162
+
+``` r
+mae(AgeMotRegrEF,predEF_AI)
+```
+
+    ## [1] 0.5532473
 
 ``` r
 # setup for figure 6 pred. vs obs. ef
@@ -257,7 +217,7 @@ plasma_pal <- c("grey45", viridis::plasma(n = 25))
 ```
 
 ``` r
-ggplot(plotdf,aes(x=AgeMotRegrEF,y=predEF_AI)) + geom_hex(bins=15) + scale_fill_gradientn(colors=plasma_pal)+geom_point(alpha=0)+geom_smooth(method='lm',color='black',size=4)+theme_classic(base_size=40)+theme(legend.position = "right") + xlab("Observed") + ylab("Predicted")+ggtitle('Executive Function')
+ggplot(plotdf,aes(x=AgeMotRegrEF,y=predEF_AI)) + geom_hex(bins=15) + scale_fill_gradientn(colors=plasma_pal)+geom_point(alpha=0)+geom_smooth(method='lm',color='black',size=4)+theme_classic(base_size=25)+theme(legend.key.width = unit(2.1,"cm"),legend.position=c(.35,-.27),legend.direction = 'horizontal',plot.margin=margin(b=2.3,t=.1,l=.1,r=.1, unit='cm')) + xlab("Observed") + ylab("Predicted")+ggtitle('Executive Function')
 ```
 
     ## `geom_smooth()` using formula 'y ~ x'

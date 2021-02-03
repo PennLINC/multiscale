@@ -343,28 +343,92 @@ bwdf$domnetvecSig[NL_sigVec]<-as.character(bwdf$domnetvec[NL_sigVec])
 # order for plot legend
 bwdf$domnetvecSig<-as.factor(bwdf$domnetvecSig)
 bwdf$domnetvecSig<-factor(bwdf$domnetvecSig,levels=c("Motor","Visual","DA","VA","Limbic","FP","DM","NonSig"),labels=c("Motor","Visual","DA","VA","Limbic","FP","DM","NonSig."))
+
+# stats for fig-gam
+Mediation_net_gam<-gam(AB_Est~s(tmvec,k=3),data=bwdf)
+Mediation_net_gam_sigOnly<-gam(AB_Est~s(tmvec,k=3),data=bwdf[NL_sigVec,])
 ```
 
 ``` r
-ggplot(bwdf,aes(tmvec,AB_Est)) + geom_point(size=6,alpha=.8,aes(color=domnetvecSig))+ scale_color_manual(values=c('#3281ab','#670068','#007500','#b61ad0','#b8cf86','#d77d00','#c1253c','gray80')) + xlab("Transmodality") + ylab('AB Path Coefficient') +theme_classic(base_size = 40) +guides(color=guide_legend(title="Yeo 7 Overlap"))+theme(plot.margin=margin(b=3,t=.1,l=.1,r=.1, unit='cm'), legend.position=c(.42,-.24),legend.direction = "horizontal",legend.title=element_text(size=30),legend.text=element_text(size=30))
+ggplot(bwdf,aes(tmvec,AB_Est)) + geom_point(size=6,alpha=.8,aes(color=domnetvecSig))+ scale_color_manual(values=c('#3281ab','#670068','#007500','#b61ad0','#b8cf86','#d77d00','#c1253c','gray80')) + xlab("Transmodality") + ylab('AB Path Coefficient') +theme_classic(base_size = 40) +guides(color=guide_legend(title="Yeo 7 Overlap"))+theme(plot.margin=margin(b=3,t=.1,l=.1,r=.1, unit='cm'), legend.position=c(.42,-.24),legend.direction = "horizontal",legend.title=element_text(size=30),legend.text=element_text(size=30))+geom_smooth(method='gam',formula = y~s(x,k=3),color='black')
 ```
 
 ![](Network-level-Mediation_files/figure-markdown_github/unnamed-chunk-7-1.png)
 
 ``` r
-# figure 7 stuff - Mediation Effect * Scale * Transmodality
-# convert yeo17 membership to vector capturing only sig. yeo17 networks, graying out nonsig.
-Med_domnetSig17<-domnetvec17
-levels(Med_domnetSig17)<-c(levels(domnetvec17),'zNonSig')
-# Set every instance of nonSig mediation to 'zNonSig' (z is there for alphabetical order for ggplot, dumb solution)
-Med_domnetSig17[NL_sigVec==FALSE]='zNonSig'
-bwdf$domnetvec17<-domnetvec17
-bwdf$Med_domnetSig17<-Med_domnetSig17
+#+geom_smooth(method='lm',color='black',size=2)
+
+#ggplot(bwdf[NL_sigVec,],aes(tmvec,AB_Est)) + geom_point(size=6,alpha=.8,aes(color=domnetvecSig))+ scale_color_manual(values=c('#3281ab','#670068','#007500','#b61ad0','#b8cf86','#d77d00','#c1253c','gray80')) + xlab("Transmodality") + ylab('AB Path Coefficient') +theme_classic(base_size = 40) +guides(color=guide_legend(title="Yeo 7 Overlap"))+theme(plot.margin=margin(b=3,t=.1,l=.1,r=.1, unit='cm'), legend.position=c(.42,-.24),legend.direction = "horizontal",legend.title=element_text(size=30),legend.text=element_text(size=30))+geom_smooth(method='gam',formula = y~s(x,k=3),color='black')
+#+geom_smooth(method='lm',color='black',size=2)
 ```
 
 ``` r
-ggplot(bwdf,aes(scalesvec,AB_Est)) + xlab("# of Networks") + ylab('AB Path Coefficient') +theme_classic(base_size = 28) +guides(alpha=FALSE,color=guide_legend(title="Yeo 17 Overlap"))+theme(legend.position=c(.46,-.15),legend.direction = "horizontal",legend.text = element_text(size=20),legend.title = element_text(size=24))+
-geom_smooth(data=subset(bwdf,domnetvec17=='Somatomotor A'),method='gam',formula = y~s(x,k=3),aes(color=domnetvec17),fill="gray82")+geom_smooth(data=subset(bwdf,domnetvec17=='DM_B'),method='gam',formula = y~s(x,k=3),aes(color=domnetvec17),fill="gray82")+scale_color_manual(values=c('#bc0943','#4183a8'))+geom_point(data=subset(bwdf,domnetvec17=='Somatomotor A'),aes(color=Med_domnetSig17),size=6)+geom_point(data=subset(bwdf,domnetvec17=='DM_B'),aes(color=Med_domnetSig17),size=6)+scale_color_manual(values=c('#bc0943','#4183a8','gray70'),labels=c('Default Mode B','Somatomotor A','NonSig.'))+scale_x_continuous(breaks=c(4,10,16,22,28))+theme(plot.margin=unit(c(.9,.6,2,.6),"cm"))
+# figure 7 stuff - Mediation Effect * Scale * Transmodality
+# gams for stats
+SMA_gam<-gam(AB_Est~s(scalesvec,k=3),data=bwdf[bwdf$domnetvec17=='Somatomotor A',])
+DMB_gam<-gam(AB_Est~s(scalesvec,k=3),data=bwdf[bwdf$domnetvec17=='DM_B',])
+summary(SMA_gam)
+```
+
+    ## 
+    ## Family: gaussian 
+    ## Link function: identity 
+    ## 
+    ## Formula:
+    ## AB_Est ~ s(scalesvec, k = 3)
+    ## 
+    ## Parametric coefficients:
+    ##             Estimate Std. Error t value Pr(>|t|)    
+    ## (Intercept) -0.03975    0.00163  -24.39   <2e-16 ***
+    ## ---
+    ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+    ## 
+    ## Approximate significance of smooth terms:
+    ##               edf Ref.df     F p-value    
+    ## s(scalesvec) 1.97  1.999 37.19  <2e-16 ***
+    ## ---
+    ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+    ## 
+    ## R-sq.(adj) =  0.552   Deviance explained = 56.7%
+    ## GCV = 0.000173  Scale est. = 0.00016471  n = 62
+
+``` r
+summary(DMB_gam)
+```
+
+    ## 
+    ## Family: gaussian 
+    ## Link function: identity 
+    ## 
+    ## Formula:
+    ## AB_Est ~ s(scalesvec, k = 3)
+    ## 
+    ## Parametric coefficients:
+    ##             Estimate Std. Error t value Pr(>|t|)    
+    ## (Intercept) 0.018872   0.001721   10.96 5.13e-12 ***
+    ## ---
+    ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+    ## 
+    ## Approximate significance of smooth terms:
+    ##              edf Ref.df     F p-value
+    ## s(scalesvec)   1      1 1.036   0.317
+    ## 
+    ## R-sq.(adj) =  0.00116   Deviance explained = 3.34%
+    ## GCV = 0.00010111  Scale est. = 9.479e-05  n = 32
+
+``` r
+# convert yeo17 membership to vector capturing only sig. yeo17 networks, graying out nonsig.
+Med_domnetSig17<-domnetvec17
+levels(Med_domnetSig17)<-c(levels(Med_domnetSig17),'zNonSig_DM','zNonSig_Mot')
+# set nonsigs to de-saturated version of colors
+Med_domnetSig17[NL_sigVec==FALSE & Med_domnetSig17 == 'Somatomotor A']='zNonSig_Mot'
+Med_domnetSig17[NL_sigVec==FALSE & Med_domnetSig17 == 'DM_B']='zNonSig_DM'
+
+bwdf$Med_domnetSig17<-as.character(Med_domnetSig17)
+```
+
+``` r
+ggplot(bwdf,aes(scalesvec,AB_Est)) + xlab("# of Networks") + ylab('AB Path Coefficient') +theme_classic(base_size = 40) +guides(alpha=FALSE,color=guide_legend(title="Yeo 17 Overlap"))+theme(legend.position=c(.42,-.2),legend.direction = "horizontal",legend.text = element_text(size=22),legend.title = element_text(size=26))+geom_smooth(data=subset(bwdf,domnetvec17=='Somatomotor A'),method='gam',formula = y~s(x,k=3),aes(color=domnetvec17),fill="gray82")+geom_smooth(data=subset(bwdf,domnetvec17=='DM_B'),method='gam',formula = y~s(x,k=3),aes(color=domnetvec17),fill="gray82")+scale_color_manual(values=c('#bc0943','#4183a8','grey20','grey80'))+geom_point(data=subset(bwdf,domnetvec17=='Somatomotor A'),aes(color=Med_domnetSig17),size=6)+geom_point(data=subset(bwdf,domnetvec17=='DM_B'),aes(color=Med_domnetSig17),size=6)+scale_color_manual(values=c('#bc0943','#4183a8','#ebbecc','#b7d9ed'),labels=c('DM B','SM A','n.s. DM B','n.s. SM A'))+scale_x_continuous(breaks=c(4,10,16,22,28))+theme(plot.margin=unit(c(.9,.6,2,.6),"cm"))
 ```
 
     ## Scale for 'colour' is already present. Adding another scale for 'colour',

@@ -6,8 +6,6 @@ Adam
 ``` r
 #libraries
 
-
-
 library(gratia)
 library(ggplot2)
 library(reshape2)
@@ -412,7 +410,7 @@ bwdf<-data.frame(tmvec,scalesvec,domnetvec,domnetvec17,netpropvec,EFDR2vec,avg_b
 ```
 
 ``` r
-# Age * Transmodality - final setup
+# EF * Transmodality - final setup
 # Map nonsig to grey
 bwdf$domnetvecSig<-'NonSig'
 # sig where CL_vec indicates
@@ -420,16 +418,27 @@ bwdf$domnetvecSig[NL_sigVec]<-as.character(bwdf$domnetvec[NL_sigVec])
 # order for plot legend
 bwdf$domnetvecSig<-as.factor(bwdf$domnetvecSig)
 bwdf$domnetvecSig<-factor(bwdf$domnetvecSig,levels=c("Motor","Visual","DA","VA","Limbic","FP","DM","NonSig"),labels=c("Motor","Visual","DA","VA","Limbic","FP","DM","NonSig."))
+
+# stats for fig-gam
+EF_net_gam<-gam(EFDR2vec~s(tmvec,k=3),data=bwdf)
+EF_net_gam_Sigonly<-gam(EFDR2vec~s(tmvec,k=3),data=bwdf[NL_sigVec,])
 ```
 
 ``` r
-ggplot(bwdf,aes(tmvec,EFDR2vec)) + geom_point(size=6,alpha=.8,aes(color=domnetvecSig))+ scale_color_manual(values=c('#3281ab','#670068','#007500','#b61ad0','#b8cf86','#d77d00','#c1253c','gray80')) + xlab("Transmodality") + ylab(expression(paste('EF Effect(',Delta,R^2[adj],')',sep=''))) +theme_classic(base_size = 40) +guides(color=guide_legend(title="Yeo 7 Overlap"))+theme(plot.margin=margin(b=3,t=.1,l=.1,r=.1, unit='cm'), legend.position=c(.42,-.24),legend.direction = "horizontal",legend.title=element_text(size=30),legend.text=element_text(size=30))
+ggplot(bwdf,aes(tmvec,EFDR2vec)) + geom_point(size=5,alpha=.8,aes(color=domnetvecSig))+ scale_color_manual(values=c('#3281ab','#670068','#007500','#b61ad0','#b8cf86','#d77d00','#c1253c','gray80')) + xlab("Transmodality") + ylab(expression(paste('EF Effect (',Delta,R^2[adj],')',sep=''))) +theme_classic(base_size = 30) +guides(color=guide_legend(title="Yeo 7 Overlap"))+theme(plot.margin=margin(b=3,t=.1,l=.1,r=.1, unit='cm'), legend.position=c(.42,-.24),legend.direction = "horizontal",legend.title=element_text(size=22),legend.text=element_text(size=22))+geom_smooth(method='gam',formula = y~s(x,k=3),color='black')
 ```
 
 ![](Network-level-EF_files/figure-markdown_github/unnamed-chunk-8-1.png)
 
 ``` r
-# figure 6 stuff - Age Effect * Scale * Transmodality
+# sig only
+ggplot(bwdf[NL_sigVec,],aes(tmvec,EFDR2vec)) + geom_point(size=6,alpha=.8,aes(color=domnetvecSig))+ scale_color_manual(values=c('#3281ab','#670068','#007500','#b61ad0','#b8cf86','#d77d00','#c1253c','gray80')) + xlab("Transmodality") + ylab(expression(paste('EF Effect (',Delta,R^2[adj],')',sep=''))) +theme_classic(base_size = 40) +guides(color=guide_legend(title="Yeo 7 Overlap"))+theme(plot.margin=margin(b=3,t=.1,l=.1,r=.1, unit='cm'), legend.position=c(.42,-.24),legend.direction = "horizontal",legend.title=element_text(size=30),legend.text=element_text(size=30))+geom_smooth(method='gam',formula = y~s(x,k=3),color='black')
+```
+
+![](Network-level-EF_files/figure-markdown_github/unnamed-chunk-8-2.png)
+
+``` r
+# figure 6 stuff - EF Effect * Scale * Transmodality
 # convert yeo17 membership to vector capturing only sig. yeo17 networks, graying out nonsig.
 domnetSig17<-domnetvec17
 levels(domnetSig17)<-c(levels(domnetSig17),'zNonSig')
