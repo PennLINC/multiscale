@@ -1,11 +1,9 @@
----
-title: "Edge-level-Age"
-author: "Adam"
-date: "1/19/2021"
-output: github_document
----
+Edge-level-Age
+================
+Adam
+1/19/2021
 
-```{r, message=FALSE}
+``` r
 #libraries
 library(vroom)
 library(mgcv)
@@ -15,7 +13,7 @@ library(ggExtra)
 library(tidyverse)
 ```
 
-```{r}
+``` r
 ### This script both writes out EF and FC values for ridge (scikit-learn), and reads the resulting predictions back in for visualization
 
 
@@ -24,7 +22,7 @@ library(tidyverse)
 ###########
 ```
 
-```{r}
+``` r
 ### load in demograhics
 demo<-read.csv('/cbica/projects/pinesParcels/data/pnc_demo.csv')
 ageSex<-data.frame(demo$ageAtScan1,as.factor(demo$sex),demo$scanid,demo$bblid)
@@ -56,6 +54,20 @@ community_vec<-seq(2,30)
 
 # big load - output of fc_to_csv.m (all coupling/FC data, pre-organized)
 fc<-vroom('/cbica/projects/pinesParcels/results/aggregated_data/fc/master_fcfeats_rounded.csv')
+```
+
+    ## New names:
+    ## * `` -> ...1
+
+    ## Rows: 695
+    ## Columns: 16,360
+    ## Delimiter: ","
+    ## dbl [16360]: ...1, bblid, ind_globseg_scale2, ind_globseg_scale3, ind_globseg_scale4, ind_globse...
+    ## 
+    ## Use `spec()` to retrieve the guessed column specification
+    ## Pass a specification to the `col_types` argument to quiet this message
+
+``` r
 # First row gotta go
 fc<-fc[-c(1)]
 # isolate shams
@@ -69,10 +81,9 @@ ef<-data.frame(subjbehav$NAR_F1_Exec_Comp_Cog_Accuracy,subjbehav$bblid)
 colnames(ef)<-c('F1_Exec_Comp_Cog_Accuracy','bblid')
 # merge in
 masteref<-merge(masterdf,ef,by='bblid')
-
 ```
 
-```{r}
+``` r
 # parse fields of interest 
 
 
@@ -107,7 +118,7 @@ individ_scalebywin_df<-masterdf[,indiv_wincols_ind]
 wincolnames<-colnames(individ_scalebywin_df)
 ```
 
-```{r}
+``` r
 # regress motion out of EF
 MotRegrEF<-gam(F1_Exec_Comp_Cog_Accuracy~Motion,data=masteref)$residuals
 # regress motion and age out of EF
@@ -118,17 +129,17 @@ write.table(AgeDepEF,'/cbica/projects/pinesParcels/results/EffectVecs/AgeDepEF',
 write.table(AgeIndepEF,'/cbica/projects/pinesParcels/results/EffectVecs/AgeIndepEF',sep=',', col.names = F,quote = F,row.names=F)
 ```
 
-```{r}
+``` r
 # ridge - penal_regresFC_Age.py 
 ```
 
-```{r}
+``` r
 ###########
 # post-ridge
 ###########
 ```
 
-```{r}
+``` r
 predEF_ADcsv<-read.csv('/cbica/projects/pinesParcels/data/aggregated_data/SubjPreds_AD.csv',header=F)
 predEF_AIcsv<-read.csv('/cbica/projects/pinesParcels/data/aggregated_data/SubjPreds_AI.csv',header=F)
 predEF_ADLcsv<-read.csv('/cbica/projects/pinesParcels/data/aggregated_data/SubjPreds_ADL.csv',header=F)
@@ -141,19 +152,92 @@ predEF_ADL<-predEF_ADLcsv[,1]/predEF_ADLcsv[,2]
 predEF_AIL<-predEF_AILcsv[,1]/predEF_AILcsv[,2]
 # pred ef vs. age
 plot(masteref$Age,predEF_AD)
-cor.test(masteref$Age,predEF_AD,method='spearman')
-plot(masteref$Age,predEF_AI)
-cor.test(masteref$Age,predEF_AI,method='spearman')
-# pred ef vs. ef
-plot(MotRegrEF,predEF_AD)
-cor.test(MotRegrEF,predEF_AD,method='spearman')
-plot(AgeMotRegrEF,predEF_AI)
-cor.test(AgeMotRegrEF,predEF_AI,method='spearman')
-
-
 ```
 
-```{r}
+![](Edge-level-EF_files/figure-markdown_github/unnamed-chunk-8-1.png)
+
+``` r
+cor.test(masteref$Age,predEF_AD,method='spearman')
+```
+
+    ## Warning in cor.test.default(masteref$Age, predEF_AD, method = "spearman"):
+    ## Cannot compute exact p-value with ties
+
+    ## 
+    ##  Spearman's rank correlation rho
+    ## 
+    ## data:  masteref$Age and predEF_AD
+    ## S = 35134219, p-value < 2.2e-16
+    ## alternative hypothesis: true rho is not equal to 0
+    ## sample estimates:
+    ##       rho 
+    ## 0.3665932
+
+``` r
+plot(masteref$Age,predEF_AI)
+```
+
+![](Edge-level-EF_files/figure-markdown_github/unnamed-chunk-8-2.png)
+
+``` r
+cor.test(masteref$Age,predEF_AI,method='spearman')
+```
+
+    ## Warning in cor.test.default(masteref$Age, predEF_AI, method = "spearman"):
+    ## Cannot compute exact p-value with ties
+
+    ## 
+    ##  Spearman's rank correlation rho
+    ## 
+    ## data:  masteref$Age and predEF_AI
+    ## S = 54765711, p-value = 0.7391
+    ## alternative hypothesis: true rho is not equal to 0
+    ## sample estimates:
+    ##        rho 
+    ## 0.01267262
+
+``` r
+# pred ef vs. ef
+plot(MotRegrEF,predEF_AD)
+```
+
+![](Edge-level-EF_files/figure-markdown_github/unnamed-chunk-8-3.png)
+
+``` r
+cor.test(MotRegrEF,predEF_AD,method='spearman')
+```
+
+    ## 
+    ##  Spearman's rank correlation rho
+    ## 
+    ## data:  MotRegrEF and predEF_AD
+    ## S = 24028818, p-value < 2.2e-16
+    ## alternative hypothesis: true rho is not equal to 0
+    ## sample estimates:
+    ##       rho 
+    ## 0.5668036
+
+``` r
+plot(AgeMotRegrEF,predEF_AI)
+```
+
+![](Edge-level-EF_files/figure-markdown_github/unnamed-chunk-8-4.png)
+
+``` r
+cor.test(AgeMotRegrEF,predEF_AI,method='spearman')
+```
+
+    ## 
+    ##  Spearman's rank correlation rho
+    ## 
+    ## data:  AgeMotRegrEF and predEF_AI
+    ## S = 25336488, p-value < 2.2e-16
+    ## alternative hypothesis: true rho is not equal to 0
+    ## sample estimates:
+    ##       rho 
+    ## 0.5432286
+
+``` r
 plotdf<-data.frame(AgeMotRegrEF,predEF_AI)
 hexinfo <- hexbin(AgeMotRegrEF, predEF_AI, xbins = 20)
 data_hex <- data.frame(hcell2xy(hexinfo), count = hexinfo@count)
@@ -173,5 +257,4 @@ plasma_pal <- c("grey45", viridis::plasma(n = 25))
 plot<-ggplot(plotdf,aes(x=AgeMotRegrEF,y=predEF_AI)) + geom_hex(bins=15) + scale_fill_gradientn(colors=plasma_pal)+geom_point(alpha=0)+geom_smooth(method='lm',color='black',size=4)+theme_classic(base_size=40)+theme(legend.position = "right") + xlab("Observed") + ylab("Predicted")+ggtitle('Executive Function')
 
 #+guides(color=guide_legend(title="Yeo 7 Overlap"))+theme(plot.margin=margin(b=3,t=.1,l=.1,r=.1, unit='cm'), legend.position=c(.42,-.24),legend.direction = "horizontal",legend.title=element_text(size=30),legend.text=element_text(size=30))+geom_smooth(method='gam',formula = y~s(x,k=3),color='black')
-
 ```
