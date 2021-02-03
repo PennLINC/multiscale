@@ -22,7 +22,6 @@ summary_preds=np.empty([4,2])
 # need a different, subject-level prediction DF so we can unpack predicted EF in R
 # first column is additive predicted EF, second column is number of times it was added
 subject_preds_AI=np.zeros([693,2])
-subject_preds_AD=np.zeros([693,2])
 
 df_permut=np.loadtxt('/cbica/projects/pinesParcels/results/EffectVecs/forMLpc_permut.csv',delimiter=',')
 
@@ -38,34 +37,35 @@ varofintAI=data_AI[:,-1]
 alphas = np.exp2(np.arange(16)-10)
 # set subject indices for recoring train test splits
 indices = range(693)
+# permutation setup
+permutedEF=np.zeros([693,1000])
+# 1000 permutations
+permutIndices=[np.random.permutation(indices) for i in range(1000)]
+for i in range(1000):
+	permutedEF[:,i]=varofintAI[permutIndices[i]]
 
 # outcome predictions will be in these 2d arrays (finally back to 2d!)
 # needs to be 12 x 3, 12 rows for each split and each column for each feature vector
-all_preds=np.empty([100,4])
-#all_permut_preds=np.empty([12,1])
-all_preds_alphas=np.empty([100,4])
-#all_permut_preds_alphas=np.empty([12,1])
-# feature weights, lasso weights added 10/21/20
+all_preds=np.empty([100,1])
+all_permut_preds=np.empty([1000,1])
+all_preds_alphas=np.empty([100,1])
+all_permut_preds_alphas=np.empty([1000,1])
+# feature weights
 featureWeights_AI=np.empty([100,data_AI.shape[1]-1])
+# run real predictions
 for split in range(0,100):
 # for a few different train and test splits
 	# Train and test split from data frame
 	xtrain_AI,xtest_AI,ytrain_AI,ytest_AI,indices_train_AI,indices_test_AI=train_test_split(Featvecs_AI,varofintAI,indices,test_size=0.33,random_state=(split))
 	# same for permuted data
-	#xtrain_p,xtest_p,ytrain_p,ytest_p=train_test_split(topogvecs,varofint_permut,test_size=0.33,random_state=(split))
 	# outcome vector for this split, different vec for permuted and real data
 	r2_vec_split_AI=[]
-	#r2_vec_split_permut=[]
 	# fit model with gcv
 	lm_AI = sklearn.linear_model.RidgeCV(alphas=alphas, store_cv_values=True).fit(xtrain_AI,ytrain_AI)
-	# same for permuted
-	#lm_p = sklearn.linear_model.RidgeCV(alphas=alphas, store_cv_values=True).fit(xtrain_p,ytrain_p)
 	# set prediction alpha to best performing alpha in training set
 	alpha_AI=lm_AI.alpha_
 	# save regularization weightings for this split
-	all_preds_alphas[split,1]=alpha_AI
-	#alpha_p=lm_p.alpha_
-	#all_permut_preds_alphas[split,:]=alpha_p
+	all_preds_alphas[split,0]=alpha_AI
 	# store vector of feature weights for cortical surface projections
 	featureWeights_AI[split,:]=lm_AI.coef_
 	# get predicted EF values
@@ -75,21 +75,39 @@ for split in range(0,100):
 	subject_preds_AI[indices_test_AI,1]=subject_preds_AI[indices_test_AI,1]+1
 	# test prediction on left out sample
 	pred_obs_r2_AI = sklearn.linear_model.Ridge(alpha=alpha_AI).fit(xtrain_AI,ytrain_AI).score(xtest_AI,ytest_AI)
-	# parallel prediction for permuted data ######
-	#pred_obs_r2_permut = sklearn.linear_model.Ridge(alpha=alpha_p).fit(xtrain_p,ytrain_p).score(xtest_p,ytest_p)
+	# stack the predictions vertically to be averaged across samples splits
+	all_preds[split,0]=pred_obs_r2_AI
+
+# for permuted predictions
+for permut in range(0,1000):
+        # extract this shuffled ef-subject correspondence
+	varofint_permut=permutedEF[:,permut];
+	# Train and test split from data frame
+	xtrain_AI,xtest_AI,ytrain_AI,ytest_AI,indices_train_AI,indices_test_AI=train_test_split(Featvecs_AI,varofint_permut,indices,test_size=0.33,random_state=(permut))
+	# outcome vector for this split, different vec for permuted and real data
+	r2_vec_split_AI=[]
+	# fit model with gcv
+	lm_AI = sklearn.linear_model.RidgeCV(alphas=alphas, store_cv_values=True).fit(xtrain_AI,ytrain_AI)
+	# set prediction alpha to best performing alpha in training set
+	alpha_AI=lm_AI.alpha_
+	# save regularization weightings for this split
+	all_permut_preds_alphas[permut,0]=alpha_AI
+	# get predicted EF values
+	predEF_AI=lm_AI.predict(xtest_AI)
+	# test prediction on left out sample
+	pred_obs_r2_AI = sklearn.linear_model.Ridge(alpha=alpha_AI).fit(xtrain_AI,ytrain_AI).score(xtest_AI,ytest_AI)
 	# stack the 5 predictions vertically to be averaged across samples splits
-	all_preds[split,1]=pred_obs_r2_AI
-	#all_permut_preds[split,:]=pred_obs_r2_permut	
+	all_permut_preds[permut,0]=pred_obs_r2_AI
 
 # mean age predictions
 mean_preds_AI=np.average(all_preds[:,1])
 #mean_preds_permut=np.average(all_permut_preds[:])
 # mean alphas
 mean_alphas_AI=np.average(all_preds_alphas[:,1])
-#mean_alphas_permut=np.average(all_permut_preds_alphas[:])
+mean_alphas_permut=np.average(all_permut_preds_alphas[:])
 # mean feature weights
 mean_featureWeights_AI=np.average(featureWeights_AI,axis=0)
-##mean_permut_preds.append(np.average(all_rot_preds[:,0]))
+mean_permut_preds.append(np.average(all_permut_preds[:,0]))
 # mean EF predictions
 # throw em in (p-1 because there's no part_0.mat)
 summary_preds[1,0]=mean_preds_AI
@@ -101,6 +119,15 @@ np.savetxt(featureweightsFN,mean_featureWeights_AI,delimiter=",")
 # save predicted subject info
 subjpredsFN='/cbica/projects/pinesParcels/data/aggregated_data/SubjPreds_AI.csv'
 np.savetxt(subjpredsFN,subject_preds_AI,delimiter=",")
+# mean permuted predictions
+# throw em in (p-1 because there's no part_0.mat)
+summary_preds_p[1,0]=mean_permut_preds
+summary_preds_p[1,1]=mean_alphas_permut
+print("Permuted out-of-sample prediction - age Indep.:" + str(mean_permut_preds))
+print("Average Optimal Regularization Weighting - age Indep. only:" + str(mean_alphas_permut))
+# save permuted predictions vector
+permpredsFN='/cbica/projects/pinesParcels/data/aggregated_data/PermutPreds_AI.csv'
+np.savetxt(permpredsFN,all_permut_preds,delimiter=",")
 
 	
 	
