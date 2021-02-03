@@ -238,6 +238,7 @@ cor.test(AgeMotRegrEF,predEF_AI,method='spearman')
     ## 0.5432286
 
 ``` r
+# setup for figure 6 pred. vs obs. ef
 plotdf<-data.frame(AgeMotRegrEF,predEF_AI)
 hexinfo <- hexbin(AgeMotRegrEF, predEF_AI, xbins = 20)
 data_hex <- data.frame(hcell2xy(hexinfo), count = hexinfo@count)
@@ -253,8 +254,16 @@ plasma_pal <- c("grey45", viridis::plasma(n = 25))
 #                         to=to,
 #                         from=c(min(x,na.rm=T),23)),
 #         1)})+geom_point(alpha=0)+geom_smooth(method='lm',color='gray')+theme_classic(base_size=40)+th#eme(legend.position = "left") + xlab("Observed") + ylab("Predicted")+ggtitle('Executive Function'))
+```
 
-plot<-ggplot(plotdf,aes(x=AgeMotRegrEF,y=predEF_AI)) + geom_hex(bins=15) + scale_fill_gradientn(colors=plasma_pal)+geom_point(alpha=0)+geom_smooth(method='lm',color='black',size=4)+theme_classic(base_size=40)+theme(legend.position = "right") + xlab("Observed") + ylab("Predicted")+ggtitle('Executive Function')
+``` r
+ggplot(plotdf,aes(x=AgeMotRegrEF,y=predEF_AI)) + geom_hex(bins=15) + scale_fill_gradientn(colors=plasma_pal)+geom_point(alpha=0)+geom_smooth(method='lm',color='black',size=4)+theme_classic(base_size=40)+theme(legend.position = "right") + xlab("Observed") + ylab("Predicted")+ggtitle('Executive Function')
+```
 
+    ## `geom_smooth()` using formula 'y ~ x'
+
+![](Edge-level-EF_files/figure-markdown_github/unnamed-chunk-10-1.png)
+
+``` r
 #+guides(color=guide_legend(title="Yeo 7 Overlap"))+theme(plot.margin=margin(b=3,t=.1,l=.1,r=.1, unit='cm'), legend.position=c(.42,-.24),legend.direction = "horizontal",legend.title=element_text(size=30),legend.text=element_text(size=30))+geom_smooth(method='gam',formula = y~s(x,k=3),color='black')
 ```
