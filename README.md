@@ -126,7 +126,16 @@ All within [_Network-level-mediation.md_](https://github.com/PennLINC/multiscale
 ## 8A) Edge-level Generalized Additive Models - Figure 4
 All within [_Edge-level-age.md_](https://github.com/PennLINC/multiscale/blob/master/scripts/analyses/Edge-level-Age.md)
 
-Python environment:
-source activate mv_preds
+# Step 9: EF: Edge-level
+## Edge-level EF penalized regression - Figure 6
+## 9A and 9C) Pre and post-ridge 
+within [ penal_regresFC_Age.py ](https://github.com/PennLINC/multiscale/blob/master/scripts/analyses/Edge-level-EF.md)
+## 9B) Penalized regression portion 
+within [ penal_regresFC_AgeEFIndep.py ](https://github.com/PennLINC/multiscale/blob/master/scripts/penalized_regression/penal_regresFC_AgeEFIndep.py)
+(Python environment: source activate mv_preds)
+
+
+
+
 
 \* scripts not linked are intentionally hidden by .gitignore. These files are predominantly the result of someone else's hard work, typically from a different lab, and cannot be published here under Adam's name in good conscience
