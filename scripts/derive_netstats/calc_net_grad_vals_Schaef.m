@@ -4,6 +4,7 @@ addpath(genpath('/cbica/projects/pinesParcels/multiscale/scripts/derive_parcels/
 ProjectFolder = '/cbica/projects/pinesParcels/data/princ_gradients';
 
 % get gradients
+% 2/5/21 - change this to group-level coupling*Age or coupling*Sex maps. These are in gifti format, but get converted to 10242-length vectors anwyays.
 pgl = gifti([ProjectFolder '/Gradients.lh.fsaverage5.func.gii']);
 pgr = gifti([ProjectFolder '/Gradients.rh.fsaverage5.func.gii']);
 
@@ -21,6 +22,7 @@ atlasdir='/cbica/projects/pinesParcels/data/YeoAtlas/Schaef/';
 [v,schaef400R,ct4R]=read_annotation([atlasdir 'rh.Schaefer2018_400Parcels_7Networks_order.annot']);
 
 % initialize blank struct for names and PG vals
+% 2/5/21 - change to capture each system instead of each parcel
 LH200=cell(length(ct2L.struct_names),2);
 LH400=cell(length(ct4L.struct_names),2);
 RH200=cell(length(ct2R.struct_names),2);
@@ -33,8 +35,10 @@ RH200V=zeros(10242,1);
 RH400V=zeros(10242,1);
 
 % get avg. PG1 val for each ROI in schaef 200 (Simult. hemis)
+% 2/5/21 - currently loops over every unique parcel, will need to be changed to for every unique parcel.
 for N=1:length(unique(schaef200L))
 	% fifth row is identifying number to get vertices in this ROI from
+	% 2/5/21 - this calls the 5th column of ctl - colortable. Column 5 is parcel membership, BUT, you will want system membership. Change column accordingly.
 	ROIverts_l=find(schaef200L==(ct2L.table(N,5)));
 	ROIverts_r=find(schaef200R==(ct2R.table(N,5)));
 	% mean pg val in these vertices
