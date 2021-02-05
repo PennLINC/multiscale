@@ -127,8 +127,7 @@ All within [_Network-level-mediation.md_](https://github.com/PennLINC/multiscale
 All within [_Edge-level-age.md_](https://github.com/PennLINC/multiscale/blob/master/scripts/analyses/Edge-level-Age.md)
 
 # Step 9: EF: Edge-level
-## Edge-level EF penalized regression - Figure 6
-## 9A and 9C) Pre and post-ridge 
+## 9A and 9C) Pre and post-ridge - Figure 6
 within [ penal_regresFC_Age.py ](https://github.com/PennLINC/multiscale/blob/master/scripts/analyses/Edge-level-EF.md)
 ## 9B) Penalized regression portion 
 within [ penal_regresFC_AgeEFIndep.py ](https://github.com/PennLINC/multiscale/blob/master/scripts/penalized_regression/penal_regresFC_AgeEFIndep.py)
