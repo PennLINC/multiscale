@@ -128,7 +128,7 @@ All within [_Edge-level-age.md_](https://github.com/PennLINC/multiscale/blob/mas
 
 # Step 9: EF: Edge-level
 ## 9A and 9C) Pre and post-ridge - Figure 6
-within [ penal_regresFC_Age.py ](https://github.com/PennLINC/multiscale/blob/master/scripts/analyses/Edge-level-EF.md)
+within [ Edge-level-EF.md ](https://github.com/PennLINC/multiscale/blob/master/scripts/analyses/Edge-level-EF.md)
 ## 9B) Penalized regression portion 
 within [ penal_regresFC_AgeEFIndep.py ](https://github.com/PennLINC/multiscale/blob/master/scripts/penalized_regression/penal_regresFC_AgeEFIndep.py)
 (Python environment: source activate mv_preds)
