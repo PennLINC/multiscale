@@ -100,18 +100,18 @@ for permut in range(0,1000):
 	all_permut_preds[permut,0]=pred_obs_r2_AI
 
 # mean age predictions
-mean_preds_AI=np.average(all_preds[:,1])
+mean_preds_AI=np.average(all_preds[:,0])
 #mean_preds_permut=np.average(all_permut_preds[:])
 # mean alphas
-mean_alphas_AI=np.average(all_preds_alphas[:,1])
+mean_alphas_AI=np.average(all_preds_alphas[:,0])
 mean_alphas_permut=np.average(all_permut_preds_alphas[:])
 # mean feature weights
 mean_featureWeights_AI=np.average(featureWeights_AI,axis=0)
-mean_permut_preds.append(np.average(all_permut_preds[:,0]))
+mean_permut_preds=np.average(all_permut_preds[:,0])
 # mean EF predictions
 # throw em in (p-1 because there's no part_0.mat)
-summary_preds[1,0]=mean_preds_AI
-summary_preds[1,1]=mean_alphas_AI
+summary_preds[0,0]=mean_preds_AI
+summary_preds[0,1]=mean_alphas_AI
 print("Unpermuted out-of-sample prediction - age Indep.:" + str(mean_preds_AI))
 print("Average Optimal Regularization Weighting - age Indep. only:" + str(mean_alphas_AI))
 featureweightsFN='/cbica/projects/pinesParcels/data/aggregated_data/FeatureWeights_AI.csv'
@@ -120,9 +120,6 @@ np.savetxt(featureweightsFN,mean_featureWeights_AI,delimiter=",")
 subjpredsFN='/cbica/projects/pinesParcels/data/aggregated_data/SubjPreds_AI.csv'
 np.savetxt(subjpredsFN,subject_preds_AI,delimiter=",")
 # mean permuted predictions
-# throw em in (p-1 because there's no part_0.mat)
-summary_preds_p[1,0]=mean_permut_preds
-summary_preds_p[1,1]=mean_alphas_permut
 print("Permuted out-of-sample prediction - age Indep.:" + str(mean_permut_preds))
 print("Average Optimal Regularization Weighting - age Indep. only:" + str(mean_alphas_permut))
 # save permuted predictions vector

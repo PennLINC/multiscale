@@ -120,12 +120,15 @@ write.table(AgeIndepEF,'/cbica/projects/pinesParcels/results/EffectVecs/AgeIndep
 ```
 
 ```{r}
+# print out permuted EF scores
+
 set.seed(1)
-permuted_ind<-sample(1:693)
-permuted_age<-masterdf$Age[permuted_ind]
-forMLpc_permut<-cbind(masterdf$bblid,permuted_age,masterdf$Motion,masterdf$Sex)
-MPpcFN_permut<-'/cbica/projects/pinesParcels/results/EffectVecs/forMLpc_permut.csv'
-write.table(forMLpc_permut,MPpcFN_permut,row.names = F,col.names = F,sep = ',')
+#permuted_ind<-sample(1:693)
+#permuted_ef<-masteref$F1_Exec_Comp_Cog_Accuracy[permuted_ind]
+#forMLpc_permut<-cbind(masterdf$bblid,permuted_age,masterdf$Motion,masterdf$Sex)
+#MPpcFN_permut<-'/cbica/projects/pinesParcels/results/EffectVecs/forMLpc_permut.csv'
+#write.table(forMLpc_permut,MPpcFN_permut,row.names = F,col.names = F,sep = ',')
+
 # ridge - penal_regresFC_Age.py 
 ```
 

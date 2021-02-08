@@ -161,7 +161,7 @@ nsegi='_seg_scale'
 
 # indices of said indicators
 indiv=grep(ind,colnames(masterdf))
-#group=grep(gro,colnames(masterdf))
+group=grep(gro,colnames(masterdf))
 #basists=grep(bts,colnames(masterdf))
 bwcol=grep(bwi,colnames(masterdf))
 wincols=grep(wini,colnames(masterdf))
@@ -372,8 +372,6 @@ for (i in 1:(length(bwAvgCondf)-3)){
   # changed to sig deriv only 7/10/20
   derivInfo[i,]=derv$sig_deriv
   forSpline<-predict(igam, data = masterdf, type = "terms")
-  # adding mean val because output values are centered
-  colOfInt<-unlist(bwAvgCondf[,i])
   # version without centering
   NetSplines[i,]<-forSpline[,3]+coef(igam)[1]
   }
@@ -661,7 +659,7 @@ bwdf$domnetvec17Sig[NL_sigVec==FALSE & bwdf$domnetvec17Sig == 'DM_B']='zNonSig_D
 
 ```{r, fig.width=10,fig.height=7}
 ggplot(bwdf,aes(scalesvec,avg_bw_deltaR2)) + xlab("# of Networks") + ylab(expression(paste('Age Effect (',Delta,R^2[adj],')'))) +theme_classic(base_size = 28) +guides(alpha=FALSE,color=guide_legend(title="Yeo 17 Overlap"))+theme(legend.position=c(.39,-.19),legend.direction = "horizontal",legend.text = element_text(size=20),legend.title = element_text(size=24))+
-geom_smooth(data=subset(bwdf,domnetvec17=='Somatomotor A'),method='gam',formula = y~s(x,k=3),aes(color=domnetvec17),fill="gray82")+geom_smooth(data=subset(bwdf,domnetvec17=='DM_B'),method='gam',formula = y~s(x,k=3),aes(color=domnetvec17),fill="gray82")+scale_color_manual(values=c('#bc0943','#4183a8'))+geom_point(data=subset(bwdf,domnetvec17=='Somatomotor A'),aes(color=domnetvec17Sig),size=5)+geom_point(data=subset(bwdf,domnetvec17=='DM_B'),aes(color=domnetvec17Sig),size=5)+scale_color_manual(values=c('#bc0943','#4183a8','#ebbecc','#b7d9ed'),labels=c('DM B','SM A','n.s. DM B','n.s. SM A'))+scale_x_continuous(breaks=c(4,10,16,22,28))+theme(plot.margin=unit(c(.9,.6,2,.6),"cm"))
+geom_smooth(data=subset(bwdf,domnetvec17=='Somatomotor A'),method='gam',formula = y~s(x,k=3),aes(color=domnetvec17),fill="gray72")+geom_smooth(data=subset(bwdf,domnetvec17=='DM_B'),method='gam',formula = y~s(x,k=3),aes(color=domnetvec17),fill="gray88")+scale_color_manual(values=c('#bc0943','#4183a8'))+geom_point(data=subset(bwdf,domnetvec17=='Somatomotor A'),aes(color=domnetvec17Sig),size=5)+geom_point(data=subset(bwdf,domnetvec17=='DM_B'),aes(color=domnetvec17Sig),size=5)+scale_color_manual(values=c('#bc0943','#4183a8','#ebbecc','#b7d9ed'),labels=c('DM B','SM A','n.s. DM B','n.s. SM A'))+scale_x_continuous(breaks=c(4,10,16,22,28))+theme(plot.margin=unit(c(.9,.6,2,.6),"cm"))
 
 ```
 

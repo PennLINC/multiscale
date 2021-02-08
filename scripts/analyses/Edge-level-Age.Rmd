@@ -230,7 +230,12 @@ gamPredictMeAt8<-data.frame(1,1)
 gamPredictMeAt8$Age<-(96)
 gamPredictMeAt8$Motion<-mean(masterdf$Motion)
 gamPredictMeAt8$Sex<-2
-
+# for spline anlayses
+SplineP<-rep(0,length=length(colnames(individ_scalebybw_df)))
+derivInfo<-array(0,dim=c(4495,200))
+NetSplines<-array(0,dim=c(4495,693)) 
+minAgeEst<-rep(0,length=length(colnames(individ_scalebybw_df)))
+maxAgeEst<-rep(0,length=length(colnames(individ_scalebybw_df)))
 
 #### This measures all the pairwise relations (edges)
 ## for all b/w cols - 10/9/20: EF added in.
@@ -288,6 +293,23 @@ for (i in 1:length(colnames(individ_scalebybw_df))){
     AgeGam<-gam(varofint~Sex+Motion+s(Age,k=3),data=scaledf)
     # record "intercept" (predicted at 8 y.o.)
     EdgeInterceptVector[i]<-predict.gam(AgeGam,gamPredictMeAt8)
+    
+    # spline analyses on edges
+    SplineP[i]<-summary(AgeGam)$s.pv
+    derv<-derivatives(AgeGam,term='Age')
+    derv<- derv %>%
+    mutate(sig = !(0 >lower & 0 < upper))
+    derv$sig_deriv = derv$derivative*derv$sig
+    if (all(derv$sig==FALSE)){minAgeEst[i]=0; maxAgeEst[i]=0
+    } else {
+    minAgeEst[i]<-min(derv$data[derv$sig==T])
+    maxAgeEst[i]<-max(derv$data[derv$sig==T])
+    # changed to sig deriv only 7/10/20
+    derivInfo[i,]=derv$sig_deriv
+    forSpline<-predict(AgeGam, data = masterdf, type = "terms")
+    # version without centering
+    NetSplines[i,]<-forSpline[,3]+coef(AgeGam)[1]
+  }
 }
 
 # age corrections for MC
@@ -306,6 +328,101 @@ domnetSigAge2[ageDR2Pvec>0.05]='NonSig'
 
 # get vectors into a dataframe
 BwAgeCorTMDifDf<-data.frame(tmdifvec,scalevec,Net1Vec,Net2Vec,Net1Vec17,Net2Vec17,fdrAgeDR2,ageDR2vec,domnetSig1,domnetSig2,domnetSigAge1,domnetSigAge2,net1tmvec,net2tmvec)
+```
+
+```{r}
+# an index to group spline values for each network together
+CIgroupingInd<-as.factor(1:4495)
+AgeSpan_plotdf3<-data.frame(tmdifvec,scalevec,Net1Vec,Net2Vec,CIgroupingInd)
+LongAgeSpan_plotdf3<-data.frame(sapply(AgeSpan_plotdf3,rep.int,times=693))
+
+# assign same transmodality value to each point on same lines
+Transmodality693464<-array(dim=c(693*4495,1))
+for (i in 1:4495){
+Transmodality693464[((693*i)-692):(693*i)]<-tmdifvec[i]
+}
+LongAgeSpan_plotdf3$Transmodality<-Transmodality693464
+
+# grouping index so all points of same line have CIgroupingInd in common
+GroupingInd693464<-array(dim=c(693*4495,1))
+for (i in 1:4495){
+GroupingInd693464[((693*i)-692):(693*i)]<-CIgroupingInd[i]
+}
+LongAgeSpan_plotdf3$Grouping<-GroupingInd693464
+
+# ports actual splines in - only for networks that significantly change over this age range
+NetSplines693464<-array(dim=c(693*4495,1))
+# correct splines with fdr
+SplinePFDR<-p.adjust(SplineP,method='fdr')
+for (i in 1:4495){
+  if (SplinePFDR[i]<0.05){
+  # scale added 11/16/20
+  NetSplines693464[((693*i)-692):(693*i)]<-NetSplines[i,]
+  } else {
+    # uncomment for sanity check
+    # print(paste(i,'is not significant'))
+  }
+}
+LongAgeSpan_plotdf3$Splines<-NetSplines693464
+
+# put this guy through the same wrangling ringer as the "estimated age", which is how the spline is ported in
+NetSplinesAgeSideCar693464<-array(dim=c(693*4495,1))
+for (i in 1:4495){
+NetSplinesAgeSideCar693464[((693*i)-692):(693*i)]<-masterdf$Age
+}
+# convert to years
+LongAgeSpan_plotdf3$Age<-NetSplinesAgeSideCar693464/12
+```
+
+```{r, fig.width=11,fig.height=11}
+ggplot(LongAgeSpan_plotdf3,aes(Age,Splines,color=Transmodality,group=Grouping)) +geom_line(size=3,alpha=.4) +labs(x = 'Age', y = 'Between-Network Coupling') +theme_classic(base_size = 40)+ scale_colour_viridis(option="inferno",guide=guide_colorbar(barwidth = 22,ticks.colour = "gray",ticks.linewidth = 8))+theme(legend.text=element_text(size=30),legend.title = element_text(size=30),legend.position="bottom",legend.key.width = unit(3, "cm"))+theme(legend.position="bottom")+ theme(legend.margin=margin(b=-.5,t = -.5, l=-10,unit='cm')) + scale_x_continuous(
+    limits = c(8, 23),
+    expand = c(0, 0),
+    breaks = seq(8,23,by=3)
+  ) +
+  theme(plot.margin=unit(c(.2,.6,.5,.2),"cm"))+labs(color='Transmodality Difference')
+```
+
+```{r}
+AgeSpan_plotdf2<-data.frame(tmdifvec,scalevec,Net1Vec,Net2Vec,CIgroupingInd)
+# repeat in order to match length of derivatives at each age interval for each network for each scale
+LongAgeSpan_plotdf2<-data.frame(sapply(AgeSpan_plotdf2,rep.int,times=200))
+# was getting converted to character
+LongAgeSpan_plotdf2$tmdifvec<-as.numeric(LongAgeSpan_plotdf2$tmdifvec)
+
+# age transformation
+agerange200464<-array(dim=c(200*4495,1))
+#populate
+for (i in 1:length(agerange200)){
+agerange200464[((4495*i)-4494):(4495*i)]<-rep(agerange200[i],4495)
+}
+LongAgeSpan_plotdf2$agespans<-agerange200464
+
+# deriv transformation
+deriv200464<-array(dim=c(200*4495,1))
+for (i in 1:length(agerange200)){
+deriv200464[((4495*i)-4494):(4495*i)]<-derivInfo[,i]
+}
+LongAgeSpan_plotdf2$derivs<-deriv200464
+
+# finally, make vector of where sig=F to make those segments transparent
+LongAgeSpan_plotdf2$AlphaSig<-.8
+LongAgeSpan_plotdf2$AlphaSig[LongAgeSpan_plotdf2$derivs==0]<-0
+
+# set breaks for plot
+breaks=c(-.002,0,0.002)
+```
+
+```{r, fig.width=11,fig.height=40}
+# Age Effect Derivatives * Age * Transmodality
+ggplot(LongAgeSpan_plotdf2,aes(agespans,tmdifvec,color=derivs,group=CIgroupingInd,alpha=AlphaSig)) +geom_line(size=1.5) +labs(x = 'Age', y = 'Transmodality Difference') +theme_classic(base_size = 40)+ xlim(c(8,23))+ scale_colour_gradientn(colours=c('#0b0bff','#8585ff','white','#ff9191','#ff0a0a'),values = c(0,.4,.5,.6,1),breaks=breaks, labels = breaks,limits=c(-.0031,0.0031),name="Change Per Year: Between-Network Coupling")+theme(legend.text=element_text(size=30),legend.title = element_text(size=30),legend.position="top",legend.key.width = unit(4.3, "cm"))+ylim(c(min(tmdifvec),max(tmdifvec)))+guides(alpha=FALSE,color = guide_colorbar(title.position="top",ticks.colour = "gray",
+                                ticks.linewidth = 8))+geom_vline(xintercept = c(10,16,21),linetype='dashed',size=1.5)+ theme(legend.margin=margin(b=-.5,t = -.5, unit='cm')) + scale_x_continuous(
+    limits = c(8, 23),
+    expand = c(0, 0),
+    breaks = seq(8,23,by=3)
+  ) +
+  theme(plot.margin=unit(c(.9,.6,.5,.3),"cm"))
+
 ```
 
 ```{r}
