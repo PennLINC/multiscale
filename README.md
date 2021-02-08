@@ -74,7 +74,7 @@ All within [_Network-level-mediation.md_](https://github.com/PennLINC/multiscale
 ###### Mediation Weight * Transmodality - for figure 6C
 ###### Scale Effect on Mediation Weight (* Transmodality) - for figure 6D
 
-# Step 5: Vertex-level : Age
+# Step 5: Vertex-level : Age and Scale
 ###### [scripts/derive_GEE_stats/DemoData_to_Matlab.R](https://github.com/PennLINC/multiscale/blob/master/scripts/derive_GEE_stats/DemoData_to_Matlab.R) - Prepare "forMLpc.csv" in R (for matlab) 
 ###### [scripts/derive_netstats/Win_Bw_Age_vertwise.m](https://github.com/PennLINC/multiscale/blob/master/scripts/derive_netstats/Win_Bw_Age_vertwise.m) - save out cross-scale values for each subject for each vertex, bringing matrix dimensionality back down to 2
 ###### scp all vertex-level .csv files to pmacs
@@ -85,52 +85,33 @@ All within [_Network-level-mediation.md_](https://github.com/PennLINC/multiscale
 ###### Thank Sarah for being a benevolent stats wizard
 ###### scp all vertex-level GEE stats back out to cubic
 ###### [scripts/derive_GEE_stats/aggregate_GEE_Effects.m](https://github.com/PennLINC/multiscale/blob/master/scripts/derive_GEE_stats/aggregate_GEE_Effects.m) - pull all vertex-level stats into one dataframe
-###### [scripts/derive_GEE_stats/FDR_GEEs_pt1.m](https://github.com/PennLINC/multiscale/blob/master/scripts/derive_GEE_stats/FDR_GEEs_pt1.m) - print out effects in R-friendly format for FDR correction. This is due to matlab limitation in available stat toolbox licenses.
+###### [scripts/derive_GEE_stats/FDR_GEEs_pt1.m](https://github.com/PennLINC/multiscale/blob/master/scripts/derive_GEE_stats/FDR_GEEs_pt1.m) - print out effects in R-friendly format for FDR correction. This is due to matlab limitation in available stat toolbox licenses. *Requires pre-FDR EF to be run with no commenting out*
 ###### [scripts/derive_GEE_stats/FDR_GEEs_1point5.R](https://github.com/PennLINC/multiscale/blob/master/scripts/derive_GEE_stats/FDR_GEEs_1point5.R) FDR correct in R
-###### [scripts/derive_GEE_stats/FDR_GEEs_pt2](https://github.com/PennLINC/multiscale/blob/master/scripts/derive_GEE_stats/FDR_GEEs_pt2.m) - re-aggregate FDR-corrected vertices
+###### [scripts/derive_GEE_stats/FDR_GEEs_pt2](https://github.com/PennLINC/multiscale/blob/master/scripts/derive_GEE_stats/FDR_GEEs_pt2.m) - re-aggregate FDR-corrected vertices - current output filepaths set to results/aggregated_data/*_GEE_FDRed_verts
 ###### scripts/derive_parcels/Toolbox/PBP/PBP_final/PBP_vertWiseEffect4View.m* - run with fdr-corrected vertices for final brainmaps
 
 # Step 6: Vertex-level : Executive Function
-###### [scripts/derive_GEE_stats/DemoData_to_Matlab.R](https://github.com/PennLINC/multiscale/blob/master/scripts/derive_GEE_stats/DemoData_to_Matlab.R) - Prepare "forMLpc.csv" in R (for matlab) 
-###### [scripts/derive_netstats/Win_Bw_Age_vertwise.m](https://github.com/PennLINC/multiscale/blob/master/scripts/derive_netstats/Win_Bw_Age_vertwise.m) - save out cross-scale values for each subject for each vertex, bringing matrix dimensionality back down to 2
-###### scp all vertex-level .csv files to pmacs
+###### Files should all already be on pmacs from step 5.
 ###### xbash module load R/3.6.3 - for consistent versioning of mgcv, doBy, geepack, reshape2. Should also take you to a bbl/linc compute node
-###### loop over qsub_vertWise.sh - i.e: 
-> for i in {1..17734}; do bsub ./qsub_vertWise.sh $i; echo $i; done
-###### the command above iterates over [scripts/vert_GEE_looper.r](https://github.com/PennLINC/multiscale/blob/master/scripts/derive_GEE_stats/vert_GEE_looper.R)
+###### loop over qsub_vertWise_EF.sh - i.e: 
+> for i in {1..17734}; do bsub ./qsub_vertWise_EF.sh $i; echo $i; done
+###### the command above iterates over [scripts/vert_GEE_looper_EF.r](https://github.com/PennLINC/multiscale/blob/master/scripts/derive_GEE_stats/vert_GEE_looper_EF.R)
 ###### Thank Sarah for being a benevolent stats wizard
 ###### scp all vertex-level GEE stats back out to cubic
-###### [scripts/derive_GEE_stats/aggregate_GEE_Effects.m](https://github.com/PennLINC/multiscale/blob/master/scripts/derive_GEE_stats/aggregate_GEE_Effects.m) - pull all vertex-level stats into one dataframe
+###### [scripts/derive_GEE_stats/aggregate_GEE_Effects_EF.m](https://github.com/PennLINC/multiscale/blob/master/scripts/derive_GEE_stats/aggregate_GEE_Effects_EF.m) - pull all vertex-level stats into one dataframe
 ###### [scripts/derive_GEE_stats/FDR_GEEs_pt1.m](https://github.com/PennLINC/multiscale/blob/master/scripts/derive_GEE_stats/FDR_GEEs_pt1.m) - print out effects in R-friendly format for FDR correction. This is due to matlab limitation in available stat toolbox licenses.
 ###### [scripts/derive_GEE_stats/FDR_GEEs_1point5.R](https://github.com/PennLINC/multiscale/blob/master/scripts/derive_GEE_stats/FDR_GEEs_1point5.R) FDR correct in R
-###### [scripts/derive_GEE_stats/FDR_GEEs_pt2](https://github.com/PennLINC/multiscale/blob/master/scripts/derive_GEE_stats/FDR_GEEs_pt2.m) - re-aggregate FDR-corrected vertices
+###### [scripts/derive_GEE_stats/FDR_GEEs_pt2](https://github.com/PennLINC/multiscale/blob/master/scripts/derive_GEE_stats/FDR_GEEs_pt2.m) - re-aggregate FDR-corrected vertices - current output filepaths set to results/aggregated_data/*_GEE_FDRed_verts
 ###### scripts/derive_parcels/Toolbox/PBP/PBP_final/PBP_vertWiseEffect4View.m* - run with fdr-corrected vertices for final brainmaps
 
-# Step 7: Vertex-level : Scale
-###### [scripts/derive_GEE_stats/DemoData_to_Matlab.R](https://github.com/PennLINC/multiscale/blob/master/scripts/derive_GEE_stats/DemoData_to_Matlab.R) - Prepare "forMLpc.csv" in R (for matlab) 
-###### [scripts/derive_netstats/Win_Bw_Age_vertwise.m](https://github.com/PennLINC/multiscale/blob/master/scripts/derive_netstats/Win_Bw_Age_vertwise.m) - save out cross-scale values for each subject for each vertex, bringing matrix dimensionality back down to 2
-###### scp all vertex-level .csv files to pmacs
-###### xbash module load R/3.6.3 - for consistent versioning of mgcv, doBy, geepack, reshape2. Should also take you to a bbl/linc compute node
-###### loop over qsub_vertWise.sh - i.e: 
-> for i in {1..17734}; do bsub ./qsub_vertWise.sh $i; echo $i; done
-###### the command above iterates over [scripts/vert_GEE_looper.r](https://github.com/PennLINC/multiscale/blob/master/scripts/derive_GEE_stats/vert_GEE_looper.R)
-###### Thank Sarah for being a benevolent stats wizard
-###### scp all vertex-level GEE stats back out to cubic
-###### [scripts/derive_GEE_stats/aggregate_GEE_Effects.m](https://github.com/PennLINC/multiscale/blob/master/scripts/derive_GEE_stats/aggregate_GEE_Effects.m) - pull all vertex-level stats into one dataframe
-###### [scripts/derive_GEE_stats/FDR_GEEs_pt1.m](https://github.com/PennLINC/multiscale/blob/master/scripts/derive_GEE_stats/FDR_GEEs_pt1.m) - print out effects in R-friendly format for FDR correction. This is due to matlab limitation in available stat toolbox licenses.
-###### [scripts/derive_GEE_stats/FDR_GEEs_1point5.R](https://github.com/PennLINC/multiscale/blob/master/scripts/derive_GEE_stats/FDR_GEEs_1point5.R) FDR correct in R
-###### [scripts/derive_GEE_stats/FDR_GEEs_pt2](https://github.com/PennLINC/multiscale/blob/master/scripts/derive_GEE_stats/FDR_GEEs_pt2.m) - re-aggregate FDR-corrected vertices
-###### scripts/derive_parcels/Toolbox/PBP/PBP_final/PBP_vertWiseEffect4View.m* - run with fdr-corrected vertices for final brainmaps
-
-# Step 8: Age: Edge-level
-## 8A) Edge-level Generalized Additive Models - Figure 4
+# Step 7: Age: Edge-level
+## 7A) Edge-level Generalized Additive Models - Figure 4
 All within [_Edge-level-age.md_](https://github.com/PennLINC/multiscale/blob/master/scripts/analyses/Edge-level-Age.md)
 
-# Step 9: EF: Edge-level
-## Edge-level EF penalized regression - Figure 6
-## 9A and 9C) Pre and post-ridge 
-within [ penal_regresFC_Age.py ](https://github.com/PennLINC/multiscale/blob/master/scripts/analyses/Edge-level-EF.md)
-## 9B) Penalized regression portion 
+# Step 8: EF: Edge-level
+## 8A and 8C) Pre and post-ridge - Figure 6
+within [ Edge-level-EF.md ](https://github.com/PennLINC/multiscale/blob/master/scripts/analyses/Edge-level-EF.md)
+## 8B) Penalized regression portion 
 within [ penal_regresFC_AgeEFIndep.py ](https://github.com/PennLINC/multiscale/blob/master/scripts/penalized_regression/penal_regresFC_AgeEFIndep.py)
 (Python environment: source activate mv_preds)
 
