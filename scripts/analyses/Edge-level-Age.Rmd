@@ -209,7 +209,6 @@ tmdifvec=rep(0,length(colnames(individ_scalebybw_df)))
 ageEfvec=rep(0,length(colnames(individ_scalebybw_df)))
 ageEfPvec=rep(0,length(colnames(individ_scalebybw_df)))
 motionEfvec=rep(0,length(colnames(individ_scalebybw_df)))
-motioncorvec<-rep(0,length(colnames(individ_scalebybw_df)))
 Net1Vec=rep(0,length(colnames(individ_scalebybw_df)))
 Net2Vec=rep(0,length(colnames(individ_scalebybw_df)))
 Net1Vec17=rep(0,length(colnames(individ_scalebybw_df)))
@@ -268,7 +267,6 @@ for (i in 1:length(colnames(individ_scalebybw_df))){
     
     # save to respective vectors
     tmdifvec[i]<-tmdif
-    motioncorvec[i]<-cor.test(masterdf[,colindex],masterdf$Motion)$estimate
     # accompanying scalevec so we can look at the typical transmodality #difference at each scale
     scalevec[i]=scale
     
@@ -291,6 +289,8 @@ for (i in 1:length(colnames(individ_scalebybw_df))){
     colnames(scaledf)<-c('Age','Sex','Motion','varofint')
     # age-included model for measuring difference
     AgeGam<-gam(varofint~Sex+Motion+s(Age,k=3),data=scaledf)
+    # record motion effect
+    motionEfvec[i]<-AgeGam$coefficients['Motion']
     # record "intercept" (predicted at 8 y.o.)
     EdgeInterceptVector[i]<-predict.gam(AgeGam,gamPredictMeAt8)
     
@@ -390,6 +390,9 @@ LongAgeSpan_plotdf2<-data.frame(sapply(AgeSpan_plotdf2,rep.int,times=200))
 # was getting converted to character
 LongAgeSpan_plotdf2$tmdifvec<-as.numeric(LongAgeSpan_plotdf2$tmdifvec)
 
+# get a vector of the agespan split into 200 to match the deriv vals
+agerange<-range(masterdf$Age)/12
+agerange200<-seq(agerange[1],agerange[2],length.out = 200)
 # age transformation
 agerange200464<-array(dim=c(200*4495,1))
 #populate
@@ -467,4 +470,63 @@ g2 <- gam(ageDR2vec ~ te(net2tmvec,net1tmvec),data = doubleBwAgeCorTMDifDf)
 ```{r, fig.width=8,fig.height=15}
 gg_tensor(g2)+theme_classic(base_size = 40) +theme(legend.text=element_text(size=30),legend.key.width =unit(3.5,"cm"),legend.title = element_text(size=30))+scale_fill_gradient2(low = "blue",high = "red",mid = "white",midpoint = 0,name=expression(paste('Age Effect(',Delta,R^2[adj],')')),guide = guide_colorbar(legend.position='top',title.position="top",ticks.colour = "gray50", ticks.linewidth = 7))+ggtitle("")+xlab("Network Transmodality")+ylab("Network Transmodality")+geom_vline(xintercept = mean(range(doubleBwAgeCorTMDifDf$net1tmvec)),linetype='dashed',size=1.5)+geom_hline(yintercept = mean(range(doubleBwAgeCorTMDifDf$net1tmvec)),linetype='dashed',size=1.5)+theme(legend.position='top')
 
+```
+
+
+```{r}
+# work in euclidean distances
+######### Look at between-distance relations
+
+## grab matlab-generated euclidean distance vector, match to age effect vector
+distance_array=array(dim=c(length(colnames(individ_scalebybw_df)),2))
+
+# make a between over scales vector to keep track of where each between feature sits in the whole multiscale combination
+bw_over_scales=NULL
+bw_start=0
+bw_end=0
+
+
+for (k in 2:30){
+    # index which values are at this scale
+    scaleStr=paste('scale',k,'_',sep='')
+    scaleCols_inds=grep(scaleStr,colnames(masterdf))
+    scaleK_bw_indivi_cols_inds<-intersect(indiv_bwcols_ind,scaleCols_inds)
+
+    # load in distance file for this scale
+    disfp=paste('/cbica/projects/pinesParcels/results/aggregated_data/Scale',k,'_Ind_bwColnames_andDist.csv',sep='')
+    distancedf<-read.csv(disfp)
+    # check to make sure name in file is the same as the corresponding bw col from masterdf
+    if (identical((colnames(masterdf)[scaleK_bw_indivi_cols_inds]),distancedf$bwcolscell_1)){
+      print('bw column names match')}
+    print(k)
+    
+    # helping phriendly index
+    bw_start=bw_end+1
+    bw_end=bw_start+((k)*(k-1)/2)-1
+    Bwind<-bw_start:bw_end
+    
+    distance_array[Bwind,1]<-colnames(masterdf)[scaleK_bw_indivi_cols_inds]
+    distance_array[Bwind,2]<-distancedf$bwcolscell_2
+    
+}  
+
+# Add in pairwise distance between Networks, motion-FC relation
+BwAgeCorTMDifDf<-data.frame(tmdifvec,ageDR2vec,as.numeric(distance_array[,2]),motionEfvec,scalevec,Net1Vec,Net2Vec,Net1Vec17,Net2Vec17,fdrAgeDR2,ageDR2vec,domnetSig1,domnetSig2,domnetSigAge1,domnetSigAge2,net1tmvec,net2tmvec)
+
+colnames(BwAgeCorTMDifDf)[3]<-'EucDist'
+
+# Artificial 0s exist where 2 Networks do not exist on the same hemisphere, mask em out
+BwAgeCorDistance_nonZero<-BwAgeCorTMDifDf[BwAgeCorTMDifDf$EucDist!=0,]
+
+Euc<-ggplot(data=BwAgeCorDistance_nonZero,aes(x=EucDist,y=ageDR2vec)) + geom_point(alpha=.07,size=3) + xlab('Euclid. Dist.') + ylab('Age Relationship (dr2)')+geom_smooth(method='lm')+theme_classic()
+
+Mot<-ggplot(data=BwAgeCorDistance_nonZero,aes(x=EucDist,y=motionEfvec)) + geom_point(alpha=.07,size=3) + xlab('Euclid. Dist.') + ylab('Motion Coefficient')+geom_smooth(method='lm')+theme_classic()
+
+TMd<-ggplot(data=BwAgeCorDistance_nonZero,aes(x=tmdifvec,y=ageDR2vec)) + geom_point(alpha=.07,size=3) + xlab('Transmodality difference') + ylab('Age Relationship (dr2)')+geom_smooth(method='lm')+theme_classic()
+
+TMd_euc<-ggplot(data=BwAgeCorDistance_nonZero,aes(x=EucDist,y=tmdifvec)) + geom_point(alpha=.07,size=3) + xlab('Euclid. Dist.') + ylab('Transmodality difference')+geom_smooth(method='lm')+theme_classic()
+```
+
+```{r, fig.width=9,fig.height=9}
+ggarrange(Euc,Mot,TMd,TMd_euc)
 ```

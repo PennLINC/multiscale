@@ -220,7 +220,6 @@ tmdifvec=rep(0,length(colnames(individ_scalebybw_df)))
 ageEfvec=rep(0,length(colnames(individ_scalebybw_df)))
 ageEfPvec=rep(0,length(colnames(individ_scalebybw_df)))
 motionEfvec=rep(0,length(colnames(individ_scalebybw_df)))
-motioncorvec<-rep(0,length(colnames(individ_scalebybw_df)))
 Net1Vec=rep(0,length(colnames(individ_scalebybw_df)))
 Net2Vec=rep(0,length(colnames(individ_scalebybw_df)))
 Net1Vec17=rep(0,length(colnames(individ_scalebybw_df)))
@@ -241,7 +240,12 @@ gamPredictMeAt8<-data.frame(1,1)
 gamPredictMeAt8$Age<-(96)
 gamPredictMeAt8$Motion<-mean(masterdf$Motion)
 gamPredictMeAt8$Sex<-2
-
+# for spline anlayses
+SplineP<-rep(0,length=length(colnames(individ_scalebybw_df)))
+derivInfo<-array(0,dim=c(4495,200))
+NetSplines<-array(0,dim=c(4495,693)) 
+minAgeEst<-rep(0,length=length(colnames(individ_scalebybw_df)))
+maxAgeEst<-rep(0,length=length(colnames(individ_scalebybw_df)))
 
 #### This measures all the pairwise relations (edges)
 ## for all b/w cols - 10/9/20: EF added in.
@@ -274,7 +278,6 @@ for (i in 1:length(colnames(individ_scalebybw_df))){
     
     # save to respective vectors
     tmdifvec[i]<-tmdif
-    motioncorvec[i]<-cor.test(masterdf[,colindex],masterdf$Motion)$estimate
     # accompanying scalevec so we can look at the typical transmodality #difference at each scale
     scalevec[i]=scale
     
@@ -297,8 +300,27 @@ for (i in 1:length(colnames(individ_scalebybw_df))){
     colnames(scaledf)<-c('Age','Sex','Motion','varofint')
     # age-included model for measuring difference
     AgeGam<-gam(varofint~Sex+Motion+s(Age,k=3),data=scaledf)
+    # record motion effect
+    motionEfvec[i]<-AgeGam$coefficients['Motion']
     # record "intercept" (predicted at 8 y.o.)
     EdgeInterceptVector[i]<-predict.gam(AgeGam,gamPredictMeAt8)
+    
+    # spline analyses on edges
+    SplineP[i]<-summary(AgeGam)$s.pv
+    derv<-derivatives(AgeGam,term='Age')
+    derv<- derv %>%
+    mutate(sig = !(0 >lower & 0 < upper))
+    derv$sig_deriv = derv$derivative*derv$sig
+    if (all(derv$sig==FALSE)){minAgeEst[i]=0; maxAgeEst[i]=0
+    } else {
+    minAgeEst[i]<-min(derv$data[derv$sig==T])
+    maxAgeEst[i]<-max(derv$data[derv$sig==T])
+    # changed to sig deriv only 7/10/20
+    derivInfo[i,]=derv$sig_deriv
+    forSpline<-predict(AgeGam, data = masterdf, type = "terms")
+    # version without centering
+    NetSplines[i,]<-forSpline[,3]+coef(AgeGam)[1]
+  }
 }
 
 # age corrections for MC
@@ -320,6 +342,112 @@ BwAgeCorTMDifDf<-data.frame(tmdifvec,scalevec,Net1Vec,Net2Vec,Net1Vec17,Net2Vec1
 ```
 
 ``` r
+# an index to group spline values for each network together
+CIgroupingInd<-as.factor(1:4495)
+AgeSpan_plotdf3<-data.frame(tmdifvec,scalevec,Net1Vec,Net2Vec,CIgroupingInd)
+LongAgeSpan_plotdf3<-data.frame(sapply(AgeSpan_plotdf3,rep.int,times=693))
+
+# assign same transmodality value to each point on same lines
+Transmodality693464<-array(dim=c(693*4495,1))
+for (i in 1:4495){
+Transmodality693464[((693*i)-692):(693*i)]<-tmdifvec[i]
+}
+LongAgeSpan_plotdf3$Transmodality<-Transmodality693464
+
+# grouping index so all points of same line have CIgroupingInd in common
+GroupingInd693464<-array(dim=c(693*4495,1))
+for (i in 1:4495){
+GroupingInd693464[((693*i)-692):(693*i)]<-CIgroupingInd[i]
+}
+LongAgeSpan_plotdf3$Grouping<-GroupingInd693464
+
+# ports actual splines in - only for networks that significantly change over this age range
+NetSplines693464<-array(dim=c(693*4495,1))
+# correct splines with fdr
+SplinePFDR<-p.adjust(SplineP,method='fdr')
+for (i in 1:4495){
+  if (SplinePFDR[i]<0.05){
+  # scale added 11/16/20
+  NetSplines693464[((693*i)-692):(693*i)]<-NetSplines[i,]
+  } else {
+    # uncomment for sanity check
+    # print(paste(i,'is not significant'))
+  }
+}
+LongAgeSpan_plotdf3$Splines<-NetSplines693464
+
+# put this guy through the same wrangling ringer as the "estimated age", which is how the spline is ported in
+NetSplinesAgeSideCar693464<-array(dim=c(693*4495,1))
+for (i in 1:4495){
+NetSplinesAgeSideCar693464[((693*i)-692):(693*i)]<-masterdf$Age
+}
+# convert to years
+LongAgeSpan_plotdf3$Age<-NetSplinesAgeSideCar693464/12
+```
+
+``` r
+ggplot(LongAgeSpan_plotdf3,aes(Age,Splines,color=Transmodality,group=Grouping)) +geom_line(size=3,alpha=.4) +labs(x = 'Age', y = 'Between-Network Coupling') +theme_classic(base_size = 40)+ scale_colour_viridis(option="inferno",guide=guide_colorbar(barwidth = 22,ticks.colour = "gray",ticks.linewidth = 8))+theme(legend.text=element_text(size=30),legend.title = element_text(size=30),legend.position="bottom",legend.key.width = unit(3, "cm"))+theme(legend.position="bottom")+ theme(legend.margin=margin(b=-.5,t = -.5, l=-10,unit='cm')) + scale_x_continuous(
+    limits = c(8, 23),
+    expand = c(0, 0),
+    breaks = seq(8,23,by=3)
+  ) +
+  theme(plot.margin=unit(c(.2,.6,.5,.2),"cm"))+labs(color='Transmodality Difference')
+```
+
+    ## Warning: Removed 1466388 row(s) containing missing values (geom_path).
+
+![](Edge-level-Age_files/figure-markdown_github/unnamed-chunk-7-1.png)
+
+``` r
+AgeSpan_plotdf2<-data.frame(tmdifvec,scalevec,Net1Vec,Net2Vec,CIgroupingInd)
+# repeat in order to match length of derivatives at each age interval for each network for each scale
+LongAgeSpan_plotdf2<-data.frame(sapply(AgeSpan_plotdf2,rep.int,times=200))
+# was getting converted to character
+LongAgeSpan_plotdf2$tmdifvec<-as.numeric(LongAgeSpan_plotdf2$tmdifvec)
+
+# get a vector of the agespan split into 200 to match the deriv vals
+agerange<-range(masterdf$Age)/12
+agerange200<-seq(agerange[1],agerange[2],length.out = 200)
+# age transformation
+agerange200464<-array(dim=c(200*4495,1))
+#populate
+for (i in 1:length(agerange200)){
+agerange200464[((4495*i)-4494):(4495*i)]<-rep(agerange200[i],4495)
+}
+LongAgeSpan_plotdf2$agespans<-agerange200464
+
+# deriv transformation
+deriv200464<-array(dim=c(200*4495,1))
+for (i in 1:length(agerange200)){
+deriv200464[((4495*i)-4494):(4495*i)]<-derivInfo[,i]
+}
+LongAgeSpan_plotdf2$derivs<-deriv200464
+
+# finally, make vector of where sig=F to make those segments transparent
+LongAgeSpan_plotdf2$AlphaSig<-.8
+LongAgeSpan_plotdf2$AlphaSig[LongAgeSpan_plotdf2$derivs==0]<-0
+
+# set breaks for plot
+breaks=c(-.002,0,0.002)
+```
+
+``` r
+# Age Effect Derivatives * Age * Transmodality
+ggplot(LongAgeSpan_plotdf2,aes(agespans,tmdifvec,color=derivs,group=CIgroupingInd,alpha=AlphaSig)) +geom_line(size=1.5) +labs(x = 'Age', y = 'Transmodality Difference') +theme_classic(base_size = 40)+ xlim(c(8,23))+ scale_colour_gradientn(colours=c('#0b0bff','#8585ff','white','#ff9191','#ff0a0a'),values = c(0,.4,.5,.6,1),breaks=breaks, labels = breaks,limits=c(-.0031,0.0031),name="Change Per Year: Between-Network Coupling")+theme(legend.text=element_text(size=30),legend.title = element_text(size=30),legend.position="top",legend.key.width = unit(4.3, "cm"))+ylim(c(min(tmdifvec),max(tmdifvec)))+guides(alpha=FALSE,color = guide_colorbar(title.position="top",ticks.colour = "gray",
+                                ticks.linewidth = 8))+geom_vline(xintercept = c(10,16,21),linetype='dashed',size=1.5)+ theme(legend.margin=margin(b=-.5,t = -.5, unit='cm')) + scale_x_continuous(
+    limits = c(8, 23),
+    expand = c(0, 0),
+    breaks = seq(8,23,by=3)
+  ) +
+  theme(plot.margin=unit(c(.9,.6,.5,.3),"cm"))
+```
+
+    ## Scale for 'x' is already present. Adding another scale for 'x', which will
+    ## replace the existing scale.
+
+![](Edge-level-Age_files/figure-markdown_github/unnamed-chunk-9-1.png)
+
+``` r
 # get gam for stats
 ageEdgeGam<-gam(ageDR2vec~s(tmdifvec,k=3),data=BwAgeCorTMDifDf)
 ```
@@ -329,7 +457,7 @@ ageEdgeGam<-gam(ageDR2vec~s(tmdifvec,k=3),data=BwAgeCorTMDifDf)
 ggplot(BwAgeCorTMDifDf,aes(x=tmdifvec,y=ageDR2vec))+ geom_text(data=BwAgeCorTMDifDf[BwAgeCorTMDifDf$fdrAgeDR2<0.05,],size=10,label="\u25D6",family="Arial Unicode MS",aes(x=tmdifvec,y=ageDR2vec,color=Net1Vec))+scale_color_manual(values=ycolors,limits=Y7vec)+geom_text(data=BwAgeCorTMDifDf[BwAgeCorTMDifDf$fdrAgeDR2<0.05,],aes(x=tmdifvec,y=ageDR2vec,color=Net2Vec),size=10,label="\u25D7",family="Arial Unicode MS")+geom_point(data=BwAgeCorTMDifDf[BwAgeCorTMDifDf$fdrAgeDR2>0.05,],aes(x=tmdifvec,y=ageDR2vec),color='grey80',size=4,alpha=.7)+theme(legend.position = "none") + xlab('Transmodality Difference') + ylab(expression(paste('Age Effect(',Delta,R^2[adj],')')))+theme_classic(base_size = 40)+theme(legend.position = "none")+geom_smooth(method='gam',formula = y~s(x,k=3),color='black',size=2)
 ```
 
-![](Edge-level-Age_files/figure-markdown_github/unnamed-chunk-7-1.png)
+![](Edge-level-Age_files/figure-markdown_github/unnamed-chunk-11-1.png)
 
 ``` r
 # edge-wise 8 y.o. intercept
@@ -342,7 +470,7 @@ ageEdgeIntGam<-gam(EdgeInterceptVector~s(tmdifvec,k=3),data=BwAgeCorTMDifDf)
 ggplot(edgeInt,aes(x=tmdifvec,y=EdgeInterceptVector))+geom_point(data=edgeInt[edgeInt$fdrAgeDR2>0.05,],aes(x=tmdifvec,y=EdgeInterceptVector),alpha=.7,color='gray80',size=4)+theme_classic(base_size=40)+ geom_text(data=edgeInt[edgeInt$fdrAgeDR2<0.05,],aes(x=tmdifvec,y=EdgeInterceptVector,color=Net1Vec),size=10,label="\u25D6",family="Arial Unicode MS")+geom_text(data=edgeInt[edgeInt$fdrAgeDR2<0.05,],aes(x=tmdifvec,y=EdgeInterceptVector,color=Net2Vec),size=10,label="\u25D7",family="Arial Unicode MS")+scale_color_manual(values=ycolors,limits=Y7vec)+geom_smooth(method='gam',formula = y~s(x,k=3),color='black',size=2)+ylab("Initial Between-Community Coupling")+xlab("Transmodality Difference")+theme(plot.margin=margin(b=3.5,t=.1,l=1,r=1, unit='cm'),legend.position=c(.42,-.2),legend.direction = "horizontal")+guides(alpha=FALSE,color=guide_legend(title="Yeo 7 Overlap"))
 ```
 
-![](Edge-level-Age_files/figure-markdown_github/unnamed-chunk-9-1.png)
+![](Edge-level-Age_files/figure-markdown_github/unnamed-chunk-13-1.png)
 
 ``` r
 # gam surface
@@ -380,4 +508,130 @@ gg_tensor(g2)+theme_classic(base_size = 40) +theme(legend.text=element_text(size
     ## Scale for 'fill' is already present. Adding another scale for 'fill', which
     ## will replace the existing scale.
 
-![](Edge-level-Age_files/figure-markdown_github/unnamed-chunk-11-1.png)
+![](Edge-level-Age_files/figure-markdown_github/unnamed-chunk-15-1.png)
+
+``` r
+# work in euclidean distances
+######### Look at between-distance relations
+
+## grab matlab-generated euclidean distance vector, match to age effect vector
+distance_array=array(dim=c(length(colnames(individ_scalebybw_df)),2))
+
+# make a between over scales vector to keep track of where each between feature sits in the whole multiscale combination
+bw_over_scales=NULL
+bw_start=0
+bw_end=0
+
+
+for (k in 2:30){
+    # index which values are at this scale
+    scaleStr=paste('scale',k,'_',sep='')
+    scaleCols_inds=grep(scaleStr,colnames(masterdf))
+    scaleK_bw_indivi_cols_inds<-intersect(indiv_bwcols_ind,scaleCols_inds)
+
+    # load in distance file for this scale
+    disfp=paste('/cbica/projects/pinesParcels/results/aggregated_data/Scale',k,'_Ind_bwColnames_andDist.csv',sep='')
+    distancedf<-read.csv(disfp)
+    # check to make sure name in file is the same as the corresponding bw col from masterdf
+    if (identical((colnames(masterdf)[scaleK_bw_indivi_cols_inds]),distancedf$bwcolscell_1)){
+      print('bw column names match')}
+    print(k)
+    
+    # helping phriendly index
+    bw_start=bw_end+1
+    bw_end=bw_start+((k)*(k-1)/2)-1
+    Bwind<-bw_start:bw_end
+    
+    distance_array[Bwind,1]<-colnames(masterdf)[scaleK_bw_indivi_cols_inds]
+    distance_array[Bwind,2]<-distancedf$bwcolscell_2
+    
+}  
+```
+
+    ## [1] "bw column names match"
+    ## [1] 2
+    ## [1] "bw column names match"
+    ## [1] 3
+    ## [1] "bw column names match"
+    ## [1] 4
+    ## [1] "bw column names match"
+    ## [1] 5
+    ## [1] "bw column names match"
+    ## [1] 6
+    ## [1] "bw column names match"
+    ## [1] 7
+    ## [1] "bw column names match"
+    ## [1] 8
+    ## [1] "bw column names match"
+    ## [1] 9
+    ## [1] "bw column names match"
+    ## [1] 10
+    ## [1] "bw column names match"
+    ## [1] 11
+    ## [1] "bw column names match"
+    ## [1] 12
+    ## [1] "bw column names match"
+    ## [1] 13
+    ## [1] "bw column names match"
+    ## [1] 14
+    ## [1] "bw column names match"
+    ## [1] 15
+    ## [1] "bw column names match"
+    ## [1] 16
+    ## [1] "bw column names match"
+    ## [1] 17
+    ## [1] "bw column names match"
+    ## [1] 18
+    ## [1] "bw column names match"
+    ## [1] 19
+    ## [1] "bw column names match"
+    ## [1] 20
+    ## [1] "bw column names match"
+    ## [1] 21
+    ## [1] "bw column names match"
+    ## [1] 22
+    ## [1] "bw column names match"
+    ## [1] 23
+    ## [1] "bw column names match"
+    ## [1] 24
+    ## [1] "bw column names match"
+    ## [1] 25
+    ## [1] "bw column names match"
+    ## [1] 26
+    ## [1] "bw column names match"
+    ## [1] 27
+    ## [1] "bw column names match"
+    ## [1] 28
+    ## [1] "bw column names match"
+    ## [1] 29
+    ## [1] "bw column names match"
+    ## [1] 30
+
+``` r
+# Add in pairwise distance between Networks, motion-FC relation
+BwAgeCorTMDifDf<-data.frame(tmdifvec,ageDR2vec,as.numeric(distance_array[,2]),motionEfvec,scalevec,Net1Vec,Net2Vec,Net1Vec17,Net2Vec17,fdrAgeDR2,ageDR2vec,domnetSig1,domnetSig2,domnetSigAge1,domnetSigAge2,net1tmvec,net2tmvec)
+
+colnames(BwAgeCorTMDifDf)[3]<-'EucDist'
+
+# Artificial 0s exist where 2 Networks do not exist on the same hemisphere, mask em out
+BwAgeCorDistance_nonZero<-BwAgeCorTMDifDf[BwAgeCorTMDifDf$EucDist!=0,]
+
+Euc<-ggplot(data=BwAgeCorDistance_nonZero,aes(x=EucDist,y=ageDR2vec)) + geom_point(alpha=.07,size=3) + xlab('Euclid. Dist.') + ylab('Age Relationship (dr2)')+geom_smooth(method='lm')+theme_classic()
+
+Mot<-ggplot(data=BwAgeCorDistance_nonZero,aes(x=EucDist,y=motionEfvec)) + geom_point(alpha=.07,size=3) + xlab('Euclid. Dist.') + ylab('Motion Coefficient')+geom_smooth(method='lm')+theme_classic()
+
+TMd<-ggplot(data=BwAgeCorDistance_nonZero,aes(x=tmdifvec,y=ageDR2vec)) + geom_point(alpha=.07,size=3) + xlab('Transmodality difference') + ylab('Age Relationship (dr2)')+geom_smooth(method='lm')+theme_classic()
+
+TMd_euc<-ggplot(data=BwAgeCorDistance_nonZero,aes(x=EucDist,y=tmdifvec)) + geom_point(alpha=.07,size=3) + xlab('Euclid. Dist.') + ylab('Transmodality difference')+geom_smooth(method='lm')+theme_classic()
+```
+
+``` r
+ggarrange(Euc,Mot,TMd,TMd_euc)
+```
+
+    ## `geom_smooth()` using formula 'y ~ x'
+    ## `geom_smooth()` using formula 'y ~ x'
+    ## `geom_smooth()` using formula 'y ~ x'
+    ## `geom_smooth()` using formula 'y ~ x'
+
+![](Edge-level-Age_files/figure-markdown_github/unnamed-chunk-17-1.png)
