@@ -525,6 +525,8 @@ Mot<-ggplot(data=BwAgeCorDistance_nonZero,aes(x=EucDist,y=motionEfvec)) + geom_p
 TMd<-ggplot(data=BwAgeCorDistance_nonZero,aes(x=tmdifvec,y=ageDR2vec)) + geom_point(alpha=.07,size=3) + xlab('Transmodality difference') + ylab('Age Relationship (dr2)')+geom_smooth(method='lm')+theme_classic()
 
 TMd_euc<-ggplot(data=BwAgeCorDistance_nonZero,aes(x=EucDist,y=tmdifvec)) + geom_point(alpha=.07,size=3) + xlab('Euclid. Dist.') + ylab('Transmodality difference')+geom_smooth(method='lm')+theme_classic()
+
+fullmodel<-lm(ageDR2vec~EucDist+tmdifvec,data=BwAgeCorDistance_nonZero)
 ```
 
 ```{r, fig.width=9,fig.height=9}

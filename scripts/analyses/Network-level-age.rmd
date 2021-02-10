@@ -186,6 +186,64 @@ wincolnames<-colnames(individ_scalebywin_df)
 
 # empty array for each nets average b/w con across subjects
 bwAvgCon<-matrix(0,693,464)
+
+
+
+
+
+# simpler version for easier replication - this still has the annoying part where "_"'s are added in and taken out though. Needed to distinguish scale 1 from 10, 2 from 20, etc.
+
+# simpler but about 5x slower....
+
+## loop over each scale
+#  for (K in 2:30){
+#  # Make index of where values from this K should go
+#    K_start=((K-1)*(K))/2
+#    K_end=(((K-1)*(K))/2)+K-1
+#    Kind<-K_start:K_end
+#    # index which values are at this scale
+#    scaleStr=paste('scale',K,'_',sep='')
+#    scaleCols_inds=grep(scaleStr,colnames(masterdf))
+#    scaleK_bw_indivi_cols_inds<-intersect(indiv_bwcols_ind,scaleCols_inds)
+#    # extract within and between colnames at this scale for within->b/w binarized transmodality mapping
+#    bwcolnames_thisScale_inds<-grep((paste('scale',K,'_',sep='')),bwcolnames)
+#    bwcolnames_thisScale=bwcolnames[bwcolnames_thisScale_inds]
+#    
+#    # remove scale number from strings so we're not picking up on those
+#    bwcolnames_thisScale_split<-strsplit(bwcolnames_thisScale,"nets")
+#    bwnetnames_thisScale<-sapply(bwcolnames_thisScale_split, "[[" , 2)
+#    # add another fucking set of underscores to all of these colnames so 1's dont pick up 10s, 2s 20s.
+#    bwnetnames_thisScale_extended<-paste('ind_bw_FC_scale',K,'_nets_',bwnetnames_thisScale,'_',sep='')
+#    # extra goddamn underscores have to go here and be removed later
+#    bwcolnames_thisScale_split<-strsplit(bwcolnames_thisScale,"nets")
+#    
+#    for (N in 1:K){
+#      # generate index for where values for this network at this scale should reside
+#      # start from K index
+#      Nind<-Kind[N]
+#      # get index for this N in terms of masterdf (collapse | to match multiple patterns)
+#      Ncolnames<-grep(as.character(paste('_',N,'_',sep='')),bwnetnames_thisScale_extended,value=T)
+#      # cut terminal underscore
+#      Ncolnames_circumcised<-substr(Ncolnames,1,nchar(Ncolnames)-1)
+#      # cut last extraneous underscore: after scaleX_nets_
+#      scaleNetStr=paste(scaleStr,'nets_',sep='')
+#      desired_scaleNetStr=paste(scaleStr,'nets',sep='')
+#      # make the subs
+#      Ncolnames_circumcised_shortened<-gsub(scaleNetStr,desired_scaleNetStr,Ncolnames_circumcised)
+#      # find corresponding spots in masterdf
+#      # paste("x$") added for exact matches only (end anchor)
+#      N_indices<-sapply(Ncolnames_circumcised_shortened,function(y) grep(paste(y,'$',sep=''),colnames(masterdf)))
+#      # extract all columns of interest for each subject
+#      N_edges_at_this_scale<-cbind(masterdf[,N_indices])
+#      # get corresponding columns, average over
+#      avg_bw=rowMeans(N_edges_at_this_scale)
+#      # for bw-based gams later - convert all b/w cons for a net to avg b/w for each subj
+#      bwAvgCon[,Nind]=avg_bw
+#    }
+#  }
+
+
+
 # loop over connectivities to-unimodal then to-transmodal
 modalloopvar=c('unimodal','transmodal')
 for (i in 1:2){
