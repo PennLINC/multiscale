@@ -72,6 +72,33 @@ DeltaPEstVec<-function(x){
   
 }
 
+# bootstrap version: resampled df instead of master df
+DeltaR2EstVec_RS<-function(x){
+  
+  # relevant df
+  scaledf<-data.frame(cbind(as.numeric(resampDF$Age),as.numeric(resampDF$Sex),resampDF$Motion,x))
+  colnames(scaledf)<-c('Age','Sex','Motion','varofint')
+  
+  # no-age model (segreg ~ sex + motion)
+  noAgeGam<-gam(varofint~Sex+Motion,data=scaledf)
+  noAgeSum<-summary(noAgeGam)
+  # age-included model for measuring difference
+  AgeGam<-gam(varofint~Sex+Motion+s(Age,k=3),data=scaledf)
+  AgeSum<-summary(AgeGam)
+  
+  dif<-AgeSum$r.sq-noAgeSum$r.sq
+  
+  # partial spearmans to extract age relation (for direction)
+  pspear=pcor(scaledf,method='spearman')$estimate
+  corest<-pspear[4]
+  if(corest<0){
+    dif=dif*-1
+  }
+  
+  return(dif)
+  
+}
+
 ```
 
 ```{r}
@@ -447,7 +474,52 @@ bwdf<-data.frame(tmvec,scalesvec,domnetvec,domnetvec17,netpropvec,avg_bw_deltaR2
 ```
 
 ```{r}
-# Age * Transmodality - final setup
+
+######## test whether or not network-level Age Effects vary as a function of network Transmodality
+
+#### subject-level resample: outer loop
+set.seed(1)
+# set number of bootstraps
+b<-30
+# initialize likelihood ratio test output vector: one value for each bootstrap
+LiRat_testStat<-rep(0,b)
+LiRat_testPvec<-rep(0,b)
+# now bootstrap "b" times
+for (x in 1:b){
+  # initialize network-level output vector for each bootstrap
+  avg_bw_deltaR2<-rep(0,464)
+  avg_bw_deltaP<-rep(0,464)
+  # now bootstrapping 693 subjects rather than 464 networks
+  sampIndices<-sample(1:693,replace=T)
+  # bwAvgCondf is a leaner version of the master dataframe with all variables needed here.
+  resampDF<-bwAvgCondf[sampIndices,]
+  #### fit model to all 464 networks: inner loop
+  for (n in 1:464){
+    # first 464 columns are network-level connectivity values. test each.
+    # this is a function that return full vs. reduced model comparisons (Age included vs. age excluded, controls for sex + motion).
+    avg_bw_deltaR2[n]<-DeltaR2EstVec_RS(resampDF[n])
+  }
+  #### end of inner loop 
+  # create network-level dataframe from subject-level results: tmvec is just a vector of transmodality values for each network
+  NL_bwdf<-data.frame(tmvec,avg_bw_deltaR2)
+  # Now, test relationship between age effect and transmodality for this bootstrap with likelihood ratio test between nested models
+  # fit full model
+  AgeEff_by_transmodality_model<-gam(avg_bw_deltaR2~s(tmvec,k=3),data=NL_bwdf,select=F,method='REML')
+  # fit reduced, intercept only
+  AgeEff_intOnly_model<-gam(avg_bw_deltaR2~1,data=NL_bwdf,select=F,method='REML')
+  # likelihood ratio estimate for this bootstrap (analysis of deviance)
+  LRoutput<-anova(AgeEff_intOnly_model,AgeEff_by_transmodality_model,test='LRT')
+  # saving "deviance", which i believe is normalized change in likelihood
+  LiRat_testStat[x]<-LRoutput$Deviance[2]
+  # and saving p-values for smooth-brained non-statisticians like myself to interpret
+  LiRat_testPvec[x]<-LRoutput$`Pr(>Chi)`[2]
+}
+#### end of outer loop
+plot(LiRat_testStat)
+plot(LiRat_testPvec)
+```
+
+```{r}
 # Map nonsig to grey
 bwdf$domnetvecSig<-'NonSig'
 # sig where CL_vec indicates
@@ -458,7 +530,22 @@ bwdf$domnetvecSig<-factor(bwdf$domnetvecSig,levels=c("Motor","Visual","DA","VA",
 
 # stats for fig-gam
 Age_net_gam<-gam(avg_bw_deltaR2~s(tmvec,k=3),data=bwdf)
-Age_net_gam_SigOnly<-gam(avg_bw_deltaR2~s(tmvec,k=3),data=bwdf[NL_sigVec,])
+
+# number of bootstraps
+#b<-10000
+
+# now bootstrap x times
+#for (x in 1:b){
+#  sampIndices<-sample(1:464,replace=T)
+#  resampDF<-bwdf[sampIndices,]
+  # fit model
+#  Age_net_gamRs<-gam(avg_bw_deltaR2~s(tmvec,k=3),data=resampDF)
+#  sumRS<-summary(Age_net_gamRs)
+#  r2adjvec[x]<-sumRS$r.sq
+#  pvec[x]<-sumRS$s.pv
+#}
+  
+
 ```
 
 ```{r, fig.width=11,fig.height=11}
