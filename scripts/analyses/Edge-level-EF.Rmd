@@ -158,7 +158,7 @@ predEF_AIpermutCors<-read.csv('/cbica/projects/pinesParcels/data/aggregated_data
 
 ```{r, fig.width=4,fig.height=3}
 # edge-EF pred. permutation vs. observed
-ggplot(predEF_AIpermutCors,aes(x=V1))+geom_density(size=1.5)+geom_vline(xintercept = predObsCor,size=2,color='#BC3754')+theme_classic(base_size=28)+ylab('')+xlab('r')+guides(y="none")+xlim(c(-.6,.6))
+ggplot(predEF_AIpermutCors,aes(x=V1))+geom_density(size=1.5)+geom_vline(xintercept = predObsCor,size=2,color='#BC3754')+theme_classic(base_size=18)+ylab('')+xlab('')+guides(y="none")+scale_x_continuous(breaks=c(-.3,0,.3,.6),limits=c(-.35,.6))
 
 ```
 

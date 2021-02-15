@@ -436,7 +436,7 @@ ageEdgeGam<-gam(ageDR2vec~s(tmdifvec,k=3),data=BwAgeCorTMDifDf)
 
 ```{r, fig.width=10,fig.height=10}
 # plot edge-wise age effects
-ggplot(BwAgeCorTMDifDf,aes(x=tmdifvec,y=ageDR2vec))+ geom_text(data=BwAgeCorTMDifDf[BwAgeCorTMDifDf$fdrAgeDR2<0.05,],size=10,label="\u25D6",family="Arial Unicode MS",aes(x=tmdifvec,y=ageDR2vec,color=Net1Vec))+scale_color_manual(values=ycolors,limits=Y7vec)+geom_text(data=BwAgeCorTMDifDf[BwAgeCorTMDifDf$fdrAgeDR2<0.05,],aes(x=tmdifvec,y=ageDR2vec,color=Net2Vec),size=10,label="\u25D7",family="Arial Unicode MS")+geom_point(data=BwAgeCorTMDifDf[BwAgeCorTMDifDf$fdrAgeDR2>0.05,],aes(x=tmdifvec,y=ageDR2vec),color='grey80',size=4,alpha=.7)+theme(legend.position = "none") + xlab('Transmodality Difference') + ylab(expression(paste('Age Effect(',Delta,R^2[adj],')')))+theme_classic(base_size = 40)+theme(legend.position = "none")+geom_smooth(method='gam',formula = y~s(x,k=3),color='black',size=2)
+ggplot(BwAgeCorTMDifDf,aes(x=tmdifvec,y=ageDR2vec))+ geom_text(data=BwAgeCorTMDifDf[BwAgeCorTMDifDf$fdrAgeDR2<0.05,],size=10,label="\u25D6",family="Arial Unicode MS",aes(x=tmdifvec,y=ageDR2vec,color=Net1Vec))+scale_color_manual(values=ycolors,limits=Y7vec)+geom_text(data=BwAgeCorTMDifDf[BwAgeCorTMDifDf$fdrAgeDR2<0.05,],aes(x=tmdifvec,y=ageDR2vec,color=Net2Vec),size=10,label="\u25D7",family="Arial Unicode MS")+geom_point(data=BwAgeCorTMDifDf[BwAgeCorTMDifDf$fdrAgeDR2>0.05,],aes(x=tmdifvec,y=ageDR2vec),color='grey80',size=4,alpha=.7)+theme(legend.position = "none") + xlab('Transmodality Difference') + ylab(expression(paste('Age Effect (',Delta,R^2[adj],')')))+theme_classic(base_size = 40)+theme(legend.position = "none")+geom_smooth(method='gam',formula = y~s(x,k=3),color='black',size=2)
 ```
 
 
@@ -448,7 +448,7 @@ ageEdgeIntGam<-gam(EdgeInterceptVector~s(tmdifvec,k=3),data=BwAgeCorTMDifDf)
 ```
 
 ```{r, fig.width=10,fig.height=10}
-ggplot(edgeInt,aes(x=tmdifvec,y=EdgeInterceptVector))+geom_point(data=edgeInt[edgeInt$fdrAgeDR2>0.05,],aes(x=tmdifvec,y=EdgeInterceptVector),alpha=.7,color='gray80',size=4)+theme_classic(base_size=40)+ geom_text(data=edgeInt[edgeInt$fdrAgeDR2<0.05,],aes(x=tmdifvec,y=EdgeInterceptVector,color=Net1Vec),size=10,label="\u25D6",family="Arial Unicode MS")+geom_text(data=edgeInt[edgeInt$fdrAgeDR2<0.05,],aes(x=tmdifvec,y=EdgeInterceptVector,color=Net2Vec),size=10,label="\u25D7",family="Arial Unicode MS")+scale_color_manual(values=ycolors,limits=Y7vec)+geom_smooth(method='gam',formula = y~s(x,k=3),color='black',size=2)+ylab("Initial Between-Community Coupling")+xlab("Transmodality Difference")+theme(plot.margin=margin(b=3.5,t=.1,l=1,r=1, unit='cm'),legend.position=c(.42,-.2),legend.direction = "horizontal")+guides(alpha=FALSE,color=guide_legend(title="Yeo 7 Overlap"))
+ggplot(edgeInt,aes(x=tmdifvec,y=EdgeInterceptVector))+geom_point(data=edgeInt[edgeInt$fdrAgeDR2>0.05,],aes(x=tmdifvec,y=EdgeInterceptVector),alpha=.7,color='gray80',size=4)+theme_classic(base_size=40)+ geom_text(data=edgeInt[edgeInt$fdrAgeDR2<0.05,],aes(x=tmdifvec,y=EdgeInterceptVector,color=Net1Vec),size=10,label="\u25D6",family="Arial Unicode MS")+geom_text(data=edgeInt[edgeInt$fdrAgeDR2<0.05,],aes(x=tmdifvec,y=EdgeInterceptVector,color=Net2Vec),size=10,label="\u25D7",family="Arial Unicode MS")+scale_color_manual(values=ycolors,limits=Y7vec)+geom_smooth(method='gam',formula = y~s(x,k=3),color='black',size=2)+ylab("Est. Between-Network Coupling At 8")+xlab("Transmodality Difference")+theme(plot.margin=margin(b=3.5,t=.1,l=1,r=1, unit='cm'),legend.position=c(.42,-.2),legend.direction = "horizontal")+guides(alpha=FALSE,color=guide_legend(title="Yeo 7 Overlap"))
 ```
 
 
@@ -468,7 +468,7 @@ g2 <- gam(ageDR2vec ~ te(net2tmvec,net1tmvec),data = doubleBwAgeCorTMDifDf)
 ```
 
 ```{r, fig.width=8,fig.height=15}
-gg_tensor(g2)+theme_classic(base_size = 40) +theme(legend.text=element_text(size=30),legend.key.width =unit(3.5,"cm"),legend.title = element_text(size=30))+scale_fill_gradient2(low = "blue",high = "red",mid = "white",midpoint = 0,name=expression(paste('Age Effect(',Delta,R^2[adj],')')),guide = guide_colorbar(legend.position='top',title.position="top",ticks.colour = "gray50", ticks.linewidth = 7))+ggtitle("")+xlab("Network Transmodality")+ylab("Network Transmodality")+geom_vline(xintercept = mean(range(doubleBwAgeCorTMDifDf$net1tmvec)),linetype='dashed',size=1.5)+geom_hline(yintercept = mean(range(doubleBwAgeCorTMDifDf$net1tmvec)),linetype='dashed',size=1.5)+theme(legend.position='top')
+gg_tensor(g2)+theme_classic(base_size = 40) +theme(legend.text=element_text(size=30),legend.key.width =unit(3.5,"cm"),legend.title = element_text(size=30))+scale_fill_gradient2(low = "blue",high = "red",mid = "white",midpoint = 0,name=expression(paste('Age Effect (',Delta,R^2[adj],')')),guide = guide_colorbar(legend.position='top',title.position="top",ticks.colour = "gray50", ticks.linewidth = 7))+ggtitle("")+xlab("Network Transmodality")+ylab("Network Transmodality")+geom_vline(xintercept = mean(range(doubleBwAgeCorTMDifDf$net1tmvec)),linetype='dashed',size=1.5)+geom_hline(yintercept = mean(range(doubleBwAgeCorTMDifDf$net1tmvec)),linetype='dashed',size=1.5)+theme(legend.position='top')
 
 ```
 

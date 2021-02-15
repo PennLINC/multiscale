@@ -7,9 +7,7 @@ output: github_document
 
 ```{r, message=FALSE}
 #libraries
-
-
-
+library(lmtest)
 library(gratia)
 library(ggplot2)
 library(reshape2)
@@ -480,7 +478,7 @@ bwdf<-data.frame(tmvec,scalesvec,domnetvec,domnetvec17,netpropvec,avg_bw_deltaR2
 #### subject-level resample: outer loop
 set.seed(1)
 # set number of bootstraps
-b<-30
+b<-100
 # initialize likelihood ratio test output vector: one value for each bootstrap
 LiRat_testStat<-rep(0,b)
 LiRat_testPvec<-rep(0,b)
@@ -508,11 +506,17 @@ for (x in 1:b){
   # fit reduced, intercept only
   AgeEff_intOnly_model<-gam(avg_bw_deltaR2~1,data=NL_bwdf,select=F,method='REML')
   # likelihood ratio estimate for this bootstrap (analysis of deviance)
-  LRoutput<-anova(AgeEff_intOnly_model,AgeEff_by_transmodality_model,test='LRT')
-  # saving "deviance", which i believe is normalized change in likelihood
-  LiRat_testStat[x]<-LRoutput$Deviance[2]
+  #LRoutput<-anova(AgeEff_intOnly_model,AgeEff_by_transmodality_model,test='LRT')
+  # version using lmtest package
+  logLike_reduced<-logLik(AgeEff_intOnly_model)
+  logLike_full<-logLik(AgeEff_by_transmodality_model)
+  # calculating "deviance", which i believe is normalized change in likelihood
+  teststat <- -2 * (as.numeric(logLike_reduced)-as.numeric(logLike_full))
+  LiRat_testStat[x]<-teststat
+  # calculating p value from chi-square distribution
+  p.val <- pchisq(teststat, df = 1, lower.tail = FALSE)
   # and saving p-values for smooth-brained non-statisticians like myself to interpret
-  LiRat_testPvec[x]<-LRoutput$`Pr(>Chi)`[2]
+  LiRat_testPvec[x]<-p.val
 }
 #### end of outer loop
 plot(LiRat_testStat)
