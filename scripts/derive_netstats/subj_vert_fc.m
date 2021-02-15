@@ -47,7 +47,6 @@ function subj_vert_fc(s, surfMaskl, surfMaskr, Krange, subjs, group_parts_masked
 		K_Folder = ['/cbica/projects/pinesParcels/data/SingleParcellation/SingleParcel_1by1_kequal_' num2str(K) '/Sub_' num2str(subjs(s))];
 		K_part_subj =[K_Folder '/IndividualParcel_Final_sbj1_comp' num2str(K) '_alphaS21_1_alphaL10_vxInfo1_ard0_eta0/final_UV.mat'];
 		subj_part=load(K_part_subj);
-		% do not see automated subject-level soft-parcel -> hard-parcel script... can double-check with zc
 		%%% convert to HP - V for vert x K
 		subj_V=subj_part.V{1};
 		% new column for HP label, K+1 because there should be K loading columns, so the last column becomes labels
