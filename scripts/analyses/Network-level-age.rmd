@@ -510,7 +510,7 @@ for (x in 1:b){
   # version using lmtest package
   logLike_reduced<-logLik(AgeEff_intOnly_model)
   logLike_full<-logLik(AgeEff_by_transmodality_model)
-  # calculating "deviance", which i believe is normalized change in likelihood
+  # calculating difference in log likelihoods, making equiv. to chisq distrib.
   teststat <- -2 * (as.numeric(logLike_reduced)-as.numeric(logLike_full))
   LiRat_testStat[x]<-teststat
   # calculating p value from chi-square distribution
@@ -521,6 +521,52 @@ for (x in 1:b){
 #### end of outer loop
 plot(LiRat_testStat)
 plot(LiRat_testPvec)
+
+
+
+```
+
+```{r}
+
+######## test whether or not network-level Age Effects vary as a function of network Transmodality
+#### LINEAR VERSION
+#### subject-level resample: outer loop
+set.seed(1)
+# set number of bootstraps
+b<-10
+# initialize likelihood ratio test output vector: one value for each bootstrap
+lm_testStat<-rep(0,b)
+lm_testPvec<-rep(0,b)
+# now bootstrap "b" times
+for (x in 1:b){
+  # initialize network-level output vector for each bootstrap
+  avg_bw_deltaR2<-rep(0,464)
+  avg_bw_deltaP<-rep(0,464)
+  # now bootstrapping 693 subjects rather than 464 networks
+  sampIndices<-sample(1:693,replace=T)
+  # bwAvgCondf is a leaner version of the master dataframe with all variables needed here.
+  resampDF<-bwAvgCondf[sampIndices,]
+  #### fit model to all 464 networks: inner loop
+  for (n in 1:464){
+    # first 464 columns are network-level connectivity values. test each.
+    # this is a function that return full vs. reduced model comparisons (Age included vs. age excluded, controls for sex + motion).
+    avg_bw_deltaR2[n]<-DeltaR2EstVec_RS(resampDF[n])
+  }
+  #### end of inner loop 
+  # create network-level dataframe from subject-level results: tmvec is just a vector of transmodality values for each network
+  NL_bwdf<-data.frame(tmvec,avg_bw_deltaR2)
+  # Now, test relationship between age effect and transmodality for this bootstrap with likelihood ratio test between nested models
+  # fit full model
+  AgeEff_by_transmodality_model<-lm(avg_bw_deltaR2~tmvec,data=NL_bwdf)
+  # save linear fit of transmodality
+  tmFit<-summary(AgeEff_by_transmodality_model)$coefficients['tmvec',]
+  lm_testStat[x]<-tmFit['Estimate']
+  lm_testPvec[x]<-tmFit['Pr(>|t|)']
+}
+#### end of outer loop
+plot(lm_testStat)
+plot(lm_testPvec)
+
 ```
 
 ```{r}

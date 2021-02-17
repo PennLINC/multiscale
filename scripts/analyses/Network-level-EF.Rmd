@@ -30,7 +30,7 @@ EFDeltaR2EstVec<-function(x){
   scaledf<-data.frame(cbind(as.numeric(masteref$F1_Exec_Comp_Cog_Accuracy),as.numeric(masteref$Age),as.numeric(masteref$Sex),masteref$Motion,x))
   colnames(scaledf)<-c('EF','Age','Sex','Motion','varofint')
   
-  # no-EF model (segreg ~ sex + motion)
+  # no-EF model (b.w. ~ sex + motion)
   noEFGam<-gam(varofint~Sex+Motion+s(Age,k=3),data=scaledf)
   noEFSum<-summary(noEFGam)
   # EF-included model for measuring difference
@@ -67,6 +67,34 @@ EFDeltaPEstVec<-function(x){
   anovaP<-anovaRes$`Pr(>Chi)`
   anovaP2<-unlist(anovaP)
   return(anovaP2[2])
+  
+}
+
+# bootstrap version: resampled df instead of master df
+EFDeltaR2EstVec_RS<-function(x){
+  
+  # relevant df
+  scaledf<-data.frame(cbind(as.numeric(resampDF$F1_Exec_Comp_Cog_Accuracy),as.numeric(resampDF$Age),as.numeric(resampDF$Sex),resampDF$Motion,x))
+  colnames(scaledf)<-c('EF','Age','Sex','Motion','varofint')
+  
+  
+  # no-EF model (b.w. ~ sex + motion)
+  noEFGam<-gam(varofint~Sex+Motion+s(Age,k=3),data=scaledf)
+  noEFSum<-summary(noEFGam)
+  # EF-included model for measuring difference
+  EFGam<-gam(varofint~EF+Sex+Motion+s(Age,k=3),data=scaledf)
+  EFSum<-summary(EFGam)
+  
+  dif<-EFSum$r.sq-noEFSum$r.sq
+  
+  # partial spearmans to extract age relation (for direction)
+  pspear=pcor(scaledf,method='spearman')$estimate
+  corest<-pspear[5]
+  if(corest<0){
+    dif=dif*-1
+  }
+  
+  return(dif)
   
 }
 
@@ -395,6 +423,58 @@ NL_sigVec[corrected<0.05]<-TRUE
 
 # bring it all together
 bwdf<-data.frame(tmvec,scalesvec,domnetvec,domnetvec17,netpropvec,EFDR2vec,avg_bw_deltaP)
+```
+
+```{r}
+######## test whether or not network-level EF Effects vary as a function of network Transmodality
+
+# Port EF into the average between-network FC DF
+bwAvgCondf$F1_Exec_Comp_Cog_Accuracy<-masteref$F1_Exec_Comp_Cog_Accuracy
+
+#### LINEAR + QUADR. VERSION
+
+#### subject-level resample: outer loop
+set.seed(1)
+# set number of bootstraps
+b<-100
+# initialize likelihood ratio test output vector: one value for each bootstrap
+lm_testStatLIN<-rep(0,b)
+lm_testPvecLIN<-rep(0,b)
+lm_testStatQUADR<-rep(0,b)
+lm_testPvecQUADR<-rep(0,b)
+# now bootstrap "b" times
+for (x in 1:b){
+  # initialize network-level output vector for each bootstrap
+  avg_bw_deltaR2<-rep(0,464)
+  avg_bw_deltaP<-rep(0,464)
+  # now bootstrapping 693 subjects rather than 464 networks
+  sampIndices<-sample(1:693,replace=T)
+  # bwAvgCondf is a leaner version of the master dataframe with all variables needed here.
+  resampDF<-bwAvgCondf[sampIndices,]
+  #### fit model to all 464 networks: inner loop
+  for (n in 1:464){
+    # first 464 columns are network-level connectivity values. test each.
+    # this is a function that return full vs. reduced model comparisons (Age included vs. age excluded, controls for sex + motion).
+    avg_bw_deltaR2[n]<-EFDeltaR2EstVec_RS(resampDF[n])
+  }
+  #### end of inner loop 
+  # create network-level dataframe from subject-level results: tmvec is just a vector of transmodality values for each network
+  NL_bwdf<-data.frame(tmvec,avg_bw_deltaR2)
+  # Now, test relationship between age effect and transmodality for this bootstrap with likelihood ratio test between nested models
+  # fit full model
+  EFEff_by_transmodality_model<-lm(avg_bw_deltaR2~poly(tmvec,2),data=NL_bwdf)
+  # save linear fit of transmodality
+  tmFitLIN<-summary(EFEff_by_transmodality_model)$coefficients['poly(tmvec, 2)1',]
+  lm_testStatLIN[x]<-tmFitLIN['Estimate']
+  lm_testPvecLIN[x]<-tmFitLIN['Pr(>|t|)']
+  # save quadratic fit of transmodality
+  tmFitQUADR<-summary(EFEff_by_transmodality_model)$coefficients['poly(tmvec, 2)2',]
+  lm_testStatQUADR[x]<-tmFitQUADR['Estimate']
+  lm_testPvecQUADR[x]<-tmFitQUADR['Pr(>|t|)']
+}
+#### end of outer loop
+plot(lm_testStat)
+plot(lm_testPvec)
 ```
 
 ```{r}
