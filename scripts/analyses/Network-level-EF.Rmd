@@ -433,10 +433,31 @@ bwAvgCondf$F1_Exec_Comp_Cog_Accuracy<-masteref$F1_Exec_Comp_Cog_Accuracy
 
 #### LINEAR + QUADR. VERSION
 
+#OG coefs. 
+avg_bw_deltaR2<-rep(0,464)
+avg_bw_deltaP<-rep(0,464)
+for (n in 1:464){
+  # first 464 columns are network-level connectivity values. test each.
+  # this is a function that return full vs. reduced model comparisons (Age included vs. age excluded, controls for sex + motion).
+  avg_bw_deltaR2[n]<-EFDeltaR2EstVec(bwAvgCondf[n])
+}
+# create network-level dataframe from subject-level results: tmvec is just a vector of transmodality values for each network
+NL_bwdf<-data.frame(tmvec,avg_bw_deltaR2)
+# fit full model
+OG_EFEff_by_transmodality_model<-lm(avg_bw_deltaR2~poly(tmvec,2),data=NL_bwdf)
+# Extract Linear coef.
+OG_EFEff_by_transmodality_model_LIN<-summary(OG_EFEff_by_transmodality_model)$coefficients['poly(tmvec, 2)1',]
+OG_EFEff_by_transmodality_model_LIN_beta<-OG_EFEff_by_transmodality_model_LIN['Estimate']
+# Extract quadratic coef.
+OG_EFEff_by_transmodality_model_QUADR<-summary(OG_EFEff_by_transmodality_model)$coefficients['poly(tmvec, 2)2',]
+OG_EFEff_by_transmodality_model_QUADR_beta<-OG_EFEff_by_transmodality_model_QUADR['Estimate']
+
+
+
 #### subject-level resample: outer loop
 set.seed(1)
 # set number of bootstraps
-b<-100
+b<-1000
 # initialize likelihood ratio test output vector: one value for each bootstrap
 lm_testStatLIN<-rep(0,b)
 lm_testPvecLIN<-rep(0,b)
@@ -473,8 +494,28 @@ for (x in 1:b){
   lm_testPvecQUADR[x]<-tmFitQUADR['Pr(>|t|)']
 }
 #### end of outer loop
-plot(lm_testStat)
-plot(lm_testPvec)
+
+# for linear - significance
+CI_LIN=quantile(lm_testStatLIN,c(0.025,0.975)) 
+
+# discrete p calculation (https://www.bmj.com/content/343/bmj.d2304 as source)
+SE=(CI_LIN[2]-CI_LIN[1])/(2*1.96)
+z=OG_EFEff_by_transmodality_model_LIN_beta/SE
+z=abs(z)
+pLIN<-exp((-0.717*z)-(0.416*(z^2)))
+
+# for quadratic - significance
+# convert to 95% CI
+CI_QUADR=quantile(lm_testStatQUADR,c(0.025,0.975)) 
+
+# discrete p calculation
+SE=(CI_QUADR[2]-CI_QUADR[1])/(2*1.96)
+z=OG_EFEff_by_transmodality_model_QUADR_beta/SE
+z=abs(z)
+pQUADR<-exp((-0.717*z)-(0.416*(z^2)))
+
+savedBOOTinfo<-data.frame(lm_testStatLIN,lm_testPvecLIN,lm_testStatQUADR,lm_testPvecQUADR)
+saveRDS(savedBOOTinfo,'~/multiscale/EF_NetLevel_bootInfo.rds')
 ```
 
 ```{r}

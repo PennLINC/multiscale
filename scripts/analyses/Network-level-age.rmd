@@ -475,13 +475,31 @@ bwdf<-data.frame(tmvec,scalesvec,domnetvec,domnetvec17,netpropvec,avg_bw_deltaR2
 
 ######## test whether or not network-level Age Effects vary as a function of network Transmodality
 
+#### LINEAR VERSION
+
+#OG coefs. 
+avg_bw_deltaR2<-rep(0,464)
+avg_bw_deltaP<-rep(0,464)
+for (n in 1:464){
+  # first 464 columns are network-level connectivity values. test each.
+  # this is a function that return full vs. reduced model comparisons (Age included vs. age excluded, controls for sex + motion).
+  avg_bw_deltaR2[n]<-DeltaR2EstVec(bwAvgCondf[n])
+}
+# create network-level dataframe from subject-level results: tmvec is just a vector of transmodality values for each network
+NL_bwdf<-data.frame(tmvec,avg_bw_deltaR2)
+# fit full model
+OG_AgeEff_by_transmodality_model<-lm(avg_bw_deltaR2~tmvec,data=NL_bwdf)
+# Extract Linear coef.
+OG_AgeEff_by_transmodality_model_LIN<-summary(OG_AgeEff_by_transmodality_model)$coefficients['tmvec',]
+OG_AgeEff_by_transmodality_model_LIN_beta<-OG_AgeEff_by_transmodality_model_LIN['Estimate']
+
 #### subject-level resample: outer loop
 set.seed(1)
 # set number of bootstraps
-b<-100
+b<-1000
 # initialize likelihood ratio test output vector: one value for each bootstrap
-LiRat_testStat<-rep(0,b)
-LiRat_testPvec<-rep(0,b)
+lm_testStatLIN<-rep(0,b)
+lm_testPvecLIN<-rep(0,b)
 # now bootstrap "b" times
 for (x in 1:b){
   # initialize network-level output vector for each bootstrap
@@ -502,26 +520,25 @@ for (x in 1:b){
   NL_bwdf<-data.frame(tmvec,avg_bw_deltaR2)
   # Now, test relationship between age effect and transmodality for this bootstrap with likelihood ratio test between nested models
   # fit full model
-  AgeEff_by_transmodality_model<-gam(avg_bw_deltaR2~s(tmvec,k=3),data=NL_bwdf,select=F,method='REML')
-  # fit reduced, intercept only
-  AgeEff_intOnly_model<-gam(avg_bw_deltaR2~1,data=NL_bwdf,select=F,method='REML')
-  # likelihood ratio estimate for this bootstrap (analysis of deviance)
-  #LRoutput<-anova(AgeEff_intOnly_model,AgeEff_by_transmodality_model,test='LRT')
-  # version using lmtest package
-  logLike_reduced<-logLik(AgeEff_intOnly_model)
-  logLike_full<-logLik(AgeEff_by_transmodality_model)
-  # calculating difference in log likelihoods, making equiv. to chisq distrib.
-  teststat <- -2 * (as.numeric(logLike_reduced)-as.numeric(logLike_full))
-  LiRat_testStat[x]<-teststat
-  # calculating p value from chi-square distribution
-  p.val <- pchisq(teststat, df = 1, lower.tail = FALSE)
-  # and saving p-values for smooth-brained non-statisticians like myself to interpret
-  LiRat_testPvec[x]<-p.val
+  AgeEff_by_transmodality_model<-lm(avg_bw_deltaR2~tmvec,data=NL_bwdf)
+  # save linear fit of transmodality
+  tmFitLIN<-summary(AgeEff_by_transmodality_model)$coefficients['tmvec',]
+  lm_testStatLIN[x]<-tmFitLIN['Estimate']
+  lm_testPvecLIN[x]<-tmFitLIN['Pr(>|t|)']
 }
 #### end of outer loop
-plot(LiRat_testStat)
-plot(LiRat_testPvec)
 
+# for linear - significance
+CI_LIN=quantile(lm_testStatLIN,c(0.025,0.975)) 
+
+# discrete p calculation (https://www.bmj.com/content/343/bmj.d2304 as source)
+SE=(CI_LIN[2]-CI_LIN[1])/(2*1.96)
+z=OG_AgeEff_by_transmodality_model_LIN_beta/SE
+z=abs(z)
+pLIN<-exp((-0.717*z)-(0.416*(z^2)))
+
+savedBOOTinfo<-data.frame(lm_testStatLIN,lm_testPvecLIN)
+saveRDS(savedBOOTinfo,'~/multiscale/Age_NetLevel_bootInfo.rds')
 
 
 ```

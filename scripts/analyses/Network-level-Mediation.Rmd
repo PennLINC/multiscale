@@ -322,6 +322,93 @@ bwdf<-data.frame(tmvec,scalesvec,domnetvec,domnetvec17,netpropvec,AB_Est)
 ```
 
 ```{r}
+#### LINEAR VERSION
+
+#OG coefs. 
+AB_Est<-rep(0,464)
+for (n in 1:464){
+  # first 464 columns are network-level connectivity values. test each.
+  x<-colnames(bwAvgCondf[i])
+  # to estimate AB path mediation from age to EF (linear)
+  # scale for EZ interpretation
+  bwAvgCondfZ[,i]<-scale(bwAvgCondfZ[,i])[,1]
+  # fit x-M path
+  xM_form<-as.formula(paste("",x,"", lm_xM_covariates, sep=""))
+  xMpath<-lm(formula=xM_form,data=bwAvgCondfZ)
+  # fit M-y path
+  My_form<-as.formula(paste(lm_My_covariates, "",x,"",sep=""))
+  Mypath<-lm(formula=My_form,data=bwAvgCondfZ)
+  # run mediation
+  mediationFit<-mediate(xMpath,Mypath,treat="Age",mediator=x)
+  AB_Est[i]<-mediationFit$d1
+}
+# create network-level dataframe from subject-level results: tmvec is just a vector of transmodality values for each network
+NL_bwdf<-data.frame(tmvec,avg_bw_deltaR2)
+# fit full model
+OG_MedEff_by_transmodality_model<-lm(avg_bw_deltaR2~tmvec,data=NL_bwdf)
+# Extract Linear coef.
+OG_MedEff_by_transmodality_model_LIN<-summary(OG_MedEff_by_transmodality_model)$coefficients['tmvec',]
+OG_MedEff_by_transmodality_model_LIN_beta<-OG_MedEff_by_transmodality_model_LIN['Estimate']
+
+#### subject-level resample: outer loop
+set.seed(1)
+# set number of bootstraps
+b<-1000
+# initialize likelihood ratio test output vector: one value for each bootstrap
+AB_testStatLIN<-rep(0,b)
+# now bootstrap "b" times
+for (strap in 1:b){
+  print(strap)
+  # initialize network-level output vector for each bootstrap
+  AB_Est<-rep(0,464)
+  # now bootstrapping 693 subjects rather than 464 networks
+  sampIndices<-sample(1:693,replace=T)
+  # bwAvgCondf is a leaner version of the master dataframe with all variables needed here.
+  resampDF<-bwAvgCondf[sampIndices,]
+  #### fit model to all 464 networks: inner loop
+  for (n in 1:464){
+    x<-colnames(bwAvgCondf[n])
+    # to estimate AB path mediation from age to EF (linear)
+    # scale for EZ interpretation
+    bwAvgCondfZ[,i]<-scale(bwAvgCondfZ[,n])[,1]
+    # fit x-M path
+    xM_form<-as.formula(paste("",x,"", lm_xM_covariates, sep=""))
+    xMpath<-lm(formula=xM_form,data=bwAvgCondfZ)
+    # fit M-y path
+    My_form<-as.formula(paste(lm_My_covariates, "",x,"",sep=""))
+    Mypath<-lm(formula=My_form,data=bwAvgCondfZ)
+    # run mediation
+    mediationFit<-mediate(xMpath,Mypath,treat="Age",mediator=x)
+    AB_Est[i]<-mediationFit$d1
+  }
+  #### end of inner loop 
+  # create network-level dataframe from subject-level results: tmvec is just a vector of transmodality values for each network
+  NL_bwdf<-data.frame(tmvec,AB_Est)
+  # Now, test relationship between age effect and transmodality for this bootstrap with likelihood ratio test between nested models
+  # fit full model
+  Med_Eff_by_transmodality_model<-lm(AB_Est~tmvec,data=NL_bwdf)
+  # save linear fit of transmodality
+  tmFitLIN<-summary(MedEff_by_transmodality_model)$coefficients['tmvec',]
+  AB_testStatLIN[strap]<-tmFitLIN['Estimate']
+}
+#### end of outer loop
+
+# for linear - significance
+CI_LIN=quantile(AB_testStatLIN,c(0.025,0.975)) 
+
+# discrete p calculation (https://www.bmj.com/content/343/bmj.d2304 as source)
+SE=(CI_LIN[2]-CI_LIN[1])/(2*1.96)
+z=OG_MedEff_by_transmodality_model_LIN_beta/SE
+z=abs(z)
+pLIN<-exp((-0.717*z)-(0.416*(z^2)))
+
+savedBOOTinfo<-data.frame(AB_testStatLIN)
+saveRDS(savedBOOTinfo,'~/multiscale/Med_NetLevel_bootInfo.rds')
+
+```
+
+
+```{r}
 # Mediation * Transmodality - final setup
 # Map nonsig to grey
 bwdf$domnetvecSig<-'NonSig'
