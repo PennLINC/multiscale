@@ -61,13 +61,13 @@ All within [_Network-level-age.md_](https://github.com/PennLINC/multiscale/blob/
 ###### scripts/derive_parcels/Toolbox/PBP/PBP_final/PBP_effect_msOverlay_2View_R_lPFC.m*
 
 # Step 3: Network-level : Executive Function
-## 3A) Network-level Generalzied Additive Models - Figure 6
+## 3A) Network-level Generalized Additive Models - Figure 6
 All within [_Network-level-ef.md_](https://github.com/PennLINC/multiscale/blob/master/scripts/analyses/Network-level-EF.knit.md)
 ###### EF Effect * Transmodality - for figure 6C
 ###### Scale Effect on EF Effect (* Transmodality) - for figure 6D
 
 # Step 4: Network-level : Mediation
-## 4A) Network-level Generalzied Additive Models - Figure 7
+## 4A) Network-level Generalized Additive Models - Figure 7
 All within [_Network-level-mediation.md_](https://github.com/PennLINC/multiscale/blob/master/scripts/analyses/Network-level-Mediation.knit.md)
 ###### Mediation Weight * Transmodality - for figure 6C
 ###### Scale Effect on Mediation Weight (* Transmodality) - for figure 6D
