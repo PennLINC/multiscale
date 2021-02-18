@@ -73,6 +73,34 @@ DeltaPEstVec<-function(x){
   
 }
 
+
+# bootstrap version: resampled df instead of master df
+DeltaR2EstVec_RS<-function(x){
+  
+  # relevant df
+  scaledf<-data.frame(cbind(as.numeric(resampDF$Age),as.numeric(resampDF$Sex),resampDF$Motion,x))
+  colnames(scaledf)<-c('Age','Sex','Motion','varofint')
+  
+  # no-age model (segreg ~ sex + motion)
+  noAgeGam<-gam(varofint~Sex+Motion,data=scaledf)
+  noAgeSum<-summary(noAgeGam)
+  # age-included model for measuring difference
+  AgeGam<-gam(varofint~Sex+Motion+s(Age,k=3),data=scaledf)
+  AgeSum<-summary(AgeGam)
+  
+  dif<-AgeSum$r.sq-noAgeSum$r.sq
+  
+  # partial spearmans to extract age relation (for direction)
+  pspear=pcor(scaledf,method='spearman')$estimate
+  corest<-pspear[4]
+  if(corest<0){
+    dif=dif*-1
+  }
+  
+  return(dif)
+  
+}
+
 ```
 
 ```{r}
@@ -206,8 +234,6 @@ bwcolnames<-colnames(individ_scalebybw_df)
 # initialize empty tm difference vector and age effect vector - 10/9/20: EF vector 
 # I guess append is just terribly slow. replace these with proper-length initializations
 tmdifvec=rep(0,length(colnames(individ_scalebybw_df)))
-ageEfvec=rep(0,length(colnames(individ_scalebybw_df)))
-ageEfPvec=rep(0,length(colnames(individ_scalebybw_df)))
 motionEfvec=rep(0,length(colnames(individ_scalebybw_df)))
 Net1Vec=rep(0,length(colnames(individ_scalebybw_df)))
 Net2Vec=rep(0,length(colnames(individ_scalebybw_df)))
@@ -531,4 +557,68 @@ fullmodel<-lm(ageDR2vec~EucDist+tmdifvec,data=BwAgeCorDistance_nonZero)
 
 ```{r, fig.width=9,fig.height=9}
 ggarrange(Euc,Mot,TMd,TMd_euc)
+```
+
+```{r}
+######## test whether or not edge-level Age Effects vary as a function of network Transmodality Difference
+
+#### LINEAR VERSION
+
+#OG coefs. 
+EL_bwdf<-data.frame(tmdifvec,ageDR2vec)
+# fit full model
+OG_AgeEff_by_transmodalityDif_model<-lm(ageDR2vec~tmdifvec,data=EL_bwdf)
+# Extract Linear coef.
+OG_AgeEff_by_transmodalityDif_model_LIN<-summary(OG_AgeEff_by_transmodalityDif_model)$coefficients['tmdifvec',]
+OG_AgeEff_by_transmodalityDif_model_LIN_beta<-OG_AgeEff_by_transmodalityDif_model_LIN['Estimate']
+
+#### subject-level resample: outer loop
+set.seed(1)
+# set number of bootstraps
+b<-1000
+# initialize likelihood ratio test output vector: one value for each bootstrap
+lm_testStatLIN<-rep(0,b)
+lm_testPvecLIN<-rep(0,b)
+# now bootstrap "b" times
+for (x in 1:b){
+  # initialize network-level output vector for each bootstrap
+  bw_deltaR2<-rep(0,length(colnames(individ_scalebybw_df)))
+  # now bootstrapping 693 subjects rather than 464 networks
+  sampIndices<-sample(1:693,replace=T)
+  resampDF<-masterdf[sampIndices,]
+  
+  #### fit model to all network edges: inner loop
+  for (n in 1:length(colnames(individ_scalebybw_df))){
+    # extract column name. Will parse column name to determine nature of #connection
+    curcolname<-colnames(individ_scalebybw_df)[n]
+    # get position in master df of this column (need to use \b for exact matches #only)
+    curcolnameexact<-paste('\\b',curcolname,'\\b',sep='')
+    colindex<-grep(curcolnameexact,colnames(masterdf))
+    # delta r2 for age
+    bw_deltaR2[n]<-DeltaR2EstVec_RS(resampDF[,colindex])
+  }
+  #### end of inner loop 
+  # create network-level dataframe from subject-level results: tmvec is just a vector of transmodality values for each network
+  EL_bwdf<-data.frame(tmdifvec,bw_deltaR2)
+  # Now, test relationship between age effect and transmodality for this bootstrap with likelihood ratio test between nested models
+  # fit full model
+  AgeEff_by_transmodalityDif_model<-lm(bw_deltaR2~tmdifvec,data=EL_bwdf)
+  # save linear fit of transmodality
+  tmDFitLIN<-summary(AgeEff_by_transmodalityDif_model)$coefficients['tmdifvec',]
+  lm_testStatLIN[x]<-tmDFitLIN['Estimate']
+  lm_testPvecLIN[x]<-tmDFitLIN['Pr(>|t|)']
+}
+#### end of outer loop
+
+# for linear - significance
+CI_LIN=quantile(lm_testStatLIN,c(0.025,0.975)) 
+
+# discrete p calculation (https://www.bmj.com/content/343/bmj.d2304 as source)
+SE=(CI_LIN[2]-CI_LIN[1])/(2*1.96)
+z=OG_AgeEff_by_transmodalityDif_model_LIN_beta/SE
+z=abs(z)
+pLIN<-exp((-0.717*z)-(0.416*(z^2)))
+
+savedBOOTinfo<-data.frame(lm_testStatLIN,lm_testPvecLIN)
+saveRDS(savedBOOTinfo,'~/multiscale/Age_EdgeLevel_bootInfo.rds')
 ```
