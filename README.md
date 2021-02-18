@@ -10,8 +10,6 @@ derive_spatialprops - Spatial properties of communities
 
 viz - Visualization scripts for figures outside of .rmd files 
 
-###### Final common pathway / analyses are in [scripts/analyses/BwRsqCentricOverview.Rmd](https://github.com/PennLINC/multiscale/blob/master/scripts/analyses/BwRsqCentricOverview.Rmd). Precursor scripts/ordering listed below. 
-
 # Step 1: Derive Group/Individual Parcels, Derive Parcel Properties, Extract FC
 
 ## 1A) Derive group parcels:
@@ -48,7 +46,7 @@ viz - Visualization scripts for figures outside of .rmd files
 ###### [scripts/derive_netstats/round_master_fcfeats.r](https://github.com/PennLINC/multiscale/blob/master/scripts/derive_netstats/round_master_fcfeats.r) - file takes fuckin' forever to load - almost a 10 minute thing without rounding. no need for 12 decimals points or w/e matlab spits out.
 
 # Step 2: Network-level: Age
-## 2A) Network-level Generalzied Additive Models - Figures 3 and 5
+## 2A) Network-level Generalized Additive Models - Figures 3 and 5
 All within [_Network-level-age.md_](https://github.com/PennLINC/multiscale/blob/master/scripts/analyses/Network-level-age.md)
 ###### B/w * Age - for figure 3B
 ###### Age Effect * Transmodality - for figure 3C
