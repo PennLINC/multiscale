@@ -620,5 +620,6 @@ z=abs(z)
 pLIN<-exp((-0.717*z)-(0.416*(z^2)))
 
 savedBOOTinfo<-data.frame(lm_testStatLIN,lm_testPvecLIN)
-saveRDS(savedBOOTinfo,'~/multiscale/Age_EdgeLevel_bootInfo.rds')
+#saveRDS(savedBOOTinfo,'~/multiscale/Age_EdgeLevel_bootInfo.rds')
+BOOTinfo<-readRDS('~/multiscale/Age_EdgeLevel_bootInfo.rds')
 ```
