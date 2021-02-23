@@ -1,36 +1,30 @@
-
 # iteration number, probz will split this into 10 jobs. set seed as iteration number for different bootstraps
 iter=commandArgs(trailingOnly=TRUE)
 
 #libraries
-
-
 library(mediation)
-library(gratia)
 library(ggplot2)
 library(reshape2)
 library(dplyr)
-library(ggpubr)
 library(vroom)
 library(data.table)
 library(mgcv)
 library(ppcor)
-library(viridis)
 
 # load 'erry thang
 
 
 
 ### load in demograhics
-demo<-read.csv('/cbica/projects/pinesParcels/data/pnc_demo.csv')
+demo<-read.csv('/home/pinesa/ms_data/pnc_demo.csv')
 ageSex<-data.frame(demo$ageAtScan1,as.factor(demo$sex),demo$scanid,demo$bblid)
-subjects<-read.csv('/cbica/projects/pinesParcels/data/participants.txt',header = F)
+subjects<-read.csv('/home/pinesa/ms_data/participants.txt',header = F)
 
 ### Collapse Motion metric 
 # read in
-Rest_Motion_Data <- read.csv("/cbica/projects/pinesParcels/data/n1601_RestQAData_20170714.csv")
-NBack_Motion_Data <- read.csv("/cbica/projects/pinesParcels/data/n1601_NBACKQAData_20181001.csv")
-Idemo_Motion_Data <- read.csv("/cbica/projects/pinesParcels/data/n1601_idemo_FinalQA_092817.csv")
+Rest_Motion_Data <- read.csv("/home/pinesa/ms_data/n1601_RestQAData_20170714.csv")
+NBack_Motion_Data <- read.csv("/home/pinesa/ms_data/n1601_NBACKQAData_20181001.csv")
+Idemo_Motion_Data <- read.csv("/home/pinesa/ms_data/n1601_idemo_FinalQA_092817.csv")
 # combine
 motmerge<-merge(Rest_Motion_Data,NBack_Motion_Data,by='bblid')
 motmerge<-merge(motmerge,Idemo_Motion_Data,by='bblid')
@@ -48,7 +42,7 @@ df<-merge(df,motiondf,by='bblid')
 community_vec<-seq(2,30)
 
 # big load - output of fc_to_csv.m (all coupling/FC data, pre-organized)
-fc<-vroom('/cbica/projects/pinesParcels/results/aggregated_data/fc/master_fcfeats_rounded.csv')
+fc<-vroom('/home/pinesa/ms_data/master_fcfeats_rounded.csv')
 # First row gotta go
 fc<-fc[-c(1)]
 # isolate shams
@@ -57,7 +51,7 @@ shams<-fc[694:695,]
 masterdf<-merge(fc,df,by='bblid')
 
 # add EF
-subjbehav<-read.csv("~/Downloads/n9498_cnb_factor_scores_fr_20170202.csv")
+subjbehav<-read.csv("/home/pinesa/ms_data/n9498_cnb_factor_scores_fr_20170202.csv")
 ef<-data.frame(subjbehav$NAR_F1_Exec_Comp_Cog_Accuracy,subjbehav$bblid)
 colnames(ef)<-c('EF','bblid')
 # merge in
@@ -66,18 +60,18 @@ masteref<-merge(masterdf,ef,by='bblid')
 masterdf<-masteref
 
 ### Get in Consensus-reference atlas correspondence
-rac<-read.csv('/cbica/projects/pinesParcels/results/aggregated_data/fc/network_yCorrespondence_overscales.csv',stringsAsFactors = F)
+rac<-read.csv('/home/pinesa/ms_data/network_yCorrespondence_overscales.csv',stringsAsFactors = F)
 scalesvec<-as.numeric(rac[2,])
 domnetvec<-as.factor(rac[3,])
 netpropvec<-as.numeric(rac[4,])
 # 17 network version
-rac17<-read.csv('/cbica/projects/pinesParcels/results/aggregated_data/fc/network_y17Correspondence_overscales.csv',stringsAsFactors = F)
+rac17<-read.csv('/home/pinesa/ms_data/network_y17Correspondence_overscales.csv',stringsAsFactors = F)
 scalesvec17<-as.numeric(rac17[2,])
 domnetvec17<-as.factor(rac17[3,])
 netpropvec17<-as.numeric(rac17[4,])
 
 #### read in transmodality
-tm<-read.csv('/cbica/projects/pinesParcels/results/aggregated_data/fc/network_transmodality_overscales.csv',stringsAsFactors = F)
+tm<-read.csv('/home/pinesa/ms_data/network_transmodality_overscales.csv',stringsAsFactors = F)
 colnames(tm)<-tm[1,]
 # aaaand remove it so we got everything in its right place
 tm<-tm[-c(1),]
@@ -93,7 +87,6 @@ for (i in 1:length(tmclass)){
     tmclass[i]='transmodal'
   }
 }
-
 
 # parse fields of interest 
 
@@ -143,11 +136,11 @@ for (i in 1:2){
   # extract which of 1:464 network mappings match the modalitity of this loop
   modalindices=which(tmclass %in% modalloopvar[i])
   # loop over each scale
-  for (K in 2:30){
+    for (K in 2:30){
     # Make index of where values from this K should go
-    K_start=((K-1)*(K))/2
-    K_end=(((K-1)*(K))/2)+K-1
-    Kind<-K_start:K_end
+      K_start=((K-1)*(K))/2
+      K_end=(((K-1)*(K))/2)+K-1
+      Kind<-K_start:K_end
     
     # index which values are at this scale
     scaleStr=paste('scale',K,'_',sep='')
@@ -161,7 +154,7 @@ for (i in 1:2){
     
     # This was to double check that the "scale" grepping was selective enough
     # print(paste(scaleStr,'number of features:',length(bwcolnames_thisScale)))
-    # one weird trick to get binarized transmodality class vector for same scale (Doctors hate him!)
+  # one weird trick to get binarized transmodality class vector for same scale (Doctors hate him!)
     # tm naming aligns with wincon naming
     tmclasses_thisScale<-tmclass[wincolnames_thisScale_inds]
     # extract the network number of each network at this scale in same order as tmclasses_thisScale
@@ -208,11 +201,11 @@ for (i in 1:2){
       if(length(match_NetN_scaleK_bw_indivi_cols_names)==0){
         match_NetN_scaleK_bw_indivi_cols_names[1]='CANTSEEME'
       }
-      
+
       # added a faux '_' to end of column to col names can more selectively match numbers (not picking up on 20 when looking for 2, 2_ and 20_ more distinct)
       match_NetN_scaleK_bw_indivi_cols_ind<-grep(as.character(paste(match_NetN_scaleK_bw_indivi_cols_names,'_',sep='',collapse="|")),paste(colnames(masterdf),'_',sep=''))
-      
-      
+    
+  
       oppositevec<-grep(NotNModality,tmclasses_thisScale)
       
       # build index of NON-matching modalities to reference masterdf (collapse | to match multiple patterns)
@@ -230,9 +223,9 @@ for (i in 1:2){
       
       
       # doublecheck that they are mutually exclusive (+1 because self-reference gets removed)
-      #  if(length(tmclasses_thisScale)!=length(matchvec)+length(oppositevec)+1){
-      #     print('You done goofed, internet police are on their way')
-      # }
+    #  if(length(tmclasses_thisScale)!=length(matchvec)+length(oppositevec)+1){
+   #     print('You done goofed, internet police are on their way')
+     # }
       if(length(tmclasses_thisScale)!=length(match_NetN_scaleK_bw_indivi_cols_ind)+length(unmatch_NetN_scaleK_bw_indivi_cols_ind)+1){
         print('Names dont add up chief')
         paste('match numbas', length(match_NetN_scaleK_bw_indivi_cols_ind), length(match_NetN_scaleK_bw_indivi_cols_names))
@@ -241,7 +234,7 @@ for (i in 1:2){
       }
       
       # if it does not match the modality of the grandparent loop, we wish go assay its connections to opposite-modality networks
-      # get average bw network connectivty age correlation for this network at this scale
+    # get average bw network connectivty age correlation for this network at this scale
       both=cbind(masterdf[,match_NetN_scaleK_bw_indivi_cols_ind],masterdf[,unmatch_NetN_scaleK_bw_indivi_cols_ind, drop=F])
       avg_bw=rowMeans(both)
       # for bw-based gams later - convert all b/w cons for a net to avg b/w for each subj
@@ -250,7 +243,6 @@ for (i in 1:2){
   }
   
 }
-
 
 # calculate EF effects
 # set covariates formula for iterating over in the loop
@@ -307,7 +299,6 @@ NL_sigVec[corrected<0.05]<-TRUE
 
 # bring it all together
 bwdf<-data.frame(tmvec,scalesvec,domnetvec,domnetvec17,netpropvec,AB_Est)
-
 
 #### LINEAR VERSION
 
@@ -366,7 +357,7 @@ for (strap in 1:b){
     Mypath<-lm(formula=My_form,data=bwAvgCondfZ)
     # run mediation
     mediationFit<-mediate(xMpath,Mypath,treat="Age",mediator=x)
-    AB_Est[i]<-mediationFit$d1
+    AB_Est[n]<-mediationFit$d1
   }
   #### end of inner loop 
   # create network-level dataframe from subject-level results: tmvec is just a vector of transmodality values for each network
