@@ -1,36 +1,30 @@
-
 # iteration number, probz will split this into 10 jobs. set seed as iteration number for different bootstraps
 iter=commandArgs(trailingOnly=TRUE)
 
 #libraries
-
-
 library(mediation)
-library(gratia)
 library(ggplot2)
 library(reshape2)
 library(dplyr)
-library(ggpubr)
 library(vroom)
 library(data.table)
 library(mgcv)
 library(ppcor)
-library(viridis)
 
 # load 'erry thang
 
 
 
 ### load in demograhics
-demo<-read.csv('/cbica/projects/pinesParcels/data/pnc_demo.csv')
+demo<-read.csv('/home/pinesa/ms_data/pnc_demo.csv')
 ageSex<-data.frame(demo$ageAtScan1,as.factor(demo$sex),demo$scanid,demo$bblid)
-subjects<-read.csv('/cbica/projects/pinesParcels/data/participants.txt',header = F)
+subjects<-read.csv('/home/pinesa/ms_data/participants.txt',header = F)
 
 ### Collapse Motion metric 
 # read in
-Rest_Motion_Data <- read.csv("/cbica/projects/pinesParcels/data/n1601_RestQAData_20170714.csv")
-NBack_Motion_Data <- read.csv("/cbica/projects/pinesParcels/data/n1601_NBACKQAData_20181001.csv")
-Idemo_Motion_Data <- read.csv("/cbica/projects/pinesParcels/data/n1601_idemo_FinalQA_092817.csv")
+Rest_Motion_Data <- read.csv("/home/pinesa/ms_data/n1601_RestQAData_20170714.csv")
+NBack_Motion_Data <- read.csv("/home/pinesa/ms_data/n1601_NBACKQAData_20181001.csv")
+Idemo_Motion_Data <- read.csv("/home/pinesa/ms_data/n1601_idemo_FinalQA_092817.csv")
 # combine
 motmerge<-merge(Rest_Motion_Data,NBack_Motion_Data,by='bblid')
 motmerge<-merge(motmerge,Idemo_Motion_Data,by='bblid')
@@ -48,7 +42,7 @@ df<-merge(df,motiondf,by='bblid')
 community_vec<-seq(2,30)
 
 # big load - output of fc_to_csv.m (all coupling/FC data, pre-organized)
-fc<-vroom('/cbica/projects/pinesParcels/results/aggregated_data/fc/master_fcfeats_rounded.csv')
+fc<-vroom('/home/pinesa/ms_data/master_fcfeats_rounded.csv')
 # First row gotta go
 fc<-fc[-c(1)]
 # isolate shams
@@ -57,7 +51,7 @@ shams<-fc[694:695,]
 masterdf<-merge(fc,df,by='bblid')
 
 # add EF
-subjbehav<-read.csv("~/Downloads/n9498_cnb_factor_scores_fr_20170202.csv")
+subjbehav<-read.csv("/home/pinesa/ms_data/n9498_cnb_factor_scores_fr_20170202.csv")
 ef<-data.frame(subjbehav$NAR_F1_Exec_Comp_Cog_Accuracy,subjbehav$bblid)
 colnames(ef)<-c('EF','bblid')
 # merge in
@@ -66,18 +60,18 @@ masteref<-merge(masterdf,ef,by='bblid')
 masterdf<-masteref
 
 ### Get in Consensus-reference atlas correspondence
-rac<-read.csv('/cbica/projects/pinesParcels/results/aggregated_data/fc/network_yCorrespondence_overscales.csv',stringsAsFactors = F)
+rac<-read.csv('/home/pinesa/ms_data/network_yCorrespondence_overscales.csv',stringsAsFactors = F)
 scalesvec<-as.numeric(rac[2,])
 domnetvec<-as.factor(rac[3,])
 netpropvec<-as.numeric(rac[4,])
 # 17 network version
-rac17<-read.csv('/cbica/projects/pinesParcels/results/aggregated_data/fc/network_y17Correspondence_overscales.csv',stringsAsFactors = F)
+rac17<-read.csv('/home/pinesa/ms_data/network_y17Correspondence_overscales.csv',stringsAsFactors = F)
 scalesvec17<-as.numeric(rac17[2,])
 domnetvec17<-as.factor(rac17[3,])
 netpropvec17<-as.numeric(rac17[4,])
 
 #### read in transmodality
-tm<-read.csv('/cbica/projects/pinesParcels/results/aggregated_data/fc/network_transmodality_overscales.csv',stringsAsFactors = F)
+tm<-read.csv('/home/pinesa/ms_data/network_transmodality_overscales.csv',stringsAsFactors = F)
 colnames(tm)<-tm[1,]
 # aaaand remove it so we got everything in its right place
 tm<-tm[-c(1),]
@@ -93,7 +87,6 @@ for (i in 1:length(tmclass)){
     tmclass[i]='transmodal'
   }
 }
-
 
 # parse fields of interest 
 
@@ -251,7 +244,6 @@ for (i in 1:2){
   
 }
 
-
 # calculate EF effects
 # set covariates formula for iterating over in the loop
 lm_xM_covariates="~Age+Sex+Motion"
@@ -307,7 +299,6 @@ NL_sigVec[corrected<0.05]<-TRUE
 
 # bring it all together
 bwdf<-data.frame(tmvec,scalesvec,domnetvec,domnetvec17,netpropvec,AB_Est)
-
 
 #### LINEAR VERSION
 
@@ -366,7 +357,7 @@ for (strap in 1:b){
     Mypath<-lm(formula=My_form,data=bwAvgCondfZ)
     # run mediation
     mediationFit<-mediate(xMpath,Mypath,treat="Age",mediator=x)
-    AB_Est[i]<-mediationFit$d1
+    AB_Est[n]<-mediationFit$d1
   }
   #### end of inner loop 
   # create network-level dataframe from subject-level results: tmvec is just a vector of transmodality values for each network
