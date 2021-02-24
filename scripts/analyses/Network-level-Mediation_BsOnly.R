@@ -136,11 +136,11 @@ for (i in 1:2){
   # extract which of 1:464 network mappings match the modalitity of this loop
   modalindices=which(tmclass %in% modalloopvar[i])
   # loop over each scale
-  for (K in 2:30){
+    for (K in 2:30){
     # Make index of where values from this K should go
-    K_start=((K-1)*(K))/2
-    K_end=(((K-1)*(K))/2)+K-1
-    Kind<-K_start:K_end
+      K_start=((K-1)*(K))/2
+      K_end=(((K-1)*(K))/2)+K-1
+      Kind<-K_start:K_end
     
     # index which values are at this scale
     scaleStr=paste('scale',K,'_',sep='')
@@ -154,7 +154,7 @@ for (i in 1:2){
     
     # This was to double check that the "scale" grepping was selective enough
     # print(paste(scaleStr,'number of features:',length(bwcolnames_thisScale)))
-    # one weird trick to get binarized transmodality class vector for same scale (Doctors hate him!)
+  # one weird trick to get binarized transmodality class vector for same scale (Doctors hate him!)
     # tm naming aligns with wincon naming
     tmclasses_thisScale<-tmclass[wincolnames_thisScale_inds]
     # extract the network number of each network at this scale in same order as tmclasses_thisScale
@@ -201,11 +201,11 @@ for (i in 1:2){
       if(length(match_NetN_scaleK_bw_indivi_cols_names)==0){
         match_NetN_scaleK_bw_indivi_cols_names[1]='CANTSEEME'
       }
-      
+
       # added a faux '_' to end of column to col names can more selectively match numbers (not picking up on 20 when looking for 2, 2_ and 20_ more distinct)
       match_NetN_scaleK_bw_indivi_cols_ind<-grep(as.character(paste(match_NetN_scaleK_bw_indivi_cols_names,'_',sep='',collapse="|")),paste(colnames(masterdf),'_',sep=''))
-      
-      
+    
+  
       oppositevec<-grep(NotNModality,tmclasses_thisScale)
       
       # build index of NON-matching modalities to reference masterdf (collapse | to match multiple patterns)
@@ -223,9 +223,9 @@ for (i in 1:2){
       
       
       # doublecheck that they are mutually exclusive (+1 because self-reference gets removed)
-      #  if(length(tmclasses_thisScale)!=length(matchvec)+length(oppositevec)+1){
-      #     print('You done goofed, internet police are on their way')
-      # }
+    #  if(length(tmclasses_thisScale)!=length(matchvec)+length(oppositevec)+1){
+   #     print('You done goofed, internet police are on their way')
+     # }
       if(length(tmclasses_thisScale)!=length(match_NetN_scaleK_bw_indivi_cols_ind)+length(unmatch_NetN_scaleK_bw_indivi_cols_ind)+1){
         print('Names dont add up chief')
         paste('match numbas', length(match_NetN_scaleK_bw_indivi_cols_ind), length(match_NetN_scaleK_bw_indivi_cols_names))
@@ -234,7 +234,7 @@ for (i in 1:2){
       }
       
       # if it does not match the modality of the grandparent loop, we wish go assay its connections to opposite-modality networks
-      # get average bw network connectivty age correlation for this network at this scale
+    # get average bw network connectivty age correlation for this network at this scale
       both=cbind(masterdf[,match_NetN_scaleK_bw_indivi_cols_ind],masterdf[,unmatch_NetN_scaleK_bw_indivi_cols_ind, drop=F])
       avg_bw=rowMeans(both)
       # for bw-based gams later - convert all b/w cons for a net to avg b/w for each subj
