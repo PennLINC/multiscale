@@ -544,19 +544,20 @@ colnames(BwAgeCorTMDifDf)[3]<-'EucDist'
 # Artificial 0s exist where 2 Networks do not exist on the same hemisphere, mask em out
 BwAgeCorDistance_nonZero<-BwAgeCorTMDifDf[BwAgeCorTMDifDf$EucDist!=0,]
 
-Euc<-ggplot(data=BwAgeCorDistance_nonZero,aes(x=EucDist,y=ageDR2vec)) + geom_point(alpha=.07,size=3) + xlab('Euclid. Dist.') + ylab('Age Relationship (dr2)')+geom_smooth(method='lm')+theme_classic()
+Euc<-ggplot(data=BwAgeCorDistance_nonZero,aes(x=EucDist,y=ageDR2vec)) + geom_point(alpha=.07,size=3) + xlab('Euclidean Distance') + ylab(expression(paste('Age Effect (',Delta,R^2[adj],')')))+geom_smooth(method='lm')+theme_classic(base_size=40)
 
-Mot<-ggplot(data=BwAgeCorDistance_nonZero,aes(x=EucDist,y=motionEfvec)) + geom_point(alpha=.07,size=3) + xlab('Euclid. Dist.') + ylab('Motion Coefficient')+geom_smooth(method='lm')+theme_classic()
+Mot<-ggplot(data=BwAgeCorDistance_nonZero,aes(x=EucDist,y=motionEfvec)) + geom_point(alpha=.07,size=3) + xlab('Euclidean Distance') + ylab('Motion Effect')+geom_smooth(method='lm')+theme_classic(base_size=40)
 
-TMd<-ggplot(data=BwAgeCorDistance_nonZero,aes(x=tmdifvec,y=ageDR2vec)) + geom_point(alpha=.07,size=3) + xlab('Transmodality difference') + ylab('Age Relationship (dr2)')+geom_smooth(method='lm')+theme_classic()
+TMd<-ggplot(data=BwAgeCorDistance_nonZero,aes(x=tmdifvec,y=ageDR2vec)) + geom_point(alpha=.07,size=3) + xlab('Transmodality difference') + ylab(expression(paste('Age Effect (',Delta,R^2[adj],')')))+geom_smooth(method='lm')+theme_classic(base_size=40)
 
-TMd_euc<-ggplot(data=BwAgeCorDistance_nonZero,aes(x=EucDist,y=tmdifvec)) + geom_point(alpha=.07,size=3) + xlab('Euclid. Dist.') + ylab('Transmodality difference')+geom_smooth(method='lm')+theme_classic()
+TMd_euc<-ggplot(data=BwAgeCorDistance_nonZero,aes(x=EucDist,y=tmdifvec)) + geom_point(alpha=.07,size=3) + xlab('Euclidean Distance') + ylab('Transmodality difference')+geom_smooth(method='lm')+theme_classic(base_size=40)
 
 fullmodel<-lm(ageDR2vec~EucDist+tmdifvec,data=BwAgeCorDistance_nonZero)
+
 ```
 
 ```{r, fig.width=9,fig.height=9}
-ggarrange(Euc,Mot,TMd,TMd_euc)
+ggarrange(Euc,TMd,TMd_euc,Mot)
 ```
 
 ```{r}
@@ -579,6 +580,9 @@ b<-1000
 # initialize likelihood ratio test output vector: one value for each bootstrap
 lm_testStatLIN<-rep(0,b)
 lm_testPvecLIN<-rep(0,b)
+# added bootstrapping for euclidean distance - age effect relation for comparison
+EucAgeSpearman<-rep(0,b)
+TmDifAgeSpearman<-rep(0,b)
 # now bootstrap "b" times
 for (x in 1:b){
   # initialize network-level output vector for each bootstrap
@@ -607,6 +611,17 @@ for (x in 1:b){
   tmDFitLIN<-summary(AgeEff_by_transmodalityDif_model)$coefficients['tmdifvec',]
   lm_testStatLIN[x]<-tmDFitLIN['Estimate']
   lm_testPvecLIN[x]<-tmDFitLIN['Pr(>|t|)']
+  
+  # new section to use bootstrapped Age delta r squared for Age-Euc
+  # Artificial 0s exist where 2 Networks do not exist on the same hemisphere, mask em out
+  EL_Eucbwdf<-data.frame(as.numeric(distance_array[,2]),bw_deltaR2,tmdifvec)
+  colnames(EL_Eucbwdf)[1]<-'EucDist'
+  EL_Eucbwdf_nonZeros<-EL_Eucbwdf[EL_Eucbwdf$EucDist!=0,]
+  Euc_AgeEfCor<-cor.test(EL_Eucbwdf_nonZeros$EucDist,EL_Eucbwdf_nonZeros$bw_deltaR2,method='spearman')
+  EucAgeSpearman[x]<-Euc_AgeEfCor$estimate
+  # equiv for transmodality difference (includes scaling)
+  Tmdif_AgeEfCor<-cor.test(EL_Eucbwdf_nonZeros$tmdifvec,EL_Eucbwdf_nonZeros$bw_deltaR2,method='spearman')
+  TmDifAgeSpearman[x]<-Tmdif_AgeEfCor$estimate
 }
 #### end of outer loop
 
@@ -619,7 +634,7 @@ z=OG_AgeEff_by_transmodalityDif_model_LIN_beta/SE
 z=abs(z)
 pLIN<-exp((-0.717*z)-(0.416*(z^2)))
 
-savedBOOTinfo<-data.frame(lm_testStatLIN,lm_testPvecLIN)
-#saveRDS(savedBOOTinfo,'~/multiscale/Age_EdgeLevel_bootInfo.rds')
+savedBOOTinfo<-data.frame(lm_testStatLIN,lm_testPvecLIN,TmDifAgeSpearman,EucAgeSpearman)
+saveRDS(savedBOOTinfo,'~/multiscale/Age_EdgeLevel_bootInfo.rds')
 BOOTinfo<-readRDS('~/multiscale/Age_EdgeLevel_bootInfo.rds')
 ```

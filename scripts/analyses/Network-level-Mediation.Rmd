@@ -331,7 +331,7 @@ for (n in 1:464){
   x<-colnames(bwAvgCondf[i])
   # to estimate AB path mediation from age to EF (linear)
   # scale for EZ interpretation
-  bwAvgCondfZ[,i]<-scale(bwAvgCondfZ[,i])[,1]
+  bwAvgCondfZ[,n]<-scale(bwAvgCondfZ[,n])[,1]
   # fit x-M path
   xM_form<-as.formula(paste("",x,"", lm_xM_covariates, sep=""))
   xMpath<-lm(formula=xM_form,data=bwAvgCondfZ)
@@ -340,7 +340,7 @@ for (n in 1:464){
   Mypath<-lm(formula=My_form,data=bwAvgCondfZ)
   # run mediation
   mediationFit<-mediate(xMpath,Mypath,treat="Age",mediator=x)
-  AB_Est[i]<-mediationFit$d1
+  AB_Est[n]<-mediationFit$d1
 }
 # create network-level dataframe from subject-level results: tmvec is just a vector of transmodality values for each network
 NL_bwdf<-data.frame(tmvec,avg_bw_deltaR2)
@@ -370,7 +370,7 @@ for (strap in 1:b){
     x<-colnames(bwAvgCondf[n])
     # to estimate AB path mediation from age to EF (linear)
     # scale for EZ interpretation
-    bwAvgCondfZ[,i]<-scale(bwAvgCondfZ[,n])[,1]
+    bwAvgCondfZ[,n]<-scale(bwAvgCondfZ[,n])[,1]
     # fit x-M path
     xM_form<-as.formula(paste("",x,"", lm_xM_covariates, sep=""))
     xMpath<-lm(formula=xM_form,data=bwAvgCondfZ)
@@ -379,7 +379,7 @@ for (strap in 1:b){
     Mypath<-lm(formula=My_form,data=bwAvgCondfZ)
     # run mediation
     mediationFit<-mediate(xMpath,Mypath,treat="Age",mediator=x)
-    AB_Est[i]<-mediationFit$d1
+    AB_Est[n]<-mediationFit$d1
   }
   #### end of inner loop 
   # create network-level dataframe from subject-level results: tmvec is just a vector of transmodality values for each network
