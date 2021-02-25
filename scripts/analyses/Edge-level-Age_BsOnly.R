@@ -1,5 +1,4 @@
 # iteration number, probz will split this into 10 jobs. set seed as iteration number for different bootstraps
-iter=commandArgs(trailingOnly=TRUE)
 
 #libraries
 library(mediation)
@@ -49,15 +48,6 @@ fc<-fc[-c(1)]
 shams<-fc[694:695,]
 # Merge with non-fMR data into master data frame
 masterdf<-merge(fc,df,by='bblid')
-
-# add EF
-subjbehav<-read.csv("/home/pinesa/ms_data/n9498_cnb_factor_scores_fr_20170202.csv")
-ef<-data.frame(subjbehav$NAR_F1_Exec_Comp_Cog_Accuracy,subjbehav$bblid)
-colnames(ef)<-c('EF','bblid')
-# merge in
-masteref<-merge(masterdf,ef,by='bblid')
-# and include EF in masterdf - keep more redundant code between sections this way
-masterdf<-masteref
 
 ### Get in Consensus-reference atlas correspondence
 rac<-read.csv('/home/pinesa/ms_data/network_yCorrespondence_overscales.csv',stringsAsFactors = F)
@@ -244,142 +234,133 @@ for (i in 1:2){
   
 }
 
-# calculate EF effects
-# set covariates formula for iterating over in the loop
-lm_xM_covariates="~Age+Sex+Motion"
-lm_My_covariates="EF~Sex+Motion+Age+"
+
+# work in euclidean distances
+######### Look at between-distance relations
+
+## grab matlab-generated euclidean distance vector, match to age effect vector
+distance_array=array(dim=c(length(colnames(individ_scalebybw_df)),2))
+
+# make a between over scales vector to keep track of where each between feature sits in the whole multiscale combination
+bw_over_scales=NULL
+bw_start=0
+bw_end=0
 
 
-# initialize output vectors
-AB_Est<-rep(0,length=length(masterdf[,indiv_nsegcols_ind]))
-AB_P<-rep(0,length=length(masterdf[,indiv_nsegcols_ind]))
+for (k in 2:30){
+  # index which values are at this scale
+  scaleStr=paste('scale',k,'_',sep='')
+  scaleCols_inds=grep(scaleStr,colnames(masterdf))
+  scaleK_bw_indivi_cols_inds<-intersect(indiv_bwcols_ind,scaleCols_inds)
+  
+  # load in distance file for this scale
+  disfp=paste('/home/pinesa/ms_data/Scale',k,'_Ind_bwColnames_andDist.csv',sep='')
+  distancedf<-read.csv(disfp)
+  # check to make sure name in file is the same as the corresponding bw col from masterdf
+  if (identical((colnames(masterdf)[scaleK_bw_indivi_cols_inds]),distancedf$bwcolscell_1)){
+    print('bw column names match')}
+  print(k)
+  
+  # helping phriendly index
+  bw_start=bw_end+1
+  bw_end=bw_start+((k)*(k-1)/2)-1
+  Bwind<-bw_start:bw_end
+  
+  distance_array[Bwind,1]<-colnames(masterdf)[scaleK_bw_indivi_cols_inds]
+  distance_array[Bwind,2]<-distancedf$bwcolscell_2
+  
+}  
+
+# Add in pairwise distance between Networks, motion-FC relation
+BwAgeCorTMDifDf<-data.frame(tmdifvec,ageDR2vec,as.numeric(distance_array[,2]),motionEfvec,scalevec,Net1Vec,Net2Vec,Net1Vec17,Net2Vec17,fdrAgeDR2,ageDR2vec,domnetSig1,domnetSig2,domnetSigAge1,domnetSigAge2,net1tmvec,net2tmvec)
+
+colnames(BwAgeCorTMDifDf)[3]<-'EucDist'
+
+# Artificial 0s exist where 2 Networks do not exist on the same hemisphere, mask em out
+BwAgeCorDistance_nonZero<-BwAgeCorTMDifDf[BwAgeCorTMDifDf$EucDist!=0,]
+
+Euc<-ggplot(data=BwAgeCorDistance_nonZero,aes(x=EucDist,y=ageDR2vec)) + geom_point(alpha=.07,size=3) + xlab('Euclidean Distance') + ylab(expression(paste('Age Effect (',Delta,R^2[adj],')')))+geom_smooth(method='lm')+theme_classic(base_size=40)
+
+Mot<-ggplot(data=BwAgeCorDistance_nonZero,aes(x=EucDist,y=motionEfvec)) + geom_point(alpha=.07,size=3) + xlab('Euclidean Distance') + ylab('Motion Effect')+geom_smooth(method='lm')+theme_classic(base_size=40)
+
+TMd<-ggplot(data=BwAgeCorDistance_nonZero,aes(x=tmdifvec,y=ageDR2vec)) + geom_point(alpha=.07,size=3) + xlab('Transmodality difference') + ylab(expression(paste('Age Effect (',Delta,R^2[adj],')')))+geom_smooth(method='lm')+theme_classic(base_size=40)
+
+TMd_euc<-ggplot(data=BwAgeCorDistance_nonZero,aes(x=EucDist,y=tmdifvec)) + geom_point(alpha=.07,size=3) + xlab('Euclidean Distance') + ylab('Transmodality difference')+geom_smooth(method='lm')+theme_classic(base_size=40)
+
+fullmodel<-lm(ageDR2vec~EucDist+tmdifvec,data=BwAgeCorDistance_nonZero)
 
 
-# borrowing colnames from indiv_nsegcols to keep network/scale ordering/mappings
-colnames(bwAvgCon)<-gsub("_seg_","_avgBw_",colnames(masterdf[,indiv_nsegcols_ind]))
-bwAvgCondf<-data.frame(bwAvgCon)
-
-#add on covariate columns
-bwAvgCondf$Age<-masterdf$Age
-bwAvgCondf$Sex<-masterdf$Sex
-bwAvgCondf$Motion<-masterdf$Motion
-bwAvgCondf$EF<-masterdf$EF
-# standarized (z-scored) version for mediation interpretation (EF is already normalized)
-bwAvgCondfZ<-bwAvgCondf
-bwAvgCondfZ$Age<-scale(bwAvgCondf$Age)[,1]
-bwAvgCondfZ$Motion<-scale(bwAvgCondf$Motion)[,1]
-
-
-#for i in 464, -3 because age sex motionand EF columns sit at the end
-for (i in 1:(length(bwAvgCondf)-4)){
-  # borrowing colnames from indiv_nsegcols to keep network mappings
-  x<-colnames(bwAvgCondf[i])
-  # to estimate AB path mediation from age to EF (linear)
-  # scale for EZ interpretation
-  bwAvgCondfZ[,i]<-scale(bwAvgCondfZ[,i])[,1]
-  # fit x-M path
-  xM_form<-as.formula(paste("",x,"", lm_xM_covariates, sep=""))
-  xMpath<-lm(formula=xM_form,data=bwAvgCondfZ)
-  # fit M-y path
-  My_form<-as.formula(paste(lm_My_covariates, "",x,"",sep=""))
-  Mypath<-lm(formula=My_form,data=bwAvgCondfZ)
-  # run mediation
-  mediationFit<-mediate(xMpath,Mypath,treat="Age",mediator=x)
-  AB_Est[i]<-mediationFit$d1
-  # save p value in vector as well
-  AB_P[i]<-mediationFit$d1.p
-}
-
-# fdr Mediation P's
-corrected<-p.adjust(AB_P,method='fdr')
-
-# network-level sig vector
-NL_sigVec<-logical(464)
-NL_sigVec[corrected<0.05]<-TRUE
-
-# bring it all together
-bwdf<-data.frame(tmvec,scalesvec,domnetvec,domnetvec17,netpropvec,AB_Est)
 
 #### LINEAR VERSION
 
 #OG coefs. 
-AB_Est<-rep(0,464)
-for (n in 1:464){
-  # first 464 columns are network-level connectivity values. test each.
-  x<-colnames(bwAvgCondf[n])
-  # to estimate AB path mediation from age to EF (linear)
-  # scale for EZ interpretation
-  bwAvgCondfZ[,n]<-scale(bwAvgCondfZ[,n])[,1]
-  # fit x-M path
-  xM_form<-as.formula(paste("",x,"", lm_xM_covariates, sep=""))
-  xMpath<-lm(formula=xM_form,data=bwAvgCondfZ)
-  # fit M-y path
-  My_form<-as.formula(paste(lm_My_covariates, "",x,"",sep=""))
-  Mypath<-lm(formula=My_form,data=bwAvgCondfZ)
-  # run mediation
-  mediationFit<-mediate(xMpath,Mypath,treat="Age",mediator=x)
-  AB_Est[i]<-mediationFit$d1
-}
-# create network-level dataframe from subject-level results: tmvec is just a vector of transmodality values for each network
-NL_bwdf<-data.frame(tmvec,avg_bw_deltaR2)
+EL_bwdf<-data.frame(tmdifvec,ageDR2vec)
 # fit full model
-OG_MedEff_by_transmodality_model<-lm(avg_bw_deltaR2~tmvec,data=NL_bwdf)
+OG_AgeEff_by_transmodalityDif_model<-lm(ageDR2vec~tmdifvec,data=EL_bwdf)
 # Extract Linear coef.
-OG_MedEff_by_transmodality_model_LIN<-summary(OG_MedEff_by_transmodality_model)$coefficients['tmvec',]
-OG_MedEff_by_transmodality_model_LIN_beta<-OG_MedEff_by_transmodality_model_LIN['Estimate']
+OG_AgeEff_by_transmodalityDif_model_LIN<-summary(OG_AgeEff_by_transmodalityDif_model)$coefficients['tmdifvec',]
+OG_AgeEff_by_transmodalityDif_model_LIN_beta<-OG_AgeEff_by_transmodalityDif_model_LIN['Estimate']
 
 #### subject-level resample: outer loop
-set.seed(iter)
+set.seed(1)
 # set number of bootstraps
-b<-100
+b<-1000
 # initialize likelihood ratio test output vector: one value for each bootstrap
-AB_testStatLIN<-rep(0,b)
+lm_testStatLIN<-rep(0,b)
+lm_testPvecLIN<-rep(0,b)
+# added bootstrapping for euclidean distance - age effect relation for comparison
+EucAgeSpearman<-rep(0,b)
+TmDifAgeSpearman<-rep(0,b)
 # now bootstrap "b" times
-for (strap in 1:b){
-  print(strap)
+for (x in 1:b){
   # initialize network-level output vector for each bootstrap
-  AB_Est<-rep(0,464)
+  bw_deltaR2<-rep(0,length(colnames(individ_scalebybw_df)))
   # now bootstrapping 693 subjects rather than 464 networks
   sampIndices<-sample(1:693,replace=T)
-  # bwAvgCondf is a leaner version of the master dataframe with all variables needed here.
-  resampDF<-bwAvgCondf[sampIndices,]
-  #### fit model to all 464 networks: inner loop
-  for (n in 1:464){
-    x<-colnames(bwAvgCondf[n])
-    # to estimate AB path mediation from age to EF (linear)
-    # scale for EZ interpretation
-    bwAvgCondfZ[,n]<-scale(bwAvgCondfZ[,n])[,1]
-    # fit x-M path
-    xM_form<-as.formula(paste("",x,"", lm_xM_covariates, sep=""))
-    xMpath<-lm(formula=xM_form,data=bwAvgCondfZ)
-    # fit M-y path
-    My_form<-as.formula(paste(lm_My_covariates, "",x,"",sep=""))
-    Mypath<-lm(formula=My_form,data=bwAvgCondfZ)
-    # run mediation
-    mediationFit<-mediate(xMpath,Mypath,treat="Age",mediator=x)
-    AB_Est[n]<-mediationFit$d1
+  resampDF<-masterdf[sampIndices,]
+  
+  #### fit model to all network edges: inner loop
+  for (n in 1:length(colnames(individ_scalebybw_df))){
+    # extract column name. Will parse column name to determine nature of #connection
+    curcolname<-colnames(individ_scalebybw_df)[n]
+    # get position in master df of this column (need to use \b for exact matches #only)
+    curcolnameexact<-paste('\\b',curcolname,'\\b',sep='')
+    colindex<-grep(curcolnameexact,colnames(masterdf))
+    # delta r2 for age
+    bw_deltaR2[n]<-DeltaR2EstVec_RS(resampDF[,colindex])
   }
   #### end of inner loop 
   # create network-level dataframe from subject-level results: tmvec is just a vector of transmodality values for each network
-  NL_bwdf<-data.frame(tmvec,AB_Est)
+  EL_bwdf<-data.frame(tmdifvec,bw_deltaR2)
   # Now, test relationship between age effect and transmodality for this bootstrap with likelihood ratio test between nested models
   # fit full model
-  Med_Eff_by_transmodality_model<-lm(AB_Est~tmvec,data=NL_bwdf)
+  AgeEff_by_transmodalityDif_model<-lm(bw_deltaR2~tmdifvec,data=EL_bwdf)
   # save linear fit of transmodality
-  tmFitLIN<-summary(Med_Eff_by_transmodality_model)$coefficients['tmvec',]
-  AB_testStatLIN[strap]<-tmFitLIN['Estimate']
+  tmDFitLIN<-summary(AgeEff_by_transmodalityDif_model)$coefficients['tmdifvec',]
+  lm_testStatLIN[x]<-tmDFitLIN['Estimate']
+  lm_testPvecLIN[x]<-tmDFitLIN['Pr(>|t|)']
+  
+  # new section to use bootstrapped Age delta r squared for Age-Euc
+  # Artificial 0s exist where 2 Networks do not exist on the same hemisphere, mask em out
+  EL_Eucbwdf<-data.frame(as.numeric(distance_array[,2]),bw_deltaR2,tmdifvec)
+  colnames(EL_Eucbwdf)[1]<-'EucDist'
+  EL_Eucbwdf_nonZeros<-EL_Eucbwdf[EL_Eucbwdf$EucDist!=0,]
+  Euc_AgeEfCor<-cor.test(EL_Eucbwdf_nonZeros$EucDist,EL_Eucbwdf_nonZeros$bw_deltaR2,method='spearman')
+  EucAgeSpearman[x]<-Euc_AgeEfCor$estimate
+  # equiv for transmodality difference (includes scaling)
+  Tmdif_AgeEfCor<-cor.test(EL_Eucbwdf_nonZeros$tmdifvec,EL_Eucbwdf_nonZeros$bw_deltaR2,method='spearman')
+  TmDifAgeSpearman[x]<-Tmdif_AgeEfCor$estimate
 }
 #### end of outer loop
 
 # for linear - significance
-CI_LIN=quantile(AB_testStatLIN,c(0.025,0.975)) 
+CI_LIN=quantile(lm_testStatLIN,c(0.025,0.975)) 
 
 # discrete p calculation (https://www.bmj.com/content/343/bmj.d2304 as source)
 SE=(CI_LIN[2]-CI_LIN[1])/(2*1.96)
-z=OG_MedEff_by_transmodality_model_LIN_beta/SE
+z=OG_AgeEff_by_transmodalityDif_model_LIN_beta/SE
 z=abs(z)
 pLIN<-exp((-0.717*z)-(0.416*(z^2)))
 
-savedBOOTinfo<-data.frame(AB_testStatLIN)
-name=paste('~/Med_NetLevel_bootInfo',iter,'.rds',sep='')
-saveRDS(savedBOOTinfo,name)
+savedBOOTinfo<-data.frame(lm_testStatLIN,lm_testPvecLIN,TmDifAgeSpearman,EucAgeSpearman)
+saveRDS(savedBOOTinfo,'~/Age_EdgeLevel_bootInfo.rds')
