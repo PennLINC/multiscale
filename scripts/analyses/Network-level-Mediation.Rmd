@@ -353,57 +353,57 @@ OG_MedEff_by_transmodality_model_LIN_beta<-OG_MedEff_by_transmodality_model_LIN[
 #### subject-level resample: outer loop
 set.seed(1)
 # set number of bootstraps
-b<-1000
-# initialize likelihood ratio test output vector: one value for each bootstrap
-AB_testStatLIN<-rep(0,b)
-# now bootstrap "b" times
-for (strap in 1:b){
-  print(strap)
-  # initialize network-level output vector for each bootstrap
-  AB_Est<-rep(0,464)
-  # now bootstrapping 693 subjects rather than 464 networks
-  sampIndices<-sample(1:693,replace=T)
-  # bwAvgCondf is a leaner version of the master dataframe with all variables needed here.
-  resampDF<-bwAvgCondf[sampIndices,]
-  #### fit model to all 464 networks: inner loop
-  for (n in 1:464){
-    x<-colnames(bwAvgCondf[n])
-    # to estimate AB path mediation from age to EF (linear)
-    # scale for EZ interpretation
-    bwAvgCondfZ[,n]<-scale(bwAvgCondfZ[,n])[,1]
-    # fit x-M path
-    xM_form<-as.formula(paste("",x,"", lm_xM_covariates, sep=""))
-    xMpath<-lm(formula=xM_form,data=bwAvgCondfZ)
-    # fit M-y path
-    My_form<-as.formula(paste(lm_My_covariates, "",x,"",sep=""))
-    Mypath<-lm(formula=My_form,data=bwAvgCondfZ)
-    # run mediation
-    mediationFit<-mediate(xMpath,Mypath,treat="Age",mediator=x)
-    AB_Est[n]<-mediationFit$d1
-  }
-  #### end of inner loop 
-  # create network-level dataframe from subject-level results: tmvec is just a vector of transmodality values for each network
-  NL_bwdf<-data.frame(tmvec,AB_Est)
-  # Now, test relationship between age effect and transmodality for this bootstrap with likelihood ratio test between nested models
-  # fit full model
-  Med_Eff_by_transmodality_model<-lm(AB_Est~tmvec,data=NL_bwdf)
-  # save linear fit of transmodality
-  tmFitLIN<-summary(MedEff_by_transmodality_model)$coefficients['tmvec',]
-  AB_testStatLIN[strap]<-tmFitLIN['Estimate']
-}
-#### end of outer loop
-
-# for linear - significance
-CI_LIN=quantile(AB_testStatLIN,c(0.025,0.975)) 
-
-# discrete p calculation (https://www.bmj.com/content/343/bmj.d2304 as source)
-SE=(CI_LIN[2]-CI_LIN[1])/(2*1.96)
-z=OG_MedEff_by_transmodality_model_LIN_beta/SE
-z=abs(z)
-pLIN<-exp((-0.717*z)-(0.416*(z^2)))
-
-savedBOOTinfo<-data.frame(AB_testStatLIN)
-saveRDS(savedBOOTinfo,'~/multiscale/Med_NetLevel_bootInfo.rds')
+#b<-1000
+## initialize likelihood ratio test output vector: one value for each bootstrap
+#AB_testStatLIN<-rep(0,b)
+## now bootstrap "b" times
+#for (strap in 1:b){
+#  print(strap)
+#  # initialize network-level output vector for each bootstrap
+#  AB_Est<-rep(0,464)
+#  # now bootstrapping 693 subjects rather than 464 networks
+#  sampIndices<-sample(1:693,replace=T)
+#  # bwAvgCondf is a leaner version of the master dataframe with all variables needed here.
+#  resampDF<-bwAvgCondf[sampIndices,]
+#  #### fit model to all 464 networks: inner loop
+#  for (n in 1:464){
+#    x<-colnames(bwAvgCondf[n])
+#    # to estimate AB path mediation from age to EF (linear)
+#    # scale for EZ interpretation
+#    bwAvgCondfZ[,n]<-scale(bwAvgCondfZ[,n])[,1]
+#    # fit x-M path
+#    xM_form<-as.formula(paste("",x,"", lm_xM_covariates, sep=""))
+#    xMpath<-lm(formula=xM_form,data=bwAvgCondfZ)
+#    # fit M-y path
+#    My_form<-as.formula(paste(lm_My_covariates, "",x,"",sep=""))
+#    Mypath<-lm(formula=My_form,data=bwAvgCondfZ)
+#    # run mediation
+#    mediationFit<-mediate(xMpath,Mypath,treat="Age",mediator=x)
+#    AB_Est[n]<-mediationFit$d1
+#  }
+#  #### end of inner loop 
+#  # create network-level dataframe from subject-level results: tmvec is just a vector of transmodality #values for each network
+#  NL_bwdf<-data.frame(tmvec,AB_Est)
+#  # Now, test relationship between age effect and transmodality for this bootstrap with likelihood #ratio test between nested models
+#  # fit full model
+#  Med_Eff_by_transmodality_model<-lm(AB_Est~tmvec,data=NL_bwdf)
+#  # save linear fit of transmodality
+#  tmFitLIN<-summary(MedEff_by_transmodality_model)$coefficients['tmvec',]
+#  AB_testStatLIN[strap]<-tmFitLIN['Estimate']
+#}
+##### end of outer loop
+#
+## for linear - significance
+#CI_LIN=quantile(AB_testStatLIN,c(0.025,0.975)) 
+#
+## discrete p calculation (https://www.bmj.com/content/343/bmj.d2304 as source)
+#SE=(CI_LIN[2]-CI_LIN[1])/(2*1.96)
+#z=OG_MedEff_by_transmodality_model_LIN_beta/SE
+#z=abs(z)
+#pLIN<-exp((-0.717*z)-(0.416*(z^2)))
+#
+#savedBOOTinfo<-data.frame(AB_testStatLIN)
+#saveRDS(savedBOOTinfo,'~/multiscale/Med_NetLevel_bootInfo.rds')
 
 ```
 
@@ -455,4 +455,33 @@ bwdf$Med_domnetSig17<-as.character(Med_domnetSig17)
 ```{r, fig.width=10,fig.height=10}
 ggplot(bwdf,aes(scalesvec,AB_Est)) + xlab("# of Networks") + ylab('AB Path Coefficient') +theme_classic(base_size = 40) +guides(alpha=FALSE,color=guide_legend(title="Yeo 17 Overlap"))+theme(legend.position=c(.42,-.2),legend.direction = "horizontal",legend.text = element_text(size=22),legend.title = element_text(size=26))+geom_smooth(data=subset(bwdf,domnetvec17=='Somatomotor A'),method='gam',formula = y~s(x,k=3),aes(color=domnetvec17),fill="gray72")+geom_smooth(data=subset(bwdf,domnetvec17=='DM_B'),method='gam',formula = y~s(x,k=3),aes(color=domnetvec17),fill="gray88")+scale_color_manual(values=c('#bc0943','#4183a8','grey20','grey80'))+geom_point(data=subset(bwdf,domnetvec17=='Somatomotor A'),aes(color=Med_domnetSig17),size=6)+geom_point(data=subset(bwdf,domnetvec17=='DM_B'),aes(color=Med_domnetSig17),size=6)+scale_color_manual(values=c('#bc0943','#4183a8','#ebbecc','#b7d9ed'),labels=c('DM B','SM A','n.s. DM B','n.s. SM A'))+scale_x_continuous(breaks=c(4,10,16,22,28))+theme(plot.margin=unit(c(.9,.6,2,.6),"cm"))
 
+```
+
+```{r}
+### After bootstrapping on PMACS
+r1=readRDS('~/multiscale/Med_NetLevel_bootInfo1.rds')
+r2=readRDS('~/multiscale/Med_NetLevel_bootInfo2.rds')
+r3=readRDS('~/multiscale/Med_NetLevel_bootInfo3.rds')
+r4=readRDS('~/multiscale/Med_NetLevel_bootInfo4.rds')
+r5=readRDS('~/multiscale/Med_NetLevel_bootInfo5.rds')
+r6=readRDS('~/multiscale/Med_NetLevel_bootInfo6.rds')
+r7=readRDS('~/multiscale/Med_NetLevel_bootInfo7.rds')
+r8=readRDS('~/multiscale/Med_NetLevel_bootInfo8.rds')
+r9=readRDS('~/multiscale/Med_NetLevel_bootInfo9.rds')
+r10=readRDS('~/multiscale/Med_NetLevel_bootInfo10.rds')
+
+# slap 'em back together (all ran on different seeds)
+mergedBootStraps<-rbind(r1,r2,r3,r4,r5,r6,r7,r8,r9,r10)
+
+# range of AB~Transmodality
+print(range(mergedBootStraps))
+
+# for linear - significance
+CI_LIN=quantile(mergedBootStraps$AB_testStatLIN,c(0.025,0.975)) 
+
+# discrete p calculation (https://www.bmj.com/content/343/bmj.d2304 as source)
+SE=(CI_LIN[2]-CI_LIN[1])/(2*1.96)
+z=OG_MedEff_by_transmodality_model_LIN_beta/SE
+z=abs(z)
+pLIN<-exp((-0.717*z)-(0.416*(z^2)))
 ```

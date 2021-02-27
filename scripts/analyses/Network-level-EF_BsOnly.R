@@ -1,3 +1,5 @@
+# iteration number, probz will split this into 10 jobs. set seed as iteration number for different bootstraps
+
 #libraries
 library(mediation)
 library(ggplot2)
@@ -11,25 +13,25 @@ library(ppcor)
 
 # functions for age effect calculations
 
-# difference in R2
-DeltaR2EstVec<-function(x){
+# difference in R2 for EF
+EFDeltaR2EstVec<-function(x){
   
   # relevant df
-  scaledf<-data.frame(cbind(as.numeric(masterdf$Age),as.numeric(masterdf$Sex),masterdf$Motion,x))
-  colnames(scaledf)<-c('Age','Sex','Motion','varofint')
+  scaledf<-data.frame(cbind(as.numeric(masteref$F1_Exec_Comp_Cog_Accuracy),as.numeric(masteref$Age),as.numeric(masteref$Sex),masteref$Motion,x))
+  colnames(scaledf)<-c('EF','Age','Sex','Motion','varofint')
   
-  # no-age model (segreg ~ sex + motion)
-  noAgeGam<-gam(varofint~Sex+Motion,data=scaledf)
-  noAgeSum<-summary(noAgeGam)
-  # age-included model for measuring difference
-  AgeGam<-gam(varofint~Sex+Motion+s(Age,k=3),data=scaledf)
-  AgeSum<-summary(AgeGam)
+  # no-EF model (b.w. ~ sex + motion)
+  noEFGam<-gam(varofint~Sex+Motion+s(Age,k=3),data=scaledf)
+  noEFSum<-summary(noEFGam)
+  # EF-included model for measuring difference
+  EFGam<-gam(varofint~EF+Sex+Motion+s(Age,k=3),data=scaledf)
+  EFSum<-summary(EFGam)
   
-  dif<-AgeSum$r.sq-noAgeSum$r.sq
+  dif<-EFSum$r.sq-noEFSum$r.sq
   
-  # partial spearmans to extract age relation (for direction)
+  # partial spearmans to extract EF relation (for direction)
   pspear=pcor(scaledf,method='spearman')$estimate
-  corest<-pspear[4]
+  corest<-pspear[5]
   if(corest<0){
     dif=dif*-1
   }
@@ -39,19 +41,19 @@ DeltaR2EstVec<-function(x){
 }
 
 # same thing but returning chisq test sig. output for FDR correction instead of hard difference
-DeltaPEstVec<-function(x){
+EFDeltaPEstVec<-function(x){
   
   # relevant df
-  scaledf<-data.frame(cbind(as.numeric(masterdf$Age),as.numeric(masterdf$Sex),masterdf$Motion,x))
-  colnames(scaledf)<-c('Age','Sex','Motion','varofint')
+  scaledf<-data.frame(cbind(as.numeric(masteref$F1_Exec_Comp_Cog_Accuracy),as.numeric(masteref$Age),as.numeric(masteref$Sex),masteref$Motion,x))
+  colnames(scaledf)<-c('EF','Age','Sex','Motion','varofint')
   
-  # no-age model (segreg ~ sex + motion)
-  noAgeGam<-gam(varofint~Sex+Motion,data=scaledf)
-  # age-included model for measuring difference
-  AgeGam<-gam(varofint~Sex+Motion+s(Age,k=3),data=scaledf)
+  # no-EF model (segreg ~ sex + motion)
+  noEFGam<-gam(varofint~Sex+Motion+s(Age,k=3),data=scaledf)
+  # EF-included model for measuring difference
+  EFGam<-gam(varofint~EF+Sex+Motion+s(Age,k=3),data=scaledf)
   
   # test of dif with anova.gam
-  anovaRes<-anova.gam(noAgeGam,AgeGam,test='Chisq')
+  anovaRes<-anova.gam(noEFGam,EFGam,test='Chisq')
   anovaP<-anovaRes$`Pr(>Chi)`
   anovaP2<-unlist(anovaP)
   return(anovaP2[2])
@@ -59,24 +61,25 @@ DeltaPEstVec<-function(x){
 }
 
 # bootstrap version: resampled df instead of master df
-DeltaR2EstVec_RS<-function(x){
+EFDeltaR2EstVec_RS<-function(x){
   
   # relevant df
-  scaledf<-data.frame(cbind(as.numeric(resampDF$Age),as.numeric(resampDF$Sex),resampDF$Motion,x))
-  colnames(scaledf)<-c('Age','Sex','Motion','varofint')
+  scaledf<-data.frame(cbind(as.numeric(resampDF$F1_Exec_Comp_Cog_Accuracy),as.numeric(resampDF$Age),as.numeric(resampDF$Sex),resampDF$Motion,x))
+  colnames(scaledf)<-c('EF','Age','Sex','Motion','varofint')
   
-  # no-age model (segreg ~ sex + motion)
-  noAgeGam<-gam(varofint~Sex+Motion,data=scaledf)
-  noAgeSum<-summary(noAgeGam)
-  # age-included model for measuring difference
-  AgeGam<-gam(varofint~Sex+Motion+s(Age,k=3),data=scaledf)
-  AgeSum<-summary(AgeGam)
   
-  dif<-AgeSum$r.sq-noAgeSum$r.sq
+  # no-EF model (b.w. ~ sex + motion)
+  noEFGam<-gam(varofint~Sex+Motion+s(Age,k=3),data=scaledf)
+  noEFSum<-summary(noEFGam)
+  # EF-included model for measuring difference
+  EFGam<-gam(varofint~EF+Sex+Motion+s(Age,k=3),data=scaledf)
+  EFSum<-summary(EFGam)
+  
+  dif<-EFSum$r.sq-noEFSum$r.sq
   
   # partial spearmans to extract age relation (for direction)
   pspear=pcor(scaledf,method='spearman')$estimate
-  corest<-pspear[4]
+  corest<-pspear[5]
   if(corest<0){
     dif=dif*-1
   }
@@ -120,6 +123,14 @@ fc<-fc[-c(1)]
 shams<-fc[694:695,]
 # Merge with non-fMR data into master data frame
 masterdf<-merge(fc,df,by='bblid')
+
+# and executive function
+# get EF in here
+subjbehav<-read.csv("/home/pinesa/ms_data/n9498_cnb_factor_scores_fr_20170202.csv")
+ef<-data.frame(subjbehav$NAR_F1_Exec_Comp_Cog_Accuracy,subjbehav$bblid)
+colnames(ef)<-c('F1_Exec_Comp_Cog_Accuracy','bblid')
+# merge in
+masteref<-merge(masterdf,ef,by='bblid')
 
 ### Get in Consensus-reference atlas correspondence
 rac<-read.csv('/home/pinesa/ms_data/network_yCorrespondence_overscales.csv',stringsAsFactors = F)
@@ -308,12 +319,11 @@ for (i in 1:2){
 
 # and make into df
 bwAvgCondf<-data.frame(bwAvgCon)
-
 #add on covariate columns
 bwAvgCondf$Age<-masterdf$Age
 bwAvgCondf$Sex<-masterdf$Sex
 bwAvgCondf$Motion<-masterdf$Motion
-
+bwAvgCondf$F1_Exec_Comp_Cog_Accuracy<-masteref$F1_Exec_Comp_Cog_Accuracy
 #### LINEAR VERSION
 
 #OG coefs. 
@@ -322,15 +332,15 @@ avg_bw_deltaP<-rep(0,464)
 for (n in 1:464){
   # first 464 columns are network-level connectivity values. test each.
   # this is a function that return full vs. reduced model comparisons (Age included vs. age excluded, controls for sex + motion).
-  avg_bw_deltaR2[n]<-DeltaR2EstVec(bwAvgCondf[n])
+  avg_bw_deltaR2[n]<-EFDeltaR2EstVec(bwAvgCondf[n])
 }
 # create network-level dataframe from subject-level results: tmvec is just a vector of transmodality values for each network
 NL_bwdf<-data.frame(tmvec,avg_bw_deltaR2)
 # fit full model
-OG_AgeEff_by_transmodality_model<-lm(avg_bw_deltaR2~tmvec,data=NL_bwdf)
+OG_EFEff_by_transmodality_model<-lm(avg_bw_deltaR2~tmvec,data=NL_bwdf)
 # Extract Linear coef.
-OG_AgeEff_by_transmodality_model_LIN<-summary(OG_AgeEff_by_transmodality_model)$coefficients['tmvec',]
-OG_AgeEff_by_transmodality_model_LIN_beta<-OG_AgeEff_by_transmodality_model_LIN['Estimate']
+OG_EFEff_by_transmodality_model_LIN<-summary(OG_EFEff_by_transmodality_model)$coefficients['tmvec',]
+OG_EFEff_by_transmodality_model_LIN_beta<-OG_EFEff_by_transmodality_model_LIN['Estimate']
 
 #### subject-level resample: outer loop
 set.seed(1)
@@ -339,6 +349,7 @@ b<-1000
 # initialize likelihood ratio test output vector: one value for each bootstrap
 lm_testStatLIN<-rep(0,b)
 lm_testPvecLIN<-rep(0,b)
+lm_testStatQUADR<-rep(0,b)
 SMA_testStatQuadr<-rep(0,b)
 SMA_testStatLin<-rep(0,b)
 SM_testStatQuadr<-rep(0,b)
@@ -360,19 +371,20 @@ for (x in 1:b){
   for (n in 1:464){
     # first 464 columns are network-level connectivity values. test each.
     # this is a function that return full vs. reduced model comparisons (Age included vs. age excluded, controls for sex + motion).
-    avg_bw_deltaR2[n]<-DeltaR2EstVec_RS(resampDF[n])
+    avg_bw_deltaR2[n]<-EFDeltaR2EstVec_RS(resampDF[n])
   }
   #### end of inner loop 
   # create network-level dataframe from subject-level results: tmvec is just a vector of transmodality values for each network
   NL_bwdf<-data.frame(tmvec,avg_bw_deltaR2)
   # Now, test relationship between age effect and transmodality for this bootstrap with likelihood ratio test between nested models
   # fit full model
-  AgeEff_by_transmodality_model<-lm(avg_bw_deltaR2~tmvec,data=NL_bwdf)
+  EFEff_by_transmodality_model<-lm(avg_bw_deltaR2~poly(tmvec,2),data=NL_bwdf)
   # save linear fit of transmodality
-  tmFitLIN<-summary(AgeEff_by_transmodality_model)$coefficients['tmvec',]
+  tmFitLIN<-summary(EFEff_by_transmodality_model)$coefficients['poly(tmvec, 2)1']
   lm_testStatLIN[x]<-tmFitLIN['Estimate']
   lm_testPvecLIN[x]<-tmFitLIN['Pr(>|t|)']
-  
+  tmFitQUADR<-summary(EFEff_by_transmodality_model)$coefficients['poly(tmvec, 2)2']
+  lm_testStatQUADR[x]<-tmFitQUADR['Estimate']
   # and fit SomA and DmB
   bwdf<-data.frame(tmvec,scalesvec,domnetvec,domnetvec17,netpropvec,avg_bw_deltaR2,avg_bw_deltaP)
   SMA_lm<-lm(avg_bw_deltaR2~poly(scalesvec,2),data=bwdf[bwdf$domnetvec17=='Somatomotor A',])
@@ -396,9 +408,11 @@ CI_LIN=quantile(lm_testStatLIN,c(0.025,0.975))
 
 # discrete p calculation (https://www.bmj.com/content/343/bmj.d2304 as source)
 SE=(CI_LIN[2]-CI_LIN[1])/(2*1.96)
-z=OG_AgeEff_by_transmodality_model_LIN_beta/SE
+z=OG_EFEff_by_transmodality_model_LIN_beta/SE
 z=abs(z)
 pLIN<-exp((-0.717*z)-(0.416*(z^2)))
-
-savedBOOTinfo<-data.frame(lm_testStatLIN,lm_testPvecLIN,SMA_testStatLin,SMA_testStatQuadr,SM_testStatLin,SM_testStatQuadr,DMB_testStatLin,DMB_testStatQuadr,DM_testStatLin,DM_testStatQuadr)
-saveRDS(savedBOOTinfo,'~/Age_NetLevel_bootInfo.rds')
+print(CI_LIN)
+print(pLIN)
+savedBOOTinfo<-data.frame(lm_testStatLIN,lm_testPvecLIN,lm_testStatQUADR,SMA_testStatLin,SMA_testStatQuadr,SM_testStatLin,SM_testStatQuadr,DMB_testStatLin,DMB_testStatQuadr,DM_testStatLin,DM_testStatQuadr)
+saveRDS(savedBOOTinfo,'~/EF_NetLevel_bootInfo.rds')
+  

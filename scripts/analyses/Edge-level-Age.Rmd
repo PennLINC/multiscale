@@ -638,3 +638,8 @@ savedBOOTinfo<-data.frame(lm_testStatLIN,lm_testPvecLIN,TmDifAgeSpearman,EucAgeS
 saveRDS(savedBOOTinfo,'~/multiscale/Age_EdgeLevel_bootInfo.rds')
 BOOTinfo<-readRDS('~/multiscale/Age_EdgeLevel_bootInfo.rds')
 ```
+
+
+```{r}
+ggplot(savedBOOTinfo,aes(TmDifAgeSpearman))+geom_density()+geom_density(aes(EucAgeSpearman))+xlim(-.6,0)+theme_classic()
+```

@@ -855,11 +855,11 @@ ggplot(LongAgeSpan_plotdf2[derivSigWholeSpline,],aes(agespans,tmvecJit,color=der
 
 ```{r}
 # figure 5c stuff - Age Effect * Scale * Transmodality
-# gams for stats
-SMA_gam<-gam(avg_bw_deltaR2~s(scalesvec,k=3),data=bwdf[bwdf$domnetvec17=='Somatomotor A',])
-DMB_gam<-gam(avg_bw_deltaR2~s(scalesvec,k=3),data=bwdf[bwdf$domnetvec17=='DM_B',])
-summary(SMA_gam)
-summary(DMB_gam)
+# lms for stats
+SMA_lm<-lm(avg_bw_deltaR2~poly(scalesvec,2),data=bwdf[bwdf$domnetvec17=='Somatomotor A',])
+DMB_lm<-lm(avg_bw_deltaR2~poly(scalesvec,2),data=bwdf[bwdf$domnetvec17=='DM_B',])
+summary(SMA_lm)
+summary(DMB_lm)
 # convert yeo17 membership to vector capturing only sig. yeo17 networks, graying out nonsig.
 domnetSig17<-domnetvec17
 levels(domnetSig17)<-c(levels(domnetSig17),'zNonSig_DM','zNonSig_Mot')
