@@ -379,19 +379,16 @@ for (x in 1:b){
   # Now, test relationship between age effect and transmodality for this bootstrap with likelihood ratio test between nested models
   # fit full model
   EFEff_by_transmodality_model<-lm(avg_bw_deltaR2~poly(tmvec,2),data=NL_bwdf)
-  # save linear fit of transmodality
-  tmFitLIN<-summary(EFEff_by_transmodality_model)$coefficients['poly(tmvec, 2)1']
-  lm_testStatLIN[x]<-tmFitLIN['Estimate']
-  lm_testPvecLIN[x]<-tmFitLIN['Pr(>|t|)']
-  tmFitQUADR<-summary(EFEff_by_transmodality_model)$coefficients['poly(tmvec, 2)2']
-  lm_testStatQUADR[x]<-tmFitQUADR['Estimate']
+  # save fits of transmodality
+  lm_testStatLIN[x]<-EFEff_by_transmodality_model$coefficients['poly(scalesvec, 2)1']
+  lm_testStatQUADR[x]<-EFEff_by_transmodality_model$coefficients['poly(scalesvec, 2)2']
   # and fit SomA and DmB
   bwdf<-data.frame(tmvec,scalesvec,domnetvec,domnetvec17,netpropvec,avg_bw_deltaR2,avg_bw_deltaP)
   SMA_lm<-lm(avg_bw_deltaR2~poly(scalesvec,2),data=bwdf[bwdf$domnetvec17=='Somatomotor A',])
   SM_lm<-lm(avg_bw_deltaR2~poly(scalesvec,2),data=bwdf[bwdf$domnetvec=='Motor',])
   DMB_lm<-lm(avg_bw_deltaR2~poly(scalesvec,2),data=bwdf[bwdf$domnetvec17=='DM_B',])
   DM_lm<-lm(avg_bw_deltaR2~poly(scalesvec,2),data=bwdf[bwdf$domnetvec=='DM',])
-  SMA_testStatQuadr[x]<-SMA_lm
+  SMA_testStatQuadr[x]<-SMA_lm$coefficients['poly(scalesvec, 2)2']
   SMA_testStatLin[x]<-SMA_lm$coefficients['poly(scalesvec, 2)1']
   SM_testStatQuadr[x]<-SM_lm$coefficients['poly(scalesvec, 2)2']
   SM_testStatLin[x]<-SM_lm$coefficients['poly(scalesvec, 2)1']
@@ -403,16 +400,6 @@ for (x in 1:b){
 }
 #### end of outer loop
 
-# for linear - significance
-CI_LIN=quantile(lm_testStatLIN,c(0.025,0.975)) 
-
-# discrete p calculation (https://www.bmj.com/content/343/bmj.d2304 as source)
-SE=(CI_LIN[2]-CI_LIN[1])/(2*1.96)
-z=OG_EFEff_by_transmodality_model_LIN_beta/SE
-z=abs(z)
-pLIN<-exp((-0.717*z)-(0.416*(z^2)))
-print(CI_LIN)
-print(pLIN)
 savedBOOTinfo<-data.frame(lm_testStatLIN,lm_testPvecLIN,lm_testStatQUADR,SMA_testStatLin,SMA_testStatQuadr,SM_testStatLin,SM_testStatQuadr,DMB_testStatLin,DMB_testStatQuadr,DM_testStatLin,DM_testStatQuadr)
 saveRDS(savedBOOTinfo,'~/EF_NetLevel_bootInfo.rds')
   

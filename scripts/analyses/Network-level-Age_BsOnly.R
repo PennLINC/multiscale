@@ -379,7 +379,7 @@ for (x in 1:b){
   SM_lm<-lm(avg_bw_deltaR2~poly(scalesvec,2),data=bwdf[bwdf$domnetvec=='Motor',])
   DMB_lm<-lm(avg_bw_deltaR2~poly(scalesvec,2),data=bwdf[bwdf$domnetvec17=='DM_B',])
   DM_lm<-lm(avg_bw_deltaR2~poly(scalesvec,2),data=bwdf[bwdf$domnetvec=='DM',])
-  SMA_testStatQuadr[x]<-SMA_lm
+  SMA_testStatQuadr[x]<-SMA_lm['poly(scalesvec, 2)2']
   SMA_testStatLin[x]<-SMA_lm$coefficients['poly(scalesvec, 2)1']
   SM_testStatQuadr[x]<-SM_lm$coefficients['poly(scalesvec, 2)2']
   SM_testStatLin[x]<-SM_lm$coefficients['poly(scalesvec, 2)1']

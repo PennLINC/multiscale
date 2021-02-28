@@ -493,96 +493,21 @@ OG_AgeEff_by_transmodality_model<-lm(avg_bw_deltaR2~tmvec,data=NL_bwdf)
 OG_AgeEff_by_transmodality_model_LIN<-summary(OG_AgeEff_by_transmodality_model)$coefficients['tmvec',]
 OG_AgeEff_by_transmodality_model_LIN_beta<-OG_AgeEff_by_transmodality_model_LIN['Estimate']
 
-#### subject-level resample: outer loop
-set.seed(1)
-# set number of bootstraps
-b<-1000
-# initialize likelihood ratio test output vector: one value for each bootstrap
-lm_testStatLIN<-rep(0,b)
-lm_testPvecLIN<-rep(0,b)
-# now bootstrap "b" times
-for (x in 1:b){
-  # initialize network-level output vector for each bootstrap
-  avg_bw_deltaR2<-rep(0,464)
-  avg_bw_deltaP<-rep(0,464)
-  # now bootstrapping 693 subjects rather than 464 networks
-  sampIndices<-sample(1:693,replace=T)
-  # bwAvgCondf is a leaner version of the master dataframe with all variables needed here.
-  resampDF<-bwAvgCondf[sampIndices,]
-  #### fit model to all 464 networks: inner loop
-  for (n in 1:464){
-    # first 464 columns are network-level connectivity values. test each.
-    # this is a function that return full vs. reduced model comparisons (Age included vs. age excluded, controls for sex + motion).
-    avg_bw_deltaR2[n]<-DeltaR2EstVec_RS(resampDF[n])
-  }
-  #### end of inner loop 
-  # create network-level dataframe from subject-level results: tmvec is just a vector of transmodality values for each network
-  NL_bwdf<-data.frame(tmvec,avg_bw_deltaR2)
-  # Now, test relationship between age effect and transmodality for this bootstrap with likelihood ratio test between nested models
-  # fit full model
-  AgeEff_by_transmodality_model<-lm(avg_bw_deltaR2~tmvec,data=NL_bwdf)
-  # save linear fit of transmodality
-  tmFitLIN<-summary(AgeEff_by_transmodality_model)$coefficients['tmvec',]
-  lm_testStatLIN[x]<-tmFitLIN['Estimate']
-  lm_testPvecLIN[x]<-tmFitLIN['Pr(>|t|)']
-}
-#### end of outer loop
+# read in bootstrapped values (calculated on PMACS)
+bootstrapRDS<-readRDS('~/multiscale/Age_NetLevel_bootInfo.rds')
 
-# for linear - significance
-CI_LIN=quantile(lm_testStatLIN,c(0.025,0.975)) 
+
+# for linear Age Effect ~ Transmodality - significance
+CI_LIN=quantile(bootstrapRDS$lm_testStatLIN,c(0.025,0.975)) 
 
 # discrete p calculation (https://www.bmj.com/content/343/bmj.d2304 as source)
 SE=(CI_LIN[2]-CI_LIN[1])/(2*1.96)
 z=OG_AgeEff_by_transmodality_model_LIN_beta/SE
 z=abs(z)
 pLIN<-exp((-0.717*z)-(0.416*(z^2)))
+print(CI_LIN)
+print(pLIN)
 
-savedBOOTinfo<-data.frame(lm_testStatLIN,lm_testPvecLIN)
-saveRDS(savedBOOTinfo,'~/multiscale/Age_NetLevel_bootInfo.rds')
-
-
-```
-
-```{r}
-
-######## test whether or not network-level Age Effects vary as a function of network Transmodality
-#### LINEAR VERSION
-#### subject-level resample: outer loop
-set.seed(1)
-# set number of bootstraps
-b<-10
-# initialize likelihood ratio test output vector: one value for each bootstrap
-lm_testStat<-rep(0,b)
-lm_testPvec<-rep(0,b)
-# now bootstrap "b" times
-for (x in 1:b){
-  # initialize network-level output vector for each bootstrap
-  avg_bw_deltaR2<-rep(0,464)
-  avg_bw_deltaP<-rep(0,464)
-  # now bootstrapping 693 subjects rather than 464 networks
-  sampIndices<-sample(1:693,replace=T)
-  # bwAvgCondf is a leaner version of the master dataframe with all variables needed here.
-  resampDF<-bwAvgCondf[sampIndices,]
-  #### fit model to all 464 networks: inner loop
-  for (n in 1:464){
-    # first 464 columns are network-level connectivity values. test each.
-    # this is a function that return full vs. reduced model comparisons (Age included vs. age excluded, controls for sex + motion).
-    avg_bw_deltaR2[n]<-DeltaR2EstVec_RS(resampDF[n])
-  }
-  #### end of inner loop 
-  # create network-level dataframe from subject-level results: tmvec is just a vector of transmodality values for each network
-  NL_bwdf<-data.frame(tmvec,avg_bw_deltaR2)
-  # Now, test relationship between age effect and transmodality for this bootstrap with likelihood ratio test between nested models
-  # fit full model
-  AgeEff_by_transmodality_model<-lm(avg_bw_deltaR2~tmvec,data=NL_bwdf)
-  # save linear fit of transmodality
-  tmFit<-summary(AgeEff_by_transmodality_model)$coefficients['tmvec',]
-  lm_testStat[x]<-tmFit['Estimate']
-  lm_testPvec[x]<-tmFit['Pr(>|t|)']
-}
-#### end of outer loop
-plot(lm_testStat)
-plot(lm_testPvec)
 
 ```
 
@@ -595,29 +520,12 @@ bwdf$domnetvecSig[NL_sigVec]<-as.character(bwdf$domnetvec[NL_sigVec])
 bwdf$domnetvecSig<-as.factor(bwdf$domnetvecSig)
 bwdf$domnetvecSig<-factor(bwdf$domnetvecSig,levels=c("Motor","Visual","DA","VA","Limbic","FP","DM","NonSig"),labels=c("Motor","Visual","DA","VA","Limbic","FP","DM","NonSig."))
 
-# stats for fig-gam
-Age_net_gam<-gam(avg_bw_deltaR2~s(tmvec,k=3),data=bwdf)
-
-# number of bootstraps
-#b<-10000
-
-# now bootstrap x times
-#for (x in 1:b){
-#  sampIndices<-sample(1:464,replace=T)
-#  resampDF<-bwdf[sampIndices,]
-  # fit model
-#  Age_net_gamRs<-gam(avg_bw_deltaR2~s(tmvec,k=3),data=resampDF)
-#  sumRS<-summary(Age_net_gamRs)
-#  r2adjvec[x]<-sumRS$r.sq
-#  pvec[x]<-sumRS$s.pv
-#}
-  
-
+# stats for fig-lm
+Age_net_lm<-lm(avg_bw_deltaR2~tmvec,data=bwdf)
+cor.test(bwdf$tmvec,bwdf$avg_bw_deltaR2,method='spearman')
 ```
 
 ```{r, fig.width=11,fig.height=11}
-ggplot(bwdf,aes(tmvec,avg_bw_deltaR2)) + geom_point(size=6,alpha=.8,aes(color=domnetvecSig))+ scale_color_manual(values=c('#3281ab','#670068','#007500','#b61ad0','#b8cf86','#d77d00','#c1253c','gray80')) + xlab("Transmodality") + ylab(expression(paste('Age Effect (',Delta,R^2[adj],')',sep=''))) +theme_classic(base_size = 40) +guides(color=guide_legend(title="Yeo 7 Overlap"))+theme(plot.margin=margin(b=3,t=.1,l=.1,r=.1, unit='cm'), legend.position=c(.42,-.24),legend.direction = "horizontal",legend.title=element_text(size=30),legend.text=element_text(size=30))+geom_smooth(method='gam',formula = y~s(x,k=3),color='black')
-
 # version without insig fitted to
 ggplot(bwdf[NL_sigVec,],aes(tmvec,avg_bw_deltaR2)) + geom_point(size=6,alpha=.8,aes(color=domnetvecSig))+ scale_color_manual(values=c('#3281ab','#670068','#007500','#b61ad0','#b8cf86','#d77d00','#c1253c','gray80')) + xlab("Transmodality") + ylab(expression(paste('Age Effect (',Delta,R^2[adj],')',sep=''))) +theme_classic(base_size = 40) +guides(color=guide_legend(title="Yeo 7 Overlap"))+theme(plot.margin=margin(b=3,t=.1,l=.1,r=.1, unit='cm'), legend.position=c(.42,-.24),legend.direction = "horizontal",legend.title=element_text(size=30),legend.text=element_text(size=30))+geom_smooth(method='lm',color='black',size=2)
 ```
@@ -867,11 +775,79 @@ bwdf$domnetvec17Sig<-as.character(domnetvec17)
 # set nonsigs to de-saturated version of colors
 bwdf$domnetvec17Sig[NL_sigVec==FALSE & bwdf$domnetvec17Sig == 'Somatomotor A']='zNonSig_Mot'
 bwdf$domnetvec17Sig[NL_sigVec==FALSE & bwdf$domnetvec17Sig == 'DM_B']='zNonSig_DM'
+
+
+# lms for stats
+SM_lm<-lm(avg_bw_deltaR2~poly(scalesvec,2),data=bwdf[bwdf$domnetvec=='Motor',])
+DM_lm<-lm(avg_bw_deltaR2~poly(scalesvec,2),data=bwdf[bwdf$domnetvec=='DM',])
+summary(SM_lm)
+summary(DM_lm)
+# convert yeo7 membership to vector capturing only sig. yeo17 networks, graying out nonsig.
+domnetSig<-domnetvec
+levels(domnetSig)<-c(levels(domnetSig),'zNonSig_DM','zNonSig_Mot')
+bwdf$domnetvecSig<-as.character(domnetvec)
+# set nonsigs to de-saturated version of colors
+bwdf$domnetvecSig[NL_sigVec==FALSE & bwdf$domnetvecSig == 'Motor']='zNonSig_Mot'
+bwdf$domnetvecSig[NL_sigVec==FALSE & bwdf$domnetvecSig == 'DM']='zNonSig_DM'
+
+
+# use bootstraps to determine signifiance
+
+# for linear Motor A Age Effect ~ Scale - significance
+CI_LIN=quantile(bootstrapRDS$SM_testStatLin,c(0.025,0.975)) 
+
+# discrete p calculation (https://www.bmj.com/content/343/bmj.d2304 as source)
+SE=(CI_LIN[2]-CI_LIN[1])/(2*1.96)
+z=SMA_lm$coefficients['poly(scalesvec, 2)1']/SE
+z=abs(z)
+pLIN<-exp((-0.717*z)-(0.416*(z^2)))
+print(CI_LIN)
+print(pLIN)
+
+# for Quadratic Motor Age Effect ~ Scale - significance
+CI_QUADR=quantile(bootstrapRDS$SMA_testStatQuadr,c(0.025,0.975)) 
+
+# discrete p calculation (https://www.bmj.com/content/343/bmj.d2304 as source)
+SE=(CI_QUADR[2]-CI_QUADR[1])/(2*1.96)
+z=SMA_lm$coefficients['poly(scalesvec, 2)2']/SE
+z=abs(z)
+pQUADR<-exp((-0.717*z)-(0.416*(z^2)))
+print(CI_QUADR)
+print(pQUADR)
+
+
+# DMB for comparison
+# for linear DMB Age Effect ~ Scale - significance
+CI_LIN=quantile(bootstrapRDS$DMB_testStatLin,c(0.025,0.975)) 
+
+# discrete p calculation (https://www.bmj.com/content/343/bmj.d2304 as source)
+SE=(CI_LIN[2]-CI_LIN[1])/(2*1.96)
+z=DMB_lm$coefficients['poly(scalesvec, 2)1']/SE
+z=abs(z)
+pLIN<-exp((-0.717*z)-(0.416*(z^2)))
+print(CI_LIN)
+print(pLIN)
+
+# for Quadratic Motor Age Effect ~ Scale - significance
+CI_QUADR=quantile(bootstrapRDS$DMB_testStatQuadr,c(0.025,0.975)) 
+
+# discrete p calculation (https://www.bmj.com/content/343/bmj.d2304 as source)
+SE=(CI_QUADR[2]-CI_QUADR[1])/(2*1.96)
+z=DMB_lm$coefficients['poly(scalesvec, 2)2']/SE
+z=abs(z)
+pQUADR<-exp((-0.717*z)-(0.416*(z^2)))
+print(CI_QUADR)
+print(pQUADR)
+
 ```
 
 ```{r, fig.width=10,fig.height=7}
 ggplot(bwdf,aes(scalesvec,avg_bw_deltaR2)) + xlab("# of Networks") + ylab(expression(paste('Age Effect (',Delta,R^2[adj],')'))) +theme_classic(base_size = 28) +guides(alpha=FALSE,color=guide_legend(title="Yeo 17 Overlap"))+theme(legend.position=c(.39,-.19),legend.direction = "horizontal",legend.text = element_text(size=20),legend.title = element_text(size=24))+
 geom_smooth(data=subset(bwdf,domnetvec17=='Somatomotor A'),method='gam',formula = y~s(x,k=3),aes(color=domnetvec17),fill="gray72")+geom_smooth(data=subset(bwdf,domnetvec17=='DM_B'),method='gam',formula = y~s(x,k=3),aes(color=domnetvec17),fill="gray88")+scale_color_manual(values=c('#bc0943','#4183a8'))+geom_point(data=subset(bwdf,domnetvec17=='Somatomotor A'),aes(color=domnetvec17Sig),size=5)+geom_point(data=subset(bwdf,domnetvec17=='DM_B'),aes(color=domnetvec17Sig),size=5)+scale_color_manual(values=c('#bc0943','#4183a8','#ebbecc','#b7d9ed'),labels=c('DM B','SM A','n.s. DM B','n.s. SM A'))+scale_x_continuous(breaks=c(4,10,16,22,28))+theme(plot.margin=unit(c(.9,.6,2,.6),"cm"))
+
+
+ggplot(bwdf,aes(scalesvec,avg_bw_deltaR2)) + xlab("# of Networks") + ylab(expression(paste('Age Effect (',Delta,R^2[adj],')'))) +theme_classic(base_size = 28) +guides(alpha=FALSE,color=guide_legend(title="Yeo 17 Overlap"))+theme(legend.position=c(.39,-.19),legend.direction = "horizontal",legend.text = element_text(size=20),legend.title = element_text(size=24))+
+    geom_smooth(data=subset(bwdf,domnetvec=='Motor'),method='lm',formula = y~poly(x,2),aes(color=domnetvec),fill="gray72")+geom_smooth(data=subset(bwdf,domnetvec=='DM'),method='lm',formula = y~poly(x,2),aes(color=domnetvec),fill="gray88")+scale_color_manual(values=c('#bc0943','#4183a8'))+geom_point(data=subset(bwdf,domnetvec=='Motor'),aes(color=domnetvecSig),size=5)+geom_point(data=subset(bwdf,domnetvec=='DM'),aes(color=domnetvecSig),size=5)+scale_color_manual(values=c('#bc0943','#4183a8','#ebbecc','#b7d9ed'),labels=c('DM','SM','n.s. DM','n.s. SM'))+scale_x_continuous(breaks=c(4,10,16,22,28))+theme(plot.margin=unit(c(.9,.6,2,.6),"cm"))
 
 ```
 

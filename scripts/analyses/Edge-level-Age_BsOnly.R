@@ -1,5 +1,3 @@
-# iteration number, probz will split this into 10 jobs. set seed as iteration number for different bootstraps
-
 #libraries
 library(mediation)
 library(ggplot2)
