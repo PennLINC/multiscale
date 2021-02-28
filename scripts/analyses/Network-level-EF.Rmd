@@ -517,7 +517,20 @@ OG_EFEff_by_transmodality_model_QUADR_beta<-OG_EFEff_by_transmodality_model_QUAD
 #savedBOOTinfo<-data.frame(lm_testStatLIN,lm_testPvecLIN,lm_testStatQUADR,lm_testPvecQUADR)
 #saveRDS(savedBOOTinfo,'~/multiscale/EF_NetLevel_bootInfo.rds')
 
+# read in bootstrapped values (calculated on PMACS)
+bootstrapRDS<-readRDS('~/multiscale/EF_NetLevel_bootInfo.rds')
 
+
+# for linear Age Effect ~ Transmodality - significance
+CI_LIN=quantile(bootstrapRDS$lm_testStatLIN,c(0.025,0.975)) 
+
+# discrete p calculation (https://www.bmj.com/content/343/bmj.d2304 as source)
+SE=(CI_LIN[2]-CI_LIN[1])/(2*1.96)
+z=OG_EFEff_by_transmodality_model_LIN_beta/SE
+z=abs(z)
+pLIN<-exp((-0.717*z)-(0.416*(z^2)))
+print(CI_LIN)
+print(pLIN)
 ```
 
 ```{r}

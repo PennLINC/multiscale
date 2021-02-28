@@ -1,4 +1,4 @@
-# iteration number, probz will split this into 10 jobs. set seed as iteration number for different bootstraps
+# iteration number, probz will split this into 20 jobs. set seed as iteration number for different bootstraps
 iter=commandArgs(trailingOnly=TRUE)
 
 #libraries
@@ -321,9 +321,9 @@ for (n in 1:464){
   AB_Est[i]<-mediationFit$d1
 }
 # create network-level dataframe from subject-level results: tmvec is just a vector of transmodality values for each network
-NL_bwdf<-data.frame(tmvec,avg_bw_deltaR2)
+NL_bwdf<-data.frame(tmvec,AB_Est)
 # fit full model
-OG_MedEff_by_transmodality_model<-lm(avg_bw_deltaR2~tmvec,data=NL_bwdf)
+OG_MedEff_by_transmodality_model<-lm(AB_Est~tmvec,data=NL_bwdf)
 # Extract Linear coef.
 OG_MedEff_by_transmodality_model_LIN<-summary(OG_MedEff_by_transmodality_model)$coefficients['tmvec',]
 OG_MedEff_by_transmodality_model_LIN_beta<-OG_MedEff_by_transmodality_model_LIN['Estimate']
@@ -331,9 +331,17 @@ OG_MedEff_by_transmodality_model_LIN_beta<-OG_MedEff_by_transmodality_model_LIN[
 #### subject-level resample: outer loop
 set.seed(iter)
 # set number of bootstraps
-b<-100
-# initialize likelihood ratio test output vector: one value for each bootstrap
+b<-50
+# initialize test output vector: one value for each bootstrap
 AB_testStatLIN<-rep(0,b)
+SMA_testStatQuadr<-rep(0,b)
+SMA_testStatLin<-rep(0,b)
+SM_testStatQuadr<-rep(0,b)
+SM_testStatLin<-rep(0,b)
+DMB_testStatQuadr<-rep(0,b)
+DMB_testStatLin<-rep(0,b)
+DM_testStatQuadr<-rep(0,b)
+DM_testStatLin<-rep(0,b)
 # now bootstrap "b" times
 for (strap in 1:b){
   print(strap)
@@ -368,18 +376,24 @@ for (strap in 1:b){
   # save linear fit of transmodality
   tmFitLIN<-summary(Med_Eff_by_transmodality_model)$coefficients['tmvec',]
   AB_testStatLIN[strap]<-tmFitLIN['Estimate']
+  # for DM vs. motor over scales estimates
+  bwdf<-data.frame(tmvec,scalesvec,domnetvec,domnetvec17,netpropvec,AB_Est)
+  SMA_lm<-lm(AB_Est~poly(scalesvec,2),data=bwdf[bwdf$domnetvec17=='Somatomotor A',])
+  SM_lm<-lm(AB_Est~poly(scalesvec,2),data=bwdf[bwdf$domnetvec=='Motor',])
+  DMB_lm<-lm(AB_Est~poly(scalesvec,2),data=bwdf[bwdf$domnetvec17=='DM_B',])
+  DM_lm<-lm(AB_Est~poly(scalesvec,2),data=bwdf[bwdf$domnetvec=='DM',])
+  SMA_testStatQuadr[strap]<-SMA_lm$coefficients['poly(scalesvec, 2)2']
+  SMA_testStatLin[strap]<-SMA_lm$coefficients['poly(scalesvec, 2)1']
+  SM_testStatQuadr[strap]<-SM_lm$coefficients['poly(scalesvec, 2)2']
+  SM_testStatLin[strap]<-SM_lm$coefficients['poly(scalesvec, 2)1']
+  DMB_testStatQuadr[strap]<-DMB_lm$coefficients['poly(scalesvec, 2)2']
+  DMB_testStatLin[strap]<-DMB_lm$coefficients['poly(scalesvec, 2)1']
+  DM_testStatQuadr[strap]<-DM_lm$coefficients['poly(scalesvec, 2)2']
+  DM_testStatLin[strap]<-DM_lm$coefficients['poly(scalesvec, 2)1']
 }
 #### end of outer loop
 
-# for linear - significance
-CI_LIN=quantile(AB_testStatLIN,c(0.025,0.975)) 
+savedBOOTinfo<-data.frame(AB_testStatLIN,SMA_testStatQuadr,SMA_testStatLin,SM_testStatQuadr,SM_testStatLin,DMB_testStatQuadr,DMB_testStatLin,DM_testStatQuadr,DM_testStatLin)
 
-# discrete p calculation (https://www.bmj.com/content/343/bmj.d2304 as source)
-SE=(CI_LIN[2]-CI_LIN[1])/(2*1.96)
-z=OG_MedEff_by_transmodality_model_LIN_beta/SE
-z=abs(z)
-pLIN<-exp((-0.717*z)-(0.416*(z^2)))
-
-savedBOOTinfo<-data.frame(AB_testStatLIN)
 name=paste('~/Med_NetLevel_bootInfo',iter,'.rds',sep='')
 saveRDS(savedBOOTinfo,name)
