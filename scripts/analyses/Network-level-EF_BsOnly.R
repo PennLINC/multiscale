@@ -380,8 +380,8 @@ for (x in 1:b){
   # fit full model
   EFEff_by_transmodality_model<-lm(avg_bw_deltaR2~poly(tmvec,2),data=NL_bwdf)
   # save fits of transmodality
-  lm_testStatLIN[x]<-EFEff_by_transmodality_model$coefficients['poly(scalesvec, 2)1']
-  lm_testStatQUADR[x]<-EFEff_by_transmodality_model$coefficients['poly(scalesvec, 2)2']
+  lm_testStatLIN[x]<-EFEff_by_transmodality_model$coefficients['poly(tmvec, 2)1']
+  lm_testStatQUADR[x]<-EFEff_by_transmodality_model$coefficients['poly(tmvec, 2)2']
   # and fit SomA and DmB
   bwdf<-data.frame(tmvec,scalesvec,domnetvec,domnetvec17,netpropvec,avg_bw_deltaR2,avg_bw_deltaP)
   SMA_lm<-lm(avg_bw_deltaR2~poly(scalesvec,2),data=bwdf[bwdf$domnetvec17=='Somatomotor A',])
