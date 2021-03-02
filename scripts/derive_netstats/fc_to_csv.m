@@ -7,11 +7,11 @@ subjs=load('/cbica/projects/pinesParcels/data/bblids.txt');
 
 % load in the cell struct array frakenmatrices
 ind_file=load('/cbica/projects/pinesParcels/results/aggregated_data/ind_conmats_allscales_allsubjs.mat');
-gro_file=load('/cbica/projects/pinesParcels/results/aggregated_data/gro_conmats_allscales_allsubjs.mat');	
-bts_file=load('/cbica/projects/pinesParcels/results/aggregated_data/bts_conmats_allscales_allsubjs.mat');
+%gro_file=load('/cbica/projects/pinesParcels/results/aggregated_data/gro_conmats_allscales_allsubjs.mat');	
+%bts_file=load('/cbica/projects/pinesParcels/results/aggregated_data/bts_conmats_allscales_allsubjs.mat');
 ind_feats=ind_file.ind_mats;
-gro_feats=gro_file.gro_mats;
-bts_feats=bts_file.bTS_indmats;
+%gro_feats=gro_file.gro_mats;
+%bts_feats=bts_file.bTS_indmats;
 
 %%% load in sham data
 sham_file=load('/cbica/projects/pinesParcels/data/sim_data/shamdata.mat');
@@ -23,11 +23,11 @@ subjs=[subjs; 99999; 10000];
 % append sham data to each struct of feature matrices (redundant)
 for k=Krange
 	ind_feats{k}(:,:,694:695)=sham_feats{k}(:,:,1:2);
-	gro_feats{k}(:,:,694:695)=sham_feats{k}(:,:,1:2);
-	bts_feats{k}(:,:,694:695)=sham_feats{k}(:,:,1:2);
+	%gro_feats{k}(:,:,694:695)=sham_feats{k}(:,:,1:2);
+	%bts_feats{k}(:,:,694:695)=sham_feats{k}(:,:,1:2);
 end
 
-disp("Don't forget you have two sham subjects in your output dataframe, dingus"); 
+%disp("Don't forget you have two sham subjects in your output dataframe"); 
 % calculate dataframe size
 win_over_scales=zeros((length(Krange)*((min(Krange)+max(Krange))/2)),1);
 % same number of within FC features as network-wise segreg, one per each network per each K per each subject
@@ -48,7 +48,6 @@ full_df_colnum=(3*(length(win_over_scales)+length(Networkwise_seg_over_scales)+l
 % length(subjs) +1 so theres a row for colnames
 % looks like we can expect 16,357 columns for this dataframe if Krange=2:30
 
-
 %% will have to change all of these to cells to accom. mixed strings and numeric
 df=cell(length(subjs)+1,full_df_colnum);
 
@@ -66,7 +65,9 @@ thirdsnames=["ind", "gro", "bts"];
 third_df=cell(length(subjs)+1,((full_df_colnum-1)/3)+1,3);
 
 % for each third
-for t=1:3;
+%for t=1:3;
+% just individualized for now
+for t=1;
 	% just a lil heads up when we're 1 and 2/3rds done
 	t
 
@@ -99,10 +100,10 @@ for t=1:3;
 		% extract matrices from this scale
 		featurematrix=feats{K};
 		for s=1:length(subjs);
-			subjmat=featurematrix(:,:,s);
-			subjwin=diag(subjmat);
+			%subjmat=featurematrix(:,:,s);
+			%subjwin=diag(subjmat);
 			% s+1 because 1st row is colnames
-			df_win(s+1,Kind)=num2cell(subjwin);
+			%df_win(s+1,Kind)=num2cell(subjwin);
 		end
 	end
 		
@@ -136,24 +137,24 @@ for t=1:3;
 			bwvec=zeros(length(K));
 			% calc segreg for each network
 			for N=1:K
-				Nrow=subjmat(N,:);
-				winval=Nrow(N);
-				NotcurNet=setdiff(1:K,N);
-				bwvals=Nrow(NotcurNet);
-				winz=atanh(winval);
-				bwz=mean(atanh(bwvals));
-				seg=(winz-bwz)/winz;
-				segvec(N)=seg;
+				%Nrow=subjmat(N,:);
+				%winval=Nrow(N);
+				%NotcurNet=setdiff(1:K,N);
+				%bwvals=Nrow(NotcurNet);
+				%winz=atanh(winval);
+				%bwz=mean(atanh(bwvals));
+				%seg=(winz-bwz)/winz;
+				%segvec(N)=seg;
 				% added b/w and w/in for global versions of each
-				winvec(N)=winval;
-				bwvec(N)=mean(bwvals);
+				%winvec(N)=winval;
+				%bwvec(N)=mean(bwvals);
 			end
-			df_ns(s+1,Kind)=num2cell(segvec);
+			%df_ns(s+1,Kind)=num2cell(segvec);
 			% note that this measure of global seg averages over networks, not vertices
-			df_gns(s+1,K)=num2cell(mean(segvec));
+			%df_gns(s+1,K)=num2cell(mean(segvec));
 			% same goes for within and between
-			df_gw(s+1,K)=num2cell(mean(winvec));
-			df_gbw(s+1,K)=num2cell(mean(bwvec));
+			%df_gw(s+1,K)=num2cell(mean(winvec));
+			%df_gbw(s+1,K)=num2cell(mean(bwvec));
 		end
 	end
 

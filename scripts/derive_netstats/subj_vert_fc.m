@@ -12,8 +12,8 @@ function subj_vert_fc(s, surfMaskl, surfMaskr, Krange, subjs, group_parts_masked
 	end
 	
 	% Make empty vertex-level participation coefficient vector (# vert in mask, ~=fsaverage5)
-	partcoefpos=zeros(17734,length(Krange));
-	partcoefneg=zeros(17734,length(Krange));
+	%partcoefpos=zeros(17734,length(Krange));
+	%partcoefneg=zeros(17734,length(Krange));
 		
         vw_ts_l_p=['/cbica/projects/pinesParcels/data/CombinedData/' num2str(subjs(s)) '/lh.fs5.sm6.residualised.mgh'];
 	vw_ts_r_p=['/cbica/projects/pinesParcels/data/CombinedData/' num2str(subjs(s)) '/rh.fs5.sm6.residualised.mgh'];
@@ -53,7 +53,7 @@ function subj_vert_fc(s, surfMaskl, surfMaskr, Krange, subjs, group_parts_masked
 		subj_V(:,K+1)=zeros(1,length(subj_V));
 		[ ~ , subj_V(:,K+1)]=max(subj_V,[],2); 
 		% evaluate group consensus in parallel, k-1 because partitions start at 2
-		group_part=group_parts_masked(:,K-1);	
+		%group_part=group_parts_masked(:,K-1);	
 		% make empty vectors for connectivity values
 		winconvals=zeros(1,K);
 		g_winconvals=zeros(1,K);
@@ -63,25 +63,25 @@ function subj_vert_fc(s, surfMaskl, surfMaskr, Krange, subjs, group_parts_masked
 		%g_bwconvals=zeros(1,(((K-1)*(K))/2));
 		%bTS_bwconvals=zeros(1,(((K-1)*(K))/2));
 		% get U at this scale to evaluate connectivities via correlation with K basis time series (U), but labeling as yu because it looks less like V
-		subj_yu=subj_part.U{1};
+		%subj_yu=subj_part.U{1};
 		% for each "network"
 		for N=1:K
 			% get index of which vertices are in this K
 			Kind=find(subj_V(:,K+1)==N);
 			% group
-			g_Kind=find(group_part==N);	
+			%g_Kind=find(group_part==N);	
 			% extract matrix of just the current network
 			curNetMat=ba_conmat(Kind,Kind);
 			% group
-			g_curNetMat=ba_conmat(g_Kind,g_Kind);
+			%g_curNetMat=ba_conmat(g_Kind,g_Kind);
 			% within connectivity, average correlation within, triu to avoid redundance in conmat 	
 			wincon=mean(curNetMat(find(~triu(ones(size(curNetMat))))));
-			g_wincon=mean(g_curNetMat(find(~triu(ones(size(g_curNetMat))))));
+			%g_wincon=mean(g_curNetMat(find(~triu(ones(size(g_curNetMat))))));
 			%winconvals(N)=wincon;
 			%g_winconvals(N)=g_wincon;
 			% and within connectivity assessed via cor. w/ U corresponding to same K
 			K_TimeSeries=vw_ts_bothrw(:,Kind);	
-			bTS_wincon=mean(corr(K_TimeSeries,subj_yu(:,N)));
+			%bTS_wincon=mean(corr(K_TimeSeries,subj_yu(:,N)));
 			%bTS_winconvals(N)=bTS_wincon;
 			% values are reasonable relative to each other (wincon > g_wincon), but lower than expected. Double check to make sure mapping on correctly
 			% make vector for all values except for current K (N) to loop through
@@ -92,26 +92,25 @@ function subj_vert_fc(s, surfMaskl, surfMaskr, Krange, subjs, group_parts_masked
 				curOtherNet=NotKvec(b);
 				% index vertices not in up-one-level-network-N loop
 				NotKind=find(subj_V(:,K+1)==curOtherNet);
-				g_NotKind=find(group_part==curOtherNet);
+				%g_NotKind=find(group_part==curOtherNet);
 				bwMat=ba_conmat(Kind,NotKind);
-				g_bwMat=ba_conmat(g_Kind,g_NotKind);
+				%g_bwMat=ba_conmat(g_Kind,g_NotKind);
 				bwcon=mean(mean(bwMat));
-				g_bwcon=mean(mean(g_bwMat));
-				bTScon=mean(corr(K_TimeSeries,subj_yu(:,curOtherNet)));
-				
+				%g_bwcon=mean(mean(g_bwMat));
+				%bTScon=mean(corr(K_TimeSeries,subj_yu(:,curOtherNet)));
 				Kmat(N,curOtherNet)=bwcon;
-				g_Kmat(N,curOtherNet)=g_bwcon;
-				bTS_Kmat(N,curOtherNet)=bTScon;
+				%g_Kmat(N,curOtherNet)=g_bwcon;
+				%bTS_Kmat(N,curOtherNet)=bTScon;
 			end
 			Kmat(N,N)=wincon;
-			g_Kmat(N,N)=g_wincon;
-			bTS_Kmat(N,N)=bTS_wincon;
+			%g_Kmat(N,N)=g_wincon;
+			%bTS_Kmat(N,N)=bTS_wincon;
 		end
 		% small section to get vertex-wise participation coefficients for this this subject at this scale
-		[pospc, negpc] = participation_coef_sign(ba_conmat,subj_V(:,K+1));
+		%[pospc, negpc] = participation_coef_sign(ba_conmat,subj_V(:,K+1));
 		% K-1 because K starts at 2, pcoef arrays starts at 1
-		partcoefpos(:,K-1)=pospc;
-		partcoefneg(:,K-1)=negpc;
+		%partcoefpos(:,K-1)=pospc;
+		%partcoefneg(:,K-1)=negpc;
 		% Make empty KxK matrix to summarize network connectivities
 		%Kmat=diag(winconvals);
 		%g_Kmat=diag(g_winconvals);
@@ -131,7 +130,7 @@ function subj_vert_fc(s, surfMaskl, surfMaskr, Krange, subjs, group_parts_masked
 	end
 	% save files to subjdir
 	subjmats=struct('Khouse',Khouse,'GKhouse',GKhouse,'K_bTS_house',K_bTS_house);
-	subjpcs=struct('partcoefpos',num2cell(partcoefpos),'partcoefneg',num2cell(partcoefneg));
+	%subjpcs=struct('partcoefpos',num2cell(partcoefpos),'partcoefneg',num2cell(partcoefneg));
 	save(outdir,'subjmats')
-	save(outdirp,'subjpcs')
+	%save(outdirp,'subjpcs')
 	 

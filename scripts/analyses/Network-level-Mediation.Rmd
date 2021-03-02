@@ -263,12 +263,30 @@ for (i in 1:2){
 
 ```
 
+
+
+```{r}
+# for lavaan
+sem_model = '
+  FC ~ a*Age + Sex + Motion
+  EF ~ c*Age + Sex + Motion + b*FC
+ 
+  # direct effect
+  direct := c
+ 
+  # indirect effect
+  indirect := a*b
+ 
+  # total effect
+  total := c + (a*b)
+'
+```
+
 ```{r}
 # calculate EF effects
 # set covariates formula for iterating over in the loop
 lm_xM_covariates="~Age+Sex+Motion"
 lm_My_covariates="EF~Sex+Motion+Age+"
-
 
 # initialize output vectors
 AB_Est<-rep(0,length=length(masterdf[,indiv_nsegcols_ind]))
@@ -289,6 +307,21 @@ bwAvgCondfZ<-bwAvgCondf
 bwAvgCondfZ$Age<-scale(bwAvgCondf$Age)[,1]
 bwAvgCondfZ$Motion<-scale(bwAvgCondf$Motion)[,1]
 
+# lavaan
+#for i in 464, -3 because age sex motionand EF columns sit at the end
+for (i in 1:(length(bwAvgCondf)-4)){
+  # borrowing colnames from indiv_nsegcols to keep network mappings
+  x<-colnames(bwAvgCondf[i])
+  # to estimate AB path mediation from age to EF (linear)
+  # scale for EZ interpretation
+  bwAvgCondfZ[,i]<-scale(bwAvgCondfZ[,i])[,1]
+  sem_model_x = gsub('FC',x,sem_model)
+  fit=sem(sem_model_x,bwAvgCondfZ)
+  # row 17 is the indirect effect estimate
+  AB_Est[i]<-summary(fit)$PE[17,'est']
+  # save p value in vector as well
+  AB_P[i]<-summary(fit)$PE[17,'pvalue']
+}
 
 #for i in 464, -3 because age sex motionand EF columns sit at the end
 #for (i in 1:(length(bwAvgCondf)-4)){
