@@ -10,6 +10,7 @@ library(vroom)
 library(data.table)
 library(mgcv)
 library(ppcor)
+library(lavaan)
 
 # load 'erry thang
 
@@ -244,6 +245,21 @@ for (i in 1:2){
   
 }
 
+# for lavaan
+sem_model = '
+FC ~ a*Age + Sex + Motion
+EF ~ c*Age + Sex + Motion + b*FC
+
+# direct effect
+direct := c
+
+# indirect effect
+indirect := a*b
+
+# total effect
+total := c + (a*b)
+'
+
 # calculate EF effects
 # set covariates formula for iterating over in the loop
 lm_xM_covariates="~Age+Sex+Motion"
@@ -269,25 +285,18 @@ bwAvgCondfZ<-bwAvgCondf
 bwAvgCondfZ$Age<-scale(bwAvgCondf$Age)[,1]
 bwAvgCondfZ$Motion<-scale(bwAvgCondf$Motion)[,1]
 
-
-#for i in 464, -3 because age sex motionand EF columns sit at the end
 for (i in 1:(length(bwAvgCondf)-4)){
   # borrowing colnames from indiv_nsegcols to keep network mappings
   x<-colnames(bwAvgCondf[i])
   # to estimate AB path mediation from age to EF (linear)
   # scale for EZ interpretation
   bwAvgCondfZ[,i]<-scale(bwAvgCondfZ[,i])[,1]
-  # fit x-M path
-  xM_form<-as.formula(paste("",x,"", lm_xM_covariates, sep=""))
-  xMpath<-lm(formula=xM_form,data=bwAvgCondfZ)
-  # fit M-y path
-  My_form<-as.formula(paste(lm_My_covariates, "",x,"",sep=""))
-  Mypath<-lm(formula=My_form,data=bwAvgCondfZ)
-  # run mediation
-  mediationFit<-mediate(xMpath,Mypath,treat="Age",mediator=x)
-  AB_Est[i]<-mediationFit$d1
+  sem_model_x = gsub('FC',x,sem_model)
+  fit=sem(sem_model_x,bwAvgCondfZ)
+  # row 17 is the indirect effect estimate
+  AB_Est[i]<-summary(fit)$PE[17,'est']
   # save p value in vector as well
-  AB_P[i]<-mediationFit$d1.p
+  AB_P[i]<-summary(fit)$PE[17,'pvalue']
 }
 
 # fdr Mediation P's
@@ -304,22 +313,20 @@ bwdf<-data.frame(tmvec,scalesvec,domnetvec,domnetvec17,netpropvec,AB_Est)
 
 #OG coefs. 
 AB_Est<-rep(0,464)
-for (n in 1:464){
-  # first 464 columns are network-level connectivity values. test each.
-  x<-colnames(bwAvgCondf[n])
+for (i in 1:(length(bwAvgCondf)-4)){
+  # borrowing colnames from indiv_nsegcols to keep network mappings
+  x<-colnames(bwAvgCondf[i])
   # to estimate AB path mediation from age to EF (linear)
   # scale for EZ interpretation
-  bwAvgCondfZ[,n]<-scale(bwAvgCondfZ[,n])[,1]
-  # fit x-M path
-  xM_form<-as.formula(paste("",x,"", lm_xM_covariates, sep=""))
-  xMpath<-lm(formula=xM_form,data=bwAvgCondfZ)
-  # fit M-y path
-  My_form<-as.formula(paste(lm_My_covariates, "",x,"",sep=""))
-  Mypath<-lm(formula=My_form,data=bwAvgCondfZ)
-  # run mediation
-  mediationFit<-mediate(xMpath,Mypath,treat="Age",mediator=x)
-  AB_Est[i]<-mediationFit$d1
+  bwAvgCondfZ[,i]<-scale(bwAvgCondfZ[,i])[,1]
+  sem_model_x = gsub('FC',x,sem_model)
+  fit=sem(sem_model_x,bwAvgCondfZ)
+  # row 17 is the indirect effect estimate
+  AB_Est[i]<-summary(fit)$PE[17,'est']
+  # save p value in vector as well
+  AB_P[i]<-summary(fit)$PE[17,'pvalue']
 }
+
 # create network-level dataframe from subject-level results: tmvec is just a vector of transmodality values for each network
 NL_bwdf<-data.frame(tmvec,AB_Est)
 # fit full model
@@ -352,20 +359,22 @@ for (strap in 1:b){
   # bwAvgCondf is a leaner version of the master dataframe with all variables needed here.
   resampDF<-bwAvgCondf[sampIndices,]
   #### fit model to all 464 networks: inner loop
-  for (n in 1:464){
+  for (n in 1:(length(bwAvgCondf)-4)){
+    # borrowing colnames from indiv_nsegcols to keep network mappings
     x<-colnames(bwAvgCondf[n])
+    # z-score resampled DF
+    bwAvgCondfZ<-resampDF
+    bwAvgCondfZ$Age<-scale(resampDF$Age)[,1]
+    bwAvgCondfZ$Motion<-scale(resampDF$Motion)[,1]
     # to estimate AB path mediation from age to EF (linear)
     # scale for EZ interpretation
     bwAvgCondfZ[,n]<-scale(bwAvgCondfZ[,n])[,1]
-    # fit x-M path
-    xM_form<-as.formula(paste("",x,"", lm_xM_covariates, sep=""))
-    xMpath<-lm(formula=xM_form,data=bwAvgCondfZ)
-    # fit M-y path
-    My_form<-as.formula(paste(lm_My_covariates, "",x,"",sep=""))
-    Mypath<-lm(formula=My_form,data=bwAvgCondfZ)
-    # run mediation
-    mediationFit<-mediate(xMpath,Mypath,treat="Age",mediator=x)
-    AB_Est[n]<-mediationFit$d1
+    sem_model_x = gsub('FC',x,sem_model)
+    fit=sem(sem_model_x,bwAvgCondfZ)
+    # row 17 is the indirect effect estimate
+    AB_Est[n]<-summary(fit)$PE[17,'est']
+    # save p value in vector as well
+    AB_P[n]<-summary(fit)$PE[17,'pvalue']
   }
   #### end of inner loop 
   # create network-level dataframe from subject-level results: tmvec is just a vector of transmodality values for each network

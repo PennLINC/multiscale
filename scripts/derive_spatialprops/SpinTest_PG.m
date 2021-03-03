@@ -1,5 +1,3 @@
-%% MIGHT RUN, CUBIC OUT OF TOOLBOX .LIC WHEN TRIED
-
 % addpaths
 addpath(genpath('/cbica/projects/pinesParcels/multiscale/scripts/derive_parcels/Toolbox'));
 WorkingFolder = '/cbica/projects/pinesParcels/data/SingleParcellation/SingleAtlas_Analysis';
@@ -22,7 +20,7 @@ surfML = '/cbica/projects/pinesParcels/data/H_SNR_masks/lh.Mask_SNR.label';
 mwIndVec_l = read_medial_wall_label(surfML);
 surfMR = '/cbica/projects/pinesParcels/data/H_SNR_masks/rh.Mask_SNR.label';
 mwIndVec_r = read_medial_wall_label(surfMR);
-grad_lh_lh(mwIndVec_l)=100;
+grad_lh(mwIndVec_l)=100;
 grad_rh(mwIndVec_r)=100;
 % check to make sure mask size is appropriate/expected
 if ((length(mwIndVec_l))+(length(mwIndVec_r))==(20484-17734))
