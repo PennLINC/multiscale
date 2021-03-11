@@ -28,7 +28,7 @@ EFDeltaR2EstVec<-function(x){
   scaledf<-data.frame(cbind(as.numeric(masteref$F1_Exec_Comp_Cog_Accuracy),as.numeric(masteref$Age),as.numeric(masteref$Sex),masteref$Motion,x))
   colnames(scaledf)<-c('EF','Age','Sex','Motion','varofint')
   
-  # no-EF model (segreg ~ sex + motion)
+  # no-EF model (b.w. ~ sex + motion)
   noEFGam<-gam(varofint~Sex+Motion+s(Age,k=3),data=scaledf)
   noEFSum<-summary(noEFGam)
   # EF-included model for measuring difference
@@ -65,6 +65,34 @@ EFDeltaPEstVec<-function(x){
   anovaP<-anovaRes$`Pr(>Chi)`
   anovaP2<-unlist(anovaP)
   return(anovaP2[2])
+  
+}
+
+# bootstrap version: resampled df instead of master df
+EFDeltaR2EstVec_RS<-function(x){
+  
+  # relevant df
+  scaledf<-data.frame(cbind(as.numeric(resampDF$F1_Exec_Comp_Cog_Accuracy),as.numeric(resampDF$Age),as.numeric(resampDF$Sex),resampDF$Motion,x))
+  colnames(scaledf)<-c('EF','Age','Sex','Motion','varofint')
+  
+  
+  # no-EF model (b.w. ~ sex + motion)
+  noEFGam<-gam(varofint~Sex+Motion+s(Age,k=3),data=scaledf)
+  noEFSum<-summary(noEFGam)
+  # EF-included model for measuring difference
+  EFGam<-gam(varofint~EF+Sex+Motion+s(Age,k=3),data=scaledf)
+  EFSum<-summary(EFGam)
+  
+  dif<-EFSum$r.sq-noEFSum$r.sq
+  
+  # partial spearmans to extract age relation (for direction)
+  pspear=pcor(scaledf,method='spearman')$estimate
+  corest<-pspear[5]
+  if(corest<0){
+    dif=dif*-1
+  }
+  
+  return(dif)
   
 }
 ```
@@ -132,7 +160,9 @@ ef<-data.frame(subjbehav$NAR_F1_Exec_Comp_Cog_Accuracy,subjbehav$bblid)
 colnames(ef)<-c('F1_Exec_Comp_Cog_Accuracy','bblid')
 # merge in
 masteref<-merge(masterdf,ef,by='bblid')
+```
 
+``` r
 ### Get in Consensus-reference atlas correspondence
 rac<-read.csv('/cbica/projects/pinesParcels/results/aggregated_data/fc/network_yCorrespondence_overscales.csv',stringsAsFactors = F)
 scalesvec<-as.numeric(rac[2,])
@@ -338,8 +368,6 @@ covariates=" ~s(Age,k=3)+Sex+Motion"
 minAgeEst<-rep(0,length=length(masterdf[,indiv_nsegcols_ind]))
 maxAgeEst<-rep(0,length=length(masterdf[,indiv_nsegcols_ind]))
 SplineP<-rep(0,length=length(masterdf[,indiv_nsegcols_ind]))
-InterceptVector10<-rep(0,length=length(masterdf[,indiv_nsegcols_ind]))
-InterceptVector21<-rep(0,length=length(masterdf[,indiv_nsegcols_ind]))
 derivInfo<-array(0,dim=c(464,200))
 NetSplines<-array(0,dim=c(464,693)) 
 avg_bw_deltaR2<-rep(0,length=length(masterdf[,indiv_nsegcols_ind]))
@@ -377,9 +405,6 @@ for (i in 1:(length(bwAvgCondf)-3)){
   form<-as.formula(paste("",x,"", covariates, sep=""))
   igam<-gam(formula = form,data=bwAvgCondf)
   SplineP[i]<-summary(igam)$s.pv
-  # changed to get intercept at 10 and 20 years old
-  InterceptVector10[i]<-predict.gam(igam,gamPredictMeAt10)
-  InterceptVector21[i]<-predict.gam(igam,gamPredictMeAt21)
   derv<-derivatives(igam,term='Age')
   derv<- derv %>%
   mutate(sig = !(0 >lower & 0 < upper))
@@ -410,6 +435,81 @@ bwdf<-data.frame(tmvec,scalesvec,domnetvec,domnetvec17,netpropvec,EFDR2vec,avg_b
 ```
 
 ``` r
+######## test whether or not network-level EF Effects vary as a function of network Transmodality
+
+# Port EF into the average between-network FC DF
+bwAvgCondf$F1_Exec_Comp_Cog_Accuracy<-masteref$F1_Exec_Comp_Cog_Accuracy
+
+#### LINEAR + QUADR. VERSION
+
+#OG coefs. 
+avg_bw_deltaR2<-rep(0,464)
+avg_bw_deltaP<-rep(0,464)
+for (n in 1:464){
+  # first 464 columns are network-level connectivity values. test each.
+  # this is a function that return full vs. reduced model comparisons (Age included vs. age excluded, controls for sex + motion).
+  avg_bw_deltaR2[n]<-EFDeltaR2EstVec(bwAvgCondf[n])
+}
+# create network-level dataframe from subject-level results: tmvec is just a vector of transmodality values for each network
+NL_bwdf<-data.frame(tmvec,avg_bw_deltaR2)
+# fit full model
+OG_EFEff_by_transmodality_model<-lm(avg_bw_deltaR2~poly(tmvec,2),data=NL_bwdf)
+# Extract Linear coef.
+OG_EFEff_by_transmodality_model_LIN<-summary(OG_EFEff_by_transmodality_model)$coefficients['poly(tmvec, 2)1',]
+OG_EFEff_by_transmodality_model_LIN_beta<-OG_EFEff_by_transmodality_model_LIN['Estimate']
+# Extract quadratic coef.
+OG_EFEff_by_transmodality_model_QUADR<-summary(OG_EFEff_by_transmodality_model)$coefficients['poly(tmvec, 2)2',]
+OG_EFEff_by_transmodality_model_QUADR_beta<-OG_EFEff_by_transmodality_model_QUADR['Estimate']
+
+
+# read in bootstrapped values (calculated on PMACS)
+bootstrapRDS<-readRDS('~/multiscale/EF_NetLevel_bootInfo.rds')
+
+
+# for linear Age Effect ~ Transmodality - significance
+CI_LIN=quantile(bootstrapRDS$lm_testStatLIN,c(0.025,0.975)) 
+
+# discrete p calculation (https://www.bmj.com/content/343/bmj.d2304 as source)
+SE=(CI_LIN[2]-CI_LIN[1])/(2*1.96)
+z=OG_EFEff_by_transmodality_model_LIN_beta/SE
+z=abs(z)
+pLIN<-exp((-0.717*z)-(0.416*(z^2)))
+print(CI_LIN)
+```
+
+    ##        2.5%       97.5% 
+    ## -0.02210726  0.23042765
+
+``` r
+print(pLIN)
+```
+
+    ##  Estimate 
+    ## 0.1581954
+
+``` r
+# aaaaand quadratic Age Effect ~ Transmodality - significance
+CI_QUAD=quantile(bootstrapRDS$lm_testStatQUADR,c(0.025,0.975)) 
+
+# discrete p calculation (https://www.bmj.com/content/343/bmj.d2304 as source)
+SE=(CI_QUAD[2]-CI_QUAD[1])/(2*1.96)
+z=OG_EFEff_by_transmodality_model_QUADR_beta/SE
+z=abs(z)
+pQUAD<-exp((-0.717*z)-(0.416*(z^2)))
+print(CI_QUAD)
+```
+
+    ##        2.5%       97.5% 
+    ## -0.26533825 -0.06731616
+
+``` r
+print(pQUAD)
+```
+
+    ##    Estimate 
+    ## 0.003404407
+
+``` r
 # EF * Transmodality - final setup
 # Map nonsig to grey
 bwdf$domnetvecSig<-'NonSig'
@@ -425,33 +525,81 @@ EF_net_gam_Sigonly<-gam(EFDR2vec~s(tmvec,k=3),data=bwdf[NL_sigVec,])
 ```
 
 ``` r
-ggplot(bwdf,aes(tmvec,EFDR2vec)) + geom_point(size=5,alpha=.8,aes(color=domnetvecSig))+ scale_color_manual(values=c('#3281ab','#670068','#007500','#b61ad0','#b8cf86','#d77d00','#c1253c','gray80')) + xlab("Transmodality") + ylab(expression(paste('EF Effect (',Delta,R^2[adj],')',sep=''))) +theme_classic(base_size = 30) +guides(color=guide_legend(title="Yeo 7 Overlap"))+theme(plot.margin=margin(b=3,t=.1,l=.1,r=.1, unit='cm'), legend.position=c(.42,-.24),legend.direction = "horizontal",legend.title=element_text(size=22),legend.text=element_text(size=22))+geom_smooth(method='gam',formula = y~s(x,k=3),color='black')
+ggplot(bwdf,aes(tmvec,EFDR2vec)) + geom_point(size=4,alpha=.8,aes(color=domnetvecSig))+ scale_color_manual(values=c('#3281ab','#670068','#007500','#b61ad0','#b8cf86','#d77d00','#c1253c','gray80')) + xlab("Transmodality") + ylab(expression(paste('EF Effect (',Delta,R^2[adj],')',sep=''))) +theme_classic(base_size = 25) +guides(color=guide_legend(title="Yeo 7 Overlap"))+theme(plot.margin=margin(b=2.2,t=.1,l=.1,r=.1, unit='cm'), legend.position=c(.32,-.275),legend.direction = "horizontal",legend.title=element_text(size=17),legend.text=element_text(size=17))+geom_smooth(method='lm',formula = y~poly(x,2),color='black')
 ```
 
-![](Network-level-EF_files/figure-markdown_github/unnamed-chunk-8-1.png)
-
-``` r
-# sig only
-ggplot(bwdf[NL_sigVec,],aes(tmvec,EFDR2vec)) + geom_point(size=6,alpha=.8,aes(color=domnetvecSig))+ scale_color_manual(values=c('#3281ab','#670068','#007500','#b61ad0','#b8cf86','#d77d00','#c1253c','gray80')) + xlab("Transmodality") + ylab(expression(paste('EF Effect (',Delta,R^2[adj],')',sep=''))) +theme_classic(base_size = 40) +guides(color=guide_legend(title="Yeo 7 Overlap"))+theme(plot.margin=margin(b=3,t=.1,l=.1,r=.1, unit='cm'), legend.position=c(.42,-.24),legend.direction = "horizontal",legend.title=element_text(size=30),legend.text=element_text(size=30))+geom_smooth(method='gam',formula = y~s(x,k=3),color='black')
-```
-
-![](Network-level-EF_files/figure-markdown_github/unnamed-chunk-8-2.png)
+![](Network-level-EF_files/figure-markdown_github/unnamed-chunk-10-1.png)
 
 ``` r
 # figure 6 stuff - EF Effect * Scale * Transmodality
+# gams for stats
+SMA_gam<-gam(EFDR2vec~s(scalesvec,k=3),data=bwdf[bwdf$domnetvec17=='Somatomotor A',])
+DMB_gam<-gam(EFDR2vec~s(scalesvec,k=3),data=bwdf[bwdf$domnetvec17=='DM_B',])
+summary(SMA_gam)
+```
+
+    ## 
+    ## Family: gaussian 
+    ## Link function: identity 
+    ## 
+    ## Formula:
+    ## EFDR2vec ~ s(scalesvec, k = 3)
+    ## 
+    ## Parametric coefficients:
+    ##               Estimate Std. Error t value Pr(>|t|)    
+    ## (Intercept) -0.0218804  0.0009351   -23.4   <2e-16 ***
+    ## ---
+    ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+    ## 
+    ## Approximate significance of smooth terms:
+    ##                edf Ref.df     F p-value    
+    ## s(scalesvec) 1.935  1.996 37.04  <2e-16 ***
+    ## ---
+    ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+    ## 
+    ## R-sq.(adj) =  0.555   Deviance explained = 56.9%
+    ## GCV = 5.6902e-05  Scale est. = 5.4208e-05  n = 62
+
+``` r
+summary(DMB_gam)
+```
+
+    ## 
+    ## Family: gaussian 
+    ## Link function: identity 
+    ## 
+    ## Formula:
+    ## EFDR2vec ~ s(scalesvec, k = 3)
+    ## 
+    ## Parametric coefficients:
+    ##              Estimate Std. Error t value Pr(>|t|)    
+    ## (Intercept) -0.012633   0.001814  -6.965 9.76e-08 ***
+    ## ---
+    ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+    ## 
+    ## Approximate significance of smooth terms:
+    ##              edf Ref.df     F p-value
+    ## s(scalesvec)   1      1 1.895   0.179
+    ## 
+    ## R-sq.(adj) =  0.028   Deviance explained = 5.94%
+    ## GCV = 0.0001123  Scale est. = 0.00010528  n = 32
+
+``` r
 # convert yeo17 membership to vector capturing only sig. yeo17 networks, graying out nonsig.
 domnetSig17<-domnetvec17
-levels(domnetSig17)<-c(levels(domnetSig17),'zNonSig')
+levels(domnetSig17)<-c(levels(domnetSig17),'zNonSig_DM','zNonSig_Mot')
 bwdf$domnetvec17Sig<-as.character(domnetvec17)
-bwdf$domnetvec17Sig[NL_sigVec==FALSE]='zNonSig'
+# set nonsigs to de-saturated version of colors
+bwdf$domnetvec17Sig[NL_sigVec==FALSE & bwdf$domnetvec17Sig == 'Somatomotor A']='zNonSig_Mot'
+bwdf$domnetvec17Sig[NL_sigVec==FALSE & bwdf$domnetvec17Sig == 'DM_B']='zNonSig_DM'
 ```
 
 ``` r
-ggplot(bwdf,aes(scalesvec,EFDR2vec)) + xlab("# of Networks") + ylab(expression(paste('EF Effect (',Delta,R^2[adj],')'))) +theme_classic(base_size = 28) +guides(alpha=FALSE,color=guide_legend(title="Yeo 17 Overlap"))+theme(legend.position=c(.39,-.19),legend.direction = "horizontal",legend.text = element_text(size=20),legend.title = element_text(size=24))+
-geom_smooth(data=subset(bwdf,domnetvec17=='Somatomotor A'),method='gam',formula = y~s(x,k=3),aes(color=domnetvec17),fill="gray82")+geom_smooth(data=subset(bwdf,domnetvec17=='DM_B'),method='gam',formula = y~s(x,k=3),aes(color=domnetvec17),fill="gray82")+scale_color_manual(values=c('#bc0943','#4183a8'))+geom_point(data=subset(bwdf,domnetvec17=='Somatomotor A'),aes(color=domnetvec17Sig),size=5)+geom_point(data=subset(bwdf,domnetvec17=='DM_B'),aes(color=domnetvec17Sig),size=5)+scale_color_manual(values=c('#bc0943','#4183a8','gray70'),labels=c('Default Mode B','Somatomotor A','NonSig.'))+scale_x_continuous(breaks=c(4,10,16,22,28))+theme(plot.margin=unit(c(.9,.6,2,.6),"cm"))
+ggplot(bwdf,aes(scalesvec,EFDR2vec)) + xlab("# of Networks") + ylab(expression(paste('EF Effect (',Delta,R^2[adj],')'))) +theme_classic(base_size = 25) +guides(alpha=FALSE,color=guide_legend(title="Yeo 17 Overlap"))+theme(legend.position=c(.35,-.27),legend.direction = "horizontal",legend.text = element_text(size=15),legend.title = element_text(size=15))+
+geom_smooth(data=subset(bwdf,domnetvec17=='Somatomotor A'),method='gam',formula = y~s(x,k=3),aes(color=domnetvec17),fill="gray72")+geom_smooth(data=subset(bwdf,domnetvec17=='DM_B'),method='gam',formula = y~s(x,k=3),aes(color=domnetvec17),fill="gray88")+scale_color_manual(values=c('#bc0943','#4183a8'))+geom_point(data=subset(bwdf,domnetvec17=='Somatomotor A'),aes(color=domnetvec17Sig),size=4)+geom_point(data=subset(bwdf,domnetvec17=='DM_B'),aes(color=domnetvec17Sig),size=4)+scale_color_manual(values=c('#bc0943','#4183a8','#ebbecc','#b7d9ed'),labels=c('DM B','SM A','n.s. DM B','n.s. SM A'))+scale_x_continuous(breaks=c(4,10,16,22,28))+theme(plot.margin=unit(c(.9,.6,2,.6),"cm"))
 ```
 
     ## Scale for 'colour' is already present. Adding another scale for 'colour',
     ## which will replace the existing scale.
 
-![](Network-level-EF_files/figure-markdown_github/unnamed-chunk-10-1.png)
+![](Network-level-EF_files/figure-markdown_github/unnamed-chunk-12-1.png)

@@ -764,10 +764,10 @@ ggplot(LongAgeSpan_plotdf2[derivSigWholeSpline,],aes(agespans,tmvecJit,color=der
 ```{r}
 # figure 5c stuff - Age Effect * Scale * Transmodality
 # lms for stats
-SMA_lm<-lm(avg_bw_deltaR2~poly(scalesvec,2),data=bwdf[bwdf$domnetvec17=='Somatomotor A',])
-DMB_lm<-lm(avg_bw_deltaR2~poly(scalesvec,2),data=bwdf[bwdf$domnetvec17=='DM_B',])
-summary(SMA_lm)
-summary(DMB_lm)
+SMA_gam<-gam(avg_bw_deltaR2~s(scalesvec,k=3),data=bwdf[bwdf$domnetvec17=='Somatomotor A',])
+DMB_gam<-gam(avg_bw_deltaR2~s(scalesvec,k=3),data=bwdf[bwdf$domnetvec17=='DM_B',])
+summary(SMA_gam)
+summary(DMB_gam)
 # convert yeo17 membership to vector capturing only sig. yeo17 networks, graying out nonsig.
 domnetSig17<-domnetvec17
 levels(domnetSig17)<-c(levels(domnetSig17),'zNonSig_DM','zNonSig_Mot')
@@ -775,79 +775,11 @@ bwdf$domnetvec17Sig<-as.character(domnetvec17)
 # set nonsigs to de-saturated version of colors
 bwdf$domnetvec17Sig[NL_sigVec==FALSE & bwdf$domnetvec17Sig == 'Somatomotor A']='zNonSig_Mot'
 bwdf$domnetvec17Sig[NL_sigVec==FALSE & bwdf$domnetvec17Sig == 'DM_B']='zNonSig_DM'
-
-
-# lms for stats
-SM_lm<-lm(avg_bw_deltaR2~poly(scalesvec,2),data=bwdf[bwdf$domnetvec=='Motor',])
-DM_lm<-lm(avg_bw_deltaR2~poly(scalesvec,2),data=bwdf[bwdf$domnetvec=='DM',])
-summary(SM_lm)
-summary(DM_lm)
-# convert yeo7 membership to vector capturing only sig. yeo17 networks, graying out nonsig.
-domnetSig<-domnetvec
-levels(domnetSig)<-c(levels(domnetSig),'zNonSig_DM','zNonSig_Mot')
-bwdf$domnetvecSig<-as.character(domnetvec)
-# set nonsigs to de-saturated version of colors
-bwdf$domnetvecSig[NL_sigVec==FALSE & bwdf$domnetvecSig == 'Motor']='zNonSig_Mot'
-bwdf$domnetvecSig[NL_sigVec==FALSE & bwdf$domnetvecSig == 'DM']='zNonSig_DM'
-
-
-# use bootstraps to determine signifiance
-
-# for linear Motor A Age Effect ~ Scale - significance
-CI_LIN=quantile(bootstrapRDS$SMA_testStatLin,c(0.025,0.975)) 
-
-# discrete p calculation (https://www.bmj.com/content/343/bmj.d2304 as source)
-SE=(CI_LIN[2]-CI_LIN[1])/(2*1.96)
-z=SMA_lm$coefficients['poly(scalesvec, 2)1']/SE
-z=abs(z)
-pLIN<-exp((-0.717*z)-(0.416*(z^2)))
-print(CI_LIN)
-print(pLIN)
-
-# for Quadratic Motor Age Effect ~ Scale - significance
-CI_QUADR=quantile(bootstrapRDS$SMA_testStatQuadr,c(0.025,0.975)) 
-
-# discrete p calculation (https://www.bmj.com/content/343/bmj.d2304 as source)
-SE=(CI_QUADR[2]-CI_QUADR[1])/(2*1.96)
-z=SMA_lm$coefficients['poly(scalesvec, 2)2']/SE
-z=abs(z)
-pQUADR<-exp((-0.717*z)-(0.416*(z^2)))
-print(CI_QUADR)
-print(pQUADR)
-
-
-# DMB for comparison
-# for linear DMB Age Effect ~ Scale - significance
-CI_LIN=quantile(bootstrapRDS$DMB_testStatLin,c(0.025,0.975)) 
-
-# discrete p calculation (https://www.bmj.com/content/343/bmj.d2304 as source)
-SE=(CI_LIN[2]-CI_LIN[1])/(2*1.96)
-z=DMB_lm$coefficients['poly(scalesvec, 2)1']/SE
-z=abs(z)
-pLIN<-exp((-0.717*z)-(0.416*(z^2)))
-print(CI_LIN)
-print(pLIN)
-
-# for Quadratic Motor Age Effect ~ Scale - significance
-CI_QUADR=quantile(bootstrapRDS$DMB_testStatQuadr,c(0.025,0.975)) 
-
-# discrete p calculation (https://www.bmj.com/content/343/bmj.d2304 as source)
-SE=(CI_QUADR[2]-CI_QUADR[1])/(2*1.96)
-z=DMB_lm$coefficients['poly(scalesvec, 2)2']/SE
-z=abs(z)
-pQUADR<-exp((-0.717*z)-(0.416*(z^2)))
-print(CI_QUADR)
-print(pQUADR)
-
 ```
 
 ```{r, fig.width=10,fig.height=7}
 ggplot(bwdf,aes(scalesvec,avg_bw_deltaR2)) + xlab("# of Networks") + ylab(expression(paste('Age Effect (',Delta,R^2[adj],')'))) +theme_classic(base_size = 28) +guides(alpha=FALSE,color=guide_legend(title="Yeo 17 Overlap"))+theme(legend.position=c(.39,-.19),legend.direction = "horizontal",legend.text = element_text(size=20),legend.title = element_text(size=24))+
-geom_smooth(data=subset(bwdf,domnetvec17=='Somatomotor A'),method='lm',formula = y~poly(x,2),aes(color=domnetvec17),fill="gray72",size=2)+geom_smooth(data=subset(bwdf,domnetvec17=='DM_B'),size=2,method='lm',formula = y~poly(x,2),aes(color=domnetvec17),fill="gray88")+scale_color_manual(values=c('#bc0943','#4183a8'))+geom_point(data=subset(bwdf,domnetvec17=='Somatomotor A'),aes(color=domnetvec17Sig),size=5)+geom_point(data=subset(bwdf,domnetvec17=='DM_B'),aes(color=domnetvec17Sig),size=5)+scale_color_manual(values=c('#bc0943','#4183a8','#ebbecc','#b7d9ed'),labels=c('DM B','SM A','n.s. DM B','n.s. SM A'))+scale_x_continuous(breaks=c(4,10,16,22,28))+theme(plot.margin=unit(c(.9,.6,2,.6),"cm"))
-
-
-ggplot(bwdf,aes(scalesvec,avg_bw_deltaR2)) + xlab("# of Networks") + ylab(expression(paste('Age Effect (',Delta,R^2[adj],')'))) +theme_classic(base_size = 28) +guides(alpha=FALSE,color=guide_legend(title="Yeo 17 Overlap"))+theme(legend.position=c(.39,-.19),legend.direction = "horizontal",legend.text = element_text(size=20),legend.title = element_text(size=24))+
-    geom_smooth(data=subset(bwdf,domnetvec=='Motor'),method='lm',formula = y~poly(x,2),aes(color=domnetvec),fill="gray72")+geom_smooth(data=subset(bwdf,domnetvec=='DM'),method='lm',formula = y~poly(x,2),aes(color=domnetvec),fill="gray88")+scale_color_manual(values=c('#bc0943','#4183a8'))+geom_point(data=subset(bwdf,domnetvec=='Motor'),aes(color=domnetvecSig),size=5)+geom_point(data=subset(bwdf,domnetvec=='DM'),aes(color=domnetvecSig),size=5)+scale_color_manual(values=c('#bc0943','#4183a8','#ebbecc','#b7d9ed'),labels=c('DM','SM','n.s. DM','n.s. SM'))+scale_x_continuous(breaks=c(4,10,16,22,28))+theme(plot.margin=unit(c(.9,.6,2,.6),"cm"))
+geom_smooth(data=subset(bwdf,domnetvec17=='Somatomotor A'),method='gam',formula = y~s(x,k=3),aes(color=domnetvec17),fill="gray72",size=2)+geom_smooth(data=subset(bwdf,domnetvec17=='DM_B'),size=2,method='gam',formula = y~s(x,k=3),aes(color=domnetvec17),fill="gray88")+scale_color_manual(values=c('#bc0943','#4183a8'))+geom_point(data=subset(bwdf,domnetvec17=='Somatomotor A'),aes(color=domnetvec17Sig),size=5)+geom_point(data=subset(bwdf,domnetvec17=='DM_B'),aes(color=domnetvec17Sig),size=5)+scale_color_manual(values=c('#bc0943','#4183a8','#ebbecc','#b7d9ed'),labels=c('DM B','SM A','n.s. DM B','n.s. SM A'))+scale_x_continuous(breaks=c(4,10,16,22,28))+theme(plot.margin=unit(c(.9,.6,2,.6),"cm"))
 
 ```
 
@@ -856,55 +788,55 @@ ggplot(bwdf,aes(scalesvec,avg_bw_deltaR2)) + xlab("# of Networks") + ylab(expres
 
 ####### initialize vectors
 # Average B/w Con.
-BW_Avg<-rep(0,464)
-# Estimated B/w Con. at 10 years old
-BW_interceptVec10<-rep(0,464)
-# Estimated B/w Con. at 21 years old
-BW_interceptVec21<-rep(0,464)
-# Estimated B/w Con * Age effect slope at 10 years old
-BW_deriv10vec<-rep(0,464)
-# Estimated B/w Con * Age effect slope at 16 years old
-BW_deriv16vec<-rep(0,464)
-# Estimated B/w Con * Age effect slope at 21 years old
-BW_deriv21vec<-rep(0,464)
-
-# use calculated InterceptVectors for intercepts
-BW_interceptVec10<-InterceptVector10
-BW_interceptVec21<-InterceptVector21
-BW_Avg<-Avg_BW_Vector
-
-    
-# use calculated deriv info for slopes, age range is 178 months
-# 10 y.o. is 22/178 months into the 200 point derivs age-range
-deriv.point.10<-round((22/178)*200)
-# 16 y.o. 82/178 months in
-deriv.point.16<-round((94/178)*200)
-# 21 y.o. is 142/178 months in
-deriv.point.21<-round((154/178)*200)
-#derivInfo
-BW_deriv10vec<-derivInfo[,deriv.point.10]
-BW_deriv16vec<-derivInfo[,deriv.point.16]
-BW_deriv21vec<-derivInfo[,deriv.point.21]
-
-
-# write em out as an effect vector for each scale: restart here 11/21
-for (K in 2:30){
-      K_start=((K-1)*(K))/2
-      K_end=(((K-1)*(K))/2)+K-1
-      Kind<-K_start:K_end
-      Intercept10=InterceptVector10[Kind]
-      Intercept21=InterceptVector21[Kind]
-      Avg=BW_Avg[Kind]
-      at10=BW_deriv10vec[Kind]
-      at16=BW_deriv16vec[Kind]
-      at21=BW_deriv21vec[Kind]
-      # write em out to cubic
-      write.table(Intercept10,paste('/cbica/projects/pinesParcels/results/EffectVecs/BW_InterceptAt10_k',K,sep=''),sep=',', col.names = F,quote = F,row.names=F)
-      write.table(Intercept21,paste('/cbica/projects/pinesParcels/results/EffectVecs/BW_InterceptAt21_k',K,sep=''),sep=',', col.names = F,quote = F,row.names=F)
-      write.table(Avg,paste('/cbica/projects/pinesParcels/results/EffectVecs/Avg_k',K,sep=''),sep=',', col.names = F,quote = F,row.names=F)
-      write.table(at10,paste('/cbica/projects/pinesParcels/results/EffectVecs/Deriv10yoAt',K,sep=''),sep=',', col.names = F,quote = F,row.names=F)
-      write.table(at16,paste('/cbica/projects/pinesParcels/results/EffectVecs/Deriv16yoAt',K,sep=''),sep=',', col.names = F,quote = F,row.names=F)
-      write.table(at21,paste('/cbica/projects/pinesParcels/results/EffectVecs/Deriv21yoAt',K,sep=''),sep=',', col.names = F,quote = F,row.names=F)
-}
+#BW_Avg<-rep(0,464)
+## Estimated B/w Con. at 10 years old
+#BW_interceptVec10<-rep(0,464)
+## Estimated B/w Con. at 21 years old
+#BW_interceptVec21<-rep(0,464)
+## Estimated B/w Con * Age effect slope at 10 years old
+#BW_deriv10vec<-rep(0,464)
+## Estimated B/w Con * Age effect slope at 16 years old
+#BW_deriv16vec<-rep(0,464)
+## Estimated B/w Con * Age effect slope at 21 years old
+#BW_deriv21vec<-rep(0,464)
+#
+## use calculated InterceptVectors for intercepts
+#BW_interceptVec10<-InterceptVector10
+#BW_interceptVec21<-InterceptVector21
+#BW_Avg<-Avg_BW_Vector
+#
+#    
+## use calculated deriv info for slopes, age range is 178 months
+## 10 y.o. is 22/178 months into the 200 point derivs age-range
+#deriv.point.10<-round((22/178)*200)
+## 16 y.o. 82/178 months in
+#deriv.point.16<-round((94/178)*200)
+## 21 y.o. is 142/178 months in
+#deriv.point.21<-round((154/178)*200)
+##derivInfo
+#BW_deriv10vec<-derivInfo[,deriv.point.10]
+#BW_deriv16vec<-derivInfo[,deriv.point.16]
+#BW_deriv21vec<-derivInfo[,deriv.point.21]
+#
+#
+## write em out as an effect vector for each scale: restart here 11/21
+#for (K in 2:30){
+#      K_start=((K-1)*(K))/2
+#      K_end=(((K-1)*(K))/2)+K-1
+#      Kind<-K_start:K_end
+#      Intercept10=InterceptVector10[Kind]
+#      Intercept21=InterceptVector21[Kind]
+#      Avg=BW_Avg[Kind]
+#      at10=BW_deriv10vec[Kind]
+#      at16=BW_deriv16vec[Kind]
+#      at21=BW_deriv21vec[Kind]
+#      # write em out to cubic
+#      write.table(Intercept10,paste('/cbica/projects/pinesParcels/results/EffectVecs/BW_InterceptAt10_k',K,sep=''),sep=',', col.names = F,quote = F,row.names=F)
+#      write.table(Intercept21,paste('/cbica/projects/pinesParcels/results/EffectVecs/BW_InterceptAt21_k',K,sep=''),sep=',', col.names = F,quote = F,row.names=F)
+#      write.table(Avg,paste('/cbica/projects/pinesParcels/results/EffectVecs/Avg_k',K,sep=''),sep=',', col.names = F,quote = F,row.names=F)
+#      write.table(at10,paste('/cbica/projects/pinesParcels/results/EffectVecs/Deriv10yoAt',K,sep=''),sep=',', col.names = F,quote = F,row.names=F)
+#      write.table(at16,paste('/cbica/projects/pinesParcels/results/EffectVecs/Deriv16yoAt',K,sep=''),sep=',', col.names = F,quote = F,row.names=F)
+#      write.table(at21,paste('/cbica/projects/pinesParcels/results/EffectVecs/Deriv21yoAt',K,sep=''),sep=',', col.names = F,quote = F,row.names=F)
+#}
 
 ```
