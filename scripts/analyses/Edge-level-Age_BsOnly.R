@@ -1,3 +1,4 @@
+iter=commandArgs(trailingOnly=TRUE)
 #libraries
 library(mediation)
 library(ggplot2)
@@ -398,13 +399,14 @@ OG_AgeEff_by_transmodalityDif_model_LIN<-summary(OG_AgeEff_by_transmodalityDif_m
 OG_AgeEff_by_transmodalityDif_model_LIN_beta<-OG_AgeEff_by_transmodalityDif_model_LIN['Estimate']
 
 #### subject-level resample: outer loop
-set.seed(1)
+set.seed(iter)
 # set number of bootstraps
 b<-1000
 # initialize likelihood ratio test output vector: one value for each bootstrap
 lm_testStatLIN<-rep(0,b)
 lm_testPvecLIN<-rep(0,b)
 lm_testStatLIN_estAt8<-rep(0,b)
+lmN1N2_testStatLIN<-rep(0,b)
 # added bootstrapping for euclidean distance - age effect relation for comparison
 EucAgeSpearman<-rep(0,b)
 TmDifAgeSpearman<-rep(0,b)
@@ -450,9 +452,9 @@ for (x in 1:b){
   # Now, test relationship between age effect and transmodality for this bootstrap with likelihood ratio test between nested models
   # fit full model
   AgeEff_by_transmodalityDif_model<-lm(bw_deltaR2~tmdifvec,data=EL_bwdf)
-  # save linear fit of transmodality
+  # save linear fit of transmodality difference
   lm_testStatLIN[x]<-AgeEff_by_transmodalityDif_model$coefficients['tmdifvec']
-  # save linear fit of transmodality by est. con. at 8 y.o.
+  # save linear fit of transmodality difference by est. con. at 8 y.o.
   edgeInt<-data.frame(EdgeInterceptVector,tmdifvec)
   # get lm for stats
   ageEdgeIntLm<-lm(EdgeInterceptVector~tmdifvec,data=edgeInt)
@@ -467,19 +469,26 @@ for (x in 1:b){
   # equiv for transmodality difference (includes scaling)
   Tmdif_AgeEfCor<-cor.test(EL_Eucbwdf_nonZeros$tmdifvec,EL_Eucbwdf_nonZeros$bw_deltaR2,method='spearman')
   TmDifAgeSpearman[x]<-Tmdif_AgeEfCor$estimate
+  
+  # make a double df for symmetry - net1 and net2tmvec repeated in opposite ordering
+  
+  BwAgeCorTMDifDf<-data.frame(bw_deltaR2,net1tmvec,net2tmvec)
+  # mirror DF
+  BwAgeCorTMDifDf2<-BwAgeCorTMDifDf
+  BwAgeCorTMDifDf2$net1tmvec<-BwAgeCorTMDifDf$net2tmvec
+  BwAgeCorTMDifDf2$net2tmvec<-BwAgeCorTMDifDf$net1tmvec
+  
+  # "stacked" df
+  doubleBwAgeCorTMDifDf<-rbind(BwAgeCorTMDifDf2,BwAgeCorTMDifDf)
+  
+  # finally, model the simplified network A transmodality network B transmodality interaction
+  simpLin<-lm(bw_deltaR2~net2tmvec*net1tmvec,data = doubleBwAgeCorTMDifDf)
+  lmN1N2_testStatLIN[x]<-simpLin$coefficients['net2tmvec:net1tmvec']
+  
 }
 #### end of outer loop
 
-# for linear - significance
-CI_LIN=quantile(lm_testStatLIN,c(0.025,0.975)) 
-
-# discrete p calculation (https://www.bmj.com/content/343/bmj.d2304 as source)
-SE=(CI_LIN[2]-CI_LIN[1])/(2*1.96)
-z=OG_AgeEff_by_transmodalityDif_model_LIN_beta/SE
-z=abs(z)
-pLIN<-exp((-0.717*z)-(0.416*(z^2)))
-
-print(pLIN)
-
-savedBOOTinfo<-data.frame(lm_testStatLIN,TmDifAgeSpearman,EucAgeSpearman,lm_testStatLIN_estAt8)
-saveRDS(savedBOOTinfo,'~/Age_EdgeLevel_bootInfo.rds')
+# save with seed value in filename
+BootInfoName=paste('~/Age_EdgeLevel_bootInfo_',iter,'.rds',sep='')
+savedBOOTinfo<-data.frame(lm_testStatLIN,TmDifAgeSpearman,EucAgeSpearman,lm_testStatLIN_estAt8,lmN1N2_testStatLIN)
+saveRDS(savedBOOTinfo,BootInfoName)
