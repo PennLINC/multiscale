@@ -282,7 +282,7 @@ sem_model = '
 '
 ```
 
-```{r}
+```{r,warning=FALSE, results='hide',message=FALSE}
 # calculate EF effects
 # set covariates formula for iterating over in the loop
 lm_xM_covariates="~Age+Sex+Motion"
@@ -322,33 +322,8 @@ for (i in 1:(length(bwAvgCondf)-4)){
   # save p value in vector as well
   AB_P[i]<-summary(fit)$PE[17,'pvalue']
 }
-
-#for i in 464, -3 because age sex motionand EF columns sit at the end
-#for (i in 1:(length(bwAvgCondf)-4)){
-#  # borrowing colnames from indiv_nsegcols to keep network mappings
-#  x<-colnames(bwAvgCondf[i])
-#  # to estimate AB path mediation from age to EF (linear)
-#  # scale for EZ interpretation
-#  bwAvgCondfZ[,i]<-scale(bwAvgCondfZ[,i])[,1]
-#  # fit x-M path
-#  xM_form<-as.formula(paste("",x,"", lm_xM_covariates, sep=""))
-#  xMpath<-lm(formula=xM_form,data=bwAvgCondfZ)
-#  # fit M-y path
-#  My_form<-as.formula(paste(lm_My_covariates, "",x,"",sep=""))
-#  Mypath<-lm(formula=My_form,data=bwAvgCondfZ)
-#  # run mediation
-#  mediationFit<-mediate(xMpath,Mypath,treat="Age",mediator=x)
-#  AB_Est[i]<-mediationFit$d1
-#  # save p value in vector as well
-#  AB_P[i]<-mediationFit$d1.p
-#}
-
-# read it in from old iteration, it is slow to run due to montCars
-AB_Est<-readRDS('~/Desktop/multiscale/AB_est')
-P_Est<-readRDS('~/Desktop/multiscale/AB_P')
-
 # fdr Mediation P's
-corrected<-p.adjust(P_Est,method='fdr')
+corrected<-p.adjust(AB_P,method='fdr')
 
 # network-level sig vector
 NL_sigVec<-logical(464)
@@ -409,6 +384,7 @@ SE=(CI_LIN[2]-CI_LIN[1])/(2*1.96)
 z=OG_MedEff_by_transmodality_model_LIN_beta/SE
 z=abs(z)
 pLIN<-exp((-0.717*z)-(0.416*(z^2)))
+print(pLIN)
 ```
 
 
@@ -424,104 +400,18 @@ bwdf$domnetvecSig<-factor(bwdf$domnetvecSig,levels=c("Motor","Visual","DA","VA",
 
 # stats for fig-gam
 Mediation_net_gam<-gam(AB_Est~s(tmvec,k=3),data=bwdf)
-Mediation_net_gam_sigOnly<-gam(AB_Est~s(tmvec,k=3),data=bwdf[NL_sigVec,])
+# gams for stats
+SMA_gam<-gam(AB_Est~s(scalesvec,k=3),data=bwdf[bwdf$domnetvec17=='Somatomotor A',])
+DMB_gam<-gam(AB_Est~s(scalesvec,k=3),data=bwdf[bwdf$domnetvec17=='DM_B',])
+summary(SMA_gam)
+summary(DMB_gam)
 ```
 
 ```{r, fig.width=11,fig.height=11}
-ggplot(bwdf,aes(tmvec,AB_Est)) + geom_point(size=6,alpha=.8,aes(color=domnetvecSig))+ scale_color_manual(values=c('#3281ab','#670068','#007500','#b61ad0','#b8cf86','#d77d00','#c1253c','gray80')) + xlab("Transmodality") + ylab('AB Path Coefficient') +theme_classic(base_size = 40) +guides(color=guide_legend(title="Yeo 7 Overlap"))+theme(plot.margin=margin(b=3,t=.1,l=.1,r=.1, unit='cm'), legend.position=c(.42,-.24),legend.direction = "horizontal",legend.title=element_text(size=30),legend.text=element_text(size=30))+geom_smooth(method='lm',formula = y~x,color='black')
-
-#ggplot(bwdf[NL_sigVec,],aes(tmvec,AB_Est)) + geom_point(size=6,alpha=.8,aes(color=domnetvecSig))+ scale_color_manual(values=c('#3281ab','#670068','#007500','#b61ad0','#b8cf86','#d77d00','#c1253c','gray80')) + xlab("Transmodality") + ylab('AB Path Coefficient') +theme_classic(base_size = 40) +guides(color=guide_legend(title="Yeo 7 Overlap"))+theme(plot.margin=margin(b=3,t=.1,l=.1,r=.1, unit='cm'), legend.position=c(.42,-.24),legend.direction = "horizontal",legend.title=element_text(size=30),legend.text=element_text(size=30))+geom_smooth(method='gam',formula = y~s(x,k=3),color='black')
-#+geom_smooth(method='lm',color='black',size=2)
+ggplot(bwdf,aes(tmvec,AB_Est)) + geom_point(size=6,alpha=.8,aes(color=domnetvecSig))+ scale_color_manual(values=c('#3281ab','#670068','#007500','#b61ad0','#d77d00','#c1253c','gray80')) + xlab("Transmodality") + ylab('AB Path Coefficient') +theme_classic(base_size = 40) +guides(color=guide_legend(title="Yeo 7 Overlap"))+theme(plot.margin=margin(b=3,t=.1,l=.1,r=.1, unit='cm'), legend.position=c(.42,-.24),legend.direction = "horizontal",legend.title=element_text(size=30),legend.text=element_text(size=30))+geom_smooth(method='lm',formula = y~x,color='black')
 
 ```
 
-
-```{r}
-# bootstrapped sig
-# lms
-SMA_lm<-lm(AB_Est~poly(scalesvec,2),data=bwdf[bwdf$domnetvec17=='Somatomotor A',])
-DMB_lm<-lm(AB_Est~poly(scalesvec,2),data=bwdf[bwdf$domnetvec17=='DM_B',])
-summary(SMA_lm)
-summary(DMB_lm)
-
-# Extract Linear coefs.
-OG_MedEff_by_scale_SMA_LIN<-summary(SMA_lm)$coefficients['poly(scalesvec, 2)1',]
-OG_MedEff_by_scale_SMA_LIN_beta<-OG_MedEff_by_scale_SMA_LIN['Estimate']
-
-# Extract Quadr coefs.
-OG_MedEff_by_scale_SMA_QUADR<-summary(SMA_lm)$coefficients['poly(scalesvec, 2)2',]
-OG_MedEff_by_scale_SMA_QUADR_beta<-OG_MedEff_by_scale_SMA_QUADR['Estimate']
-
-# Extract Linear coefs.
-OG_MedEff_by_scale_DMB_LIN<-summary(DMB_lm)$coefficients['poly(scalesvec, 2)1',]
-OG_MedEff_by_scale_DMB_LIN_beta<-OG_MedEff_by_scale_DMB_LIN['Estimate']
-
-# Extract Quadr coefs.
-OG_MedEff_by_scale_DMB_QUADR<-summary(DMB_lm)$coefficients['poly(scalesvec, 2)2',]
-OG_MedEff_by_scale_DMB_QUADR_beta<-OG_MedEff_by_scale_DMB_QUADR['Estimate']
-
-# load in bootstrapped versions
-
-### SMA LINEAR
-mergedBootStraps_SMA_L<-rbind(r1$SMA_testStatLin,r2$SMA_testStatLin,r3$SMA_testStatLin,r4$SMA_testStatLin,r5$SMA_testStatLin,r6$SMA_testStatLin,r7$SMA_testStatLin,r8$SMA_testStatLin,r9$SMA_testStatLin,r10$SMA_testStatLin,r11$SMA_testStatLin,r12$SMA_testStatLin,r13$SMA_testStatLin,r14$SMA_testStatLin,r15$SMA_testStatLin,r16$SMA_testStatLin,r17$SMA_testStatLin,r18$SMA_testStatLin,r19$SMA_testStatLin,r20$SMA_testStatLin)
-
-# range of AB~Transmodality
-print(range(mergedBootStraps_SMA_L))
-
-# for linear - significance
-CI_LIN=quantile(mergedBootStraps_SMA_L,c(0.025,0.975)) 
-
-# discrete p calculation (https://www.bmj.com/content/343/bmj.d2304 as source)
-SE=(CI_LIN[2]-CI_LIN[1])/(2*1.96)
-z=OG_MedEff_by_scale_SMA_LIN_beta/SE
-z=abs(z)
-pLIN<-exp((-0.717*z)-(0.416*(z^2)))
-
-### SMA QUADRATIC
-mergedBootStraps_SMA_Q<-rbind(r1$SMA_testStatQuadr,r2$SMA_testStatQuadr,r3$SMA_testStatQuadr,r4$SMA_testStatQuadr,r5$SMA_testStatQuadr,r6$SMA_testStatQuadr,r7$SMA_testStatQuadr,r8$SMA_testStatQuadr,r9$SMA_testStatQuadr,r10$SMA_testStatQuadr,r11$SMA_testStatQuadr,r12$SMA_testStatQuadr,r13$SMA_testStatQuadr,r14$SMA_testStatQuadr,r15$SMA_testStatQuadr,r16$SMA_testStatQuadr,r17$SMA_testStatQuadr,r18$SMA_testStatQuadr,r19$SMA_testStatQuadr,r20$SMA_testStatQuadr)
-
-# range of AB~Transmodality
-print(range(mergedBootStraps_SMA_Q))
-
-# for linear - significance
-CI_LIN=quantile(mergedBootStraps_SMA_Q,c(0.025,0.975)) 
-
-# discrete p calculation (https://www.bmj.com/content/343/bmj.d2304 as source)
-SE=(CI_LIN[2]-CI_LIN[1])/(2*1.96)
-z=OG_MedEff_by_scale_SMA_QUADR_beta/SE
-z=abs(z)
-pLIN<-exp((-0.717*z)-(0.416*(z^2)))
-
-### DMB LINEAR
-mergedBootStraps_DMB_L<-rbind(r1$DMB_testStatLin,r2$DMB_testStatLin,r3$DMB_testStatLin,r4$DMB_testStatLin,r5$DMB_testStatLin,r6$DMB_testStatLin,r7$DMB_testStatLin,r8$DMB_testStatLin,r9$DMB_testStatLin,r10$DMB_testStatLin,r11$DMB_testStatLin,r12$DMB_testStatLin,r13$DMB_testStatLin,r14$DMB_testStatLin,r15$DMB_testStatLin,r16$DMB_testStatLin,r17$DMB_testStatLin,r18$DMB_testStatLin,r19$DMB_testStatLin,r20$DMB_testStatLin)
-
-# range of AB~Transmodality
-print(range(mergedBootStraps_DMB_L))
-
-# for linear - significance
-CI_LIN=quantile(mergedBootStraps_DMB_L,c(0.025,0.975)) 
-
-# discrete p calculation (https://www.bmj.com/content/343/bmj.d2304 as source)
-SE=(CI_LIN[2]-CI_LIN[1])/(2*1.96)
-z=OG_MedEff_by_scale_DMB_LIN_beta/SE
-z=abs(z)
-pLIN<-exp((-0.717*z)-(0.416*(z^2)))
-
-### DMB QUADRATIC
-mergedBootStraps_DMB_Q<-rbind(r1$DMB_testStatQuadr,r2$DMB_testStatQuadr,r3$DMB_testStatQuadr,r4$DMB_testStatQuadr,r5$DMB_testStatQuadr,r6$DMB_testStatQuadr,r7$DMB_testStatQuadr,r8$DMB_testStatQuadr,r9$DMB_testStatQuadr,r10$DMB_testStatQuadr,r11$DMB_testStatQuadr,r12$DMB_testStatQuadr,r13$DMB_testStatQuadr,r14$DMB_testStatQuadr,r15$DMB_testStatQuadr,r16$DMB_testStatQuadr,r17$DMB_testStatQuadr,r18$DMB_testStatQuadr,r19$DMB_testStatQuadr,r20$DMB_testStatQuadr)
-
-# range of AB~Transmodality
-print(range(mergedBootStraps_DMB_Q))
-
-# for linear - significance
-CI_LIN=quantile(mergedBootStraps_DMB_Q,c(0.025,0.975)) 
-
-# discrete p calculation (https://www.bmj.com/content/343/bmj.d2304 as source)
-SE=(CI_LIN[2]-CI_LIN[1])/(2*1.96)
-z=OG_MedEff_by_scale_DMB_QUADR_beta/SE
-z=abs(z)
-pLIN<-exp((-0.717*z)-(0.416*(z^2)))
-```
 
 ```{r}
 # figure 7 stuff - Mediation Effect * Scale * Transmodality

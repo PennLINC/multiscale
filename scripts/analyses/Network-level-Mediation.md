@@ -6,7 +6,7 @@ Adam
 ``` r
 #libraries
 
-
+library(lavaan)
 library(mediation)
 library(gratia)
 library(ggplot2)
@@ -277,11 +277,27 @@ for (i in 1:2){
     ## [1] "transmodal"
 
 ``` r
+# for lavaan
+sem_model = '
+  FC ~ a*Age + Sex + Motion
+  EF ~ c*Age + Sex + Motion + b*FC
+ 
+  # direct effect
+  direct := c
+ 
+  # indirect effect
+  indirect := a*b
+ 
+  # total effect
+  total := c + (a*b)
+'
+```
+
+``` r
 # calculate EF effects
 # set covariates formula for iterating over in the loop
 lm_xM_covariates="~Age+Sex+Motion"
 lm_My_covariates="EF~Sex+Motion+Age+"
-
 
 # initialize output vectors
 AB_Est<-rep(0,length=length(masterdf[,indiv_nsegcols_ind]))
@@ -302,7 +318,7 @@ bwAvgCondfZ<-bwAvgCondf
 bwAvgCondfZ$Age<-scale(bwAvgCondf$Age)[,1]
 bwAvgCondfZ$Motion<-scale(bwAvgCondf$Motion)[,1]
 
-
+# lavaan
 #for i in 464, -3 because age sex motionand EF columns sit at the end
 for (i in 1:(length(bwAvgCondf)-4)){
   # borrowing colnames from indiv_nsegcols to keep network mappings
@@ -310,19 +326,13 @@ for (i in 1:(length(bwAvgCondf)-4)){
   # to estimate AB path mediation from age to EF (linear)
   # scale for EZ interpretation
   bwAvgCondfZ[,i]<-scale(bwAvgCondfZ[,i])[,1]
-  # fit x-M path
-  xM_form<-as.formula(paste("",x,"", lm_xM_covariates, sep=""))
-  xMpath<-lm(formula=xM_form,data=bwAvgCondfZ)
-  # fit M-y path
-  My_form<-as.formula(paste(lm_My_covariates, "",x,"",sep=""))
-  Mypath<-lm(formula=My_form,data=bwAvgCondfZ)
-  # run mediation
-  mediationFit<-mediate(xMpath,Mypath,treat="Age",mediator=x)
-  AB_Est[i]<-mediationFit$d1
+  sem_model_x = gsub('FC',x,sem_model)
+  fit=sem(sem_model_x,bwAvgCondfZ)
+  # row 17 is the indirect effect estimate
+  AB_Est[i]<-summary(fit)$PE[17,'est']
   # save p value in vector as well
-  AB_P[i]<-mediationFit$d1.p
+  AB_P[i]<-summary(fit)$PE[17,'pvalue']
 }
-
 # fdr Mediation P's
 corrected<-p.adjust(AB_P,method='fdr')
 
@@ -333,6 +343,71 @@ NL_sigVec[corrected<0.05]<-TRUE
 # bring it all together
 bwdf<-data.frame(tmvec,scalesvec,domnetvec,domnetvec17,netpropvec,AB_Est)
 ```
+
+``` r
+# time for a nice, simple figure 
+ggplot(masteref,aes(x=Age/12,y=EF)) +geom_point(size=4,alpha=.6)+geom_smooth(method='lm',color='black',size=4)+theme_classic(base_size=40) + xlab("Age") + ylab("Executive Function")
+```
+
+    ## `geom_smooth()` using formula 'y ~ x'
+
+![](Network-level-Mediation_files/figure-markdown_github/unnamed-chunk-7-1.png)
+
+``` r
+#### LINEAR VERSION - bootstrap
+
+# create network-level dataframe from subject-level results: tmvec is just a vector of transmodality values for each network
+# fit full model
+OG_MedEff_by_transmodality_model<-lm(AB_Est~tmvec,data=bwdf)
+# Extract Linear coef.
+OG_MedEff_by_transmodality_model_LIN<-summary(OG_MedEff_by_transmodality_model)$coefficients['tmvec',]
+OG_MedEff_by_transmodality_model_LIN_beta<-OG_MedEff_by_transmodality_model_LIN['Estimate']
+
+### After bootstrapping on PMACS
+r1=readRDS('~/multiscale/Med_NetLevel_bootInfo1.rds')
+r2=readRDS('~/multiscale/Med_NetLevel_bootInfo2.rds')
+r3=readRDS('~/multiscale/Med_NetLevel_bootInfo3.rds')
+r4=readRDS('~/multiscale/Med_NetLevel_bootInfo4.rds')
+r5=readRDS('~/multiscale/Med_NetLevel_bootInfo5.rds')
+r6=readRDS('~/multiscale/Med_NetLevel_bootInfo6.rds')
+r7=readRDS('~/multiscale/Med_NetLevel_bootInfo7.rds')
+r8=readRDS('~/multiscale/Med_NetLevel_bootInfo8.rds')
+r9=readRDS('~/multiscale/Med_NetLevel_bootInfo9.rds')
+r10=readRDS('~/multiscale/Med_NetLevel_bootInfo10.rds')
+r11=readRDS('~/multiscale/Med_NetLevel_bootInfo11.rds')
+r12=readRDS('~/multiscale/Med_NetLevel_bootInfo12.rds')
+r13=readRDS('~/multiscale/Med_NetLevel_bootInfo13.rds')
+r14=readRDS('~/multiscale/Med_NetLevel_bootInfo14.rds')
+r15=readRDS('~/multiscale/Med_NetLevel_bootInfo15.rds')
+r16=readRDS('~/multiscale/Med_NetLevel_bootInfo16.rds')
+r17=readRDS('~/multiscale/Med_NetLevel_bootInfo17.rds')
+r18=readRDS('~/multiscale/Med_NetLevel_bootInfo18.rds')
+r19=readRDS('~/multiscale/Med_NetLevel_bootInfo19.rds')
+r20=readRDS('~/multiscale/Med_NetLevel_bootInfo20.rds')
+
+# slap 'em back together (all ran on different seeds)
+mergedBootStraps<-rbind(r1$AB_testStatLIN,r2$AB_testStatLIN,r3$AB_testStatLIN,r4$AB_testStatLIN,r5$AB_testStatLIN,r6$AB_testStatLIN,r7$AB_testStatLIN,r8$AB_testStatLIN,r9$AB_testStatLIN,r10$AB_testStatLIN,r11$AB_testStatLIN,r12$AB_testStatLIN,r13$AB_testStatLIN,r14$AB_testStatLIN,r15$AB_testStatLIN,r16$AB_testStatLIN,r17$AB_testStatLIN,r18$AB_testStatLIN,r19$AB_testStatLIN,r20$AB_testStatLIN)
+
+# range of AB~Transmodality
+print(range(mergedBootStraps))
+```
+
+    ## [1] 0.001875747 0.007452181
+
+``` r
+# for linear - significance
+CI_LIN=quantile(mergedBootStraps,c(0.025,0.975)) 
+
+# discrete p calculation (https://www.bmj.com/content/343/bmj.d2304 as source)
+SE=(CI_LIN[2]-CI_LIN[1])/(2*1.96)
+z=OG_MedEff_by_transmodality_model_LIN_beta/SE
+z=abs(z)
+pLIN<-exp((-0.717*z)-(0.416*(z^2)))
+print(pLIN)
+```
+
+    ##     Estimate 
+    ## 3.222325e-07
 
 ``` r
 # Mediation * Transmodality - final setup
@@ -346,24 +421,6 @@ bwdf$domnetvecSig<-factor(bwdf$domnetvecSig,levels=c("Motor","Visual","DA","VA",
 
 # stats for fig-gam
 Mediation_net_gam<-gam(AB_Est~s(tmvec,k=3),data=bwdf)
-Mediation_net_gam_sigOnly<-gam(AB_Est~s(tmvec,k=3),data=bwdf[NL_sigVec,])
-```
-
-``` r
-ggplot(bwdf,aes(tmvec,AB_Est)) + geom_point(size=6,alpha=.8,aes(color=domnetvecSig))+ scale_color_manual(values=c('#3281ab','#670068','#007500','#b61ad0','#b8cf86','#d77d00','#c1253c','gray80')) + xlab("Transmodality") + ylab('AB Path Coefficient') +theme_classic(base_size = 40) +guides(color=guide_legend(title="Yeo 7 Overlap"))+theme(plot.margin=margin(b=3,t=.1,l=.1,r=.1, unit='cm'), legend.position=c(.42,-.24),legend.direction = "horizontal",legend.title=element_text(size=30),legend.text=element_text(size=30))+geom_smooth(method='gam',formula = y~s(x,k=3),color='black')
-```
-
-![](Network-level-Mediation_files/figure-markdown_github/unnamed-chunk-7-1.png)
-
-``` r
-#+geom_smooth(method='lm',color='black',size=2)
-
-#ggplot(bwdf[NL_sigVec,],aes(tmvec,AB_Est)) + geom_point(size=6,alpha=.8,aes(color=domnetvecSig))+ scale_color_manual(values=c('#3281ab','#670068','#007500','#b61ad0','#b8cf86','#d77d00','#c1253c','gray80')) + xlab("Transmodality") + ylab('AB Path Coefficient') +theme_classic(base_size = 40) +guides(color=guide_legend(title="Yeo 7 Overlap"))+theme(plot.margin=margin(b=3,t=.1,l=.1,r=.1, unit='cm'), legend.position=c(.42,-.24),legend.direction = "horizontal",legend.title=element_text(size=30),legend.text=element_text(size=30))+geom_smooth(method='gam',formula = y~s(x,k=3),color='black')
-#+geom_smooth(method='lm',color='black',size=2)
-```
-
-``` r
-# figure 7 stuff - Mediation Effect * Scale * Transmodality
 # gams for stats
 SMA_gam<-gam(AB_Est~s(scalesvec,k=3),data=bwdf[bwdf$domnetvec17=='Somatomotor A',])
 DMB_gam<-gam(AB_Est~s(scalesvec,k=3),data=bwdf[bwdf$domnetvec17=='DM_B',])
@@ -379,18 +436,18 @@ summary(SMA_gam)
     ## 
     ## Parametric coefficients:
     ##             Estimate Std. Error t value Pr(>|t|)    
-    ## (Intercept) -0.03975    0.00163  -24.39   <2e-16 ***
+    ## (Intercept) -0.03975    0.00164  -24.24   <2e-16 ***
     ## ---
     ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
     ## 
     ## Approximate significance of smooth terms:
     ##               edf Ref.df     F p-value    
-    ## s(scalesvec) 1.97  1.999 37.19  <2e-16 ***
+    ## s(scalesvec) 1.97  1.999 36.72  <2e-16 ***
     ## ---
     ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
     ## 
-    ## R-sq.(adj) =  0.552   Deviance explained = 56.7%
-    ## GCV = 0.000173  Scale est. = 0.00016471  n = 62
+    ## R-sq.(adj) =  0.549   Deviance explained = 56.4%
+    ## GCV = 0.00017513  Scale est. = 0.00016675  n = 62
 
 ``` r
 summary(DMB_gam)
@@ -405,18 +462,25 @@ summary(DMB_gam)
     ## 
     ## Parametric coefficients:
     ##             Estimate Std. Error t value Pr(>|t|)    
-    ## (Intercept) 0.018872   0.001721   10.96 5.13e-12 ***
+    ## (Intercept) 0.018937   0.001729   10.95 5.26e-12 ***
     ## ---
     ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
     ## 
     ## Approximate significance of smooth terms:
-    ##              edf Ref.df     F p-value
-    ## s(scalesvec)   1      1 1.036   0.317
+    ##              edf Ref.df    F p-value
+    ## s(scalesvec)   1      1 1.02   0.321
     ## 
-    ## R-sq.(adj) =  0.00116   Deviance explained = 3.34%
-    ## GCV = 0.00010111  Scale est. = 9.479e-05  n = 32
+    ## R-sq.(adj) =  0.000648   Deviance explained = 3.29%
+    ## GCV = 0.00010202  Scale est. = 9.5643e-05  n = 32
 
 ``` r
+ggplot(bwdf,aes(tmvec,AB_Est)) + geom_point(size=6,alpha=.8,aes(color=domnetvecSig))+ scale_color_manual(values=c('#3281ab','#670068','#007500','#b61ad0','#d77d00','#c1253c','gray80')) + xlab("Transmodality") + ylab('AB Path Coefficient') +theme_classic(base_size = 40) +guides(color=guide_legend(title="Yeo 7 Overlap"))+theme(plot.margin=margin(b=3,t=.1,l=.1,r=.1, unit='cm'), legend.position=c(.42,-.24),legend.direction = "horizontal",legend.title=element_text(size=30),legend.text=element_text(size=30))+geom_smooth(method='lm',formula = y~x,color='black')
+```
+
+![](Network-level-Mediation_files/figure-markdown_github/unnamed-chunk-10-1.png)
+
+``` r
+# figure 7 stuff - Mediation Effect * Scale * Transmodality
 # convert yeo17 membership to vector capturing only sig. yeo17 networks, graying out nonsig.
 Med_domnetSig17<-domnetvec17
 levels(Med_domnetSig17)<-c(levels(Med_domnetSig17),'zNonSig_DM','zNonSig_Mot')
@@ -428,10 +492,10 @@ bwdf$Med_domnetSig17<-as.character(Med_domnetSig17)
 ```
 
 ``` r
-ggplot(bwdf,aes(scalesvec,AB_Est)) + xlab("# of Networks") + ylab('AB Path Coefficient') +theme_classic(base_size = 40) +guides(alpha=FALSE,color=guide_legend(title="Yeo 17 Overlap"))+theme(legend.position=c(.42,-.2),legend.direction = "horizontal",legend.text = element_text(size=22),legend.title = element_text(size=26))+geom_smooth(data=subset(bwdf,domnetvec17=='Somatomotor A'),method='gam',formula = y~s(x,k=3),aes(color=domnetvec17),fill="gray82")+geom_smooth(data=subset(bwdf,domnetvec17=='DM_B'),method='gam',formula = y~s(x,k=3),aes(color=domnetvec17),fill="gray82")+scale_color_manual(values=c('#bc0943','#4183a8','grey20','grey80'))+geom_point(data=subset(bwdf,domnetvec17=='Somatomotor A'),aes(color=Med_domnetSig17),size=6)+geom_point(data=subset(bwdf,domnetvec17=='DM_B'),aes(color=Med_domnetSig17),size=6)+scale_color_manual(values=c('#bc0943','#4183a8','#ebbecc','#b7d9ed'),labels=c('DM B','SM A','n.s. DM B','n.s. SM A'))+scale_x_continuous(breaks=c(4,10,16,22,28))+theme(plot.margin=unit(c(.9,.6,2,.6),"cm"))
+ggplot(bwdf,aes(scalesvec,AB_Est)) + xlab("# of Networks") + ylab('AB Path Coefficient') +theme_classic(base_size = 40) +guides(alpha=FALSE,color=guide_legend(title="Yeo 17 Overlap"))+theme(legend.position=c(.42,-.2),legend.direction = "horizontal",legend.text = element_text(size=22),legend.title = element_text(size=26))+geom_smooth(data=subset(bwdf,domnetvec17=='Somatomotor A'),method='gam',formula = y~s(x,k=3),aes(color=domnetvec17),fill="gray72")+geom_smooth(data=subset(bwdf,domnetvec17=='DM_B'),method='gam',formula = y~s(x,k=3),aes(color=domnetvec17),fill="gray88")+scale_color_manual(values=c('#bc0943','#4183a8','grey20','grey80'))+geom_point(data=subset(bwdf,domnetvec17=='Somatomotor A'),aes(color=Med_domnetSig17),size=6)+geom_point(data=subset(bwdf,domnetvec17=='DM_B'),aes(color=Med_domnetSig17),size=6)+scale_color_manual(values=c('#bc0943','#4183a8','#ebbecc','#b7d9ed'),labels=c('DM B','SM A','n.s. DM B','n.s. SM A'))+scale_x_continuous(breaks=c(4,10,16,22,28))+theme(plot.margin=unit(c(.9,.6,2,.6),"cm"))
 ```
 
     ## Scale for 'colour' is already present. Adding another scale for 'colour',
     ## which will replace the existing scale.
 
-![](Network-level-Mediation_files/figure-markdown_github/unnamed-chunk-9-1.png)
+![](Network-level-Mediation_files/figure-markdown_github/unnamed-chunk-12-1.png)

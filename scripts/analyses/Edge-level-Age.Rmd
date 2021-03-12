@@ -524,7 +524,7 @@ BwAgeCorTMDifDf2$net2tmvec<-BwAgeCorTMDifDf$net1tmvec
 doubleBwAgeCorTMDifDf<-rbind(BwAgeCorTMDifDf2,BwAgeCorTMDifDf)
 
 # model the surface
-g2 <- gam(ageDR2vec ~ te(net2tmvec,net1tmvec),data = doubleBwAgeCorTMDifDf)
+g2 <- gam(ageDR2vec ~ te(net2tmvec,net1tmvec,k=3),data = doubleBwAgeCorTMDifDf)
 ```
 
 ```{r, fig.width=8,fig.height=15}
