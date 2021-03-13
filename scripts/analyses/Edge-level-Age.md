@@ -70,6 +70,34 @@ DeltaPEstVec<-function(x){
   return(anovaP2[2])
   
 }
+
+
+# bootstrap version: resampled df instead of master df
+DeltaR2EstVec_RS<-function(x){
+  
+  # relevant df
+  scaledf<-data.frame(cbind(as.numeric(resampDF$Age),as.numeric(resampDF$Sex),resampDF$Motion,x))
+  colnames(scaledf)<-c('Age','Sex','Motion','varofint')
+  
+  # no-age model (segreg ~ sex + motion)
+  noAgeGam<-gam(varofint~Sex+Motion,data=scaledf)
+  noAgeSum<-summary(noAgeGam)
+  # age-included model for measuring difference
+  AgeGam<-gam(varofint~Sex+Motion+s(Age,k=3),data=scaledf)
+  AgeSum<-summary(AgeGam)
+  
+  dif<-AgeSum$r.sq-noAgeSum$r.sq
+  
+  # partial spearmans to extract age relation (for direction)
+  pspear=pcor(scaledf,method='spearman')$estimate
+  corest<-pspear[4]
+  if(corest<0){
+    dif=dif*-1
+  }
+  
+  return(dif)
+  
+}
 ```
 
 ``` r
@@ -217,8 +245,6 @@ bwcolnames<-colnames(individ_scalebybw_df)
 # initialize empty tm difference vector and age effect vector - 10/9/20: EF vector 
 # I guess append is just terribly slow. replace these with proper-length initializations
 tmdifvec=rep(0,length(colnames(individ_scalebybw_df)))
-ageEfvec=rep(0,length(colnames(individ_scalebybw_df)))
-ageEfPvec=rep(0,length(colnames(individ_scalebybw_df)))
 motionEfvec=rep(0,length(colnames(individ_scalebybw_df)))
 Net1Vec=rep(0,length(colnames(individ_scalebybw_df)))
 Net2Vec=rep(0,length(colnames(individ_scalebybw_df)))
@@ -342,135 +368,113 @@ BwAgeCorTMDifDf<-data.frame(tmdifvec,scalevec,Net1Vec,Net2Vec,Net1Vec17,Net2Vec1
 ```
 
 ``` r
-# an index to group spline values for each network together
-CIgroupingInd<-as.factor(1:4495)
-AgeSpan_plotdf3<-data.frame(tmdifvec,scalevec,Net1Vec,Net2Vec,CIgroupingInd)
-LongAgeSpan_plotdf3<-data.frame(sapply(AgeSpan_plotdf3,rep.int,times=693))
-
-# assign same transmodality value to each point on same lines
-Transmodality693464<-array(dim=c(693*4495,1))
-for (i in 1:4495){
-Transmodality693464[((693*i)-692):(693*i)]<-tmdifvec[i]
-}
-LongAgeSpan_plotdf3$Transmodality<-Transmodality693464
-
-# grouping index so all points of same line have CIgroupingInd in common
-GroupingInd693464<-array(dim=c(693*4495,1))
-for (i in 1:4495){
-GroupingInd693464[((693*i)-692):(693*i)]<-CIgroupingInd[i]
-}
-LongAgeSpan_plotdf3$Grouping<-GroupingInd693464
-
-# ports actual splines in - only for networks that significantly change over this age range
-NetSplines693464<-array(dim=c(693*4495,1))
-# correct splines with fdr
-SplinePFDR<-p.adjust(SplineP,method='fdr')
-for (i in 1:4495){
-  if (SplinePFDR[i]<0.05){
-  # scale added 11/16/20
-  NetSplines693464[((693*i)-692):(693*i)]<-NetSplines[i,]
-  } else {
-    # uncomment for sanity check
-    # print(paste(i,'is not significant'))
-  }
-}
-LongAgeSpan_plotdf3$Splines<-NetSplines693464
-
-# put this guy through the same wrangling ringer as the "estimated age", which is how the spline is ported in
-NetSplinesAgeSideCar693464<-array(dim=c(693*4495,1))
-for (i in 1:4495){
-NetSplinesAgeSideCar693464[((693*i)-692):(693*i)]<-masterdf$Age
-}
-# convert to years
-LongAgeSpan_plotdf3$Age<-NetSplinesAgeSideCar693464/12
-```
-
-``` r
-ggplot(LongAgeSpan_plotdf3,aes(Age,Splines,color=Transmodality,group=Grouping)) +geom_line(size=3,alpha=.4) +labs(x = 'Age', y = 'Between-Network Coupling') +theme_classic(base_size = 40)+ scale_colour_viridis(option="inferno",guide=guide_colorbar(barwidth = 22,ticks.colour = "gray",ticks.linewidth = 8))+theme(legend.text=element_text(size=30),legend.title = element_text(size=30),legend.position="bottom",legend.key.width = unit(3, "cm"))+theme(legend.position="bottom")+ theme(legend.margin=margin(b=-.5,t = -.5, l=-10,unit='cm')) + scale_x_continuous(
-    limits = c(8, 23),
-    expand = c(0, 0),
-    breaks = seq(8,23,by=3)
-  ) +
-  theme(plot.margin=unit(c(.2,.6,.5,.2),"cm"))+labs(color='Transmodality Difference')
-```
-
-    ## Warning: Removed 1466388 row(s) containing missing values (geom_path).
-
-![](Edge-level-Age_files/figure-markdown_github/unnamed-chunk-7-1.png)
-
-``` r
-AgeSpan_plotdf2<-data.frame(tmdifvec,scalevec,Net1Vec,Net2Vec,CIgroupingInd)
-# repeat in order to match length of derivatives at each age interval for each network for each scale
-LongAgeSpan_plotdf2<-data.frame(sapply(AgeSpan_plotdf2,rep.int,times=200))
-# was getting converted to character
-LongAgeSpan_plotdf2$tmdifvec<-as.numeric(LongAgeSpan_plotdf2$tmdifvec)
-
-# get a vector of the agespan split into 200 to match the deriv vals
-agerange<-range(masterdf$Age)/12
-agerange200<-seq(agerange[1],agerange[2],length.out = 200)
-# age transformation
-agerange200464<-array(dim=c(200*4495,1))
-#populate
-for (i in 1:length(agerange200)){
-agerange200464[((4495*i)-4494):(4495*i)]<-rep(agerange200[i],4495)
-}
-LongAgeSpan_plotdf2$agespans<-agerange200464
-
-# deriv transformation
-deriv200464<-array(dim=c(200*4495,1))
-for (i in 1:length(agerange200)){
-deriv200464[((4495*i)-4494):(4495*i)]<-derivInfo[,i]
-}
-LongAgeSpan_plotdf2$derivs<-deriv200464
-
-# finally, make vector of where sig=F to make those segments transparent
-LongAgeSpan_plotdf2$AlphaSig<-.8
-LongAgeSpan_plotdf2$AlphaSig[LongAgeSpan_plotdf2$derivs==0]<-0
-
-# set breaks for plot
-breaks=c(-.002,0,0.002)
-```
-
-``` r
-# Age Effect Derivatives * Age * Transmodality
-ggplot(LongAgeSpan_plotdf2,aes(agespans,tmdifvec,color=derivs,group=CIgroupingInd,alpha=AlphaSig)) +geom_line(size=1.5) +labs(x = 'Age', y = 'Transmodality Difference') +theme_classic(base_size = 40)+ xlim(c(8,23))+ scale_colour_gradientn(colours=c('#0b0bff','#8585ff','white','#ff9191','#ff0a0a'),values = c(0,.4,.5,.6,1),breaks=breaks, labels = breaks,limits=c(-.0031,0.0031),name="Change Per Year: Between-Network Coupling")+theme(legend.text=element_text(size=30),legend.title = element_text(size=30),legend.position="top",legend.key.width = unit(4.3, "cm"))+ylim(c(min(tmdifvec),max(tmdifvec)))+guides(alpha=FALSE,color = guide_colorbar(title.position="top",ticks.colour = "gray",
-                                ticks.linewidth = 8))+geom_vline(xintercept = c(10,16,21),linetype='dashed',size=1.5)+ theme(legend.margin=margin(b=-.5,t = -.5, unit='cm')) + scale_x_continuous(
-    limits = c(8, 23),
-    expand = c(0, 0),
-    breaks = seq(8,23,by=3)
-  ) +
-  theme(plot.margin=unit(c(.9,.6,.5,.3),"cm"))
-```
-
-    ## Scale for 'x' is already present. Adding another scale for 'x', which will
-    ## replace the existing scale.
-
-![](Edge-level-Age_files/figure-markdown_github/unnamed-chunk-9-1.png)
-
-``` r
-# get gam for stats
-ageEdgeGam<-gam(ageDR2vec~s(tmdifvec,k=3),data=BwAgeCorTMDifDf)
-```
-
-``` r
 # plot edge-wise age effects
-ggplot(BwAgeCorTMDifDf,aes(x=tmdifvec,y=ageDR2vec))+ geom_text(data=BwAgeCorTMDifDf[BwAgeCorTMDifDf$fdrAgeDR2<0.05,],size=10,label="\u25D6",family="Arial Unicode MS",aes(x=tmdifvec,y=ageDR2vec,color=Net1Vec))+scale_color_manual(values=ycolors,limits=Y7vec)+geom_text(data=BwAgeCorTMDifDf[BwAgeCorTMDifDf$fdrAgeDR2<0.05,],aes(x=tmdifvec,y=ageDR2vec,color=Net2Vec),size=10,label="\u25D7",family="Arial Unicode MS")+geom_point(data=BwAgeCorTMDifDf[BwAgeCorTMDifDf$fdrAgeDR2>0.05,],aes(x=tmdifvec,y=ageDR2vec),color='grey80',size=4,alpha=.7)+theme(legend.position = "none") + xlab('Transmodality Difference') + ylab(expression(paste('Age Effect(',Delta,R^2[adj],')')))+theme_classic(base_size = 40)+theme(legend.position = "none")+geom_smooth(method='gam',formula = y~s(x,k=3),color='black',size=2)
+ggplot(BwAgeCorTMDifDf,aes(x=tmdifvec,y=ageDR2vec))+ geom_text(data=BwAgeCorTMDifDf[BwAgeCorTMDifDf$fdrAgeDR2<0.05,],size=10,label="\u25D6",family="Arial Unicode MS",aes(x=tmdifvec,y=ageDR2vec,color=Net1Vec))+scale_color_manual(values=ycolors,limits=Y7vec)+geom_text(data=BwAgeCorTMDifDf[BwAgeCorTMDifDf$fdrAgeDR2<0.05,],aes(x=tmdifvec,y=ageDR2vec,color=Net2Vec),size=10,label="\u25D7",family="Arial Unicode MS")+geom_point(data=BwAgeCorTMDifDf[BwAgeCorTMDifDf$fdrAgeDR2>0.05,],aes(x=tmdifvec,y=ageDR2vec),color='grey80',size=4,alpha=.7)+theme(legend.position = "none") + xlab('Transmodality Difference') + ylab(expression(paste('Age Effect (',Delta,R^2[adj],')')))+theme_classic(base_size = 40)+theme(legend.position = "none")+geom_smooth(method='lm',color='black',size=2)
 ```
 
-![](Edge-level-Age_files/figure-markdown_github/unnamed-chunk-11-1.png)
+    ## `geom_smooth()` using formula 'y ~ x'
+
+![](Edge-level-Age_files/figure-markdown_github/unnamed-chunk-6-1.png)
+
+``` r
+# get lm for stats
+OG_ageEdgeLm<-lm(ageDR2vec~tmdifvec,data=BwAgeCorTMDifDf)
+
+# Extract Linear coef.
+OG_AgeEff_by_transmodalityDif_model_LIN<-summary(OG_ageEdgeLm)$coefficients['tmdifvec',]
+
+OG_AgeEff_by_transmodalityDif_model_LIN_beta<-OG_AgeEff_by_transmodalityDif_model_LIN['Estimate']
+
+# pull bootstrap results from PMACS output
+bootResEdgeAge<-readRDS('~/multiscale/Age_EdgeLevel_bootInfo.rds')
+
+# for linear - significance
+CI_LIN=quantile(bootResEdgeAge$lm_testStatLIN,c(0.025,0.975)) 
+
+# discrete p calculation (https://www.bmj.com/content/343/bmj.d2304 as source)
+SE=(CI_LIN[2]-CI_LIN[1])/(2*1.96)
+z=OG_AgeEff_by_transmodalityDif_model_LIN_beta/SE
+z=abs(z)
+pLIN<-exp((-0.717*z)-(0.416*(z^2)))
+print(paste('Beta A_DR2~Transmodality Difference',OG_AgeEff_by_transmodalityDif_model_LIN_beta))
+```
+
+    ## [1] "Beta A_DR2~Transmodality Difference -0.00390304826309135"
+
+``` r
+print(paste('pLin A_DR2~Transmodality Difference',pLIN))
+```
+
+    ## [1] "pLin A_DR2~Transmodality Difference 1.82643893603133e-07"
+
+``` r
+cor.test(BwAgeCorTMDifDf$ageDR2vec,BwAgeCorTMDifDf$tmdifvec,method='spearman')
+```
+
+    ## 
+    ##  Spearman's rank correlation rho
+    ## 
+    ## data:  BwAgeCorTMDifDf$ageDR2vec and BwAgeCorTMDifDf$tmdifvec
+    ## S = 2.248e+10, p-value < 2.2e-16
+    ## alternative hypothesis: true rho is not equal to 0
+    ## sample estimates:
+    ##        rho 
+    ## -0.4851248
 
 ``` r
 # edge-wise 8 y.o. intercept
 edgeInt<-data.frame(EdgeInterceptVector,tmdifvec,Net1Vec,Net2Vec,fdrAgeDR2)
-# get gam for stats
-ageEdgeIntGam<-gam(EdgeInterceptVector~s(tmdifvec,k=3),data=BwAgeCorTMDifDf)
 ```
 
 ``` r
-ggplot(edgeInt,aes(x=tmdifvec,y=EdgeInterceptVector))+geom_point(data=edgeInt[edgeInt$fdrAgeDR2>0.05,],aes(x=tmdifvec,y=EdgeInterceptVector),alpha=.7,color='gray80',size=4)+theme_classic(base_size=40)+ geom_text(data=edgeInt[edgeInt$fdrAgeDR2<0.05,],aes(x=tmdifvec,y=EdgeInterceptVector,color=Net1Vec),size=10,label="\u25D6",family="Arial Unicode MS")+geom_text(data=edgeInt[edgeInt$fdrAgeDR2<0.05,],aes(x=tmdifvec,y=EdgeInterceptVector,color=Net2Vec),size=10,label="\u25D7",family="Arial Unicode MS")+scale_color_manual(values=ycolors,limits=Y7vec)+geom_smooth(method='gam',formula = y~s(x,k=3),color='black',size=2)+ylab("Initial Between-Community Coupling")+xlab("Transmodality Difference")+theme(plot.margin=margin(b=3.5,t=.1,l=1,r=1, unit='cm'),legend.position=c(.42,-.2),legend.direction = "horizontal")+guides(alpha=FALSE,color=guide_legend(title="Yeo 7 Overlap"))
+ggplot(edgeInt,aes(x=tmdifvec,y=EdgeInterceptVector))+geom_point(data=edgeInt[edgeInt$fdrAgeDR2>0.05,],aes(x=tmdifvec,y=EdgeInterceptVector),alpha=.7,color='gray80',size=4)+theme_classic(base_size=40)+ geom_text(data=edgeInt[edgeInt$fdrAgeDR2<0.05,],aes(x=tmdifvec,y=EdgeInterceptVector,color=Net1Vec),size=10,label="\u25D6",family="Arial Unicode MS")+geom_text(data=edgeInt[edgeInt$fdrAgeDR2<0.05,],aes(x=tmdifvec,y=EdgeInterceptVector,color=Net2Vec),size=10,label="\u25D7",family="Arial Unicode MS")+scale_color_manual(values=ycolors,limits=Y7vec)+geom_smooth(method='lm',color='black',size=2)+ylab("Est. Between-Network Coupling At 8")+xlab("Transmodality Difference")+theme(plot.margin=margin(b=3.5,t=.1,l=1,r=1, unit='cm'),legend.position=c(.42,-.2),legend.direction = "horizontal")+guides(alpha=FALSE,color=guide_legend(title="Yeo 7 Overlap"))
 ```
 
-![](Edge-level-Age_files/figure-markdown_github/unnamed-chunk-13-1.png)
+    ## `geom_smooth()` using formula 'y ~ x'
+
+![](Edge-level-Age_files/figure-markdown_github/unnamed-chunk-8-1.png)
+
+``` r
+# for Est. At 8 y.o.
+# fit full model
+OG_AgeEff_by_transmodalityDif_model_est8<-lm(EdgeInterceptVector~tmdifvec,data=edgeInt)
+# Extract Linear coef.
+OG_AgeEff_by_transmodalityDif_model_LIN_est8<-summary(OG_AgeEff_by_transmodalityDif_model_est8)$coefficients['tmdifvec',]
+OG_AgeEff_by_transmodalityDif_model_LIN_est8_beta<-OG_AgeEff_by_transmodalityDif_model_LIN_est8['Estimate']
+
+# for linear - significance
+CI_LIN=quantile(bootResEdgeAge$lm_testStatLIN_estAt8,c(0.025,0.975)) 
+
+# discrete p calculation (https://www.bmj.com/content/343/bmj.d2304 as source)
+SE=(CI_LIN[2]-CI_LIN[1])/(2*1.96)
+z=OG_AgeEff_by_transmodalityDif_model_LIN_est8_beta/SE
+z=abs(z)
+pLIN<-exp((-0.717*z)-(0.416*(z^2)))
+# plot correlation
+print(paste('Beta Est8~Transmodality Difference',OG_AgeEff_by_transmodalityDif_model_LIN_est8_beta))
+```
+
+    ## [1] "Beta Est8~Transmodality Difference -0.012288900398774"
+
+``` r
+print(paste('pLin Est8~Transmodality Difference',pLIN))
+```
+
+    ## [1] "pLin Est8~Transmodality Difference 1.58397241300481e-139"
+
+``` r
+cor.test(edgeInt$EdgeInterceptVector,edgeInt$tmdifvec,method='spearman')
+```
+
+    ## 
+    ##  Spearman's rank correlation rho
+    ## 
+    ## data:  edgeInt$EdgeInterceptVector and edgeInt$tmdifvec
+    ## S = 2.3729e+10, p-value < 2.2e-16
+    ## alternative hypothesis: true rho is not equal to 0
+    ## sample estimates:
+    ##       rho 
+    ## -0.567595
 
 ``` r
 # gam surface
@@ -498,17 +502,43 @@ doubleBwAgeCorTMDifDf<-rbind(BwAgeCorTMDifDf2,BwAgeCorTMDifDf)
 
 ``` r
 # model the surface
-g2 <- gam(ageDR2vec ~ te(net2tmvec,net1tmvec),data = doubleBwAgeCorTMDifDf)
+g2 <- gam(ageDR2vec ~ te(net2tmvec,net1tmvec,k=3),data = doubleBwAgeCorTMDifDf)
+
+# model the linear fit
+
+simpLin<-lm(ageDR2vec~net2tmvec*net1tmvec,data = doubleBwAgeCorTMDifDf)
+summary(simpLin)
 ```
 
+    ## 
+    ## Call:
+    ## lm(formula = ageDR2vec ~ net2tmvec * net1tmvec, data = doubleBwAgeCorTMDifDf)
+    ## 
+    ## Residuals:
+    ##       Min        1Q    Median        3Q       Max 
+    ## -0.091249 -0.011246  0.000627  0.009733  0.124336 
+    ## 
+    ## Coefficients:
+    ##                       Estimate Std. Error t value Pr(>|t|)    
+    ## (Intercept)          2.505e-03  2.284e-04   10.96   <2e-16 ***
+    ## net2tmvec           -1.700e-03  6.222e-05  -27.32   <2e-16 ***
+    ## net1tmvec           -1.700e-03  6.222e-05  -27.32   <2e-16 ***
+    ## net2tmvec:net1tmvec  7.757e-04  1.716e-05   45.21   <2e-16 ***
+    ## ---
+    ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+    ## 
+    ## Residual standard error: 0.02088 on 8986 degrees of freedom
+    ## Multiple R-squared:  0.3413, Adjusted R-squared:  0.341 
+    ## F-statistic:  1552 on 3 and 8986 DF,  p-value: < 2.2e-16
+
 ``` r
-gg_tensor(g2)+theme_classic(base_size = 40) +theme(legend.text=element_text(size=30),legend.key.width =unit(3.5,"cm"),legend.title = element_text(size=30))+scale_fill_gradient2(low = "blue",high = "red",mid = "white",midpoint = 0,name=expression(paste('Age Effect(',Delta,R^2[adj],')')),guide = guide_colorbar(legend.position='top',title.position="top",ticks.colour = "gray50", ticks.linewidth = 7))+ggtitle("")+xlab("Network Transmodality")+ylab("Network Transmodality")+geom_vline(xintercept = mean(range(doubleBwAgeCorTMDifDf$net1tmvec)),linetype='dashed',size=1.5)+geom_hline(yintercept = mean(range(doubleBwAgeCorTMDifDf$net1tmvec)),linetype='dashed',size=1.5)+theme(legend.position='top')
+gg_tensor(g2)+theme_classic(base_size = 40) +theme(legend.text=element_text(size=30),legend.key.width =unit(3.5,"cm"),legend.title = element_text(size=30))+scale_fill_gradient2(breaks=c(0,.02,.04),low = "blue",high = "red",mid = "white",midpoint = 0,name=expression(paste('Age Effect (',Delta,R^2[adj],')')),guide = guide_colorbar(legend.position='top',title.position="top",ticks.colour = "gray50", ticks.linewidth = 7))+ggtitle("")+xlab("Network Transmodality")+ylab("Network Transmodality")+geom_vline(xintercept = mean(range(doubleBwAgeCorTMDifDf$net1tmvec)),linetype='dashed',size=1.5)+geom_hline(yintercept = mean(range(doubleBwAgeCorTMDifDf$net1tmvec)),linetype='dashed',size=1.5)+theme(legend.position='top')
 ```
 
     ## Scale for 'fill' is already present. Adding another scale for 'fill', which
     ## will replace the existing scale.
 
-![](Edge-level-Age_files/figure-markdown_github/unnamed-chunk-15-1.png)
+![](Edge-level-Age_files/figure-markdown_github/unnamed-chunk-10-1.png)
 
 ``` r
 # work in euclidean distances
@@ -616,17 +646,17 @@ colnames(BwAgeCorTMDifDf)[3]<-'EucDist'
 # Artificial 0s exist where 2 Networks do not exist on the same hemisphere, mask em out
 BwAgeCorDistance_nonZero<-BwAgeCorTMDifDf[BwAgeCorTMDifDf$EucDist!=0,]
 
-Euc<-ggplot(data=BwAgeCorDistance_nonZero,aes(x=EucDist,y=ageDR2vec)) + geom_point(alpha=.07,size=3) + xlab('Euclid. Dist.') + ylab('Age Relationship (dr2)')+geom_smooth(method='lm')+theme_classic()
+Euc<-ggplot(data=BwAgeCorDistance_nonZero,aes(x=EucDist,y=ageDR2vec)) + geom_point(alpha=.07,size=3) + xlab('Euclidean Distance') + ylab(expression(paste('Age Effect (',Delta,R^2[adj],')')))+geom_smooth(method='lm')+theme_classic(base_size=40)
 
-Mot<-ggplot(data=BwAgeCorDistance_nonZero,aes(x=EucDist,y=motionEfvec)) + geom_point(alpha=.07,size=3) + xlab('Euclid. Dist.') + ylab('Motion Coefficient')+geom_smooth(method='lm')+theme_classic()
+Mot<-ggplot(data=BwAgeCorDistance_nonZero,aes(x=EucDist,y=motionEfvec)) + geom_point(alpha=.07,size=3) + xlab('Euclidean Distance') + ylab('Motion Effect')+geom_smooth(method='lm')+theme_classic(base_size=40)
 
-TMd<-ggplot(data=BwAgeCorDistance_nonZero,aes(x=tmdifvec,y=ageDR2vec)) + geom_point(alpha=.07,size=3) + xlab('Transmodality difference') + ylab('Age Relationship (dr2)')+geom_smooth(method='lm')+theme_classic()
+TMd<-ggplot(data=BwAgeCorDistance_nonZero,aes(x=tmdifvec,y=ageDR2vec)) + geom_point(alpha=.07,size=3) + xlab('Transmodality difference') + ylab(expression(paste('Age Effect (',Delta,R^2[adj],')')))+geom_smooth(method='lm')+theme_classic(base_size=40)
 
-TMd_euc<-ggplot(data=BwAgeCorDistance_nonZero,aes(x=EucDist,y=tmdifvec)) + geom_point(alpha=.07,size=3) + xlab('Euclid. Dist.') + ylab('Transmodality difference')+geom_smooth(method='lm')+theme_classic()
+TMd_euc<-ggplot(data=BwAgeCorDistance_nonZero,aes(x=EucDist,y=tmdifvec)) + geom_point(alpha=.07,size=3) + xlab('Euclidean Distance') + ylab('Transmodality difference')+geom_smooth(method='lm')+theme_classic(base_size=40)
 ```
 
 ``` r
-ggarrange(Euc,Mot,TMd,TMd_euc)
+ggarrange(Euc,TMd,TMd_euc,Mot)
 ```
 
     ## `geom_smooth()` using formula 'y ~ x'
@@ -634,4 +664,117 @@ ggarrange(Euc,Mot,TMd,TMd_euc)
     ## `geom_smooth()` using formula 'y ~ x'
     ## `geom_smooth()` using formula 'y ~ x'
 
-![](Edge-level-Age_files/figure-markdown_github/unnamed-chunk-17-1.png)
+![](Edge-level-Age_files/figure-markdown_github/unnamed-chunk-12-1.png)
+
+``` r
+######## test whether or not edge-level Age Effects vary as a function of network Transmodality Difference
+
+#### LINEAR VERSION
+
+#OG coefs. 
+EL_bwdf<-data.frame(tmdifvec,ageDR2vec,EdgeInterceptVector)
+# fit full model
+OG_AgeEff_by_transmodalityDif_model<-lm(ageDR2vec~tmdifvec,data=EL_bwdf)
+# Extract Linear coef.
+OG_AgeEff_by_transmodalityDif_model_LIN<-summary(OG_AgeEff_by_transmodalityDif_model)$coefficients['tmdifvec',]
+OG_AgeEff_by_transmodalityDif_model_LIN_beta<-OG_AgeEff_by_transmodalityDif_model_LIN['Estimate']
+
+# pull bootstrap results from PMACS output
+bootResEdgeAge<-readRDS('~/multiscale/Age_EdgeLevel_bootInfo.rds')
+
+# for linear - significance
+CI_LIN=quantile(bootResEdgeAge$lm_testStatLIN,c(0.025,0.975)) 
+
+# discrete p calculation (https://www.bmj.com/content/343/bmj.d2304 as source)
+SE=(CI_LIN[2]-CI_LIN[1])/(2*1.96)
+z=OG_AgeEff_by_transmodalityDif_model_LIN_beta/SE
+z=abs(z)
+pLIN<-exp((-0.717*z)-(0.416*(z^2)))
+
+# now do it for Est. At 8 y.o.
+# fit full model
+OG_AgeEff_by_transmodalityDif_model_est8<-lm(EdgeInterceptVector~tmdifvec,data=EL_bwdf)
+# Extract Linear coef.
+OG_AgeEff_by_transmodalityDif_model_LIN_est8<-summary(OG_AgeEff_by_transmodalityDif_model)$coefficients['tmdifvec',]
+OG_AgeEff_by_transmodalityDif_model_LIN_est8_beta<-OG_AgeEff_by_transmodalityDif_model_LIN_est8['Estimate']
+
+# for linear - significance
+CI_LIN=quantile(bootResEdgeAge$lm_testStatLIN_estAt8,c(0.025,0.975)) 
+
+# discrete p calculation (https://www.bmj.com/content/343/bmj.d2304 as source)
+SE=(CI_LIN[2]-CI_LIN[1])/(2*1.96)
+z=OG_AgeEff_by_transmodalityDif_model_LIN_est8_beta/SE
+z=abs(z)
+pLIN<-exp((-0.717*z)-(0.416*(z^2)))
+
+
+# for Euc Dist.
+Eucmodel<-cor.test(BwAgeCorDistance_nonZero$ageDR2vec,BwAgeCorDistance_nonZero$EucDist,method='spearman')
+# Extract Linear coef.
+OG_AgeEff_by_Euc_model_LIN_beta<-Eucmodel$estimate
+
+# pull in bootsrapped estimates
+CI_LIN=quantile(bootResEdgeAge$EucAgeSpearman,c(0.025,0.975)) 
+
+# calc p. assoc. w/ euc dist
+SE=(CI_LIN[2]-CI_LIN[1])/(2*1.96)
+z=OG_AgeEff_by_Euc_model_LIN_beta/SE
+z=abs(z)
+pLIN<-exp((-0.717*z)-(0.416*(z^2)))
+
+# tmdif spearman for equiv.
+tmdmodel<-cor.test(BwAgeCorDistance_nonZero$ageDR2vec,BwAgeCorDistance_nonZero$tmdifvec,method='spearman')
+# Extract Linear coef.
+OG_AgeEff_by_tmdif_model_LIN_beta<-tmdmodel$estimate
+
+# pull in bootsrapped estimates
+CI_LIN=quantile(bootResEdgeAge$TmDifAgeSpearman,c(0.025,0.975)) 
+
+# calc p. assoc. w/ euc dist
+SE=(CI_LIN[2]-CI_LIN[1])/(2*1.96)
+z=OG_AgeEff_by_tmdif_model_LIN_beta/SE
+z=abs(z)
+pLIN<-exp((-0.717*z)-(0.416*(z^2)))
+```
+
+``` r
+# bootstrap section for the network A * network B transmodality surface - linearized version for bootstrapping
+
+# original coefficient
+OG_Net1TM_by_Net2TM_intrxn_LIN_beta<-summary(simpLin)$coefficients['net2tmvec:net1tmvec','Estimate']
+
+r1=readRDS('~/multiscale/Age_EdgeLevel_bootInfo_1.rds')
+r2=readRDS('~/multiscale/Age_EdgeLevel_bootInfo_2.rds')
+r3=readRDS('~/multiscale/Age_EdgeLevel_bootInfo_3.rds')
+r4=readRDS('~/multiscale/Age_EdgeLevel_bootInfo_4.rds')
+r5=readRDS('~/multiscale/Age_EdgeLevel_bootInfo_5.rds')
+
+# slap 'em back together (all ran on different seeds)
+mergedBootstraps<-rbind(r1$lmN1N2_testStatLIN,r2$lmN1N2_testStatLIN,r3$lmN1N2_testStatLIN,r4$lmN1N2_testStatLIN,r5$lmN1N2_testStatLIN)
+
+# range of AB~Transmodality
+print(range(mergedBootstraps))
+```
+
+    ## [1] 0.0004191343 0.0015001013
+
+``` r
+# for linear - significance
+CI_LIN=quantile(mergedBootstraps,c(0.025,0.975)) 
+
+# discrete p calculation (https://www.bmj.com/content/343/bmj.d2304 as source)
+SE=(CI_LIN[2]-CI_LIN[1])/(2*1.96)
+z=OG_Net1TM_by_Net2TM_intrxn_LIN_beta/SE
+z=abs(z)
+pLIN<-exp((-0.717*z)-(0.416*(z^2)))
+print(pLIN)
+```
+
+    ##        97.5% 
+    ## 2.387705e-06
+
+``` r
+ggplot(bootResEdgeAge,aes(TmDifAgeSpearman))+geom_density(trim=T,size=0,fill='blue')+geom_density(aes(EucAgeSpearman),size=0,trim=T,fill='dark green')+xlim(-.6,0)+theme_classic(base_size=28)+geom_hline(yintercept = 0,color="gray") +xlab("Bootstrapped Correlation Coefficients")+ylab("Density")
+```
+
+![](Edge-level-Age_files/figure-markdown_github/unnamed-chunk-15-1.png)

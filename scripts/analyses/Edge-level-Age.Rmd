@@ -439,7 +439,7 @@ summary(simpLin)
 ```
 
 ```{r, fig.width=8,fig.height=15}
-gg_tensor(g2)+theme_classic(base_size = 40) +theme(legend.text=element_text(size=30),legend.key.width =unit(3.5,"cm"),legend.title = element_text(size=30))+scale_fill_gradient2(low = "blue",high = "red",mid = "white",midpoint = 0,name=expression(paste('Age Effect (',Delta,R^2[adj],')')),guide = guide_colorbar(legend.position='top',title.position="top",ticks.colour = "gray50", ticks.linewidth = 7))+ggtitle("")+xlab("Network Transmodality")+ylab("Network Transmodality")+geom_vline(xintercept = mean(range(doubleBwAgeCorTMDifDf$net1tmvec)),linetype='dashed',size=1.5)+geom_hline(yintercept = mean(range(doubleBwAgeCorTMDifDf$net1tmvec)),linetype='dashed',size=1.5)+theme(legend.position='top')
+gg_tensor(g2)+theme_classic(base_size = 40) +theme(legend.text=element_text(size=30),legend.key.width =unit(3.5,"cm"),legend.title = element_text(size=30))+scale_fill_gradient2(breaks=c(0,.02,.04),low = "blue",high = "red",mid = "white",midpoint = 0,name=expression(paste('Age Effect (',Delta,R^2[adj],')')),guide = guide_colorbar(legend.position='top',title.position="top",ticks.colour = "gray50", ticks.linewidth = 7))+ggtitle("")+xlab("Network Transmodality")+ylab("Network Transmodality")+geom_vline(xintercept = mean(range(doubleBwAgeCorTMDifDf$net1tmvec)),linetype='dashed',size=1.5)+geom_hline(yintercept = mean(range(doubleBwAgeCorTMDifDf$net1tmvec)),linetype='dashed',size=1.5)+theme(legend.position='top')
 
 ```
 
@@ -571,10 +571,39 @@ SE=(CI_LIN[2]-CI_LIN[1])/(2*1.96)
 z=OG_AgeEff_by_tmdif_model_LIN_beta/SE
 z=abs(z)
 pLIN<-exp((-0.717*z)-(0.416*(z^2)))
+```
+
+```{r}
+# bootstrap section for the network A * network B transmodality surface - linearized version for bootstrapping
+
+# original coefficient
+OG_Net1TM_by_Net2TM_intrxn_LIN_beta<-summary(simpLin)$coefficients['net2tmvec:net1tmvec','Estimate']
+
+r1=readRDS('~/multiscale/Age_EdgeLevel_bootInfo_1.rds')
+r2=readRDS('~/multiscale/Age_EdgeLevel_bootInfo_2.rds')
+r3=readRDS('~/multiscale/Age_EdgeLevel_bootInfo_3.rds')
+r4=readRDS('~/multiscale/Age_EdgeLevel_bootInfo_4.rds')
+r5=readRDS('~/multiscale/Age_EdgeLevel_bootInfo_5.rds')
+
+# slap 'em back together (all ran on different seeds)
+mergedBootstraps<-rbind(r1$lmN1N2_testStatLIN,r2$lmN1N2_testStatLIN,r3$lmN1N2_testStatLIN,r4$lmN1N2_testStatLIN,r5$lmN1N2_testStatLIN)
+
+# range of AB~Transmodality
+print(range(mergedBootstraps))
+
+# for linear - significance
+CI_LIN=quantile(mergedBootstraps,c(0.025,0.975)) 
+
+# discrete p calculation (https://www.bmj.com/content/343/bmj.d2304 as source)
+SE=(CI_LIN[2]-CI_LIN[1])/(2*1.96)
+z=OG_Net1TM_by_Net2TM_intrxn_LIN_beta/SE
+z=abs(z)
+pLIN<-exp((-0.717*z)-(0.416*(z^2)))
+print(pLIN)
 
 ```
 
 
 ```{r}
-ggplot(bootResEdgeAge,aes(TmDifAgeSpearman))+geom_density(trim=T,size=0,fill='blue')+geom_density(aes(EucAgeSpearman),size=0,trim=T,fill='dark green')+xlim(-.6,0)+theme_classic(base_size=28)+geom_hline(yintercept = 0,color="gray") +xlab("Bootstrapped Correlation Coefficients")+ylab("Density")
+ggplot(bootResEdgeAge,aes(TmDifAgeSpearman))+geom_density(trim=T,size=0,fill='#2c7fb8')+geom_density(aes(EucAgeSpearman),size=0,trim=T,fill='#7fcdbb')+xlim(-.6,0)+theme_classic(base_size=28)+geom_hline(yintercept = 0,color="gray") +xlab("Bootstrapped Correlation Coefficients")+ylab("Density")
 ```
