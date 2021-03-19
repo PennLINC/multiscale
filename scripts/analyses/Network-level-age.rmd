@@ -5,6 +5,13 @@ date: "1/19/2021"
 output: github_document
 ---
 
+```{r}
+# Welcome to the network-level age effects markdown. Here, we'll analyze developmental effects that are observed for individual functional networks, and second-order relationships depicting the distribution of age effects across different kinds of networks. 
+
+# More specifically, this markdown contains the analyses neccessary for figures 3B,3C,3D, and 5C. 
+
+```
+
 ```{r, message=FALSE}
 #libraries
 library(lmtest)
@@ -21,7 +28,9 @@ library(viridis)
 ```
 
 ```{r}
-# functions for age effect calculations
+# Functions for age effect calculations. Because of the complications introduced by modeling age as a combination of basis functions (spline), the rest of the markdown will heavily lean on these functions to analyze effect size and statistical significance of non-linear age effects.
+
+# First for effect size, we take the difference in adjusted R^2 between a model that includes an age term and a model that does not - essentially, we are using two models to estimate the variance in subject-level data explained by age. To derive the directionality of this effect, we fit a linear model (partial correlation) and match the sign of the age effect (+ or -) to the size of the age effect(delta adjusted R^2). In this case, the directionality tells us whether FC tends to goes up or down with age.
 
 # difference in R2
 DeltaR2EstVec<-function(x){
@@ -50,7 +59,9 @@ DeltaR2EstVec<-function(x){
   
 }
 
-# same thing but returning chisq test sig. output for FDR correction instead of hard difference
+# Next, to derive the statistical significance of observed age effects, we need to test if the two models (one with an age term, one without) are significantly different. We use an ANOVA for this procedure. These p-values will eventually be FDR-corrected.
+
+# chisq test sig. output
 DeltaPEstVec<-function(x){
   
   # relevant df
@@ -69,40 +80,10 @@ DeltaPEstVec<-function(x){
   return(anovaP2[2])
   
 }
-
-# bootstrap version: resampled df instead of master df
-DeltaR2EstVec_RS<-function(x){
-  
-  # relevant df
-  scaledf<-data.frame(cbind(as.numeric(resampDF$Age),as.numeric(resampDF$Sex),resampDF$Motion,x))
-  colnames(scaledf)<-c('Age','Sex','Motion','varofint')
-  
-  # no-age model (segreg ~ sex + motion)
-  noAgeGam<-gam(varofint~Sex+Motion,data=scaledf)
-  noAgeSum<-summary(noAgeGam)
-  # age-included model for measuring difference
-  AgeGam<-gam(varofint~Sex+Motion+s(Age,k=3),data=scaledf)
-  AgeSum<-summary(AgeGam)
-  
-  dif<-AgeSum$r.sq-noAgeSum$r.sq
-  
-  # partial spearmans to extract age relation (for direction)
-  pspear=pcor(scaledf,method='spearman')$estimate
-  corest<-pspear[4]
-  if(corest<0){
-    dif=dif*-1
-  }
-  
-  return(dif)
-  
-}
-
 ```
 
 ```{r}
 # load 'erry thang
-
-
 
 ### load in demograhics
 demo<-read.csv('/cbica/projects/pinesParcels/data/pnc_demo.csv')
@@ -172,26 +153,19 @@ for (i in 1:length(tmclass)){
 ```{r}
 # parse fields of interest 
 
-
-# indicators of processing stream
+# indicator of individualized values in dataframe column names
 ind='ind'
-gro='gro'
-bts='bts'
 
-# indicators of fc feature type
+# indicators of fc feature type. Within and segregation included because the measured length of these index vectors are useful (i.e., a singular value for each network, unlike between-network connectivity)
 bwi='_bw_FC_'
 wini='_win_FC_'
 nsegi='_seg_scale'
-#gsegi='_globseg_scale'
 
 # indices of said indicators
 indiv=grep(ind,colnames(masterdf))
-group=grep(gro,colnames(masterdf))
-#basists=grep(bts,colnames(masterdf))
 bwcol=grep(bwi,colnames(masterdf))
 wincols=grep(wini,colnames(masterdf))
 nsegcols=grep(nsegi,colnames(masterdf))
-#gsegcols=grep(gsegi,colnames(masterdf))
 
 ### Using index combinations, get to dataframe of interest
 indiv_bwcols_ind<-intersect(bwcol,indiv)
@@ -205,15 +179,10 @@ wincolnames<-colnames(individ_scalebywin_df)
 ```
 
 ```{r}
-# get average between-network connectivity of each network (average over each network's edges at each scale)
-
-
+# the purpose of this chunk is to get average between-network connectivity of each network (average over each network's edges at each scale). We are distilling a bunch of "edges", for which each network has K(scale)-1, to a singular value for each network. There is an easier chunk to follow up top (commented out), and a more complicated but faster-running chunk to follow down below (uncommented) if desired.
 
 # empty array for each nets average b/w con across subjects
 bwAvgCon<-matrix(0,693,464)
-
-
-
 
 
 # simpler version for easier replication - this still has the annoying part where "_"'s are added in and taken out though. Needed to distinguish scale 1 from 10, 2 from 20, etc.
@@ -267,7 +236,7 @@ bwAvgCon<-matrix(0,693,464)
 #    }
 #  }
 
-
+# More complicated version for faster run-time
 
 # loop over connectivities to-unimodal then to-transmodal
 modalloopvar=c('unimodal','transmodal')
@@ -390,7 +359,7 @@ for (i in 1:2){
 ```
 
 ```{r}
-# calculate age effects
+# calculate age effects for each network. This is the part where we loop over all networks ot get all our measures of interest, delta R^2 and associated stat. significance, the slope of estimated age effects across the age-range of our sample, etc.
 
 
 # set covariates formula for iterating over in the loop
@@ -460,31 +429,23 @@ for (i in 1:(length(bwAvgCondf)-3)){
   }
 }
 
-# fdr spline P's
+# fdr-correct spline P values for each network's estimated age effect
 SplineP_fdr<-p.adjust(SplineP,method='fdr')
 
-# network-level sig vector
+# network-level sig vector - this will be used for color contrast in plots (desaturating non-sig)
 NL_sigVec<-logical(464)
 NL_sigVec[SplineP_fdr<0.05]<-TRUE
 
-# bring it all together
+# bring all of the filled-out veectors together into a dataframe for plotting
 bwdf<-data.frame(tmvec,scalesvec,domnetvec,domnetvec17,netpropvec,avg_bw_deltaR2,avg_bw_deltaP)
 ```
 
 ```{r}
 
-######## test whether or not network-level Age Effects vary as a function of network Transmodality
+######## test whether or not network-level Age Effects vary linearly as a function of network Transmodality, i.e, Age Effect ~ Transmodality
 
-#### LINEAR VERSION
+# Initialize original (non-bootstrapped) coefficients of this formulation
 
-#OG coefs. 
-avg_bw_deltaR2<-rep(0,464)
-avg_bw_deltaP<-rep(0,464)
-for (n in 1:464){
-  # first 464 columns are network-level connectivity values. test each.
-  # this is a function that return full vs. reduced model comparisons (Age included vs. age excluded, controls for sex + motion).
-  avg_bw_deltaR2[n]<-DeltaR2EstVec(bwAvgCondf[n])
-}
 # create network-level dataframe from subject-level results: tmvec is just a vector of transmodality values for each network
 NL_bwdf<-data.frame(tmvec,avg_bw_deltaR2)
 # fit full model
@@ -494,7 +455,7 @@ OG_AgeEff_by_transmodality_model_LIN<-summary(OG_AgeEff_by_transmodality_model)$
 OG_AgeEff_by_transmodality_model_LIN_beta<-OG_AgeEff_by_transmodality_model_LIN['Estimate']
 
 # read in bootstrapped values (calculated on PMACS)
-bootstrapRDS<-readRDS('~/multiscale/Age_NetLevel_bootInfo.rds')
+bootstrapRDS<-readRDS('/cbica/projects/pinesParcels/data/Age_NetLevel_bootInfo.rds')
 
 
 # for linear Age Effect ~ Transmodality - significance
@@ -506,6 +467,8 @@ z=OG_AgeEff_by_transmodality_model_LIN_beta/SE
 z=abs(z)
 pLIN<-exp((-0.717*z)-(0.416*(z^2)))
 print(CI_LIN)
+
+# p-value of observed Age Effect ~ Transmodality relationship, given the bootstrap distribution
 print(pLIN)
 
 
@@ -526,12 +489,15 @@ cor.test(bwdf$tmvec,bwdf$avg_bw_deltaR2,method='spearman')
 ```
 
 ```{r, fig.width=11,fig.height=11}
-# version without insig fitted to
+# Figure 3C
 ggplot(bwdf,aes(tmvec,avg_bw_deltaR2)) + geom_point(size=6,alpha=.8,aes(color=domnetvecSig))+ scale_color_manual(values=c('#3281ab','#670068','#007500','#b61ad0','#b8cf86','#d77d00','#c1253c','gray80')) + xlab("Transmodality") + ylab(expression(paste('Age Effect (',Delta,R^2[adj],')',sep=''))) +theme_classic(base_size = 40) +guides(color=guide_legend(title="Yeo 7 Overlap"))+theme(plot.margin=margin(b=3,t=.1,l=.1,r=.1, unit='cm'), legend.position=c(.42,-.24),legend.direction = "horizontal",legend.title=element_text(size=30),legend.text=element_text(size=30))+geom_smooth(method='lm',color='black',size=3)
 ```
 
 ```{r}
-# convert loop output to years format
+# Now we need to do a little unprocessing to unpack the splines into a plot-friendly format
+# this first segment is for the age-span plotting in 3D, but needs to be ran for the spline plotting in 3B.
+
+# convert loop output to years format (from months)
 minAgeEst<-minAgeEst/12
 maxAgeEst<-maxAgeEst/12
 derivInfo<-derivInfo*12
@@ -560,7 +526,7 @@ for (i in 1:length(agerange200)){
 deriv200464[((464*i)-463):(464*i)]<-derivInfo[,i]
 }
 
-# now bring 'em together into a long dataframe for plottin
+# now bring 'em together into a long dataframe for plottin'
 AgeSpan_plotdf2<-data.frame(tmvec,scalesvec,domnetvec,netpropvec,CIgroupingInd)
 LongAgeSpan_plotdf2<-data.frame(sapply(AgeSpan_plotdf2,rep.int,times=200))
 LongAgeSpan_plotdf2$agespans<-agerange200464
@@ -568,7 +534,8 @@ LongAgeSpan_plotdf2$derivs<-deriv200464
 ```
 
 ```{r}
-# B/w * Age * Transmodality - final setup
+# B/w * Age * Transmodality - for 3B - final setup
+
 # we will come back to LongAgeSpan_plotdf2.... time to make LongAgeSpan_plotdf3
 # for overlaying the smooth GAM estimates
 AgeSpan_plotdf3<-data.frame(tmvec,scalesvec,domnetvec,netpropvec,CIgroupingInd)
@@ -622,9 +589,9 @@ ggplot(LongAgeSpan_plotdf3,aes(Age,Splines,color=Transmodality,group=Grouping)) 
 
 
 ```{r}
-# Age Effect Derivative * Age * Transmodality
+# Age Effect Derivative * Age * Transmodality - for 3D.
 
-# This one uses manual jitter, so unfortunately it requires iterating over every edge to compare network transmodality values at each scale
+# This one uses manual jitter, so unfortunately it requires iterating over every edge to compare network transmodality values at each scale. This manual jittering impacts the plot in a very minor way. For main effect replication, you might consider it skippable.
 
 # for minimal manual jitter of tmvec in instances w/ very similar tm values
 tmvecJit<-tmvec
@@ -732,8 +699,6 @@ deriv200464[((464*i)-463):(464*i)]<-derivInfo[,i]
 derivSigWholeSpline[((464*i)-463):(464*i)]<-NL_sigVec[i]
 }
 
-
-
 # bring it together into df
 AgeSpan_plotdf2<-data.frame(tmvecJit,scalesvec,domnetvec,netpropvec,CIgroupingInd)
 # repeat in order to match length of derivatives at each age interval for each network for each scale
@@ -751,7 +716,7 @@ breaks=c(-.002,0,0.002)
 ```
 
 ```{r, fig.width=11,fig.height=40}
-# Age Effect Derivatives * Age * Transmodality
+# Age Effect Derivatives * Age * Transmodality - 3D
 ggplot(LongAgeSpan_plotdf2[derivSigWholeSpline,],aes(agespans,tmvecJit,color=derivs,group=CIgroupingInd,alpha=AlphaSig)) +geom_line(size=4) +labs(x = 'Age', y = 'Transmodality') +theme_classic(base_size = 40)+ xlim(c(8,23))+ scale_colour_gradientn(colours=c('#0b0bff','#8585ff','white','#ff9191','#ff0a0a'),values = c(0,.4,.5,.6,1),breaks=breaks, labels = breaks,limits=c(-.0031,0.0031),name="Change Per Year: Between-Network Coupling")+theme(legend.text=element_text(size=30),legend.title = element_text(size=30),legend.position="top",legend.key.width = unit(4.3, "cm"))+ylim(c(min(tmvecJit),max(tmvecJit)))+guides(alpha=FALSE,color = guide_colorbar(title.position="top",ticks.colour = "gray",
                                 ticks.linewidth = 8))+geom_vline(xintercept = c(10,16,21),linetype='dashed',size=1.5)+ theme(legend.margin=margin(b=-.5,t = -.5, unit='cm')) + scale_x_continuous(
     limits = c(8, 23),
@@ -762,6 +727,8 @@ ggplot(LongAgeSpan_plotdf2[derivSigWholeSpline,],aes(agespans,tmvecJit,color=der
 ```
 
 ```{r}
+# For scale-dependent effects, we isolate the most unimodal (SOM_A) and transmodal (DM_B) Yeo17 groups across scales to compare the relative impact of scale upon their age-relations.
+
 # figure 5c stuff - Age Effect * Scale * Transmodality
 # lms for stats
 SMA_gam<-gam(avg_bw_deltaR2~s(scalesvec,k=3),data=bwdf[bwdf$domnetvec17=='Somatomotor A',])
@@ -784,7 +751,7 @@ geom_smooth(data=subset(bwdf,domnetvec17=='Somatomotor A'),method='gam',formula 
 ```
 
 ```{r}
-# section to write out each network's age effect at each scale. In matlab, each age effect of each network at each scale will be averaged for each vertex - according the discrete network membership of that vertex as each scale.
+# section to write out each network's age effect at each scale. In matlab, each age effect of each network at each scale will be averaged for each vertex - according the discrete network membership of that vertex as each scale. This is a visual-only result (the top brains in 3B), and thus is commented out (for now)
 
 ####### initialize vectors
 # Average B/w Con.
