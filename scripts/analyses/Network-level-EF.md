@@ -4,6 +4,12 @@ Adam
 1/19/2021
 
 ``` r
+# Welcome to the network-level executive function (EF) effects markdown. Here, we'll analyze cognitive relations that are observed for individual functional networks, and second-order relationships depicting the distribution of EF effects across different kinds of networks. 
+
+# More specifically, this markdown contains the analyses neccessary for figures 6A and 6D. 
+```
+
+``` r
 #libraries
 
 library(gratia)
@@ -19,7 +25,7 @@ library(viridis)
 ```
 
 ``` r
-# functions for age effect calculations
+# functions for cognitive relation calculations
 
 # difference in R2 for EF
 EFDeltaR2EstVec<-function(x){
@@ -98,7 +104,7 @@ EFDeltaR2EstVec_RS<-function(x){
 ```
 
 ``` r
-# load 'erry thang
+# load 'erry thang - Next 4 chunks are equivalent to load-in and distillation from network-level age
 
 
 
@@ -357,7 +363,7 @@ for (i in 1:2){
     ## [1] "transmodal"
 
 ``` r
-# calculate EF effects
+# calculate EF effects - equivalent except testing EF instead of Age using functions up top
 
 
 # set covariates formula for iterating over in the loop
@@ -368,24 +374,10 @@ covariates=" ~s(Age,k=3)+Sex+Motion"
 minAgeEst<-rep(0,length=length(masterdf[,indiv_nsegcols_ind]))
 maxAgeEst<-rep(0,length=length(masterdf[,indiv_nsegcols_ind]))
 SplineP<-rep(0,length=length(masterdf[,indiv_nsegcols_ind]))
-derivInfo<-array(0,dim=c(464,200))
-NetSplines<-array(0,dim=c(464,693)) 
 avg_bw_deltaR2<-rep(0,length=length(masterdf[,indiv_nsegcols_ind]))
 avg_bw_deltaP<-rep(0,length=length(masterdf[,indiv_nsegcols_ind]))
 EFDR2vec=rep(0,length=length(masterdf[,indiv_nsegcols_ind]))
 EFDR2Pvec=rep(0,length=length(masterdf[,indiv_nsegcols_ind]))
-
-# for gam-predict 
-gamPredictMeAt10<-data.frame(1,1)
-gamPredictMeAt21<-data.frame(1,1)
-# * 12 for months
-gamPredictMeAt10$Age<-(120)
-gamPredictMeAt10$Motion<-mean(masterdf$Motion)
-# most PTs are females, female as default gender
-gamPredictMeAt10$Sex<-2
-gamPredictMeAt21$Age<-(252)
-gamPredictMeAt21$Motion<-mean(masterdf$Motion)
-gamPredictMeAt21$Sex<-2
 
 # borrowing colnames from indiv_nsegcols to keep network/scale ordering/mappings
 colnames(bwAvgCon)<-gsub("_seg_","_avgBw_",colnames(masterdf[,indiv_nsegcols_ind]))
@@ -400,27 +392,10 @@ bwAvgCondf$Motion<-masterdf$Motion
 for (i in 1:(length(bwAvgCondf)-3)){
   # borrowing colnames from indiv_nsegcols to keep network mappings
   x<-colnames(bwAvgCondf[i])
+  # EF delta R squared
   EFDR2vec[i]<-EFDeltaR2EstVec(bwAvgCondf[i])
+  # EF p-value
   EFDR2Pvec[i]<-EFDeltaPEstVec(bwAvgCondf[i])
-  form<-as.formula(paste("",x,"", covariates, sep=""))
-  igam<-gam(formula = form,data=bwAvgCondf)
-  SplineP[i]<-summary(igam)$s.pv
-  derv<-derivatives(igam,term='Age')
-  derv<- derv %>%
-  mutate(sig = !(0 >lower & 0 < upper))
-  derv$sig_deriv = derv$derivative*derv$sig
-  if (all(derv$sig==FALSE)){minAgeEst[i]=0; maxAgeEst[i]=0
-  } else {
-  minAgeEst[i]<-min(derv$data[derv$sig==T])
-  maxAgeEst[i]<-max(derv$data[derv$sig==T])
-  # changed to sig deriv only 7/10/20
-  derivInfo[i,]=derv$sig_deriv
-  forSpline<-predict(igam, data = masterdf, type = "terms")
-  # adding mean val because output values are centered
-  colOfInt<-unlist(bwAvgCondf[,i])
-  # version without centering
-  NetSplines[i,]<-forSpline[,3]+coef(igam)[1]
-  }
 }
 
 # fdr EF P's
@@ -440,7 +415,7 @@ bwdf<-data.frame(tmvec,scalesvec,domnetvec,domnetvec17,netpropvec,EFDR2vec,avg_b
 # Port EF into the average between-network FC DF
 bwAvgCondf$F1_Exec_Comp_Cog_Accuracy<-masteref$F1_Exec_Comp_Cog_Accuracy
 
-#### LINEAR + QUADR. VERSION
+#### LINEAR + QUADRATIC
 
 #OG coefs. 
 avg_bw_deltaR2<-rep(0,464)
@@ -474,6 +449,8 @@ SE=(CI_LIN[2]-CI_LIN[1])/(2*1.96)
 z=OG_EFEff_by_transmodality_model_LIN_beta/SE
 z=abs(z)
 pLIN<-exp((-0.717*z)-(0.416*(z^2)))
+
+# print confidence interval and significance of linear fit of transmodality to EF effects (Delta R^2)
 print(CI_LIN)
 ```
 
@@ -496,6 +473,8 @@ SE=(CI_QUAD[2]-CI_QUAD[1])/(2*1.96)
 z=OG_EFEff_by_transmodality_model_QUADR_beta/SE
 z=abs(z)
 pQUAD<-exp((-0.717*z)-(0.416*(z^2)))
+
+# print confidence interval and significance of quadratic fit of transmodality to EF effects (Delta R^2)
 print(CI_QUAD)
 ```
 
@@ -510,7 +489,7 @@ print(pQUAD)
     ## 0.003404407
 
 ``` r
-# EF * Transmodality - final setup
+# EF * Transmodality - final setup - FIGURE 6A
 # Map nonsig to grey
 bwdf$domnetvecSig<-'NonSig'
 # sig where CL_vec indicates
@@ -528,10 +507,10 @@ EF_net_gam_Sigonly<-gam(EFDR2vec~s(tmvec,k=3),data=bwdf[NL_sigVec,])
 ggplot(bwdf,aes(tmvec,EFDR2vec)) + geom_point(size=4,alpha=.8,aes(color=domnetvecSig))+ scale_color_manual(values=c('#3281ab','#670068','#007500','#b61ad0','#b8cf86','#d77d00','#c1253c','gray80')) + xlab("Transmodality") + ylab(expression(paste('EF Effect (',Delta,R^2[adj],')',sep=''))) +theme_classic(base_size = 25) +guides(color=guide_legend(title="Yeo 7 Overlap"))+theme(plot.margin=margin(b=2.2,t=.1,l=.1,r=.1, unit='cm'), legend.position=c(.32,-.275),legend.direction = "horizontal",legend.title=element_text(size=17),legend.text=element_text(size=17))+geom_smooth(method='lm',formula = y~poly(x,2),color='black')
 ```
 
-![](Network-level-EF_files/figure-markdown_github/unnamed-chunk-10-1.png)
+![](Network-level-EF_files/figure-markdown_github/unnamed-chunk-11-1.png)
 
 ``` r
-# figure 6 stuff - EF Effect * Scale * Transmodality
+# FIGURE 6D - EF Effect * Scale * Transmodality
 # gams for stats
 SMA_gam<-gam(EFDR2vec~s(scalesvec,k=3),data=bwdf[bwdf$domnetvec17=='Somatomotor A',])
 DMB_gam<-gam(EFDR2vec~s(scalesvec,k=3),data=bwdf[bwdf$domnetvec17=='DM_B',])
@@ -602,4 +581,4 @@ geom_smooth(data=subset(bwdf,domnetvec17=='Somatomotor A'),method='gam',formula 
     ## Scale for 'colour' is already present. Adding another scale for 'colour',
     ## which will replace the existing scale.
 
-![](Network-level-EF_files/figure-markdown_github/unnamed-chunk-12-1.png)
+![](Network-level-EF_files/figure-markdown_github/unnamed-chunk-13-1.png)

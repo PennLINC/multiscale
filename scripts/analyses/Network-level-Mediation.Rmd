@@ -5,11 +5,16 @@ date: "1/19/2021"
 output: github_document
 ---
 
+```{r}
+# Welcome to the network-level age-Brain-EF mediation markdown. Here, we'll analyze neurodevelopmental/cognitive relations that are observed for individual functional networks, and second-order relationships depicting the distribution of mediation effects across different kinds of networks. 
+
+# More specifically, this markdown contains the analyses neccessary for figures 7A, 7C and 7D. 
+```
+
 ```{r, message=FALSE}
 #libraries
 
 library(lavaan)
-library(mediation)
 library(gratia)
 library(ggplot2)
 library(reshape2)
@@ -23,7 +28,7 @@ library(viridis)
 ```
 
 ```{r}
-# load 'erry thang
+# load 'erry thang - next 4 chunks are the same load-in as other .md's
 
 
 
@@ -266,7 +271,7 @@ for (i in 1:2){
 
 
 ```{r}
-# for lavaan
+# for lavaan - set SEM model to be iteratively calculcated for each network at each scale
 sem_model = '
   FC ~ a*Age + Sex + Motion
   EF ~ c*Age + Sex + Motion + b*FC
@@ -283,10 +288,6 @@ sem_model = '
 ```
 
 ```{r,warning=FALSE, results='hide',message=FALSE}
-# calculate EF effects
-# set covariates formula for iterating over in the loop
-lm_xM_covariates="~Age+Sex+Motion"
-lm_My_covariates="EF~Sex+Motion+Age+"
 
 # initialize output vectors
 AB_Est<-rep(0,length=length(masterdf[,indiv_nsegcols_ind]))
@@ -334,12 +335,12 @@ bwdf<-data.frame(tmvec,scalesvec,domnetvec,domnetvec17,netpropvec,AB_Est)
 ```
 
 ```{r, fig.width=5,fig.height=5}
-# time for a nice, simple figure 
+# time for a nice, simple one. FIGURE 7A
 ggplot(masteref,aes(x=Age/12,y=EF)) +geom_point(size=4,alpha=.6)+geom_smooth(method='lm',color='black',size=4)+theme_classic(base_size=40) + xlab("Age") + ylab("Executive Function")
 ```
 
 ```{r}
-#### LINEAR VERSION - bootstrap
+#### Bootstrap statistics
 
 # create network-level dataframe from subject-level results: tmvec is just a vector of transmodality values for each network
 # fit full model
@@ -347,6 +348,9 @@ OG_MedEff_by_transmodality_model<-lm(AB_Est~tmvec,data=bwdf)
 # Extract Linear coef.
 OG_MedEff_by_transmodality_model_LIN<-summary(OG_MedEff_by_transmodality_model)$coefficients['tmvec',]
 OG_MedEff_by_transmodality_model_LIN_beta<-OG_MedEff_by_transmodality_model_LIN['Estimate']
+
+# spearman's correlation coefficient for AB path by transmodality relationship
+cor.test(bwdf$tmvec,bwdf$AB_Est,method='spearman')
 
 ### After bootstrapping on PMACS
 r1=readRDS('~/multiscale/Med_NetLevel_bootInfo1.rds')
@@ -384,12 +388,14 @@ SE=(CI_LIN[2]-CI_LIN[1])/(2*1.96)
 z=OG_MedEff_by_transmodality_model_LIN_beta/SE
 z=abs(z)
 pLIN<-exp((-0.717*z)-(0.416*(z^2)))
+
+# print out p-value of linear association between AB Path coefficient and Transmodality
 print(pLIN)
 ```
 
 
 ```{r}
-# Mediation * Transmodality - final setup
+# Mediation * Transmodality - final setup for FIGURE 7C
 # Map nonsig to grey
 bwdf$domnetvecSig<-'NonSig'
 # sig where CL_vec indicates
@@ -397,14 +403,6 @@ bwdf$domnetvecSig[NL_sigVec]<-as.character(bwdf$domnetvec[NL_sigVec])
 # order for plot legend
 bwdf$domnetvecSig<-as.factor(bwdf$domnetvecSig)
 bwdf$domnetvecSig<-factor(bwdf$domnetvecSig,levels=c("Motor","Visual","DA","VA","Limbic","FP","DM","NonSig"),labels=c("Motor","Visual","DA","VA","Limbic","FP","DM","NonSig."))
-
-# stats for fig-gam
-Mediation_net_gam<-gam(AB_Est~s(tmvec,k=3),data=bwdf)
-# gams for stats
-SMA_gam<-gam(AB_Est~s(scalesvec,k=3),data=bwdf[bwdf$domnetvec17=='Somatomotor A',])
-DMB_gam<-gam(AB_Est~s(scalesvec,k=3),data=bwdf[bwdf$domnetvec17=='DM_B',])
-summary(SMA_gam)
-summary(DMB_gam)
 ```
 
 ```{r, fig.width=11,fig.height=11}
@@ -414,7 +412,16 @@ ggplot(bwdf,aes(tmvec,AB_Est)) + geom_point(size=6,alpha=.8,aes(color=domnetvecS
 
 
 ```{r}
-# figure 7 stuff - Mediation Effect * Scale * Transmodality
+# FIGURE 7D
+
+# stats for fig-gam
+Mediation_net_gam<-gam(AB_Est~s(tmvec,k=3),data=bwdf)
+# gams for stats
+SMA_gam<-gam(AB_Est~s(scalesvec,k=3),data=bwdf[bwdf$domnetvec17=='Somatomotor A',])
+DMB_gam<-gam(AB_Est~s(scalesvec,k=3),data=bwdf[bwdf$domnetvec17=='DM_B',])
+summary(SMA_gam)
+summary(DMB_gam)
+
 # convert yeo17 membership to vector capturing only sig. yeo17 networks, graying out nonsig.
 Med_domnetSig17<-domnetvec17
 levels(Med_domnetSig17)<-c(levels(Med_domnetSig17),'zNonSig_DM','zNonSig_Mot')

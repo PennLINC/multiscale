@@ -4,10 +4,15 @@ Adam
 1/19/2021
 
 ``` r
+# Welcome to the network-level age-Brain-EF mediation markdown. Here, we'll analyze neurodevelopmental/cognitive relations that are observed for individual functional networks, and second-order relationships depicting the distribution of mediation effects across different kinds of networks. 
+
+# More specifically, this markdown contains the analyses neccessary for figures 7A, 7C and 7D. 
+```
+
+``` r
 #libraries
 
 library(lavaan)
-library(mediation)
 library(gratia)
 library(ggplot2)
 library(reshape2)
@@ -21,7 +26,7 @@ library(viridis)
 ```
 
 ``` r
-# load 'erry thang
+# load 'erry thang - next 4 chunks are the same load-in as other .md's
 
 
 
@@ -277,7 +282,7 @@ for (i in 1:2){
     ## [1] "transmodal"
 
 ``` r
-# for lavaan
+# for lavaan - set SEM model to be iteratively calculcated for each network at each scale
 sem_model = '
   FC ~ a*Age + Sex + Motion
   EF ~ c*Age + Sex + Motion + b*FC
@@ -294,11 +299,6 @@ sem_model = '
 ```
 
 ``` r
-# calculate EF effects
-# set covariates formula for iterating over in the loop
-lm_xM_covariates="~Age+Sex+Motion"
-lm_My_covariates="EF~Sex+Motion+Age+"
-
 # initialize output vectors
 AB_Est<-rep(0,length=length(masterdf[,indiv_nsegcols_ind]))
 AB_P<-rep(0,length=length(masterdf[,indiv_nsegcols_ind]))
@@ -345,16 +345,16 @@ bwdf<-data.frame(tmvec,scalesvec,domnetvec,domnetvec17,netpropvec,AB_Est)
 ```
 
 ``` r
-# time for a nice, simple figure 
+# time for a nice, simple one. FIGURE 7A
 ggplot(masteref,aes(x=Age/12,y=EF)) +geom_point(size=4,alpha=.6)+geom_smooth(method='lm',color='black',size=4)+theme_classic(base_size=40) + xlab("Age") + ylab("Executive Function")
 ```
 
     ## `geom_smooth()` using formula 'y ~ x'
 
-![](Network-level-Mediation_files/figure-markdown_github/unnamed-chunk-7-1.png)
+![](Network-level-Mediation_files/figure-markdown_github/unnamed-chunk-8-1.png)
 
 ``` r
-#### LINEAR VERSION - bootstrap
+#### Bootstrap statistics
 
 # create network-level dataframe from subject-level results: tmvec is just a vector of transmodality values for each network
 # fit full model
@@ -363,6 +363,24 @@ OG_MedEff_by_transmodality_model<-lm(AB_Est~tmvec,data=bwdf)
 OG_MedEff_by_transmodality_model_LIN<-summary(OG_MedEff_by_transmodality_model)$coefficients['tmvec',]
 OG_MedEff_by_transmodality_model_LIN_beta<-OG_MedEff_by_transmodality_model_LIN['Estimate']
 
+# spearman's correlation coefficient for AB path by transmodality relationship
+cor.test(bwdf$tmvec,bwdf$AB_Est,method='spearman')
+```
+
+    ## Warning in cor.test.default(bwdf$tmvec, bwdf$AB_Est, method = "spearman"):
+    ## Cannot compute exact p-value with ties
+
+    ## 
+    ##  Spearman's rank correlation rho
+    ## 
+    ## data:  bwdf$tmvec and bwdf$AB_Est
+    ## S = 5290268, p-value < 2.2e-16
+    ## alternative hypothesis: true rho is not equal to 0
+    ## sample estimates:
+    ##       rho 
+    ## 0.6822563
+
+``` r
 ### After bootstrapping on PMACS
 r1=readRDS('~/multiscale/Med_NetLevel_bootInfo1.rds')
 r2=readRDS('~/multiscale/Med_NetLevel_bootInfo2.rds')
@@ -403,6 +421,8 @@ SE=(CI_LIN[2]-CI_LIN[1])/(2*1.96)
 z=OG_MedEff_by_transmodality_model_LIN_beta/SE
 z=abs(z)
 pLIN<-exp((-0.717*z)-(0.416*(z^2)))
+
+# print out p-value of linear association between AB Path coefficient and Transmodality
 print(pLIN)
 ```
 
@@ -410,7 +430,7 @@ print(pLIN)
     ## 3.222325e-07
 
 ``` r
-# Mediation * Transmodality - final setup
+# Mediation * Transmodality - final setup for FIGURE 7C
 # Map nonsig to grey
 bwdf$domnetvecSig<-'NonSig'
 # sig where CL_vec indicates
@@ -418,6 +438,16 @@ bwdf$domnetvecSig[NL_sigVec]<-as.character(bwdf$domnetvec[NL_sigVec])
 # order for plot legend
 bwdf$domnetvecSig<-as.factor(bwdf$domnetvecSig)
 bwdf$domnetvecSig<-factor(bwdf$domnetvecSig,levels=c("Motor","Visual","DA","VA","Limbic","FP","DM","NonSig"),labels=c("Motor","Visual","DA","VA","Limbic","FP","DM","NonSig."))
+```
+
+``` r
+ggplot(bwdf,aes(tmvec,AB_Est)) + geom_point(size=6,alpha=.8,aes(color=domnetvecSig))+ scale_color_manual(values=c('#3281ab','#670068','#007500','#b61ad0','#d77d00','#c1253c','gray80')) + xlab("Transmodality") + ylab('AB Path Coefficient') +theme_classic(base_size = 40) +guides(color=guide_legend(title="Yeo 7 Overlap"))+theme(plot.margin=margin(b=3,t=.1,l=.1,r=.1, unit='cm'), legend.position=c(.42,-.24),legend.direction = "horizontal",legend.title=element_text(size=30),legend.text=element_text(size=30))+geom_smooth(method='lm',formula = y~x,color='black')
+```
+
+![](Network-level-Mediation_files/figure-markdown_github/unnamed-chunk-11-1.png)
+
+``` r
+# FIGURE 7D
 
 # stats for fig-gam
 Mediation_net_gam<-gam(AB_Est~s(tmvec,k=3),data=bwdf)
@@ -474,13 +504,6 @@ summary(DMB_gam)
     ## GCV = 0.00010202  Scale est. = 9.5643e-05  n = 32
 
 ``` r
-ggplot(bwdf,aes(tmvec,AB_Est)) + geom_point(size=6,alpha=.8,aes(color=domnetvecSig))+ scale_color_manual(values=c('#3281ab','#670068','#007500','#b61ad0','#d77d00','#c1253c','gray80')) + xlab("Transmodality") + ylab('AB Path Coefficient') +theme_classic(base_size = 40) +guides(color=guide_legend(title="Yeo 7 Overlap"))+theme(plot.margin=margin(b=3,t=.1,l=.1,r=.1, unit='cm'), legend.position=c(.42,-.24),legend.direction = "horizontal",legend.title=element_text(size=30),legend.text=element_text(size=30))+geom_smooth(method='lm',formula = y~x,color='black')
-```
-
-![](Network-level-Mediation_files/figure-markdown_github/unnamed-chunk-10-1.png)
-
-``` r
-# figure 7 stuff - Mediation Effect * Scale * Transmodality
 # convert yeo17 membership to vector capturing only sig. yeo17 networks, graying out nonsig.
 Med_domnetSig17<-domnetvec17
 levels(Med_domnetSig17)<-c(levels(Med_domnetSig17),'zNonSig_DM','zNonSig_Mot')
@@ -498,4 +521,4 @@ ggplot(bwdf,aes(scalesvec,AB_Est)) + xlab("# of Networks") + ylab('AB Path Coeff
     ## Scale for 'colour' is already present. Adding another scale for 'colour',
     ## which will replace the existing scale.
 
-![](Network-level-Mediation_files/figure-markdown_github/unnamed-chunk-12-1.png)
+![](Network-level-Mediation_files/figure-markdown_github/unnamed-chunk-13-1.png)
