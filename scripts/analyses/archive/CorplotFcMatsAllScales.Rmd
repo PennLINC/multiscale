@@ -11,6 +11,34 @@ library(circlize)
 #library(ggraph)
 #library(igraph)
  
+### Get in Consensus-reference atlas correspondence
+rac<-read.csv('/cbica/projects/pinesParcels/results/aggregated_data/fc/network_yCorrespondence_overscales.csv',stringsAsFactors = F)
+scalesvec<-as.numeric(rac[2,])
+domnetvec<-as.factor(rac[3,])
+netpropvec<-as.numeric(rac[4,])
+# 17 network version
+rac17<-read.csv('/cbica/projects/pinesParcels/results/aggregated_data/fc/network_y17Correspondence_overscales.csv',stringsAsFactors = F)
+scalesvec17<-as.numeric(rac17[2,])
+domnetvec17<-as.factor(rac17[3,])
+netpropvec17<-as.numeric(rac17[4,])
+#### read in transmodality
+tm<-read.csv('/cbica/projects/pinesParcels/results/aggregated_data/fc/network_transmodality_overscales.csv',stringsAsFactors = F)
+colnames(tm)<-tm[1,]
+# aaaand remove it so we got everything in its right place
+tm<-tm[-c(1),]
+tmvec<-as.numeric(tm)
+# use median transmodality value to split relatively bimodal distribution
+medtrans<-median(tmvec)
+# equivalent vector to be overwritten with binary classification of transmodality
+tmclass<-tmvec
+for (i in 1:length(tmclass)){
+  if (tmvec[i]<= medtrans){
+    tmclass[i]='unimodal'
+  }else{
+    tmclass[i]='transmodal'
+  }
+}
+
 grid.col = c(Motor = "#3281ab", Visual = "#670068", DA = "#007500", VA = '#b61ad0', FP = "#d77d00", DM = "#c1253c", Limbic = '#f0f9b8')
 
 y7TMorder=c("Motor","Visual","DA","VA","Limbic","FP","DM")
@@ -165,18 +193,18 @@ ggplot(data=BwAgeCorTMDifDf)+geom_violin(aes(x=tmdifvec,y=MediationCategory),bw=
 
 ```{r}
 # pcor pdms
-pcorkAllPDM1<-read.csv('/cbica/projects/pinesParcels/multiscale/scripts/highDim_mediation/pcorPDM1_AllEdges.csv',header=F)
-pcorkAllPDM2<-read.csv('/cbica/projects/pinesParcels/multiscale/scripts/highDim_mediation/pcorPDM2_AllEdges.csv',header=F)
+pcorkAllPDM1<-read.csv('/cbica/projects/pinesParcels/multiscale/scripts/analyses/archive/highDim_mediation/pcorPDM1_AllEdges.csv',header=F)
+pcorkAllPDM2<-read.csv('/cbica/projects/pinesParcels/multiscale/scripts/analyses/archive/highDim_mediation/pcorPDM2_AllEdges.csv',header=F)
 
 # PDM1 @ All edges
-kAllPDM1<-read.csv('/cbica/projects/pinesParcels/multiscale/scripts/highDim_mediation/pcPDM1_AllEdges.csv',header=F)
-kAllPDM2<-read.csv('/cbica/projects/pinesParcels/multiscale/scripts/highDim_mediation/pcPDM2_AllEdges.csv',header=F)
-kAllPDM3<-read.csv('/cbica/projects/pinesParcels/multiscale/scripts/highDim_mediation/pcPDM3_AllEdges.csv',header=F)
-kAllPDM4<-read.csv('/cbica/projects/pinesParcels/multiscale/scripts/highDim_mediation/pcPDM4_AllEdges.csv',header=F)
-kAllPDM5<-read.csv('/cbica/projects/pinesParcels/multiscale/scripts/highDim_mediation/pcPDM5_AllEdges.csv',header=F)
-kAllPDM6<-read.csv('/cbica/projects/pinesParcels/multiscale/scripts/highDim_mediation/pcPDM6_AllEdges.csv',header=F)
-kAllPDM7<-read.csv('/cbica/projects/pinesParcels/multiscale/scripts/highDim_mediation/pcPDM7_AllEdges.csv',header=F)
-kAllPDM8<-read.csv('/cbica/projects/pinesParcels/multiscale/scripts/highDim_mediation/pcPDM8_AllEdges.csv',header=F)
+kAllPDM1<-read.csv('/cbica/projects/pinesParcels/multiscale/scripts/analyses/archive/highDim_mediation/pcPDM1_AllEdges.csv',header=F)
+kAllPDM2<-read.csv('/cbica/projects/pinesParcels/multiscale/scripts/analyses/archive/highDim_mediation/pcPDM2_AllEdges.csv',header=F)
+kAllPDM3<-read.csv('/cbica/projects/pinesParcels/multiscale/scripts/analyses/archive/highDim_mediation/pcPDM3_AllEdges.csv',header=F)
+kAllPDM4<-read.csv('/cbica/projects/pinesParcels/multiscale/scripts/analyses/archive/highDim_mediation/pcPDM4_AllEdges.csv',header=F)
+kAllPDM5<-read.csv('/cbica/projects/pinesParcels/multiscale/scripts/analyses/archive/highDim_mediation/pcPDM5_AllEdges.csv',header=F)
+kAllPDM6<-read.csv('/cbica/projects/pinesParcels/multiscale/scripts/analyses/archive/highDim_mediation/pcPDM6_AllEdges.csv',header=F)
+kAllPDM7<-read.csv('/cbica/projects/pinesParcels/multiscale/scripts/analyses/archive/highDim_mediation/pcPDM7_AllEdges.csv',header=F)
+kAllPDM8<-read.csv('/cbica/projects/pinesParcels/multiscale/scripts/analyses/archive/highDim_mediation/pcPDM8_AllEdges.csv',header=F)
 
 KAcrossNeg<-kAllPDM2+kAllPDM4+kAllPDM5+kAllPDM7+kAllPDM8
 KAcrossPos<-kAllPDM1+kAllPDM3+kAllPDM6
@@ -260,8 +288,8 @@ ggplot(data=BwAgeCorTMDifDf)+geom_violin(aes(x=tmdifvec,y=MediationCategory),bw=
 
 # PDM1 @ K=7
 # @ K=20
-k7PDM1<-read.csv('/cbica/projects/pinesParcels/multiscale/scripts/highDim_mediation/PDM1_7.csv',header=F)
-k7PDM2<-read.csv('/cbica/projects/pinesParcels/multiscale/scripts/highDim_mediation/PDM2_7.csv',header=F)
+k7PDM1<-read.csv('/cbica/projects/pinesParcels/multiscale/scripts/analyses/archive/highDim_mediation/PDM1_7.csv',header=F)
+k7PDM2<-read.csv('/cbica/projects/pinesParcels/multiscale/scripts/analyses/archive/highDim_mediation/PDM2_7.csv',header=F)
 
 ### attempt to make generalizeable chord diagram plots for PDMs
 # set K
@@ -315,7 +343,7 @@ chordDiagramFromDataFrame(chordDf,grid.col = grid.col, col = col_fun)
 
 ```{r}
 # just derived PCs (pdm.dat.Dt)
-k20_svdOutput<-read.csv('/cbica/projects/pinesParcels/multiscale/scripts/highDim_mediation/edges_PCvals.csv',header=F)
+k20_svdOutput<-read.csv('/cbica/projects/pinesParcels/multiscale/scripts/analyses/archive/highDim_mediation/edges_PCvals.csv',header=F)
 
 # set K
 K=20
@@ -365,13 +393,13 @@ chordDiagramFromDataFrame(chordDf,grid.col = grid.col, col = col_fun)
   title(paste('Pc1 K=',K))
   
 # check out subject level PC loadings
-k20_svdOutput_subjs<-read.csv('/cbica/projects/pinesParcels/multiscale/scripts/highDim_mediation/subj_PCvals.csv',header=F)
+k20_svdOutput_subjs<-read.csv('/cbica/projects/pinesParcels/multiscale/scripts/analyses/archive/highDim_mediation/subj_PCvals.csv',header=F)
 ```
 
 ```{r}
 # @ K=20
-k20PDM1<-read.csv('/cbica/projects/pinesParcels/multiscale/scripts/highDim_mediation/PDM1_K20.csv',header=F)
-k20PDM2<-read.csv('/cbica/projects/pinesParcels/multiscale/scripts/highDim_mediation/PDM2_K20.csv',header=F)
+k20PDM1<-read.csv('/cbica/projects/pinesParcels/multiscale/scripts/analyses/archive/highDim_mediation/PDM1_K20.csv',header=F)
+k20PDM2<-read.csv('/cbica/projects/pinesParcels/multiscale/scripts/analyses/archive/highDim_mediation/PDM2_K20.csv',header=F)
 
 ### attempt to make generalizeable chord diagram plots for PDMs
 # set K
