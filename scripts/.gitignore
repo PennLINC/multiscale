@@ -1,3 +1,4 @@
+*.csv
 scripts/derive_parcels/tmp*
 *.sw?
 scripts/derive_parcels/Toolbox
