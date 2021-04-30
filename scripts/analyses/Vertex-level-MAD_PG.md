@@ -97,7 +97,7 @@ for(Scale in seq(2,30)){
 
 ``` r
 # plot aggregate relations over scales
-ggplot(m_spinDistr[m_spinDistr$RealCor==0,], aes(x = value, y = Scale, group = Scale))+xlab('r') + geom_jitter(size = 2,alpha=.25) +geom_text(data=m_spinDistr[m_spinDistr$RealCor==1,],aes(x=value,y=Scale),size=23,color='#BC3754',label="\u2015",family="Arial Unicode MS")+theme_classic(base_size = 40)+coord_flip()+theme(legend.position = "right")+ylab('# of Networks')+scale_y_discrete(breaks=seq(2,30,by=2))
+ggplot(m_spinDistr[m_spinDistr$RealCor==0,], aes(x = value, y = Scale, group = Scale))+xlab('r') + geom_jitter(size = 2,alpha=.25) +geom_text(data=m_spinDistr[m_spinDistr$RealCor==1,],aes(x=value,y=Scale,color=factor(Sig)),size=21,label="\u2015",family="Arial Unicode MS")+scale_color_manual(values=c('#FCBB65','#842F6E'))+theme_classic(base_size = 40)+coord_flip()+theme(legend.position = "none")+ylab('# of Networks')+scale_y_discrete(breaks=seq(2,30,by=2))
 ```
 
 ![](Vertex-level-MAD_PG_files/figure-markdown_github/unnamed-chunk-4-1.png)
