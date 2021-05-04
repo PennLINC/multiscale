@@ -128,7 +128,7 @@ predEF_AI<-predEF_AIcsv[,1]/predEF_AIcsv[,2]
 
 # pred ef vs. age. There should be no relationship if regressing Age out of EF scores worked.
 plot(masteref$Age,predEF_AI)
-cor.test(masteref$Age,predEF_AI,method='spearman')
+cor.test(masteref$Age,predEF_AI)
 
 # pred ef vs. ef. There should be a relationship if our model was able to predict EF in unseen subjects.
 
@@ -143,6 +143,7 @@ mae(AgeMotRegrEF,predEF_AI)
 predEF_AIpermutCors<-read.csv('/cbica/projects/pinesParcels/data/aggregated_data/PermutPreds_AI.csv',header=F)
 
 # Figure 6 flag
+plotdf<-data.frame(AgeMotRegrEF,predEF_AI)
 ```
 
 ```{r, fig.width=4,fig.height=3}

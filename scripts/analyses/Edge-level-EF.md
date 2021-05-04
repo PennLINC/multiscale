@@ -77,7 +77,6 @@ shams<-fc[694:695,]
 masterdf<-merge(fc,df,by='bblid')
 # add EF
 subjbehav<-read.csv("~/Downloads/n9498_cnb_factor_scores_fr_20170202.csv")
-#ef<-data.frame(subjbehav$F1_Exec_Comp_Cog_Accuracy,subjbehav$bblid)
 ef<-data.frame(subjbehav$NAR_F1_Exec_Comp_Cog_Accuracy,subjbehav$bblid)
 colnames(ef)<-c('F1_Exec_Comp_Cog_Accuracy','bblid')
 # merge in
@@ -88,25 +87,19 @@ masteref<-merge(masterdf,ef,by='bblid')
 # parse fields of interest 
 
 
-# indicators of processing stream
+# for parsing individualized partition values
 ind='ind'
-gro='gro'
-bts='bts'
 
-# indicators of fc feature type
+# for parsing specifically network edges
 bwi='_bw_FC_'
 wini='_win_FC_'
 nsegi='_seg_scale'
-#gsegi='_globseg_scale'
 
 # indices of said indicators
 indiv=grep(ind,colnames(masterdf))
-#group=grep(gro,colnames(masterdf))
-#basists=grep(bts,colnames(masterdf))
 bwcol=grep(bwi,colnames(masterdf))
 wincols=grep(wini,colnames(masterdf))
 nsegcols=grep(nsegi,colnames(masterdf))
-#gsegcols=grep(gsegi,colnames(masterdf))
 
 ### Using index combinations, get to dataframe of interest
 indiv_bwcols_ind<-intersect(bwcol,indiv)
@@ -120,110 +113,89 @@ wincolnames<-colnames(individ_scalebywin_df)
 ```
 
 ``` r
-# regress motion out of EF
-MotRegrEF<-gam(F1_Exec_Comp_Cog_Accuracy~Motion,data=masteref)$residuals
 # regress motion and age out of EF
 AgeMotRegrEF<-gam(F1_Exec_Comp_Cog_Accuracy~s(Age,k=3)+Motion,data=masteref)$residuals
-AgeDepEF<-cbind(masterdf[,indiv_bwcols_ind],MotRegrEF)
+# combine age and motion-controlled EF scores with edges
 AgeIndepEF<-cbind(masterdf[,indiv_bwcols_ind],AgeMotRegrEF)
-write.table(AgeDepEF,'/cbica/projects/pinesParcels/results/EffectVecs/AgeDepEF',sep=',', col.names = F,quote = F,row.names=F)
+# write out for scikit learn
 write.table(AgeIndepEF,'/cbica/projects/pinesParcels/results/EffectVecs/AgeIndepEF',sep=',', col.names = F,quote = F,row.names=F)
-```
 
-``` r
-# ridge - penal_regresFC_Age.py 
+# use source activate mv_preds to load in required python libraries
+# run penal_regresFC_AgeEFIndep.py
 ```
 
 ``` r
 ###########
-# post-ridge
+# post-scikit-ridge
 ###########
 ```
 
 ``` r
+# load in subject predictions. First column is sum of predicted EF from every instance in which this subject was randomly allocated to the testing 1/3rd. Second column is the number of times the subject was allocated to the testing 1.3rd.
 predEF_AIcsv<-read.csv('/cbica/projects/pinesParcels/data/aggregated_data/SubjPreds_AI.csv',header=F)
+
 # convert to average predicted EF over all folds
-#predEF_ADcsv<-predEFcsv[,1]/predEFcsv[,2]
 predEF_AI<-predEF_AIcsv[,1]/predEF_AIcsv[,2]
-# pred ef vs. age
+
+# pred ef vs. age. There should be no relationship if regressing Age out of EF scores worked.
 plot(masteref$Age,predEF_AI)
 ```
 
-![](Edge-level-EF_files/figure-markdown_github/unnamed-chunk-8-1.png)
+![](Edge-level-EF_files/figure-markdown_github/unnamed-chunk-7-1.png)
 
 ``` r
-cor.test(masteref$Age,predEF_AI,method='spearman')
-```
-
-    ## Warning in cor.test.default(masteref$Age, predEF_AI, method = "spearman"):
-    ## Cannot compute exact p-value with ties
-
-    ## 
-    ##  Spearman's rank correlation rho
-    ## 
-    ## data:  masteref$Age and predEF_AI
-    ## S = 54765711, p-value = 0.7391
-    ## alternative hypothesis: true rho is not equal to 0
-    ## sample estimates:
-    ##        rho 
-    ## 0.01267262
-
-``` r
-# pred ef vs. ef
-plot(AgeMotRegrEF,predEF_AI)
-```
-
-![](Edge-level-EF_files/figure-markdown_github/unnamed-chunk-8-2.png)
-
-``` r
-cor.test(AgeMotRegrEF,predEF_AI)
+cor.test(masteref$Age,predEF_AI)
 ```
 
     ## 
     ##  Pearson's product-moment correlation
     ## 
-    ## data:  AgeMotRegrEF and predEF_AI
-    ## t = 16.542, df = 691, p-value < 2.2e-16
+    ## data:  masteref$Age and predEF_AI
+    ## t = 0.084636, df = 691, p-value = 0.9326
     ## alternative hypothesis: true correlation is not equal to 0
     ## 95 percent confidence interval:
-    ##  0.4770637 0.5839297
+    ##  -0.07127379  0.07767746
     ## sample estimates:
-    ##       cor 
-    ## 0.5326162
+    ##         cor 
+    ## 0.003219692
 
 ``` r
+# pred ef vs. ef. There should be a relationship if our model was able to predict EF in unseen subjects.
+
+plot(AgeMotRegrEF,predEF_AI)
+```
+
+![](Edge-level-EF_files/figure-markdown_github/unnamed-chunk-7-2.png)
+
+``` r
+# save the real predicted vs. observed correlation for plotting relative to null distribution
+predObsCor<-cor.test(AgeMotRegrEF,predEF_AI)$estimate
+
+# median absolute error also of interest.
 mae(AgeMotRegrEF,predEF_AI)
 ```
 
     ## [1] 0.5532473
 
 ``` r
-# setup for figure 6 pred. vs obs. ef
+# get permutation prediction vs. observed correlations from permutation writeout
+predEF_AIpermutCors<-read.csv('/cbica/projects/pinesParcels/data/aggregated_data/PermutPreds_AI.csv',header=F)
+
+# Figure 6 flag
 plotdf<-data.frame(AgeMotRegrEF,predEF_AI)
-hexinfo <- hexbin(AgeMotRegrEF, predEF_AI, xbins = 20)
-data_hex <- data.frame(hcell2xy(hexinfo), count = hexinfo@count)
-colnames(data_hex)<-c('AgeMotRegrEF','predEF_AI','count')
-
-# custom colormap
-plasma_pal <- c("grey45", viridis::plasma(n = 25))
-
-
-#plot_with_distributions<-ggMarginal(ggplot(plotdf,aes(x=AgeMotRegrEF,y=predEF_AI)) + geom_hex(bins=15) + scale_fill_viridis_c(option='plasma',rescaler = function(x, to = c(0, 1), from = NULL) {
-#  ifelse(x<23,
-#         scales::rescale(x,
-#                         to=to,
-#                         from=c(min(x,na.rm=T),23)),
-#         1)})+geom_point(alpha=0)+geom_smooth(method='lm',color='gray')+theme_classic(base_size=40)+th#eme(legend.position = "left") + xlab("Observed") + ylab("Predicted")+ggtitle('Executive Function'))
 ```
 
 ``` r
-ggplot(plotdf,aes(x=AgeMotRegrEF,y=predEF_AI)) + geom_hex(bins=15) + scale_fill_gradientn(colors=plasma_pal)+geom_point(alpha=0)+geom_smooth(method='lm',color='black',size=4)+theme_classic(base_size=25)+theme(legend.key.width = unit(2.1,"cm"),legend.position=c(.35,-.27),legend.direction = 'horizontal',plot.margin=margin(b=2.3,t=.1,l=.1,r=.1, unit='cm')) + xlab("Observed") + ylab("Predicted")+ggtitle('Executive Function')
+# edge-EF pred. permutation vs. observed
+ggplot(predEF_AIpermutCors,aes(x=V1))+geom_density(size=1.5)+geom_vline(xintercept = predObsCor,size=2,color='#BC3754')+theme_classic(base_size=18)+ylab('')+xlab('')+guides(y="none")+scale_x_continuous(breaks=c(-.3,0,.3,.6),limits=c(-.35,.6))
+```
+
+![](Edge-level-EF_files/figure-markdown_github/unnamed-chunk-8-1.png)
+
+``` r
+ggplot(plotdf,aes(x=AgeMotRegrEF,y=predEF_AI)) +geom_point(size=2,alpha=.6)+geom_smooth(method='lm',color='black',size=2)+theme_classic(base_size=25) + xlab("Observed") + ylab("Predicted")+ggtitle('Executive Function')
 ```
 
     ## `geom_smooth()` using formula 'y ~ x'
 
-![](Edge-level-EF_files/figure-markdown_github/unnamed-chunk-10-1.png)
-
-``` r
-#+guides(color=guide_legend(title="Yeo 7 Overlap"))+theme(plot.margin=margin(b=3,t=.1,l=.1,r=.1, unit='cm'), legend.position=c(.42,-.24),legend.direction = "horizontal",legend.title=element_text(size=30),legend.text=element_text(size=30))+geom_smooth(method='gam',formula = y~s(x,k=3),color='black')
-```
+![](Edge-level-EF_files/figure-markdown_github/unnamed-chunk-9-1.png)
