@@ -102,12 +102,10 @@ wincolnames<-colnames(individ_scalebywin_df)
 ```
 
 ```{r}
-# regress motion and age out of EF
-AgeMotRegrEF<-gam(F1_Exec_Comp_Cog_Accuracy~s(Age,k=3)+Motion,data=masteref)$residuals
-# combine age and motion-controlled EF scores with edges
-AgeIndepEF<-cbind(masterdf[,indiv_bwcols_ind],AgeMotRegrEF)
+# combine age, motion, and EF scores with edges
+AgeMotEF<-cbind(masterdf[,indiv_bwcols_ind],masteref$Age,masteref$Motion,masteref$F1_Exec_Comp_Cog_Accuracy)
 # write out for scikit learn
-write.table(AgeIndepEF,'/cbica/projects/pinesParcels/results/EffectVecs/AgeIndepEF',sep=',', col.names = F,quote = F,row.names=F)
+write.table(AgeMotEF,'/cbica/projects/pinesParcels/results/EffectVecs/AgeMotEF',sep=',', col.names = F,quote = F,row.names=F)
 
 # use source activate mv_preds to load in required python libraries
 # run penal_regresFC_AgeEFIndep.py
@@ -132,12 +130,12 @@ cor.test(masteref$Age,predEF_AI)
 
 # pred ef vs. ef. There should be a relationship if our model was able to predict EF in unseen subjects.
 
-plot(AgeMotRegrEF,predEF_AI)
+plot(AgeMotEF$F1_Exec_Comp_Cog_Accuracy,predEF_AI)
 # save the real predicted vs. observed correlation for plotting relative to null distribution
 predObsCor<-cor.test(AgeMotRegrEF,predEF_AI)$estimate
 
 # median absolute error also of interest.
-mae(AgeMotRegrEF,predEF_AI)
+mae(AgeMotEF$F1_Exec_Comp_Cog_Accuracy,predEF_AI)
 
 # get permutation prediction vs. observed correlations from permutation writeout
 predEF_AIpermutCors<-read.csv('/cbica/projects/pinesParcels/data/aggregated_data/PermutPreds_AI.csv',header=F)

@@ -11,24 +11,28 @@ from sklearn.linear_model import Ridge
 from sklearn.metrics import mean_squared_error
 from sklearn.metrics import r2_score
 import sys
-
-
+import pygam
+from pygam import LinearGAM, s, l
 ### EF b/w feature ridge prediction and permutation comparisons - age controlled for prior to this script
 ### AI indicates "Age-independent", as EF scores are age (and motion) - controlled
 # for prinout, we will want to store out-of-sample prediction, and alpha selected, so 2 columns
 summary_preds=np.empty([4,2])
 # need a different, subject-level prediction DF so we can unpack predicted EF in R
-# first column is additive predicted EF, second column is number of times it was added
-subject_preds_AI=np.zeros([693,2])
+# first column is additive predicted EF, second column is number of times it was added, third is estimated EF controlling for age and motion
+subject_preds_AI=np.zeros([693,3])
 # equiv. for permutation predictions
-permut_subject_preds_AI=np.zeros([693,2])
+permut_subject_preds_AI=np.zeros([693,3])
 # Subject b.w. features	
-filename='/cbica/projects/pinesParcels/results/EffectVecs/AgeIndepEF'
+filename='/cbica/projects/pinesParcels/results/EffectVecs/AgeMotEF'
 data_AI=np.loadtxt(filename,delimiter=',')
 # Divide to predict variable of interest from feature columns
-Featvecs_AI=data_AI[:,:-1]
+Featvecs_AI=data_AI[:,:-3]
 # extract EF variable from last column
 varofintAI=data_AI[:,-1]
+# extract motion from second to last column
+mot=data_AI[:,-2]
+# extract age from third to last column
+age=data_AI[:,-3]
 # set alphas testable for gcv
 alphas = np.exp2(np.arange(16)-10)
 # set subject indices for recoring train test splits
@@ -47,14 +51,33 @@ all_permut_preds=np.empty([1000,1])
 all_preds_alphas=np.empty([100,1])
 all_permut_preds_alphas=np.empty([1000,1])
 # feature weights from the real model will be stored in this array
-featureWeights_AI=np.empty([100,data_AI.shape[1]-1])
+featureWeights_AI=np.empty([100,data_AI.shape[1]-3])
+# adding MSE quantification
+mse_AI=np.empty([100,1])
 # run real predictions 100 times. Allows for each subject to be randomly allocated to the testing third multiple times.
 for split in range(0,100):
 # for a few different train and test splits
 	# Train and test split from data frame
 	xtrain_AI,xtest_AI,ytrain_AI,ytest_AI,indices_train_AI,indices_test_AI=train_test_split(Featvecs_AI,varofintAI,indices,test_size=0.33,random_state=(split))
-	# outcome vector for this split 
-	r2_vec_split_AI=[]
+	# make dataframe of non-brain variables to regress covariates from EF in training
+	df=np.array([age[indices_train_AI],mot[indices_train_AI],varofintAI[indices_train_AI]])
+	# transpose so subjects are rows
+	dft=np.transpose(df)
+	# regress covariates from EF in training sample (Linear GAM still has spline term)
+	GAMFit=LinearGAM(s(0,n_splines=5) + l(1)).fit(dft,varofintAI[indices_train_AI])
+	# get residuals
+	residsvec=np.zeros(len(indices_train_AI))
+	GAMFit.deviance_residuals(dft[:,[0,1,2]],residsvec)
+	# set y_train to residuals
+	y_train_AI=residsvec
+	# make equivalent dataframe for testing sample, but fit age and motion effects from training model
+	df2=np.array([age[indices_test_AI],mot[indices_test_AI],varofintAI[indices_test_AI]])
+	df2t=np.transpose(df2)
+	# apply model to unseen data to get those residuals for testing set
+	testResidsvec=np.zeros(len(indices_test_AI))
+	GAMFit.deviance_residuals(df2t[:,[0,1,2]],testResidsvec)
+	# replace y test with age/motion controlled EF
+	y_test_AI=testResidsvec
 	# fit model with gcv
 	lm_AI = sklearn.linear_model.RidgeCV(alphas=alphas, store_cv_values=True).fit(xtrain_AI,ytrain_AI)
 	# set prediction alpha to best performing alpha in training set
@@ -68,11 +91,14 @@ for split in range(0,100):
 	# add predicted EF to subjects (indices) this iteration was not trained on, add another counter to adjacent column
 	subject_preds_AI[indices_test_AI,0]=subject_preds_AI[indices_test_AI,0]+predEF_AI
 	subject_preds_AI[indices_test_AI,1]=subject_preds_AI[indices_test_AI,1]+1
+	subject_preds_AI[indices_test_AI,2]=subject_preds_AI[indices_test_AI,2]+testResidsvec
 	# test prediction on left out sample
-	pred_obs_r2_AI = sklearn.linear_model.Ridge(alpha=alpha_AI).fit(xtrain_AI,ytrain_AI).score(xtest_AI,ytest_AI)
+	predObsCor=np.corrcoef(predEF_AI,ytest_AI)
 	# stack the predictions vertically to be averaged across samples splits
-	all_preds[split,0]=pred_obs_r2_AI
-
+	all_preds[split,0]=predObsCor[0,1]
+	# save mean squared error
+	mse_AI[split,0]=sklearn.metrics.mean_squared_error(ytest_AI,predEF_AI)
+	
 # for permuted predictions
 for permut in range(0,1000):
         # extract this shuffled ef-subject correspondence
@@ -81,8 +107,25 @@ for permut in range(0,1000):
 	xtrain_AI,xtest_AI,ytrain_AI,ytest_AI,indices_train_AI,indices_test_AI=train_test_split(Featvecs_AI,varofint_permut,indices,test_size=0.33,random_state=(permut))
 	# Train on permuted. Predict on non-permuted, so test-EF scores are real (Extracted from varofint rather than permutedEF)
 	ytest_AI=varofintAI[indices_test_AI]
-	# outcome vector for this split, different vec for permuted and real data
-	r2_vec_split_AI=[]
+	# make dataframe of non-brain variables to regress covariates from EF in training
+	df=np.array([age[indices_train_AI],mot[indices_train_AI],varofint_permut[indices_train_AI]])
+	# transpose so subjects are rows
+	dft=np.transpose(df)
+	# regress covariates from EF in training sample (Linear GAM still has spline term)
+	GAMFit=LinearGAM(s(0,n_splines=5) + l(1)).fit(dft,varofint_permut[indices_train_AI])
+	# get residuals
+	residsvec=np.zeros(len(indices_train_AI))
+	GAMFit.deviance_residuals(dft[:,[0,1,2]],residsvec)
+	# set y_train to residuals
+	y_train_AI=residsvec
+	# make equivalent dataframe for testing sample, but fit age and motion effects from training model
+	df2=np.array([age[indices_test_AI],mot[indices_test_AI],varofintAI[indices_test_AI]])
+	df2t=np.transpose(df2)
+	# apply model to unseen data to get those residuals for testing set
+	testResidsvec=np.zeros(len(indices_test_AI))
+	GAMFit.deviance_residuals(df2t[:,[0,1,2]],testResidsvec)
+	# replace y test with age/motion controlled EF
+	y_test_AI=testResidsvec
 	# fit model with gcv
 	lm_AI = sklearn.linear_model.RidgeCV(alphas=alphas, store_cv_values=True).fit(xtrain_AI,ytrain_AI)
 	# set prediction alpha to best performing alpha in training set
@@ -97,6 +140,7 @@ for permut in range(0,1000):
 	# add predicted EF to indices this iteration was not trained on, add counter to adjacent column 
 	permut_subject_preds_AI[indices_test_AI,0]=permut_subject_preds_AI[indices_test_AI,0]+predEF_AI
 	permut_subject_preds_AI[indices_test_AI,1]=permut_subject_preds_AI[indices_test_AI,1]+1
+	permut_subject_preds_AI[indices_test_AI,2]=permut_subject_preds_AI[indices_test_AI,2]+testResidsvec
 
 # mean age predictions
 mean_preds_AI=np.average(all_preds[:,0])
@@ -110,8 +154,11 @@ mean_featureWeights_AI=np.average(featureWeights_AI,axis=0)
 # throw em in (p-1 because there's no part_0.mat)
 summary_preds[0,0]=mean_preds_AI
 summary_preds[0,1]=mean_alphas_AI
-print("Unpermuted out-of-sample adj. r^2:" + str(mean_preds_AI))
+print("Unpermuted out-of-sample predicted vs. observed correlation:" + str(mean_preds_AI))
 print("Average Optimal Regularization Weighting:" + str(mean_alphas_AI))
+# mean MSE
+meanMSE=np.average(mse_AI[:,0])
+print("Mean Mean Squared Error (unpermuted):" + str(meanMSE))
 featureweightsFN='/cbica/projects/pinesParcels/data/aggregated_data/FeatureWeights_AI.csv'
 np.savetxt(featureweightsFN,mean_featureWeights_AI,delimiter=",")
 # save predicted subject info

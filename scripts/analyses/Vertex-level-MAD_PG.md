@@ -97,7 +97,32 @@ for(Scale in seq(2,30)){
 
 ``` r
 # plot aggregate relations over scales
-ggplot(m_spinDistr[m_spinDistr$RealCor==0,], aes(x = value, y = Scale, group = Scale))+xlab('r') + geom_jitter(size = 2,alpha=.25) +geom_text(data=m_spinDistr[m_spinDistr$RealCor==1,],aes(x=value,y=Scale,color=factor(Sig)),size=21,label="\u2015",family="Arial Unicode MS")+scale_color_manual(values=c('#FCBB65','#842F6E'))+theme_classic(base_size = 40)+coord_flip()+theme(legend.position = "none")+ylab('# of Networks')+scale_y_discrete(breaks=seq(2,30,by=2))
+ggplot(m_spinDistr[m_spinDistr$RealCor==0,], aes(x = value, y = Scale, group = Scale))+xlab('r') + geom_jitter(size = 2,alpha=.2) +geom_point(data=m_spinDistr[m_spinDistr$RealCor==1,],aes(x=value,y=Scale,color=factor(Sig)),size=7)+scale_color_manual(values=c('#d4af37', '#01613b'))+theme_classic(base_size = 40)+coord_flip()+theme(legend.position = "none")+ylab('# of Networks')+scale_y_discrete(breaks=seq(2,30,by=2))
 ```
 
 ![](Vertex-level-MAD_PG_files/figure-markdown_github/unnamed-chunk-4-1.png)
+
+``` r
+skinnydf<-m_spinDistr[m_spinDistr$RealCor==1,]
+ggplot(skinnydf,aes(x=(as.numeric(Scale)+1),y=value))  +geom_point(size=6)+geom_smooth(method='lm',color='black',size=2)+theme_classic(base_size=40) + xlab('# of Networks') + ylab('r')+scale_x_continuous(breaks=seq(2,30,by=4))
+```
+
+    ## `geom_smooth()` using formula 'y ~ x'
+
+![](Vertex-level-MAD_PG_files/figure-markdown_github/unnamed-chunk-5-1.png)
+
+``` r
+print(cor.test(as.numeric(skinnydf$Scale),skinnydf$value))
+```
+
+    ## 
+    ##  Pearson's product-moment correlation
+    ## 
+    ## data:  as.numeric(skinnydf$Scale) and skinnydf$value
+    ## t = 3.4703, df = 27, p-value = 0.001763
+    ## alternative hypothesis: true correlation is not equal to 0
+    ## 95 percent confidence interval:
+    ##  0.2371543 0.7659761
+    ## sample estimates:
+    ##       cor 
+    ## 0.5553866
