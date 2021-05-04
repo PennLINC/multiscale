@@ -65,7 +65,6 @@ shams<-fc[694:695,]
 masterdf<-merge(fc,df,by='bblid')
 # add EF
 subjbehav<-read.csv("~/Downloads/n9498_cnb_factor_scores_fr_20170202.csv")
-#ef<-data.frame(subjbehav$F1_Exec_Comp_Cog_Accuracy,subjbehav$bblid)
 ef<-data.frame(subjbehav$NAR_F1_Exec_Comp_Cog_Accuracy,subjbehav$bblid)
 colnames(ef)<-c('F1_Exec_Comp_Cog_Accuracy','bblid')
 # merge in
@@ -77,25 +76,19 @@ masteref<-merge(masterdf,ef,by='bblid')
 # parse fields of interest 
 
 
-# indicators of processing stream
+# for parsing individualized partition values
 ind='ind'
-gro='gro'
-bts='bts'
 
-# indicators of fc feature type
+# for parsing specifically network edges
 bwi='_bw_FC_'
 wini='_win_FC_'
 nsegi='_seg_scale'
-#gsegi='_globseg_scale'
 
 # indices of said indicators
 indiv=grep(ind,colnames(masterdf))
-#group=grep(gro,colnames(masterdf))
-#basists=grep(bts,colnames(masterdf))
 bwcol=grep(bwi,colnames(masterdf))
 wincols=grep(wini,colnames(masterdf))
 nsegcols=grep(nsegi,colnames(masterdf))
-#gsegcols=grep(gsegi,colnames(masterdf))
 
 ### Using index combinations, get to dataframe of interest
 indiv_bwcols_ind<-intersect(bwcol,indiv)
@@ -109,51 +102,47 @@ wincolnames<-colnames(individ_scalebywin_df)
 ```
 
 ```{r}
-# regress motion out of EF
-MotRegrEF<-gam(F1_Exec_Comp_Cog_Accuracy~Motion,data=masteref)$residuals
 # regress motion and age out of EF
 AgeMotRegrEF<-gam(F1_Exec_Comp_Cog_Accuracy~s(Age,k=3)+Motion,data=masteref)$residuals
-AgeDepEF<-cbind(masterdf[,indiv_bwcols_ind],MotRegrEF)
+# combine age and motion-controlled EF scores with edges
 AgeIndepEF<-cbind(masterdf[,indiv_bwcols_ind],AgeMotRegrEF)
-write.table(AgeDepEF,'/cbica/projects/pinesParcels/results/EffectVecs/AgeDepEF',sep=',', col.names = F,quote = F,row.names=F)
+# write out for scikit learn
 write.table(AgeIndepEF,'/cbica/projects/pinesParcels/results/EffectVecs/AgeIndepEF',sep=',', col.names = F,quote = F,row.names=F)
-```
 
-```{r}
-# print out permuted EF scores
-
-set.seed(1)
-#permuted_ind<-sample(1:693)
-#permuted_ef<-masteref$F1_Exec_Comp_Cog_Accuracy[permuted_ind]
-#forMLpc_permut<-cbind(masterdf$bblid,permuted_age,masterdf$Motion,masterdf$Sex)
-#MPpcFN_permut<-'/cbica/projects/pinesParcels/results/EffectVecs/forMLpc_permut.csv'
-#write.table(forMLpc_permut,MPpcFN_permut,row.names = F,col.names = F,sep = ',')
-
-# ridge - penal_regresFC_Age.py 
+# use source activate mv_preds to load in required python libraries
+# run penal_regresFC_AgeEFIndep.py
 ```
 
 ```{r}
 ###########
-# post-ridge
+# post-scikit-ridge
 ###########
 ```
 
 ```{r}
+# load in subject predictions. First column is sum of predicted EF from every instance in which this subject was randomly allocated to the testing 1/3rd. Second column is the number of times the subject was allocated to the testing 1.3rd.
 predEF_AIcsv<-read.csv('/cbica/projects/pinesParcels/data/aggregated_data/SubjPreds_AI.csv',header=F)
+
 # convert to average predicted EF over all folds
-#predEF_ADcsv<-predEFcsv[,1]/predEFcsv[,2]
 predEF_AI<-predEF_AIcsv[,1]/predEF_AIcsv[,2]
-# pred ef vs. age
+
+# pred ef vs. age. There should be no relationship if regressing Age out of EF scores worked.
 plot(masteref$Age,predEF_AI)
 cor.test(masteref$Age,predEF_AI,method='spearman')
-# pred ef vs. ef
+
+# pred ef vs. ef. There should be a relationship if our model was able to predict EF in unseen subjects.
+
 plot(AgeMotRegrEF,predEF_AI)
+# save the real predicted vs. observed correlation for plotting relative to null distribution
 predObsCor<-cor.test(AgeMotRegrEF,predEF_AI)$estimate
 
+# median absolute error also of interest.
 mae(AgeMotRegrEF,predEF_AI)
 
-# get permutation pred. vs. obs. correlations in 
+# get permutation prediction vs. observed correlations from permutation writeout
 predEF_AIpermutCors<-read.csv('/cbica/projects/pinesParcels/data/aggregated_data/PermutPreds_AI.csv',header=F)
+
+# Figure 6 flag
 ```
 
 ```{r, fig.width=4,fig.height=3}
@@ -162,24 +151,6 @@ ggplot(predEF_AIpermutCors,aes(x=V1))+geom_density(size=1.5)+geom_vline(xinterce
 
 ```
 
-```{r}
-# setup for figure 6 pred. vs obs. ef
-plotdf<-data.frame(AgeMotRegrEF,predEF_AI)
-hexinfo <- hexbin(AgeMotRegrEF, predEF_AI, xbins = 20)
-data_hex <- data.frame(hcell2xy(hexinfo), count = hexinfo@count)
-colnames(data_hex)<-c('AgeMotRegrEF','predEF_AI','count')
-
-# custom colormap
-plasma_pal <- c("grey45", viridis::plasma(n = 25))
-
-
-#plot_with_distributions<-ggMarginal(ggplot(plotdf,aes(x=AgeMotRegrEF,y=predEF_AI)) + geom_hex(bins=15) + scale_fill_viridis_c(option='plasma',rescaler = function(x, to = c(0, 1), from = NULL) {
-#  ifelse(x<23,
-#         scales::rescale(x,
-#                         to=to,
-#                         from=c(min(x,na.rm=T),23)),
-#         1)})+geom_point(alpha=0)+geom_smooth(method='lm',color='gray')+theme_classic(base_size=40)+th#eme(legend.position = "left") + xlab("Observed") + ylab("Predicted")+ggtitle('Executive Function'))
-```
 
 ```{r, fig.width=12,fig.height=10}
 ggplot(plotdf,aes(x=AgeMotRegrEF,y=predEF_AI)) +geom_point(size=2,alpha=.6)+geom_smooth(method='lm',color='black',size=2)+theme_classic(base_size=25) + xlab("Observed") + ylab("Predicted")+ggtitle('Executive Function')
