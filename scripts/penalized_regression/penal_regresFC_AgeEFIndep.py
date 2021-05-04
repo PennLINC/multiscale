@@ -64,20 +64,18 @@ for split in range(0,100):
 	# transpose so subjects are rows
 	dft=np.transpose(df)
 	# regress covariates from EF in training sample (Linear GAM still has spline term)
-	GAMFit=LinearGAM(s(0,n_splines=5) + l(1)).fit(dft,varofintAI[indices_train_AI])
+	GAMFit=LinearGAM(s(0,n_splines=5) + l(1)).fit(dft,dft[:,2])
 	# get residuals
-	residsvec=np.zeros(len(indices_train_AI))
-	GAMFit.deviance_residuals(dft[:,[0,1,2]],residsvec)
-	# set y_train to residuals
-	y_train_AI=residsvec
+	residsvec=GAMFit.deviance_residuals(dft[:,[0,1,2]],dft[:,2])
+	# set ytrain to residuals
+	ytrain_AI=residsvec
 	# make equivalent dataframe for testing sample, but fit age and motion effects from training model
 	df2=np.array([age[indices_test_AI],mot[indices_test_AI],varofintAI[indices_test_AI]])
 	df2t=np.transpose(df2)
 	# apply model to unseen data to get those residuals for testing set
-	testResidsvec=np.zeros(len(indices_test_AI))
-	GAMFit.deviance_residuals(df2t[:,[0,1,2]],testResidsvec)
+	testResidsvec=GAMFit.deviance_residuals(df2t[:,[0,1,2]],df2t[:,2])
 	# replace y test with age/motion controlled EF
-	y_test_AI=testResidsvec
+	ytest_AI=testResidsvec
 	# fit model with gcv
 	lm_AI = sklearn.linear_model.RidgeCV(alphas=alphas, store_cv_values=True).fit(xtrain_AI,ytrain_AI)
 	# set prediction alpha to best performing alpha in training set
@@ -112,20 +110,18 @@ for permut in range(0,1000):
 	# transpose so subjects are rows
 	dft=np.transpose(df)
 	# regress covariates from EF in training sample (Linear GAM still has spline term)
-	GAMFit=LinearGAM(s(0,n_splines=5) + l(1)).fit(dft,varofint_permut[indices_train_AI])
+	GAMFit=LinearGAM(s(0,n_splines=5) + l(1)).fit(dft,dft[:,2])
 	# get residuals
-	residsvec=np.zeros(len(indices_train_AI))
-	GAMFit.deviance_residuals(dft[:,[0,1,2]],residsvec)
+	residsvec=GAMFit.deviance_residuals(dft[:,[0,1,2]],dft[:,2])
 	# set y_train to residuals
-	y_train_AI=residsvec
+	ytrain_AI=residsvec
 	# make equivalent dataframe for testing sample, but fit age and motion effects from training model
 	df2=np.array([age[indices_test_AI],mot[indices_test_AI],varofintAI[indices_test_AI]])
 	df2t=np.transpose(df2)
 	# apply model to unseen data to get those residuals for testing set
-	testResidsvec=np.zeros(len(indices_test_AI))
-	GAMFit.deviance_residuals(df2t[:,[0,1,2]],testResidsvec)
+	testResidvec=GAMFit.deviance_residuals(df2t[:,[0,1,2]],df2t[:,2])
 	# replace y test with age/motion controlled EF
-	y_test_AI=testResidsvec
+	ytest_AI=testResidsvec
 	# fit model with gcv
 	lm_AI = sklearn.linear_model.RidgeCV(alphas=alphas, store_cv_values=True).fit(xtrain_AI,ytrain_AI)
 	# set prediction alpha to best performing alpha in training set
