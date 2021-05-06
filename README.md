@@ -1,4 +1,4 @@
-# neurodevelopmental functional community organization across scales
+# neurodevelopmental functional network organization across scales
 
 analyses - Nearly pure results-level analytical scripts, written in R, to be executed on matlab outputs
 
@@ -32,11 +32,10 @@ viz - Visualization scripts for figures outside of .rmd files
 ###### scripts/derive_parcels/Toolbox/PBP/PBP_final/PBP_SSCon.m* - for Figure 2A
 ###### [scripts/derive_parcels/Step_2nd_SingleParcellation/Step_9th_1_Visualize_Workbench_AtlasVariability_AP.m](https://github.com/PennLINC/multiscale/blob/master/scripts/derive_parcels/Step_2nd_SingleParcellation/Step_9th_1_Visualize_Workbench_AtlasVariability_AP.m) - for MAD calculation
 ###### scripts/derive_parcels/Toolbox/PBP/PBP_final/PBP_MAD.m* - for Figure 2B
-###### [scripts/derive_spatialprops/gro_level_spatialchange.m](https://github.com/PennLINC/multiscale/blob/master/scripts/derive_spatialprops/gro_level_spatialchange.m) - calculate change over space of loadings
-###### scripts/derive_parcels/Toolbox/PBP/PBP_final/PBP_SpatChange.m* - for figure 2B
-###### [scripts/derive_spatialprops/aggregate_changeVectors.m](https://github.com/PennLINC/multiscale/blob/master/scripts/derive_spatialprops/aggregate_changeVectors.m) - aggregate spatial change values over scales
-###### [scripts/derive_spatialprops/SpinTest_SpatChange.m](https://github.com/PennLINC/multiscale/blob/master/scripts/derive_spatialprops/SpinTest_SpatChange.m) - Spin Spatial change maps for correlation null distributions
-###### [scripts/derive_spatialprops/calc_spinDistribs_MAD.m](https://github.com/PennLINC/multiscale/blob/master/scripts/derive_spatialprops/calc_spinDistribs_MAD.m) - Calculate real and permuted MAD-SpatChange correlations - for figure 2C	
+###### [scripts/derive_spatialprops/SpinTest_MAD.m](https://github.com/PennLINC/multiscale/blob/master/scripts/derive_spatialprops/SpinTest_MAD.m) - Spin MAD maps for correlation null distributions
+###### [scripts/derive_spatialprops/calc_spinDistribs_MAD_PG.m](https://github.com/PennLINC/multiscale/blob/master/scripts/derive_spatialprops/calc_spinDistribs_MAD.m) - Calculate real and permuted MAD-PG1 correlations - for figure 2B and C
+###### 
+Subsequent R code for figure 2B + C within [_Vertex-level-MAD_PG.md_](https://github.com/PennLINC/multiscale/blob/master/scripts/analyses/Vertex-level-MAD_PG.md)
 
 ## 1D) Extract FC values from individual parcels and .mgh timeseries
 ###### [scripts/derive_netstats/iterate_vert_fc.m](https://github.com/PennLINC/multiscale/blob/master/scripts/derive_netstats/iterate_vert_fc.m) - script to iterate qsubs over FC matrix derivations from subject time series and individualized parcels
