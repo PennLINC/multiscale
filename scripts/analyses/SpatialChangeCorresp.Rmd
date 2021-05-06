@@ -22,55 +22,55 @@ RMAD=read.csv('/cbica/projects/pinesParcels/results/aggregated_data/vertexWiseMA
 LPG=read.csv('/cbica/projects/pinesParcels/results/aggregated_data/vertexWisePG_LH.csv')
 RPG=read.csv('/cbica/projects/pinesParcels/results/aggregated_data/vertexWisePG_RH.csv')
 
-L10=read.csv('/cbica/projects/pinesParcels/results/aggregated_data/vertexWise_10_LH.csv')
-R10=read.csv('/cbica/projects/pinesParcels/results/aggregated_data/vertexWise_10_RH.csv')
-L21=read.csv('/cbica/projects/pinesParcels/results/aggregated_data/vertexWise_21_LH.csv')
+#L10=read.csv('/cbica/projects/pinesParcels/results/aggregated_data/vertexWise_10_LH.csv')
+#R10=read.csv('/cbica/projects/pinesParcels/results/aggregated_data/vertexWise_10_RH.csv')
+#L21=read.csv('/cbica/projects/pinesParcels/results/aggregated_data/vertexWise_21_LH.csv')
 R21=read.csv('/cbica/projects/pinesParcels/results/aggregated_data/vertexWise_21_RH.csv')
 
 # part that is not over scales
-DF_10=data.frame(c(L10[,1],R10[,1]),unlist(c(LPG[1,],RPG[1,])))
-DF_21=data.frame(c(L21[,1],R21[,1]),unlist(c(LPG[1,],RPG[1,])))
+#DF_10=data.frame(c(L10[,1],R10[,1]),unlist(c(LPG[1,],RPG[1,])))
+#DF_21=data.frame(c(L21[,1],R21[,1]),unlist(c(LPG[1,],RPG[1,])))
 
-colnames(DF_10)<-c('Bw10','PG')
-colnames(DF_21)<-c('Bw21','PG')
-cor.test(DF_10$Bw10,DF_10$PG,method='spearman')
-cor.test(DF_21$Bw21,DF_21$PG,method='spearman')
+#colnames(DF_10)<-c('Bw10','PG')
+#colnames(DF_21)<-c('Bw21','PG')
+#cor.test(DF_10$Bw10,DF_10$PG,method='spearman')
+#cor.test(DF_21$Bw21,DF_21$PG,method='spearman')
 
 # 10
-hexinfo <- hexbin(DF_10$Bw10, DF_10$PG, xbins = 20)
-data_hex <- data.frame(hcell2xy(hexinfo), count = hexinfo@count)
-colnames(data_hex)<-c('Bw10','PG','count')
-
-plot10<-ggMarginal(ggplot(DF_10,aes(x=Bw10,y=PG)) + geom_hex(bins=15) + scale_fill_viridis_c(option='inferno',rescaler = function(x, to = c(0, 1), from = NULL) {
-  ifelse(x<950,
-         scales::rescale(x,
-                         to=to,
-                         from=c(min(x,na.rm=T),950)),
-         1)})+geom_point(alpha=0)+geom_smooth(method='lm',color='gray')+theme_classic()+theme(legend.position = "bottom")+ylim(c(-6.6,7.3))+xlim(c(-.053,0.03))+ggtitle('Bw@10,r=-.82'))
-
-plot10_pd<-ggMarginal(ggplot(DF_10,aes(x=Bw10,y=PG)) + geom_pointdensity(adjust=1) + scale_color_viridis_c(option='inferno')+geom_point(alpha=0)+geom_smooth(method='lm',color='gray')+theme_classic()+theme(legend.position = "bottom")+ylim(c(-6.6,7.3))+xlim(c(-.053,0.03))+ggtitle('Bw@10,r=-.82'))
-
-
-breaks=c(0,450,900)
-# figure 3 flag
-gray10<-ggplot(DF_10,aes(x=PG,y=Bw10)) + geom_hex(bins=15) + scale_fill_gradientn(colors=c('grey98','gray','black'),values=c(0,.5,1),breaks=breaks,labels=breaks,limits=c(0,900))+geom_point(alpha=0)+geom_smooth(method='lm',color='black')+theme_classic(base_size=28)+theme(legend.position = "bottom")+xlim(c(-6.6,7.3))+ylim(c(-.053,0.03))+ylab("B/w")+guides(fill=FALSE)
-
-###### 21
-hexinfo <- hexbin(DF_21$Bw21, DF_21$PG, xbins = 20)
-data_hex <- data.frame(hcell2xy(hexinfo), count = hexinfo@count)
-colnames(data_hex)<-c('Bw21','PG','count')
-
-plot21<-ggMarginal(ggplot(DF_21,aes(x=Bw21,y=PG)) + geom_hex(bins=20) + scale_fill_viridis_c(option='inferno',rescaler = function(x, to = c(0, 1), from = NULL) {
-  ifelse(x<950,
-         scales::rescale(x,
-                         to=to,
-                         from=c(min(x,na.rm=T),950)),
-         1)})+geom_point(alpha=0)+geom_smooth(method='lm',color='gray')+theme_classic()+theme(legend.position = "bottom")+ylim(c(-6.6,7.3))+xlim(c(-.053,0.03))+ggtitle('Bw@21,r=-.86'))
-
-plot21_pd<-ggMarginal(ggplot(DF_21,aes(x=Bw21,y=PG)) + geom_pointdensity(adjust=1) + scale_color_viridis_c(option='inferno')+geom_point(alpha=0)+geom_smooth(method='lm',color='gray')+theme_classic()+theme(legend.position = "bottom")+ylim(c(-5.7,7.2))+xlim(c(-.049,0.027))+ggtitle('Bw@21,r=-.86'))
-
-# figure 3 flag
-gray21<-ggplot(DF_21,aes(x=PG,y=Bw21)) + geom_hex(bins=15) + scale_fill_gradientn(colors=c('grey98','gray','black'),values=c(0,.5,1),breaks=breaks,labels=breaks,limits=c(0,900))+geom_point(alpha=0)+geom_smooth(method='lm',color='black')+theme_classic(base_size = 28)+theme(legend.position = "bottom")+xlim(c(-6.6,7.3))+ylim(c(-.053,0.03))+ylab("B/w")+guides(fill=FALSE)
+#hexinfo <- hexbin(DF_10$Bw10, DF_10$PG, xbins = 20)
+#data_hex <- data.frame(hcell2xy(hexinfo), count = hexinfo@count)
+#colnames(data_hex)<-c('Bw10','PG','count')
+#
+#plot10<-ggMarginal(ggplot(DF_10,aes(x=Bw10,y=PG)) + geom_hex(bins=15) + #scale_fill_viridis_c(option='inferno',rescaler = function(x, to = c(0, 1), from = NULL) {
+#  ifelse(x<950,
+#         scales::rescale(x,
+#                         to=to,
+#                         from=c(min(x,na.rm=T),950)),
+#         1)})+geom_point(alpha=0)+geom_smooth(method='lm',color='gray')+theme_classic()+theme(legend.po#sition = "bottom")+ylim(c(-6.6,7.3))+xlim(c(-.053,0.03))+ggtitle('Bw@10,r=-.82'))
+#
+#plot10_pd<-ggMarginal(ggplot(DF_10,aes(x=Bw10,y=PG)) + geom_pointdensity(adjust=1) + #scale_color_viridis_c(option='inferno')+geom_point(alpha=0)+geom_smooth(method='lm',color='gray')+theme#_classic()+theme(legend.position = #"bottom")+ylim(c(-6.6,7.3))+xlim(c(-.053,0.03))+ggtitle('Bw@10,r=-.82'))
+#
+#
+#breaks=c(0,450,900)
+## figure 3 flag
+#gray10<-ggplot(DF_10,aes(x=PG,y=Bw10)) + geom_hex(bins=15) + #scale_fill_gradientn(colors=c('grey98','gray','black'),values=c(0,.5,1),breaks=breaks,labels=breaks,lim#its=c(0,900))+geom_point(alpha=0)+geom_smooth(method='lm',color='black')+theme_classic(base_size=28)+th#eme(legend.position = "bottom")+xlim(c(-6.6,7.3))+ylim(c(-.053,0.03))+ylab("B/w")+guides(fill=FALSE)
+#
+####### 21
+#hexinfo <- hexbin(DF_21$Bw21, DF_21$PG, xbins = 20)
+#data_hex <- data.frame(hcell2xy(hexinfo), count = hexinfo@count)
+#colnames(data_hex)<-c('Bw21','PG','count')
+#
+#plot21<-ggMarginal(ggplot(DF_21,aes(x=Bw21,y=PG)) + geom_hex(bins=20) + #scale_fill_viridis_c(option='inferno',rescaler = function(x, to = c(0, 1), from = NULL) {
+#  ifelse(x<950,
+#         scales::rescale(x,
+#                         to=to,
+#                         from=c(min(x,na.rm=T),950)),
+#         1)})+geom_point(alpha=0)+geom_smooth(method='lm',color='gray')+theme_classic()+theme(legend.po#sition = "bottom")+ylim(c(-6.6,7.3))+xlim(c(-.053,0.03))+ggtitle('Bw@21,r=-.86'))
+#
+#plot21_pd<-ggMarginal(ggplot(DF_21,aes(x=Bw21,y=PG)) + geom_pointdensity(adjust=1) + #scale_color_viridis_c(option='inferno')+geom_point(alpha=0)+geom_smooth(method='lm',color='gray')+theme#_classic()+theme(legend.position = #"bottom")+ylim(c(-5.7,7.2))+xlim(c(-.049,0.027))+ggtitle('Bw@21,r=-.86'))
+#
+## figure 3 flag
+#gray21<-ggplot(DF_21,aes(x=PG,y=Bw21)) + geom_hex(bins=15) + #scale_fill_gradientn(colors=c('grey98','gray','black'),values=c(0,.5,1),breaks=breaks,labels=breaks,lim#its=c(0,900))+geom_point(alpha=0)+geom_smooth(method='lm',color='black')+theme_classic(base_size = #28)+theme(legend.position = "bottom")+xlim(c(-6.6,7.3))+ylim(c(-.053,0.03))+ylab("B/w")+guides(fill=FALSE)
 
 ```
 
@@ -79,25 +79,49 @@ gray21<-ggplot(DF_21,aes(x=PG,y=Bw21)) + geom_hex(bins=15) + scale_fill_gradient
 # initialize vectors
 spatCorvec_L<-rep(0,30)
 spatCorvec_R<-rep(0,30)
-spatCorvec<-rep(0,30)
+spatCorvec<-rep(0,29)
+
+spatCoef<-rep(0,29)
+PGCoef<-rep(0,29)
+adjR2<-rep(0,29)
+spatGradCoef<-rep(0,29)
+spatGradCorvec<-rep(0,29)
+PGCorvec<-rep(0,29)
 
 for (K in 2:30){
+  print(K)
   x=data.frame(scale(c(L[,K],R[,K])),scale(c(L[,1],R[,1])))
-  MADx=data.frame(scale(c(LMAD[,K],RMAD[,K])),scale(c(L[,K],R[,K])))
+  MADx=data.frame(scale(c(LMAD[,K],RMAD[,K])),scale(c(L[,K],R[,K])),scale(unlist(c(LPG,RPG))),scale(c(L[,1],R[,1])))
   colnames(x)<-c('LoadingChange','GradChange')
-  colnames(MADx)<-c('MAD','LoadingChange')
+  colnames(MADx)<-c('MAD','LoadingChange','PG1','GradChange')
   hexinfo <- hexbin(MADx$LoadingChange, MADx$MAD, xbins = 40)
   data_hex <- data.frame(hcell2xy(hexinfo), count = hexinfo@count)
   colnames(data_hex)<-c('LoadingChange','MAD','count')
-  print(ggMarginal(ggplot(MADx,aes(x=LoadingChange,y=MAD)) + geom_hex(bins=30) + scale_color_viridis_c(option='inferno')+ggtitle(paste(K))+geom_point(alpha=0)+geom_smooth(method='lm',color='gray')+theme_classic()+theme(legend.position = "bottom")),type="density")
+  #print(ggMarginal(ggplot(MADx,aes(x=LoadingChange,y=MAD)) + geom_hex(bins=30) + scale_color_viridis_c(option='inferno')+ggtitle(paste(K))+geom_point(alpha=0)+geom_smooth(method='lm',color='gray')+theme_classic()+theme(legend.position = "bottom")),type="density")
   #print(ggMarginal(ggplot(MADx,aes(x=LoadingChange,y=MAD)) + geom_pointdensity(adjust=1) + scale_color_viridis_c(option='inferno')+ggtitle(paste(K))+geom_smooth(method='lm',color='gray')+theme_classic()+theme(legend.position = "bottom")),type="density")
   # definitely not normally distr.
   spatCorvec_R[K]<-cor.test(R[,K],R[,1],method='spearman')$estimate
   spatCorvec_L[K]<-cor.test(L[,K],L[,1],method='spearman')$estimate
-  spatCorvec[K]<-cor.test(MADx$LoadingChange,MADx$MAD,method='spearman')$estimate
+  spatCorvec[K-1]<-cor.test(MADx$LoadingChange,MADx$MAD,method='spearman')$estimate
+  # for pg1 * MAD
+  PGCorvec[K-1]<-cor.test(MADx$MAD,MADx$PG1,method='spearman')$estimate
+  # for pg1 change * MAD
+  spatGradCorvec[K-1]<-cor.test(MADx$MAD,MADx$GradChange,method='spearman')$estimate
+  # multiple regression
+  kLM<-lm(MAD~PG1+LoadingChange,data=MADx)
+  spatCoef[K-1]<-kLM$coefficients['LoadingChange']
+  PGCoef[K-1]<-kLM$coefficients['PG1']
+  spatGradCoef[K-1]<-kLM$coefficients['GradChange']
+  sumLM<-summary(kLM)
+  adjR2[K-1]<-sumLM$adj.r.squared
+  print(sumLM)
+
   # PG and loading change
   #spatCorvec[K]<-cor.test(x$LoadingChange,x$GradChange,method='spearman')$estimate
 }
+
+plotDataFrame<-data.frame(spatCorvec,spatGradCorvec,PGCorvec,spatCoef,PGCoef,adjR2,spatGradCoef,seq(2:30))
+ggplot(plotDataFrame)+geom_line(aes(x=seq.2.30.,y=adjR2),color='black')+geom_line(aes(x=seq.2.30.,y=spatCoef),color='green')+geom_line(aes(x=seq.2.30.,y=spatCorvec),color='green',linetype='dashed')+geom_line(aes(x=seq.2.30.,y=PGCoef),color='blue')+geom_line(aes(x=seq.2.30.,y=PGCorvec),color='blue',linetype='dashed')+geom_line(aes(x=seq.2.30.,y=spatGradCoef),color='red')+geom_line(aes(x=seq.2.30.,y=spatGradCorvec),color='red',linetype='dashed')+theme_classic()+ggtitle('g=NetChange,b=PG1,r=PGChange,black=combined_adjR^2')+geom_vline(xintercept=c(3,6,12,19))+ylab('Coef.')
 #for (K in 2:30){
 #  x=data.frame(L[,K],L[,1])
 #  colnames(x)<-c('LoadingChange','GradChange')
@@ -108,20 +132,20 @@ for (K in 2:30){
 #}
 
 # get z-scores of grad change
-zscoredGradChange<-scale(c(L[,1],R[,1]))
+#zscoredGradChange<-scale(c(L[,1],R[,1]))
 
 # save the z-scored dif
-for (K in 2:30){
-  # get z-score of community change at this scale
-  zcoredCommChange<-scale(c(L[,K],R[,K]))
-  zScoredDif<-zscoredGradChange-zcoredCommChange
-  spatChangL<-zScoredDif[1:(dim(L)[1])]
-  spatChangR<-zScoredDif[((dim(L)[1])+1):((dim(L)[1])+dim(R)[1])]
-  fn<-paste('/cbica/projects/pinesParcels/results/aggregated_data/spatChangeZDif_K_',K,'.csv',sep='')
-  write.table(c(spatChangL,spatChangR),fn,sep=',', col.names = F,quote = F,row.names=F)
-}
-
-plot(spatCorvec)
+#for (K in 2:30){
+#  # get z-score of community change at this scale
+#  zcoredCommChange<-scale(c(L[,K],R[,K]))
+#  zScoredDif<-zscoredGradChange-zcoredCommChange
+#  spatChangL<-zScoredDif[1:(dim(L)[1])]
+#  spatChangR<-zScoredDif[((dim(L)[1])+1):((dim(L)[1])+dim(R)[1])]
+#  fn<-paste('/cbica/projects/pinesParcels/results/aggregated_data/spatChangeZDif_K_',K,'.csv',sep='')
+#  write.table(c(spatChangL,spatChangR),fn,sep=',', col.names = F,quote = F,row.names=F)
+#}
+#
+#plot(spatCorvec)
 ```
 
 ```{r}
@@ -173,13 +197,21 @@ for(K in c(4,7,13,20)){
   ggplot(subset(m_spinDistr_Scale, RealCor==0),aes(x=value))+geom_density(size=1.5)+geom_vline(xintercept =  RealCorrelation,size=2,color='#BC3754')+theme_classic(base_size=40)+ylab('')+xlab('r')+guides(y="none")
 }
 
-#ggplot(m_spinDistr[m_spinDistr$RealCor==0,], aes(x = value, y = Scale, group = Scale))+xlab(expression(rho)) + geom_jitter(size = 0.75,alpha=.25) +geom_point(data=m_spinDistr[m_spinDistr$RealCor==1,],aes(x=value,y=Scale),size=3)+scale_fill_manual(values=fourscalescheme)+theme_minimal(base_size = 17)+coord_flip()+theme(legend.position = "none")+xlim(c(-.35,.85))+ylab('# of Networks')+ggtitle('Func Transitions: Group atlas at K correlations with MAD at K')
+ggplot(m_spinDistr[m_spinDistr$RealCor==0,], aes(x = value, y = Scale, group = Scale))+xlab(expression(rho)) + geom_jitter(size = 0.75,alpha=.25) +geom_point(data=m_spinDistr[m_spinDistr$RealCor==1,],aes(x=value,y=Scale),size=3)+scale_fill_manual(values=fourscalescheme)+theme_minimal(base_size = 17)+coord_flip()+theme(legend.position = "none")+xlim(c(-.35,.85))+ylab('# of Networks')+ggtitle('Func Transitions: Group atlas at K correlations with MAD at K')
 
 # load in spin test distributions for MAD and PG
 spinDistr_PG_MAD<-read.csv('/cbica/projects/pinesParcels/results/aggregated_data/SpinTestDistrs_MAD_PG1.csv')
+#plot real correlation over scales
+plot(seq(2,30),unlist(spinDistr_PG_MAD_Alt[1,]),xlab='Scale',ylab='MAD Corr with PG')
+
+spinDistr_PG_MAD_Alt<-read.csv('/cbica/projects/pinesParcels/results/aggregated_data/SpinTestDistrs_MAD_PG1_Alt.csv')
+# plot real correlations over scales
+plot(seq(2,30),unlist(spinDistr_PG_MAD_Alt[1,]),xlab='Scale',ylab='MAD Corr with PG delta')
 
 # melt this into 1001*29 columns 
 m_spinDistr<-melt(spinDistr_PG_MAD)
+
+# Figure 2 flag
 
 # add a "scale" column
 m_spinDistr$Scale<-rep(2:30,each=1001)
@@ -193,10 +225,21 @@ for(K in c(4,7,13,20)){
   RealCorrelation<-m_spinDistr_Scale$value[1]
   P_Value = length(which(m_spinDistr_Scale$value[2:1001] >= RealCorrelation)) / 1000;
   ggplot(subset(m_spinDistr_Scale, RealCor==0),aes(x=value))+geom_density()+geom_point(data = m_spinDistr_Scale[1,],aes(y=0),size=7,color='#BC3754')+theme_classic(base_size=40)+ylab('')+xlab(expression(rho))+guides(y="none")
-  ggplot(subset(m_spinDistr_Scale, RealCor==0),aes(x=value))+geom_density(linetype='dashed',size=1.5)+geom_vline(xintercept =  RealCorrelation,size=2,color='#BC3754')+theme_classic(base_size=40)+ylab('')+xlab(expression(rho))+guides(y="none")
+  ggplot(subset(m_spinDistr_Scale, RealCor==0),aes(x=value))+geom_density(size=1.5)+geom_vline(xintercept =  RealCorrelation,size=2,color='#BC3754')+theme_classic(base_size=40)+ylab('')+xlab('r')+guides(y="none")
 }
 
-#ggplot(m_spinDistr[m_spinDistr$RealCor==0,], aes(x = value, y = Scale, group = Scale))+xlab(expression(rho)) + geom_jitter(size = 0.75,alpha=.25) +geom_point(data=m_spinDistr[m_spinDistr$RealCor==1,],aes(x=value,y=Scale),size=3)+scale_fill_manual(values=fourscalescheme)+theme_minimal(base_size = 17)+coord_flip()+theme(legend.position = "none")+xlim(c(-.35,.85))+ylab('# of Networks')+ggtitle('Func Transitions: PG1 correlations with MAD at K')
+for (K in 2:30){
+  m_spinDistr_Scale<-subset(m_spinDistr,Scale==K)
+  RealCorrelation<-m_spinDistr_Scale$value[1]
+  print(K)
+  print(RealCorrelation)
+  P_Value = length(which(m_spinDistr_Scale$value[2:1001] >= RealCorrelation)) / 1000;
+  print(P_Value)
+  #ggplot(subset(m_spinDistr_Scale, RealCor==0),aes(x=value))+geom_density()+geom_point(data = m_spinDistr_Scale[1,],aes(y=0),size=7,color='#BC3754')+theme_classic(base_size=40)+ylab('')+xlab(expression(rho))+guides(y="none")
+  #ggplot(subset(m_spinDistr_Scale, RealCor==0),aes(x=value))+geom_density(size=1.5)+geom_vline(xintercept =  RealCorrelation,size=2,color='#BC3754')+theme_classic(base_size=40)+ylab('')+xlab('r')+guides(y="none")
+}
+
+#ggplot(m_spinDistr[m_spinDistr$RealCor==0,], aes(x = value, y = Scale, group = Scale))+xlab(expression(rho)) + geom_jitter(size = 0.75,alpha=.25) +geom_point(data=m_spinDistr[m_spinDistr$RealCor==1,],aes(x=value,y=Scale),size=3)+scale_fill_manual(values=fourscalescheme)+theme_minimal(base_size = 17)+coord_flip()+theme(legend.position = "none")+xlim(c(-.35,.85))+ylab('# of Networks')+ggtitle('PG1 correlations with MAD at K')
 
 
 # load in spin test distributions

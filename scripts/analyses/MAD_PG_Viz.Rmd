@@ -1,0 +1,67 @@
+---
+title: "MAD_PG_Viz"
+author: "Adam"
+date: "4/30/2021"
+output: html_document
+---
+
+```{r}
+library(ggplot2)
+library(reshape2)
+```
+
+```{r}
+# load in spin test distributions for MAD and PG
+spinDistr_PG_MAD<-read.csv('/cbica/projects/pinesParcels/results/aggregated_data/SpinTestDistrs_MAD_PG1.csv')
+#plot real correlation over scales
+plot(seq(2,30),unlist(spinDistr_PG_MAD[1,]),xlab='Scale',ylab='MAD Corr with PG')
+```
+
+```{r}
+# unpack the correlations vs. the spun correlations
+
+# initialize array for MAD-PG correlations and p values
+corvec=rep(0,29)
+pvec=rep(0,29)
+
+# melt this into 1001*29 columns 
+m_spinDistr<-melt(spinDistr_PG_MAD)
+
+# add a "scale" column
+m_spinDistr$Scale<-rep(2:30,each=1001)
+# add a "realCor" boolean column
+repeatVector<-array(0,dim=c(1001,1))
+repeatVector[1]<-1
+m_spinDistr$RealCor<-rep(rep(c(1,0),c(1,1000)),times=29)
+m_spinDistr$Scale<-as.factor(m_spinDistr$Scale)
+# plot scales chosen for viz
+for(K in seq(2,30)){
+  m_spinDistr_Scale<-subset(m_spinDistr,Scale==K)
+  RealCorrelation<-m_spinDistr_Scale$value[1]
+  P_Value = length(which(m_spinDistr_Scale$value[2:1001] >= RealCorrelation)) / 1000;
+  ggplot(subset(m_spinDistr_Scale, RealCor==0),aes(x=value))+geom_density()+geom_point(data = m_spinDistr_Scale[1,],aes(y=0),size=7,color='#BC3754')+theme_classic(base_size=40)+ylab('')+xlab(expression(rho))+guides(y="none")
+  ggplot(subset(m_spinDistr_Scale, RealCor==0),aes(x=value))+geom_density(size=1.5)+geom_vline(xintercept =  RealCorrelation,size=2,color='#BC3754')+theme_classic(base_size=40)+ylab('')+xlab('r')+guides(y="none")
+  print(paste("Scale",K,' Corr=',RealCorrelation,' uncorrected p=',P_Value,sep=''))
+  # add values from scales 2:30 to places 1:29
+  corvec[K-1]=RealCorrelation
+  pvec[K-1]=P_Value
+}
+
+# FDR correction on p-values
+pvecFDR<-p.adjust(pvec,method='fdr')
+# get binary significance for plotting (de-saturating)
+MAD_PG_Sig<-rep(1,29)
+MAD_PG_Sig[pvecFDR>0.01]<-0
+
+# add significance vector to melted structure for de-saturating insig correlation values
+m_spinDistr$Sig<-NULL
+for(Scale in seq(2,30)){
+  m_spinDistr$Sig[m_spinDistr$Scale==Scale]=MAD_PG_Sig[Scale-1]
+}
+
+```
+
+```{r, fig.width=4,fig.height=3}
+# plot aggregate relations over scales
+ggplot(m_spinDistr[m_spinDistr$RealCor==0,], aes(x = value, y = Scale, group = Scale))+xlab('r') + geom_jitter(size = 2,alpha=.25) +geom_text(data=m_spinDistr[m_spinDistr$RealCor==1,],aes(x=value,y=Scale),size=23,color='#BC3754',label="\u2015",family="Arial Unicode MS")+theme_classic(base_size = 40)+coord_flip()+theme(legend.position = "right")+ylab('# of Networks')+scale_y_discrete(breaks=seq(2,30,by=2))
+```
