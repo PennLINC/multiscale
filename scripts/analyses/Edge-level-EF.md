@@ -113,12 +113,10 @@ wincolnames<-colnames(individ_scalebywin_df)
 ```
 
 ``` r
-# regress motion and age out of EF
-AgeMotRegrEF<-gam(F1_Exec_Comp_Cog_Accuracy~s(Age,k=3)+Motion,data=masteref)$residuals
-# combine age and motion-controlled EF scores with edges
-AgeIndepEF<-cbind(masterdf[,indiv_bwcols_ind],AgeMotRegrEF)
+# combine age, motion, and EF scores with edges
+AgeMotEF<-cbind(masterdf[,indiv_bwcols_ind],masteref$Age,masteref$Motion,masteref$F1_Exec_Comp_Cog_Accuracy)
 # write out for scikit learn
-write.table(AgeIndepEF,'/cbica/projects/pinesParcels/results/EffectVecs/AgeIndepEF',sep=',', col.names = F,quote = F,row.names=F)
+write.table(AgeMotEF,'/cbica/projects/pinesParcels/results/EffectVecs/AgeMotEF',sep=',', col.names = F,quote = F,row.names=F)
 
 # use source activate mv_preds to load in required python libraries
 # run penal_regresFC_AgeEFIndep.py
@@ -136,6 +134,8 @@ predEF_AIcsv<-read.csv('/cbica/projects/pinesParcels/data/aggregated_data/SubjPr
 
 # convert to average predicted EF over all folds
 predEF_AI<-predEF_AIcsv[,1]/predEF_AIcsv[,2]
+# average "observed", AKA, average EF after regressing out motion and age over folds
+obsEF_AI<-predEF_AIcsv[,3]/predEF_AIcsv[,2]
 
 # pred ef vs. age. There should be no relationship if regressing Age out of EF scores worked.
 plot(masteref$Age,predEF_AI)
@@ -151,38 +151,46 @@ cor.test(masteref$Age,predEF_AI)
     ##  Pearson's product-moment correlation
     ## 
     ## data:  masteref$Age and predEF_AI
-    ## t = 0.084636, df = 691, p-value = 0.9326
+    ## t = 0.16512, df = 691, p-value = 0.8689
     ## alternative hypothesis: true correlation is not equal to 0
     ## 95 percent confidence interval:
-    ##  -0.07127379  0.07767746
+    ##  -0.06822682  0.08072012
     ## sample estimates:
     ##         cor 
-    ## 0.003219692
+    ## 0.006281491
 
 ``` r
 # pred ef vs. ef. There should be a relationship if our model was able to predict EF in unseen subjects.
-
-plot(AgeMotRegrEF,predEF_AI)
+plot(obsEF_AI,predEF_AI)
 ```
 
 ![](Edge-level-EF_files/figure-markdown_github/unnamed-chunk-7-2.png)
 
 ``` r
 # save the real predicted vs. observed correlation for plotting relative to null distribution
-predObsCor<-cor.test(AgeMotRegrEF,predEF_AI)$estimate
+predObsCor<-cor.test(obsEF_AI,predEF_AI)$estimate
 
 # median absolute error also of interest.
-mae(AgeMotRegrEF,predEF_AI)
+mae(obsEF_AI,predEF_AI)
 ```
 
-    ## [1] 0.5532473
+    ## [1] 0.5506928
 
 ``` r
 # get permutation prediction vs. observed correlations from permutation writeout
 predEF_AIpermutCors<-read.csv('/cbica/projects/pinesParcels/data/aggregated_data/PermutPreds_AI.csv',header=F)
 
+# get predicted vs observed over iterations to confirm average prediction (correlation)
+predEF_allIters<-read.csv('/cbica/projects/pinesParcels/data/aggregated_data/Predicted_Obs_Cors.csv',header=F)
+# average correlation of predicted vs. observed, slightly lower than correlation of average predicted vs. average observed
+mean(predEF_allIters$V1)
+```
+
+    ## [1] 0.5237264
+
+``` r
 # Figure 6 flag
-plotdf<-data.frame(AgeMotRegrEF,predEF_AI)
+plotdf<-data.frame(obsEF_AI,predEF_AI)
 ```
 
 ``` r
@@ -193,7 +201,7 @@ ggplot(predEF_AIpermutCors,aes(x=V1))+geom_density(size=1.5)+geom_vline(xinterce
 ![](Edge-level-EF_files/figure-markdown_github/unnamed-chunk-8-1.png)
 
 ``` r
-ggplot(plotdf,aes(x=AgeMotRegrEF,y=predEF_AI)) +geom_point(size=2,alpha=.6)+geom_smooth(method='lm',color='black',size=2)+theme_classic(base_size=25) + xlab("Observed") + ylab("Predicted")+ggtitle('Executive Function')
+ggplot(plotdf,aes(x=obsEF_AI,y=predEF_AI)) +geom_point(size=2,alpha=.6)+geom_smooth(method='lm',color='black',size=2)+theme_classic(base_size=25) + xlab("Observed") + ylab("Predicted")+ggtitle('Executive Function')
 ```
 
     ## `geom_smooth()` using formula 'y ~ x'

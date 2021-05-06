@@ -123,25 +123,32 @@ predEF_AIcsv<-read.csv('/cbica/projects/pinesParcels/data/aggregated_data/SubjPr
 
 # convert to average predicted EF over all folds
 predEF_AI<-predEF_AIcsv[,1]/predEF_AIcsv[,2]
+# average "observed", AKA, average EF after regressing out motion and age over folds
+obsEF_AI<-predEF_AIcsv[,3]/predEF_AIcsv[,2]
 
 # pred ef vs. age. There should be no relationship if regressing Age out of EF scores worked.
 plot(masteref$Age,predEF_AI)
 cor.test(masteref$Age,predEF_AI)
 
 # pred ef vs. ef. There should be a relationship if our model was able to predict EF in unseen subjects.
+plot(obsEF_AI,predEF_AI)
 
-plot(AgeMotEF$F1_Exec_Comp_Cog_Accuracy,predEF_AI)
 # save the real predicted vs. observed correlation for plotting relative to null distribution
-predObsCor<-cor.test(AgeMotRegrEF,predEF_AI)$estimate
+predObsCor<-cor.test(obsEF_AI,predEF_AI)$estimate
 
 # median absolute error also of interest.
-mae(AgeMotEF$F1_Exec_Comp_Cog_Accuracy,predEF_AI)
+mae(obsEF_AI,predEF_AI)
 
 # get permutation prediction vs. observed correlations from permutation writeout
 predEF_AIpermutCors<-read.csv('/cbica/projects/pinesParcels/data/aggregated_data/PermutPreds_AI.csv',header=F)
 
+# get predicted vs observed over iterations to confirm average prediction (correlation)
+predEF_allIters<-read.csv('/cbica/projects/pinesParcels/data/aggregated_data/Predicted_Obs_Cors.csv',header=F)
+# average correlation of predicted vs. observed, slightly lower than correlation of average predicted vs. average observed
+mean(predEF_allIters$V1)
+
 # Figure 6 flag
-plotdf<-data.frame(AgeMotRegrEF,predEF_AI)
+plotdf<-data.frame(obsEF_AI,predEF_AI)
 ```
 
 ```{r, fig.width=4,fig.height=3}
@@ -152,5 +159,5 @@ ggplot(predEF_AIpermutCors,aes(x=V1))+geom_density(size=1.5)+geom_vline(xinterce
 
 
 ```{r, fig.width=12,fig.height=10}
-ggplot(plotdf,aes(x=AgeMotRegrEF,y=predEF_AI)) +geom_point(size=2,alpha=.6)+geom_smooth(method='lm',color='black',size=2)+theme_classic(base_size=25) + xlab("Observed") + ylab("Predicted")+ggtitle('Executive Function')
+ggplot(plotdf,aes(x=obsEF_AI,y=predEF_AI)) +geom_point(size=2,alpha=.6)+geom_smooth(method='lm',color='black',size=2)+theme_classic(base_size=25) + xlab("Observed") + ylab("Predicted")+ggtitle('Executive Function')
 ```

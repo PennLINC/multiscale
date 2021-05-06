@@ -1,4 +1,4 @@
-function ind_level_spatialchange(K,s)
+function change_over_surface(K)
 % summarize K-dimensional change in component loadings across fsurface
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -7,16 +7,10 @@ addpath(genpath('/cbica/projects/pinesParcels/multiscale/scripts/derive_parcels/
 
 % set paths
 Folder = '/cbica/projects/pinesParcels/data/SingleParcellation';
+GroupAtlasLoading_Mat = load([Folder '/RobustInitialization_' num2str(K) '/init.mat']);
 
-% load subj list
-subjs=load('/cbica/projects/pinesParcels/data/bblids.txt');
-% get to the foldah
-ProjectFolder = '/cbica/projects/pinesParcels/data/SingleParcellation';
-K_Folder = [ProjectFolder '/SingleParcel_1by1_kequal_' num2str(K) '/Sub_' num2str(subjs(s))];
-K_part_subj =[K_Folder '/IndividualParcel_Final_sbj1_comp' num2str(K) '_alphaS21_1_alphaL10_vxInfo1_ard0_eta0/final_UV.mat'];
-SSP=load(K_part_subj);
 % load atlas K
-loadings=SSP.V{1};
+loadings=GroupAtlasLoading_Mat.initV;
 
 % convert loadings to unmasked and hemispherectomied versions
 surfML = '/cbica/projects/pinesParcels/data/H_SNR_masks/lh.Mask_SNR.label';
@@ -134,7 +128,7 @@ for h=1:2;
 			VertexChange(V)=mean(localChangeScores);
 		end
 	end
-	fn=strcat('/cbica/projects/pinesParcels/results/aggregated_data/changeVec_',num2str(s),'_',num2str(K),'_',hemilist(h),'.mat');
+	fn=strcat('/cbica/projects/pinesParcels/results/aggregated_data/changeVec_',num2str(K),'_',hemilist(h),'.mat');
 	save(fn,'VertexChange');
 	ExcluFn=strcat('/cbica/projects/pinesParcels/results/aggregated_data/Border_excludeVec_',num2str(K),'_',hemilist(h),'.mat');
 	save(ExcluFn,'VertexExclude');

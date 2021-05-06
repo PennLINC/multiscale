@@ -152,6 +152,8 @@ summary_preds[0,0]=mean_preds_AI
 summary_preds[0,1]=mean_alphas_AI
 print("Unpermuted out-of-sample predicted vs. observed correlation:" + str(mean_preds_AI))
 print("Average Optimal Regularization Weighting:" + str(mean_alphas_AI))
+allPredsFN='/cbica/projects/pinesParcels/data/aggregated_data/Predicted_Obs_Cors.csv'
+np.savetxt(allPredsFN,all_preds,delimiter=",")
 # mean MSE
 meanMSE=np.average(mse_AI[:,0])
 print("Mean Mean Squared Error (unpermuted):" + str(meanMSE))
