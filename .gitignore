@@ -1,3 +1,5 @@
+*.csv
+*pcOnly.Rmd
 scripts/derive_parcels/tmp*
 *.sw?
 scripts/derive_parcels/Toolbox
@@ -17,6 +19,7 @@ Long_bblidAgeSexMotionSegreg
 scripts/derive_percygrads/fcmat_to_threshCosSim.py.o*
 scripts/derive_percygrads/fcmat_to_threshCosSim.py.e*
 matlab_avail.py
+*rsOnly.Rmd
 gg*.png
 *PDMresults*
 scripts/highDim_mediation/PDM*
@@ -25,3 +28,5 @@ pcPDM*_AllEdges
 *bart*
 scripts/analyses/LongFormat_AvgVert.rds
 scripts/analyses/LongFormat_*
+*/._correlations_over_scalesplot.R
+

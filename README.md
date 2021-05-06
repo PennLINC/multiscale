@@ -1,4 +1,4 @@
-# neurodevelopmental functional community organization across scales
+# neurodevelopmental functional network organization across scales
 
 analyses - Nearly pure results-level analytical scripts, written in R, to be executed on matlab outputs
 
@@ -9,8 +9,11 @@ derive_parcels - Delineating individualized community structures across scales, 
 derive_spatialprops - Spatial properties of communities
 
 viz - Visualization scripts for figures outside of .rmd files 
+<<<<<<< HEAD
 
 ###### Final common pathway / analyses are in [scripts/analyses/BwRsqCentricOverview.Rmd](https://github.com/PennLINC/multiscale/blob/master/scripts/analyses/BwRsqCentricOverview.Rmd). Precursor scripts/ordering listed below. 
+=======
+>>>>>>> 63a11b11162780f59f6e14738ede5a611d25b61e
 
 # Step 1: Derive Group/Individual Parcels, Derive Parcel Properties, Extract FC
 
@@ -34,21 +37,24 @@ viz - Visualization scripts for figures outside of .rmd files
 ###### scripts/derive_parcels/Toolbox/PBP/PBP_final/PBP_SSCon.m* - for Figure 2A
 ###### [scripts/derive_parcels/Step_2nd_SingleParcellation/Step_9th_1_Visualize_Workbench_AtlasVariability_AP.m](https://github.com/PennLINC/multiscale/blob/master/scripts/derive_parcels/Step_2nd_SingleParcellation/Step_9th_1_Visualize_Workbench_AtlasVariability_AP.m) - for MAD calculation
 ###### scripts/derive_parcels/Toolbox/PBP/PBP_final/PBP_MAD.m* - for Figure 2B
-###### [scripts/derive_spatialprops/gro_level_spatialchange.m](https://github.com/PennLINC/multiscale/blob/master/scripts/derive_spatialprops/gro_level_spatialchange.m) - calculate change over space of loadings
-###### scripts/derive_parcels/Toolbox/PBP/PBP_final/PBP_SpatChange.m* - for figure 2B
-###### [scripts/derive_spatialprops/aggregate_changeVectors.m](https://github.com/PennLINC/multiscale/blob/master/scripts/derive_spatialprops/aggregate_changeVectors.m) - aggregate spatial change values over scales
-###### [scripts/derive_spatialprops/SpinTest_SpatChange.m](https://github.com/PennLINC/multiscale/blob/master/scripts/derive_spatialprops/SpinTest_SpatChange.m) - Spin Spatial change maps for correlation null distributions
-###### [scripts/derive_spatialprops/calc_spinDistribs_MAD.m](https://github.com/PennLINC/multiscale/blob/master/scripts/derive_spatialprops/calc_spinDistribs_MAD.m) - Calculate real and permuted MAD-SpatChange correlations - for figure 2C	
+###### [scripts/derive_spatialprops/SpinTest_MAD.m](https://github.com/PennLINC/multiscale/blob/master/scripts/derive_spatialprops/SpinTest_MAD.m) - Spin MAD maps for correlation null distributions
+###### [scripts/derive_spatialprops/calc_spinDistribs_MAD_PG.m](https://github.com/PennLINC/multiscale/blob/master/scripts/derive_spatialprops/calc_spinDistribs_MAD.m) - Calculate real and permuted MAD-PG1 correlations - for figure 2B and C
+###### 
+Subsequent R code for figure 2B + C within [_Vertex-level-MAD_PG.md_](https://github.com/PennLINC/multiscale/blob/master/scripts/analyses/Vertex-level-MAD_PG.md)
 
 ## 1D) Extract FC values from individual parcels and .mgh timeseries
 ###### [scripts/derive_netstats/iterate_vert_fc.m](https://github.com/PennLINC/multiscale/blob/master/scripts/derive_netstats/iterate_vert_fc.m) - script to iterate qsubs over FC matrix derivations from subject time series and individualized parcels
-###### [scripts/derive_netstats/vert_fc.m](https://github.com/PennLINC/multiscale/blob/master/scripts/derive_netstats/vert_fc.m) - the individual-level script ran on individual compute nodes *compiled (c++) version exists to deal with paucity of stats toolbox licenses available, not reccomended for small runs unless licenses unavailable* 
+###### [scripts/derive_netstats/subj_vert_fc.m](https://github.com/PennLINC/multiscale/blob/master/scripts/derive_netstats/subj_vert_fc.m) - the individual-level script ran on individual compute nodes *compiled (c++) version exists to deal with paucity of stats toolbox licenses available, not reccomended for small runs unless licenses unavailable* 
 ###### [scripts/derive_netstats/merge_ind_fc.m](https://github.com/PennLINC/multiscale/blob/master/scripts/derive_netstats/merge_ind_fc.m) - merge individual derivations into cross-subject, cross-scale 3D matrices (matlab struct)
 ###### [scripts/derive_netstats/fc_to_csv.m](https://github.com/PennLINC/multiscale/blob/master/scripts/derive_netstats/fc_to_csv.m) - likely the densest script in the entire project. Designed to take in fake data and spit out corresponding FC matrices + summary columns for sanity check.
-###### [scripts/derive_netstats/round_master_fcfeats.r](https://github.com/PennLINC/multiscale/blob/master/scripts/derive_netstats/round_master_fcfeats.r) - file takes fuckin' forever to load - almost a 10 minute thing without rounding. no need for 12 decimals points or w/e matlab spits out.
+###### [scripts/derive_netstats/round_master_fcfeats.r](https://github.com/PennLINC/multiscale/blob/master/scripts/derive_netstats/round_master_fcfeats.r) - file master fc feats takes almost 10 minutes to load without rounding. no need for the many decimal places defaulted to by matlab.
 
 # Step 2: Network-level: Age
+<<<<<<< HEAD
 ## 2A) Network-level Generalzied Additive Models - Figures 3 and 5
+=======
+## 2A) Network-level Generalized Additive Models - Figures 3 and 5
+>>>>>>> 63a11b11162780f59f6e14738ede5a611d25b61e
 All within [_Network-level-age.md_](https://github.com/PennLINC/multiscale/blob/master/scripts/analyses/Network-level-age.md)
 ###### B/w * Age - for figure 3B
 ###### Age Effect * Transmodality - for figure 3C
@@ -63,18 +69,22 @@ All within [_Network-level-age.md_](https://github.com/PennLINC/multiscale/blob/
 ###### scripts/derive_parcels/Toolbox/PBP/PBP_final/PBP_effect_msOverlay_2View_R_lPFC.m*
 
 # Step 3: Network-level : Executive Function
-## 3A) Network-level Generalzied Additive Models - Figure 6
+## 3A) Network-level Generalized Additive Models - Figure 6
 All within [_Network-level-ef.md_](https://github.com/PennLINC/multiscale/blob/master/scripts/analyses/Network-level-EF.knit.md)
 ###### EF Effect * Transmodality - for figure 6C
 ###### Scale Effect on EF Effect (* Transmodality) - for figure 6D
 
 # Step 4: Network-level : Mediation
-## 4A) Network-level Generalzied Additive Models - Figure 7
+## 4A) Network-level Generalized Additive Models - Figure 7
 All within [_Network-level-mediation.md_](https://github.com/PennLINC/multiscale/blob/master/scripts/analyses/Network-level-Mediation.knit.md)
 ###### Mediation Weight * Transmodality - for figure 6C
 ###### Scale Effect on Mediation Weight (* Transmodality) - for figure 6D
 
+<<<<<<< HEAD
 # Step 5: Vertex-level : Age
+=======
+# Step 5: Vertex-level : Age and Scale
+>>>>>>> 63a11b11162780f59f6e14738ede5a611d25b61e
 ###### [scripts/derive_GEE_stats/DemoData_to_Matlab.R](https://github.com/PennLINC/multiscale/blob/master/scripts/derive_GEE_stats/DemoData_to_Matlab.R) - Prepare "forMLpc.csv" in R (for matlab) 
 ###### [scripts/derive_netstats/Win_Bw_Age_vertwise.m](https://github.com/PennLINC/multiscale/blob/master/scripts/derive_netstats/Win_Bw_Age_vertwise.m) - save out cross-scale values for each subject for each vertex, bringing matrix dimensionality back down to 2
 ###### scp all vertex-level .csv files to pmacs
@@ -82,6 +92,7 @@ All within [_Network-level-mediation.md_](https://github.com/PennLINC/multiscale
 ###### loop over qsub_vertWise.sh - i.e: 
 > for i in {1..17734}; do bsub ./qsub_vertWise.sh $i; echo $i; done
 ###### the command above iterates over [scripts/vert_GEE_looper.r](https://github.com/PennLINC/multiscale/blob/master/scripts/derive_GEE_stats/vert_GEE_looper.R)
+<<<<<<< HEAD
 ###### Thank Sarah for being a benevolent stats wizard
 ###### scp all vertex-level GEE stats back out to cubic
 ###### [scripts/derive_GEE_stats/aggregate_GEE_Effects.m](https://github.com/PennLINC/multiscale/blob/master/scripts/derive_GEE_stats/aggregate_GEE_Effects.m) - pull all vertex-level stats into one dataframe
@@ -125,8 +136,45 @@ All within [_Network-level-mediation.md_](https://github.com/PennLINC/multiscale
 # Step 8: Age: Edge-level
 ## 8A) Edge-level Generalized Additive Models - Figure 4
 All within [_Edge-level-age.md_](https://github.com/PennLINC/multiscale/blob/master/scripts/analyses/Edge-level-Age.md)
+=======
+###### scp all vertex-level GEE stats back out to cubic
+###### [scripts/derive_GEE_stats/aggregate_GEE_Effects.m](https://github.com/PennLINC/multiscale/blob/master/scripts/derive_GEE_stats/aggregate_GEE_Effects.m) - pull all vertex-level stats into one dataframe
+###### [scripts/derive_GEE_stats/FDR_GEEs_pt1.m](https://github.com/PennLINC/multiscale/blob/master/scripts/derive_GEE_stats/FDR_GEEs_pt1.m) - print out effects in R-friendly format for FDR correction. This is due to matlab limitation in available stat toolbox licenses. *Requires pre-FDR EF to be run with no commenting out*
+###### [scripts/derive_GEE_stats/FDR_GEEs_1point5.R](https://github.com/PennLINC/multiscale/blob/master/scripts/derive_GEE_stats/FDR_GEEs_1point5.R) FDR correct in R
+###### [scripts/derive_GEE_stats/FDR_GEEs_pt2](https://github.com/PennLINC/multiscale/blob/master/scripts/derive_GEE_stats/FDR_GEEs_pt2.m) - re-aggregate FDR-corrected vertices - current output filepaths set to results/aggregated_data/*_GEE_FDRed_verts
+###### scripts/derive_parcels/Toolbox/PBP/PBP_final/PBP_vertWiseEffect4View.m* - run with fdr-corrected vertices for final brainmaps
 
-Python environment:
-source activate mv_preds
+# Step 6: Vertex-level : Executive Function
+###### Files should all already be on pmacs from step 5.
+###### xbash module load R/3.6.3 - for consistent versioning of mgcv, doBy, geepack, reshape2. Should also take you to a bbl/linc compute node
+###### loop over qsub_vertWise_EF.sh - i.e: 
+> for i in {1..17734}; do bsub ./qsub_vertWise_EF.sh $i; echo $i; done
+###### the command above iterates over [scripts/vert_GEE_looper_EF.r](https://github.com/PennLINC/multiscale/blob/master/scripts/derive_GEE_stats/vert_GEE_looper_EF.R)
+###### scp all vertex-level GEE stats back out to cubic
+###### [scripts/derive_GEE_stats/aggregate_GEE_Effects_EF.m](https://github.com/PennLINC/multiscale/blob/master/scripts/derive_GEE_stats/aggregate_GEE_Effects_EF.m) - pull all vertex-level stats into one dataframe
+###### [scripts/derive_GEE_stats/FDR_GEEs_pt1.m](https://github.com/PennLINC/multiscale/blob/master/scripts/derive_GEE_stats/FDR_GEEs_pt1.m) - print out effects in R-friendly format for FDR correction. This is due to matlab limitation in available stat toolbox licenses.
+###### [scripts/derive_GEE_stats/FDR_GEEs_1point5.R](https://github.com/PennLINC/multiscale/blob/master/scripts/derive_GEE_stats/FDR_GEEs_1point5.R) FDR correct in R
+###### [scripts/derive_GEE_stats/FDR_GEEs_pt2](https://github.com/PennLINC/multiscale/blob/master/scripts/derive_GEE_stats/FDR_GEEs_pt2.m) - re-aggregate FDR-corrected vertices - current output filepaths set to results/aggregated_data/*_GEE_FDRed_verts
+###### scripts/derive_parcels/Toolbox/PBP/PBP_final/PBP_vertWiseEffect4View.m* - run with fdr-corrected vertices for final brainmaps
 
+# Step 7: Age: Edge-level
+## 7A) Edge-level Generalized Additive Models - Figure 4
+All within [_Edge-level-age.md_](https://github.com/PennLINC/multiscale/blob/master/scripts/analyses/Edge-level-Age.md)
+
+# Step 8: EF: Edge-level
+## 8A and 8C) Pre and post-ridge - Figure 6
+within [ Edge-level-EF.md ](https://github.com/PennLINC/multiscale/blob/master/scripts/analyses/Edge-level-EF.md)
+## 8B) Penalized regression portion 
+within [ penal_regresFC_AgeEFIndep.py ](https://github.com/PennLINC/multiscale/blob/master/scripts/penalized_regression/penal_regresFC_AgeEFIndep.py)
+(Python environment: source activate mv_preds)
+
+
+
+>>>>>>> 63a11b11162780f59f6e14738ede5a611d25b61e
+
+
+<<<<<<< HEAD
 \* scripts not linked are intentionally hidden by .gitignore. These files are predominantly the result of someone else's hard work, typically from a different lab, and cannot be published here under Adam's name in good conscience
+=======
+\* scripts not linked are intentionally hidden by .gitignore. Largely code written by others.
+>>>>>>> 63a11b11162780f59f6e14738ede5a611d25b61e

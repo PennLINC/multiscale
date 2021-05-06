@@ -4,55 +4,50 @@ addpath(genpath('/cbica/projects/pinesParcels/multiscale/scripts/derive_parcels/
 outdir='/cbica/projects/pinesParcels/results/aggregated_data/';
 % set paths
 ProjectFolder = '/cbica/projects/pinesParcels/data/princ_gradients';
-WorkingFolder = '/cbica/projects/pinesParcels/data/SingleParcellation/SingleAtlas_Analysis';
-Variability_Visualize_Folder = [WorkingFolder '/Variability_Visualize'];
-% get gradient change map
-fnR=strcat('/cbica/projects/pinesParcels/results/aggregated_data/changeVec_PG1_R.mat');
-fnL=strcat('/cbica/projects/pinesParcels/results/aggregated_data/changeVec_PG1_L.mat');
-gradChangeL=load(fnL);
-gradChangeR=load(fnR);
-grad_lh=gradChangeL.VertexChange;
-grad_rh=gradChangeR.VertexChange;
-pg1=[grad_lh grad_rh];
+% get gradients
+pgl = gifti([ProjectFolder '/Gradients.lh.fsaverage5.func.gii']);
+pgr = gifti([ProjectFolder '/Gradients.rh.fsaverage5.func.gii']);
+% extract unimodal-transmodal gradient
+grad_lh = pgl.cdata(:,1);
+grad_rh = pgr.cdata(:,1);
+% load in mask (SNR Mask)
+surfML = '/cbica/projects/pinesParcels/data/H_SNR_masks/lh.Mask_SNR.label';
+mwIndVec_l = read_medial_wall_label(surfML);
+Index_l = setdiff([1:10242], mwIndVec_l);
+surfMR = '/cbica/projects/pinesParcels/data/H_SNR_masks/rh.Mask_SNR.label';
+mwIndVec_r = read_medial_wall_label(surfMR);
+Index_r = setdiff([1:10242], mwIndVec_r);
+% convert into 17734 vector, masked out snr vertices
+grad_lh=grad_lh(Index_l);
+grad_rh=grad_rh(Index_r);
+pg1=vertcat(grad_lh,grad_rh);
+
 % initialize permutation house for correlations for 1000 spins across scales, +1 row for real correlation
 permHouse=zeros(1001,29);
 % for each scale, get disitribution of spatial correlations with PG1
 for K=2:30
 	disp(K)
 	% get MAD to test
-	MADFile=[Variability_Visualize_Folder '/VariabilityLabel_Scale' num2str(K) '.mat'];
-	MADKstruct=load(MADFile);
-	mad_lh=MADKstruct.VariabilityLabel_lh;
-	mad_rh=MADKstruct.VariabilityLabel_rh;
-	%%% get real correlation
-	% load in mask (should be the same for all scales)
-	Extended_maskFnL=strcat(outdir,'Border_excludeVec_',num2str(K),'_L.mat');
-	Extended_maskFnR=strcat(outdir,'Border_excludeVec_',num2str(K),'_R.mat');
-	Extended_mask_file_L=load(Extended_maskFnL);
-	Extended_mask_file_R=load(Extended_maskFnR);
-	Extended_mask_L=Extended_mask_file_L.VertexExclude;
-	Extended_mask_R=Extended_mask_file_R.VertexExclude;
-	% set masked vertices to NaN
-	mad_lh(Extended_mask_L==1)=NaN;
-	mad_rh(Extended_mask_R==1)=NaN;
-	madk=[mad_lh mad_rh];	
+	MADFile = ['/gpfs/fs001/cbica/projects/pinesParcels/data/SingleParcellation/SingleAtlas_Analysis/Variability_Visualize/VariabilityLoading_Median_' num2str(K) 'SystemMean.mat'];
+	initmat=load(MADFile);
+	MAD_atK=initmat.VariabilityLoading_Median_KSystemMean_NoMedialWall;
 	%% get real correlation
-	realrho=corr(madk',pg1','type','spearman','rows','complete');
+	realrho=corr(MAD_atK',pg1,'type','spearman','rows','complete');
 	permHouse(1,(K-1))=realrho;
 	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	
 	%%% get permuted correlations
-	permutFile=strcat(outdir,'MADPermuts_',num2str(K),'.mat');
+	permutFile=strcat('/cbica/projects/pinesParcels/results/aggregated_data/PGPermuts.mat');
 	permuts=load(permutFile);
-	permutsL=permuts.bigrotl;
-	permutsR=permuts.bigrotr;	
+	permutsL=permuts.bigrotl(:,Index_l);
+	permutsR=permuts.bigrotr(:,Index_r);	
 	% change 100 (markers of invalid vertices) to NA
 	permutsL(permutsL==100)=NaN;
 	permutsR(permutsR==100)=NaN;
 	% for each permutation
 	for P=1:1000
 		permutVals=[permutsL(P,:) permutsR(P,:)];
-		permrho=corr(permutVals',pg1','type','spearman', 'rows','complete');
+		permrho=corr(permutVals',MAD_atK','type','spearman', 'rows','complete');
 		permHouse(1+P,(K-1))=permrho;
 	end
 end

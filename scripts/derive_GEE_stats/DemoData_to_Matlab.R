@@ -32,10 +32,24 @@ fc<-fc[-c(1)]
 # isolate shams (although merge should take them out later)
 shams<-fc[694:695,]
 
-# AGE
+# save out for vertex-level age modeling
 masterdf<-merge(fc,df,by='bblid')
 
 forMLpc<-cbind(masterdf$bblid,masterdf$Age,masterdf$Motion,masterdf$Sex)
 MPpcFN<-'/cbica/projects/pinesParcels/results/EffectVecs/forMLpc.csv'
 write.table(forMLpc,MPpcFN,row.names = F,col.names = F,sep = ',')
 
+# Now load in executive function for sep. writeout
+subjbehav<-read.csv("~/Downloads/n9498_cnb_factor_scores_fr_20170202.csv")
+ef<-data.frame(subjbehav$NAR_F1_Exec_Comp_Cog_Accuracy,subjbehav$bblid)
+# leave column name for matching prior selection code
+colnames(ef)<-c('F1_Exec_Comp_Cog_Accuracy','bblid')
+# merge in
+masteref<-merge(masterdf,ef,by='bblid')
+
+
+### save out for vertex-level EF modeling
+# sc same as scanid
+forPMACS_EF<-cbind(masteref$sc,masteref$bblid,masteref$F1_Exec_Comp_Cog_Accuracy,masteref$Age,masteref$Motion,masteref$Sex)
+MP_EFFN<-'/cbica/projects/pinesParcels/results/EffectVecs/forPMACS_EF.csv'
+write.table(forPMACS_EF,MP_EFFN,row.names = F,col.names = F,sep = ',')
