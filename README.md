@@ -42,7 +42,6 @@ Step 8: EF: Edge-level
 ###### scripts/derive_parcels/Toolbox/PBP/PBP_final/PBP_MAD.m* - for Figure 2B
 ###### [scripts/derive_spatialprops/SpinTest_MAD.m](https://github.com/PennLINC/multiscale/blob/master/scripts/derive_spatialprops/SpinTest_MAD.m) - Spin MAD maps for correlation null distributions
 ###### [scripts/derive_spatialprops/calc_spinDistribs_MAD_PG.m](https://github.com/PennLINC/multiscale/blob/master/scripts/derive_spatialprops/calc_spinDistribs_MAD.m) - Calculate real and permuted MAD-PG1 correlations - for figure 2B and C
-###### 
 Subsequent R code for figure 2B + C within [_Vertex-level-MAD_PG.md_](https://github.com/PennLINC/multiscale/blob/master/scripts/analyses/Vertex-level-MAD_PG.md)
 
 ## 1D) Extract FC values from individual parcels and .mgh timeseries
