@@ -484,6 +484,35 @@ gg_tensor(g2)+theme_classic(base_size = 40) +theme(legend.text=element_text(size
 
 ```
 
+```{r}
+#3d plot
+#library(plot3Drgl)
+#library(magick)
+#
+#myColorRamp <- function(colors, values) {
+#    v <- (values - min(values))/diff(range(values))
+#    x <- colorRamp(colors)(v)
+#    rgb(x[,1], x[,2], x[,3], maxColorValue = 255)
+#}
+#
+#cols<-myColorRamp(c("Blue","Red"),doubleBwAgeCorTMDifDf$ageDR2vec)
+#
+## change colnames for EZ plot labels
+#NetworkA<-doubleBwAgeCorTMDifDf$net1tmvec
+#NetworkB<-doubleBwAgeCorTMDifDf$net2tmvec
+#AgeEffect<-doubleBwAgeCorTMDifDf$ageDR2vec
+
+plot3d(x=NetworkA,y=NetworkB,col=cols,z=AgeEffect,ylab="Network B",xlab="Network A",zlab="Age Effect")
+# pre-anim align
+play3d(spin3d(axis=c(-1,0,0),rpm=5.8),duration=1)
+play3d(spin3d(axis=c(0,0,1),rpm=6.8),duration=1.15)
+
+# desired animation
+play3d(spin3d(axis=c(1,-.4,-.3),rpm=6),duration=3.1)
+play3d(spin3d(axis=c(-1,0,0),rpm=6),duration=10)
+```
+
+
 
 ```{r}
 # work in euclidean distances for SUPPLEMENTAL FIGURE 4
@@ -538,6 +567,11 @@ Mot<-ggplot(data=BwAgeCorDistance_nonZero,aes(x=EucDist,y=motionEfvec)) + geom_p
 TMd<-ggplot(data=BwAgeCorDistance_nonZero,aes(x=tmdifvec,y=ageDR2vec)) + geom_point(alpha=.07,size=3) + xlab('Transmodality difference') + ylab(expression(paste('Age Effect (',Delta,R^2[adj],')')))+geom_smooth(method='lm')+theme_classic(base_size=40)
 
 TMd_euc<-ggplot(data=BwAgeCorDistance_nonZero,aes(x=EucDist,y=tmdifvec)) + geom_point(alpha=.07,size=3) + xlab('Euclidean Distance') + ylab('Transmodality difference')+geom_smooth(method='lm')+theme_classic(base_size=40)
+
+# TMD after controlling for euc dist, partial r and beta
+pcor.test(BwAgeCorTMDifDf$ageDR2vec,BwAgeCorTMDifDf$tmdifvec,BwAgeCorTMDifDf$EucDist)
+EucAndTMD_ageEdgeLm<-lm(ageDR2vec~tmdifvec+EucDist,data=BwAgeCorTMDifDf)
+summary(EucAndTMD_ageEdgeLm)
 ```
 
 ```{r, fig.width=9,fig.height=9}
@@ -604,11 +638,10 @@ pLIN<-exp((-0.717*z)-(0.416*(z^2)))
 
 print(paste('Linear age effect by euclidean distance p-value: ',pLIN))
 
-# tmdiffference spearman for equiv.
+# tmdifference spearman for equiv.
 tmdmodel<-cor.test(BwAgeCorDistance_nonZero$ageDR2vec,BwAgeCorDistance_nonZero$tmdifvec,method='spearman')
 print(tmdmodel)
 ```
-
 
 
 

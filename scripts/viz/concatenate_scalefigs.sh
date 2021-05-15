@@ -1,7 +1,7 @@
 #!/bin/bash
 A="/cbica/projects/pinesParcels/multiscale/scripts/viz/concatenate_scalefigs.sh"
 A=""
-B=$(ls /cbica/projects/pinesParcels/results/viz/Gro_Con_Kequal_* | sort -V | head -25 )
+B=$(ls /cbica/projects/pinesParcels/results/viz/GroCon* | sort -V | head -25 )
 for i in $B; do
 	A+=" ${i}"
 done
