@@ -406,7 +406,7 @@ edgeInt<-data.frame(EdgeInterceptVector,tmdifvec,Net1Vec,Net2Vec,fdrAgeDR2)
 
 ```{r, fig.width=10,fig.height=10}
 # FIGURE 4A
-ggplot(edgeInt,aes(x=tmdifvec,y=EdgeInterceptVector))+geom_point(data=edgeInt[edgeInt$fdrAgeDR2>0.05,],aes(x=tmdifvec,y=EdgeInterceptVector),alpha=.7,color='gray80',size=4)+theme_classic(base_size=40)+ geom_text(data=edgeInt[edgeInt$fdrAgeDR2<0.05,],aes(x=tmdifvec,y=EdgeInterceptVector,color=Net1Vec),size=10,label="\u25D6",family="Arial Unicode MS")+geom_text(data=edgeInt[edgeInt$fdrAgeDR2<0.05,],aes(x=tmdifvec,y=EdgeInterceptVector,color=Net2Vec),size=10,label="\u25D7",family="Arial Unicode MS")+scale_color_manual(values=ycolors,limits=Y7vec)+geom_smooth(method='lm',color='black',size=2)+ylab("Est. Between-Network Coupling At 8")+xlab("Transmodality Difference")+theme(plot.margin=margin(b=3.5,t=.1,l=1,r=1, unit='cm'),legend.position=c(.42,-.2),legend.direction = "horizontal")+guides(alpha=FALSE,color=guide_legend(title="Yeo 7 Overlap"))
+ggplot(edgeInt,aes(x=tmdifvec,y=EdgeInterceptVector))+geom_point(data=edgeInt[edgeInt$fdrAgeDR2>0.05,],aes(x=tmdifvec,y=EdgeInterceptVector),alpha=.7,color='gray80',size=4)+theme_classic(base_size=40)+ geom_text(data=edgeInt[edgeInt$fdrAgeDR2<0.05,],aes(x=tmdifvec,y=EdgeInterceptVector,color=Net1Vec),size=10,label="\u25D6",family="Arial Unicode MS")+geom_text(data=edgeInt[edgeInt$fdrAgeDR2<0.05,],aes(x=tmdifvec,y=EdgeInterceptVector,color=Net2Vec),size=10,label="\u25D7",family="Arial Unicode MS")+scale_color_manual(values=ycolors,limits=Y7vec)+geom_smooth(method='lm',color='black',size=2)+ylab("Est. Between-Network Coupling At Age 8")+xlab("Transmodality Difference")+theme(plot.margin=margin(b=3.5,t=.1,l=1,r=1, unit='cm'),legend.position=c(.42,-.2),legend.direction = "horizontal")+guides(alpha=FALSE,color=guide_legend(title="Yeo 7 Overlap"))+theme(text=element_text(size=40),axis.title.y = element_text(size=36))
 
 # for Est. At 8 y.o.
 # fit full model
@@ -486,21 +486,22 @@ gg_tensor(g2)+theme_classic(base_size = 40) +theme(legend.text=element_text(size
 
 ```{r}
 #3d plot
-#library(plot3Drgl)
-#library(magick)
+library(plot3Drgl)
+myColorRamp <- function(colors, values) {
+    v <- (values - min(values))/diff(range(values))
+    x <- colorRamp(colors)(v)
+    rgb(x[,1], x[,2], x[,3], maxColorValue = 255)
+}
 #
-#myColorRamp <- function(colors, values) {
-#    v <- (values - min(values))/diff(range(values))
-#    x <- colorRamp(colors)(v)
-#    rgb(x[,1], x[,2], x[,3], maxColorValue = 255)
-#}
-#
-#cols<-myColorRamp(c("Blue","Red"),doubleBwAgeCorTMDifDf$ageDR2vec)
+cols<-myColorRamp(c("Blue","Red"),doubleBwAgeCorTMDifDf$ageDR2vec)
 #
 ## change colnames for EZ plot labels
-#NetworkA<-doubleBwAgeCorTMDifDf$net1tmvec
-#NetworkB<-doubleBwAgeCorTMDifDf$net2tmvec
-#AgeEffect<-doubleBwAgeCorTMDifDf$ageDR2vec
+NetworkA<-doubleBwAgeCorTMDifDf$net1tmvec
+NetworkB<-doubleBwAgeCorTMDifDf$net2tmvec
+AgeEffect<-doubleBwAgeCorTMDifDf$ageDR2vec
+
+# subset to replicate 2d plot in 3d
+
 
 plot3d(x=NetworkA,y=NetworkB,col=cols,z=AgeEffect,ylab="Network B",xlab="Network A",zlab="Age Effect")
 # pre-anim align
