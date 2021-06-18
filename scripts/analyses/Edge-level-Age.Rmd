@@ -492,24 +492,28 @@ myColorRamp <- function(colors, values) {
     x <- colorRamp(colors)(v)
     rgb(x[,1], x[,2], x[,3], maxColorValue = 255)
 }
-#
-cols<-myColorRamp(c("Blue","Red"),doubleBwAgeCorTMDifDf$ageDR2vec)
-#
 ## change colnames for EZ plot labels
-NetworkA<-doubleBwAgeCorTMDifDf$net1tmvec
-NetworkB<-doubleBwAgeCorTMDifDf$net2tmvec
-AgeEffect<-doubleBwAgeCorTMDifDf$ageDR2vec
+threedf<-NULL
+threedf$NetworkA<-doubleBwAgeCorTMDifDf$net1tmvec
+threedf$NetworkB<-doubleBwAgeCorTMDifDf$net2tmvec
+threedf$AgeEffect<-doubleBwAgeCorTMDifDf$ageDR2vec
+threedf<-data.frame(threedf)
 
 # subset to replicate 2d plot in 3d
+threedf_half<-threedf[threedf$NetworkA>threedf$NetworkB,]
 
+# generate colorscheme
+cols<-myColorRamp(c("Blue","Red"),threedf_half$AgeEffect)
 
-plot3d(x=NetworkA,y=NetworkB,col=cols,z=AgeEffect,ylab="Network B",xlab="Network A",zlab="Age Effect")
+plot3d(x=threedf_half$NetworkA,y=threedf_half$NetworkB,col=cols,z=threedf_half$AgeEffect,ylab="Network B",xlab="Network A",zlab="Age Effect")
 # pre-anim align
 play3d(spin3d(axis=c(-1,0,0),rpm=5.8),duration=1)
-play3d(spin3d(axis=c(0,0,1),rpm=6.8),duration=1.15)
+play3d(spin3d(axis=c(0,0,1),rpm=6.8),duration=1.13)
 
 # desired animation
 play3d(spin3d(axis=c(1,-.4,-.3),rpm=6),duration=3.1)
+cols<-myColorRamp(c("Blue","Red"),threedf$AgeEffect)
+plot3d(x=threedf$NetworkA,y=threedf$NetworkB,col=cols,z=threedf$AgeEffect,ylab="Network B",xlab="Network A",zlab="Age Effect")
 play3d(spin3d(axis=c(-1,0,0),rpm=6),duration=10)
 ```
 
