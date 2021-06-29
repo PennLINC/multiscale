@@ -62,33 +62,55 @@ for (K in c(4,7,13,20)){
   # change fc_Mat to fc_ageMat to plot fc matrix of age effects instead
   Avg_MatFn=paste('/cbica/projects/pinesParcels/results/EffectMats/fc_Mat_K',K,'.csv',sep='')
   Avg_Mat=as.matrix(read.csv(Avg_MatFn))
-  # requires domnetvec to be ran in other rmd
-  colnames(Avg_Mat)=domnetvec17[Kind]
-  rownames(Avg_Mat)=domnetvec17[Kind]
   # get tmvec to arrange matrix by transmodality
   curTmRank<-order(tmvec[Kind])
   
   # if desired, COMMENT OUT TO OBSERVE ORIGINAL ORDER
   ReAr_Avg_Mat<-Avg_Mat[curTmRank,curTmRank]
-  #ReArAgeEfMat<-AgeEfMat
   
+  # melt it
   cormelt<-melt(ReAr_Avg_Mat)
   
+  # set colnames after melt to prevent merging
+  NetNames<-domnetvec17[Kind]
+  # make names unique to prevent merging of different networks with same predominant y17 overlap
+  OrderedeNetNames<-make.names(NetNames[curTmRank],unique=T)
+  # sub out '.' with ' '
+  OrderedeNetNames<-gsub('\\.',' ',OrderedeNetNames)
+  levels(cormelt$Var2)=OrderedeNetNames
+  # change var1 to factor for labeling
+  cormelt$Var1<-as.factor(cormelt$Var1)
+  levels(cormelt$Var1)=OrderedeNetNames
+  # for figure-only labels (R cannot maintain same-name factors)
+  # sub out 2 with 3
+  plotlabs<-gsub('2','',OrderedeNetNames)
+  # and 1 with 2
+  plotlabs<-gsub('1','',plotlabs)
+  # get rid of extra spaces
+  plotlabs<-gsub(' A ',' A',plotlabs)
+  plotlabs<-gsub(' B ',' B',plotlabs)
+  plotlabs<-gsub(' C ',' C',plotlabs)
   # format used for figures
-  
-#  print(ggplot(cormelt,aes(Var1,Var2,fill=value))+geom_tile() +
-#    scale_fill_gradient2(low='blue',mid='white',high='red',midpoint = 0,limits=c(-.55,.55),breaks=c(-.5,0,.5),name='Functional Coupling',guide = guide_colorbar(ticks.colour = "gray50", ticks.linewidth = 7)) + 
-#    coord_equal() +
-#    xlab('')+ylab('')+theme_classic()+
-#    theme(legend.key.height=unit(2.5,"cm"),text=element_text(size=30),axis.text.x = element_text(vjust=-.01,angle=90)))
-
-  # format used for markdown
-  
   print(ggplot(cormelt,aes(Var1,Var2,fill=value))+geom_tile() +
     scale_fill_gradient2(low='blue',mid='white',high='red',midpoint = 0,limits=c(-.55,.55),breaks=c(-.5,0,.5),name='Functional Coupling',guide = guide_colorbar(ticks.colour = "gray50", ticks.linewidth = 7)) + 
     coord_equal() +
-    xlab('')+ylab('')+theme_classic()+
-    theme(legend.key.height=unit(1.5,"cm"),text=element_text(size=12),axis.text.x = element_text(vjust=-.01,angle=90)))
+    scale_x_discrete(labels=plotlabs)+scale_y_discrete(labels=plotlabs) +
+    xlab('')+ylab('')+theme_classic()+theme(legend.position='none',text=element_text(size=40),axis.text.x = element_text(vjust=-.01,angle=90)))
+    
+  # one plot with colorbar, same coloration for all scales though
+  #print(ggplot(cormelt,aes(Var1,Var2,fill=value))+geom_tile() +
+  #  scale_fill_gradient2(low='blue',mid='white',high='red',midpoint = 0,limits=c(-.55,.55),breaks=c(-.5,-.25,0,.25,.5),name='Functional Coupling',guide = guide_colorbar(ticks.colour = "gray35", ticks.linewidth = 7)) + 
+  #  coord_equal() +
+  #  scale_x_discrete(labels=plotlabs)+scale_y_discrete(labels=plotlabs) +
+  #  xlab('')+ylab('')+theme_classic()+theme(legend.position='bottom',legend.key.width=unit(5.5,"cm"),legend.title =element_text(size=30),legend.text=element_text(size=30),axis.text.x = element_text(vjust=-.01,angle=90)))
+  
+  # format used for markdown
+  
+  #print(ggplot(cormelt,aes(Var1,Var2,fill=value))+geom_tile() +
+  #  scale_fill_gradient2(low='blue',mid='white',high='red',midpoint = 0,limits=c(-.55,.55),breaks=c(-.5,0,.5),name='Functional Coupling',guide = guide_colorbar(ticks.colour = "gray50", ticks.linewidth = 7)) + 
+  #  coord_equal() +
+  #  xlab('')+ylab('')+theme_classic()+
+  #  theme(legend.key.height=unit(1.5,"cm"),text=element_text(size=12),axis.text.x = element_text(vjust=-.01,angle=90)))
   
 }
 
