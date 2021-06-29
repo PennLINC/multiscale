@@ -6,6 +6,7 @@ output: html_document
 ---
 
 ```{r}
+library(ggplot2)
 library(corrplot)
 library(circlize)
 #library(ggraph)
@@ -58,14 +59,15 @@ y17colors=c('#dc8303','#8d2049','#596a85','#2d9a3d','#007938','#d9e200','#bc0943
 
 
 col_fun=function(x) ifelse(abs(x)<.0001,"#00000000",
-                           ifelse(x<0,"red","blue"))
+                           ifelse(x<0,"blue","red"))
                            
   
 for (K in 2:30){
   K_start=((K-1)*(K))/2
   K_end=(((K-1)*(K))/2)+K-1
   Kind<-K_start:K_end
-  AgeEfMatFn=paste('/cbica/projects/pinesParcels/results/EffectMats/fc_ageMat_K',K,'.csv',sep='')
+  # change fc_Mat to fc_ageMat to plot fc matrix of age effects instead
+  AgeEfMatFn=paste('/cbica/projects/pinesParcels/results/EffectMats/fc_Mat_K',K,'.csv',sep='')
   AgeEfMat=as.matrix(read.csv(AgeEfMatFn))
   # requires domnetvec to be ran in other rmd
   colnames(AgeEfMat)=domnetvec17[Kind]
@@ -74,15 +76,15 @@ for (K in 2:30){
   curTmRank<-order(tmvec[Kind])
   
   # if desired, COMMENT OUT TO OBSERVE ORIGINAL ORDER
-  #ReArAgeEfMat<-AgeEfMat[curTmRank,curTmRank]
-  ReArAgeEfMat<-AgeEfMat
+  ReArAgeEfMat<-AgeEfMat[curTmRank,curTmRank]
+  #ReArAgeEfMat<-AgeEfMat
   
   ReArAgeEfMatThresh<-ReArAgeEfMat
-  ReArAgeEfMatThresh[ReArAgeEfMat > -.1 & ReArAgeEfMat < .1]=0
+  #ReArAgeEfMatThresh[ReArAgeEfMat > -.1 & ReArAgeEfMat < .1]=0
   corrplot(ReArAgeEfMat,is.corr = F,tl.cex = 2,cl.cex=2,cl.ratio = .3)
   
-  chordDiagram(ReArAgeEfMat,grid.col = grid.col, col = col_fun,symmetric = "TRUE",annotationTrack=c("name","grid"),self.link = 1)
-  title(paste('Age at K =',K))
+  #chordDiagram(ReArAgeEfMat,grid.col = grid.col, col = col_fun,symmetric = "TRUE",annotationTrack=c("name","grid"),self.link = 1)
+  #title(paste('Age at K =',K))
   
 }
 
