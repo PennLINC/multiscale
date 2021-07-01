@@ -1,14 +1,22 @@
 # neurodevelopmental functional network organization across scales
 
-analyses - Nearly pure results-level analytical scripts, written in R, to be executed on matlab outputs
+Steps are organized by units of analyses and construct of interest. You can also search by figure number to find specific analyses. 
 
-derive_netstats - Various calculations of network statistics
+Step 1: Derive Group/Individual Parcels, Derive Parcel Properties, Extract FC
 
-derive_parcels - Delineating individualized community structures across scales, some external code resources lie within this directory
+Step 2: Network-level: Age
 
-derive_spatialprops - Spatial properties of communities
+Step 3: Network-level : Executive Function
 
-viz - Visualization scripts for figures outside of .rmd files 
+Step 4: Network-level : Mediation
+
+Step 5: Vertex-level : Age and Scale
+
+Step 6: Vertex-level : Executive Function
+
+Step 7: Age: Edge-level
+
+Step 8: EF: Edge-level
 
 # Step 1: Derive Group/Individual Parcels, Derive Parcel Properties, Extract FC
 
@@ -24,18 +32,20 @@ viz - Visualization scripts for figures outside of .rmd files
 
 ## 1B) Derive Parcel Properties - Figure 1
 ###### [scripts/derive_netstats/error_over_scales](https://github.com/PennLINC/multiscale/blob/aedb458dabec6d1530e829ff73fb2e18c8d6f523/scripts/derive_netstats/error_over_scales.m) - calculates reconstruction error over scales for each subject. Iterates over script below
-###### [scripts/derive_netstats/calc_recon_error.m](https://github.com/PennLINC/multiscale/blob/aedb458dabec6d1530e829ff73fb2e18c8d6f523/scripts/derive_netstats/calc_recon_error.m) - analysis for figure 1A
-###### [scripts/derive_spatialprops/group_All_Ks_export2R.m](https://github.com/PennLINC/multiscale/blob/master/scripts/derive_spatialprops/group_All_Ks_export2R.m) - export for figure 1B
-###### scripts/derive_parcels/Toolbox/PBP/PBP_final/PBP_GroCon.m* - figure 1C
+###### [scripts/derive_netstats/calc_recon_error.m](https://github.com/PennLINC/multiscale/blob/aedb458dabec6d1530e829ff73fb2e18c8d6f523/scripts/derive_netstats/calc_recon_error.m) - analysis for figure S2B
+###### [scripts/derive_spatialprops/group_All_Ks_export2R.m](https://github.com/PennLINC/multiscale/blob/master/scripts/derive_spatialprops/group_All_Ks_export2R.m) - export for figure 1 alluvial
+###### scripts/derive_parcels/Toolbox/PBP/PBP_final/PBP_GroCon.m* - figure 1 cortical maps
 	
 ## 1C) Derive Parcel Properties - Figure 2
 ###### scripts/derive_parcels/Toolbox/PBP/PBP_final/PBP_SSCon.m* - for Figure 2A
 ###### [scripts/derive_parcels/Step_2nd_SingleParcellation/Step_9th_1_Visualize_Workbench_AtlasVariability_AP.m](https://github.com/PennLINC/multiscale/blob/master/scripts/derive_parcels/Step_2nd_SingleParcellation/Step_9th_1_Visualize_Workbench_AtlasVariability_AP.m) - for MAD calculation
 ###### scripts/derive_parcels/Toolbox/PBP/PBP_final/PBP_MAD.m* - for Figure 2B
 ###### [scripts/derive_spatialprops/SpinTest_MAD.m](https://github.com/PennLINC/multiscale/blob/master/scripts/derive_spatialprops/SpinTest_MAD.m) - Spin MAD maps for correlation null distributions
-###### [scripts/derive_spatialprops/calc_spinDistribs_MAD_PG.m](https://github.com/PennLINC/multiscale/blob/master/scripts/derive_spatialprops/calc_spinDistribs_MAD.m) - Calculate real and permuted MAD-PG1 correlations - for figure 2B and C
-###### 
-Subsequent R code for figure 2B + C within [_Vertex-level-MAD_PG.md_](https://github.com/PennLINC/multiscale/blob/master/scripts/analyses/Vertex-level-MAD_PG.md)
+###### [scripts/derive_spatialprops/calc_spinDistribs_MAD_PG.m](https://github.com/PennLINC/multiscale/blob/master/scripts/derive_spatialprops/calc_spinDistribs_MAD.m) - Calculate real and permuted MAD-PG1 correlations - for figure 2A and B
+Subsequent R code for figure 2A + B within [_Vertex-level-MAD_PG.md_](https://github.com/PennLINC/multiscale/blob/master/scripts/analyses/Vertex-level-MAD_PG.md)
+###### [scripts/derive_spatialprops/Boot_MADPGCorr_OverScales.R](https://github.com/PennLINC/multiscale/blob/ebd81237999027d5b854a0a0a22b95f2e0affa8d/scripts/derive_spatialprops/Boot_MADPGCorr_OverScales.R) - Generate bootstrap indices for subject resampling (w/ replacement) in R, for use in matlab in next step
+###### [scripts/derive_spatialprops/Boot_MADPGCorr.m](https://github.com/PennLINC/multiscale/blob/ebd81237999027d5b854a0a0a22b95f2e0affa8d/scripts/derive_spatialprops/Boot_MADPGCorr.m) - Use R-generated Bootstrap indices to recalculate MAD at each scale iteratively, for statistical test in 2C
+###### [scripts/derive_spatialprops/Boot_MADPGCorr.m](https://github.com/PennLINC/multiscale/blob/5674f8c32f18121dbf11e92f0c1e7ac4d95833d1/scripts/analyses/Vertex-level-MAD_PG.Rmd)
 
 ## 1D) Extract FC values from individual parcels and .mgh timeseries
 ###### [scripts/derive_netstats/iterate_vert_fc.m](https://github.com/PennLINC/multiscale/blob/master/scripts/derive_netstats/iterate_vert_fc.m) - script to iterate qsubs over FC matrix derivations from subject time series and individualized parcels
