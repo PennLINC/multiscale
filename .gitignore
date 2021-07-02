@@ -30,7 +30,7 @@ scripts/analyses/LongFormat_AvgVert.rds
 scripts/analyses/LongFormat_*
 */._correlations_over_scalesplot.R
 *.DS_Store
-scripts/analyses/NetPatch_SpatialProps*
+scripts/analyses/NetPatch_SpatialProps.Rmd
 *SpatialChangeCorresp*
 *multiscale_analyses.rmd.R
 *multiscale_feats.Rmd
