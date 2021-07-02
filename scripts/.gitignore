@@ -26,3 +26,4 @@ pcPDM*_AllEdges
 *bart*
 scripts/analyses/LongFormat_AvgVert.rds
 scripts/analyses/LongFormat_*
+scripts/analyses/NetPatch_SpatialProps.Rmd
