@@ -115,13 +115,15 @@ fc<-vroom('/cbica/projects/pinesParcels/results/aggregated_data/fc/master_fcfeat
     ## New names:
     ## * `` -> ...1
 
-    ## Rows: 695
-    ## Columns: 16,360
+    ## Rows: 695 Columns: 16360
+
+    ## ── Column specification ────────────────────────────────────────────────────────
     ## Delimiter: ","
-    ## dbl [16360]: ...1, bblid, ind_globseg_scale2, ind_globseg_scale3, ind_globseg_scale4, ind_globse...
+    ## dbl (16360): ...1, bblid, ind_globseg_scale2, ind_globseg_scale3, ind_globse...
+
     ## 
-    ## Use `spec()` to retrieve the guessed column specification
-    ## Pass a specification to the `col_types` argument to quiet this message
+    ## ℹ Use `spec()` to retrieve the full column specification for this data.
+    ## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.
 
 ``` r
 # First row gotta go
@@ -194,60 +196,6 @@ wincolnames<-colnames(individ_scalebywin_df)
 
 # empty array for each nets average b/w con across subjects
 bwAvgCon<-matrix(0,693,464)
-
-
-# simpler version for easier replication - this still has the annoying part where "_"'s are added in and taken out though. Needed to distinguish scale 1 from 10, 2 from 20, etc.
-
-# simpler but about 5x slower....
-
-## loop over each scale
-#  for (K in 2:30){
-#  # Make index of where values from this K should go
-#    K_start=((K-1)*(K))/2
-#    K_end=(((K-1)*(K))/2)+K-1
-#    Kind<-K_start:K_end
-#    # index which values are at this scale
-#    scaleStr=paste('scale',K,'_',sep='')
-#    scaleCols_inds=grep(scaleStr,colnames(masterdf))
-#    scaleK_bw_indivi_cols_inds<-intersect(indiv_bwcols_ind,scaleCols_inds)
-#    # extract within and between colnames at this scale for within->b/w binarized transmodality mapping
-#    bwcolnames_thisScale_inds<-grep((paste('scale',K,'_',sep='')),bwcolnames)
-#    bwcolnames_thisScale=bwcolnames[bwcolnames_thisScale_inds]
-#    
-#    # remove scale number from strings so we're not picking up on those
-#    bwcolnames_thisScale_split<-strsplit(bwcolnames_thisScale,"nets")
-#    bwnetnames_thisScale<-sapply(bwcolnames_thisScale_split, "[[" , 2)
-#    # add another fucking set of underscores to all of these colnames so 1's dont pick up 10s, 2s 20s.
-#    bwnetnames_thisScale_extended<-paste('ind_bw_FC_scale',K,'_nets_',bwnetnames_thisScale,'_',sep='')
-#    # extra goddamn underscores have to go here and be removed later
-#    bwcolnames_thisScale_split<-strsplit(bwcolnames_thisScale,"nets")
-#    
-#    for (N in 1:K){
-#      # generate index for where values for this network at this scale should reside
-#      # start from K index
-#      Nind<-Kind[N]
-#      # get index for this N in terms of masterdf (collapse | to match multiple patterns)
-#      Ncolnames<-grep(as.character(paste('_',N,'_',sep='')),bwnetnames_thisScale_extended,value=T)
-#      # cut terminal underscore
-#      Ncolnames_circumcised<-substr(Ncolnames,1,nchar(Ncolnames)-1)
-#      # cut last extraneous underscore: after scaleX_nets_
-#      scaleNetStr=paste(scaleStr,'nets_',sep='')
-#      desired_scaleNetStr=paste(scaleStr,'nets',sep='')
-#      # make the subs
-#      Ncolnames_circumcised_shortened<-gsub(scaleNetStr,desired_scaleNetStr,Ncolnames_circumcised)
-#      # find corresponding spots in masterdf
-#      # paste("x$") added for exact matches only (end anchor)
-#      N_indices<-sapply(Ncolnames_circumcised_shortened,function(y) grep(paste(y,'$',sep=''),colnames(masterdf)))
-#      # extract all columns of interest for each subject
-#      N_edges_at_this_scale<-cbind(masterdf[,N_indices])
-#      # get corresponding columns, average over
-#      avg_bw=rowMeans(N_edges_at_this_scale)
-#      # for bw-based gams later - convert all b/w cons for a net to avg b/w for each subj
-#      bwAvgCon[,Nind]=avg_bw
-#    }
-#  }
-
-# More complicated version for faster run-time
 
 # loop over connectivities to-unimodal then to-transmodal
 modalloopvar=c('unimodal','transmodal')
@@ -520,12 +468,12 @@ cor.test(bwdf$tmvec,bwdf$avg_bw_deltaR2,method='spearman')
 
 ``` r
 # Figure 3C
-ggplot(bwdf,aes(tmvec,avg_bw_deltaR2)) + geom_point(size=6,alpha=.8,aes(color=domnetvecSig))+ scale_color_manual(values=c('#3281ab','#670068','#007500','#b61ad0','#b8cf86','#d77d00','#c1253c','gray80')) + xlab("Transmodality") + ylab(expression(paste('Age Effect (',Delta,R^2[adj],')',sep=''))) +theme_classic(base_size = 40) +guides(color=guide_legend(title="Yeo 7 Overlap"))+theme(plot.margin=margin(b=3,t=.1,l=.1,r=.1, unit='cm'), legend.position=c(.42,-.24),legend.direction = "horizontal",legend.title=element_text(size=30),legend.text=element_text(size=30))+geom_smooth(method='lm',color='black',size=3)
+ggplot(bwdf,aes(tmvec,avg_bw_deltaR2)) + geom_point(size=6,alpha=.8,aes(color=domnetvecSig))+ scale_color_manual(values=c('#3281ab','#670068','#007500','#b61ad0','#b8cf86','#d77d00','#c1253c','gray80')) + xlab("Functional Hierarchy") + ylab(expression(paste('Age Effect (',Delta,R^2[adj],')',sep=''))) +theme_classic(base_size = 40) +guides(color=guide_legend(title="Yeo 7 Overlap"))+theme(plot.margin=margin(b=3,t=.1,l=.1,r=.1, unit='cm'), legend.position=c(.42,-.24),legend.direction = "horizontal",legend.title=element_text(size=30),legend.text=element_text(size=30))+geom_smooth(method='lm',color='black',size=3)
 ```
 
     ## `geom_smooth()` using formula 'y ~ x'
 
-![](Network-level-age_files/figure-markdown_github/unnamed-chunk-10-1.png)
+![](Network-level-age_files/figure-gfm/unnamed-chunk-10-1.png)<!-- -->
 
 ``` r
 # Now we need to do a little unprocessing to unpack the splines into a plot-friendly format
@@ -617,12 +565,12 @@ ggplot(LongAgeSpan_plotdf3,aes(Age,Splines,color=Transmodality,group=Grouping)) 
     expand = c(0, 0),
     breaks = seq(8,23,by=3)
   ) +
-  theme(plot.margin=unit(c(.2,.6,.5,.2),"cm"))+labs(color='Network Transmodality')
+  theme(plot.margin=unit(c(.2,.6,.5,.2),"cm"))+labs(color='Functional Hierarchy')
 ```
 
     ## Warning: Removed 57519 row(s) containing missing values (geom_path).
 
-![](Network-level-age_files/figure-markdown_github/unnamed-chunk-13-1.png)
+![](Network-level-age_files/figure-gfm/unnamed-chunk-13-1.png)<!-- -->
 
 ``` r
 # Age Effect Derivative * Age * Transmodality - for 3D.
@@ -752,7 +700,7 @@ breaks=c(-.002,0,0.002)
 
 ``` r
 # Age Effect Derivatives * Age * Transmodality - 3D
-ggplot(LongAgeSpan_plotdf2[derivSigWholeSpline,],aes(agespans,tmvecJit,color=derivs,group=CIgroupingInd,alpha=AlphaSig)) +geom_line(size=4) +labs(x = 'Age', y = 'Transmodality') +theme_classic(base_size = 40)+ xlim(c(8,23))+ scale_colour_gradientn(colours=c('#0b0bff','#8585ff','white','#ff9191','#ff0a0a'),values = c(0,.4,.5,.6,1),breaks=breaks, labels = breaks,limits=c(-.0031,0.0031),name="Change Per Year: Between-Network Coupling")+theme(legend.text=element_text(size=30),legend.title = element_text(size=30),legend.position="top",legend.key.width = unit(4.3, "cm"))+ylim(c(min(tmvecJit),max(tmvecJit)))+guides(alpha=FALSE,color = guide_colorbar(title.position="top",ticks.colour = "gray",
+ggplot(LongAgeSpan_plotdf2[derivSigWholeSpline,],aes(agespans,tmvecJit,color=derivs,group=CIgroupingInd,alpha=AlphaSig)) +geom_line(size=4) +labs(x = 'Age', y = 'Functional Hierarchy') +theme_classic(base_size = 40)+ xlim(c(8,23))+ scale_colour_gradientn(colours=c('#0b0bff','#8585ff','white','#ff9191','#ff0a0a'),values = c(0,.4,.5,.6,1),breaks=breaks, labels = breaks,limits=c(-.0031,0.0031),name="Change Per Year: Between-Network Coupling")+theme(legend.text=element_text(size=30),legend.title = element_text(size=30),legend.position="top",legend.key.width = unit(4.3, "cm"))+ylim(c(min(tmvecJit),max(tmvecJit)))+guides(alpha=FALSE,color = guide_colorbar(title.position="top",ticks.colour = "gray",
                                 ticks.linewidth = 8))+geom_vline(xintercept = c(10,16,21),linetype='dashed',size=1.5)+ theme(legend.margin=margin(b=-.5,t = -.5, unit='cm')) + scale_x_continuous(
     limits = c(8, 23),
     expand = c(0, 0),
@@ -767,7 +715,7 @@ ggplot(LongAgeSpan_plotdf2[derivSigWholeSpline,],aes(agespans,tmvecJit,color=der
     ## Scale for 'y' is already present. Adding another scale for 'y', which will
     ## replace the existing scale.
 
-![](Network-level-age_files/figure-markdown_github/unnamed-chunk-16-1.png)
+![](Network-level-age_files/figure-gfm/unnamed-chunk-16-1.png)<!-- -->
 
 ``` r
 # For scale-dependent effects, we isolate the most unimodal (SOM_A) and transmodal (DM_B) Yeo17 groups across scales to compare the relative impact of scale upon their age-relations.
@@ -843,7 +791,7 @@ geom_smooth(data=subset(bwdf,domnetvec17=='Somatomotor A'),method='gam',formula 
     ## Scale for 'colour' is already present. Adding another scale for 'colour',
     ## which will replace the existing scale.
 
-![](Network-level-age_files/figure-markdown_github/unnamed-chunk-18-1.png)
+![](Network-level-age_files/figure-gfm/unnamed-chunk-18-1.png)<!-- -->
 
 ``` r
 # section to write out each network's age effect at each scale. In matlab, each age effect of each network at each scale will be averaged for each vertex - according the discrete network membership of that vertex as each scale. This is a visual-only result (the top brains in 3B), and thus is commented out (for now)

@@ -12,6 +12,7 @@ mccExcludedFiles.log
 readme.txt
 requiredMCRProducts.txt
 subj_vert_fc_vertexwise_output_matlab_compile
+*subj_vert_fc_matlab_compile_pcor*
 *.sh.e*
 *.utf8*
 *.sh.o*
@@ -58,4 +59,4 @@ scripts/derive_parcels/Step_2nd_SingleParcellation/Step_11th_SingleParcellation_
 *concatenate_scalefigs_segEF.sh
 *concatenate_scalefigs_winAge.sh
 *matrix_compare.m
-
+*subj_vert_fc_matlab_compile_noneg*
