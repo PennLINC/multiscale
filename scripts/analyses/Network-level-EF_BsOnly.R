@@ -88,6 +88,160 @@ EFDeltaR2EstVec_RS<-function(x){
   
 }
 
+# difference in R2 for Social Cog
+EFDeltaR2EstVec_Soc<-function(x){
+  
+  # relevant df
+  scaledf<-data.frame(cbind(as.numeric(masteref$F2_Social_Cog_Accuracy),as.numeric(masteref$Age),as.numeric(masteref$Sex),masteref$Motion,x))
+  colnames(scaledf)<-c('EF','Age','Sex','Motion','varofint')
+  
+  # no-EF model (b.w. ~ sex + motion)
+  noEFGam<-gam(varofint~Sex+Motion+s(Age,k=3),data=scaledf)
+  noEFSum<-summary(noEFGam)
+  # EF-included model for measuring difference
+  EFGam<-gam(varofint~EF+Sex+Motion+s(Age,k=3),data=scaledf)
+  EFSum<-summary(EFGam)
+  
+  dif<-EFSum$r.sq-noEFSum$r.sq
+  
+  # partial spearmans to extract EF relation (for direction)
+  pspear=pcor(scaledf,method='spearman')$estimate
+  corest<-pspear[5]
+  if(corest<0){
+    dif=dif*-1
+  }
+  
+  return(dif)
+  
+}
+
+# same thing but returning chisq test sig. output for FDR correction instead of hard difference
+EFDeltaPEstVec_Soc<-function(x){
+  
+  # relevant df
+  scaledf<-data.frame(cbind(as.numeric(masteref$F2_Social_Cog_Accuracy),as.numeric(masteref$Age),as.numeric(masteref$Sex),masteref$Motion,x))
+  colnames(scaledf)<-c('EF','Age','Sex','Motion','varofint')
+  
+  # no-EF model (segreg ~ sex + motion)
+  noEFGam<-gam(varofint~Sex+Motion+s(Age,k=3),data=scaledf)
+  # EF-included model for measuring difference
+  EFGam<-gam(varofint~EF+Sex+Motion+s(Age,k=3),data=scaledf)
+  
+  # test of dif with anova.gam
+  anovaRes<-anova.gam(noEFGam,EFGam,test='Chisq')
+  anovaP<-anovaRes$`Pr(>Chi)`
+  anovaP2<-unlist(anovaP)
+  return(anovaP2[2])
+  
+}
+
+# bootstrap version: resampled df instead of master df
+EFDeltaR2EstVec_RS_Soc<-function(x){
+  
+  # relevant df
+  scaledf<-data.frame(cbind(as.numeric(resampDF$F2_Social_Cog_Accuracy),as.numeric(resampDF$Age),as.numeric(resampDF$Sex),resampDF$Motion,x))
+  colnames(scaledf)<-c('EF','Age','Sex','Motion','varofint')
+  
+  
+  # no-EF model (b.w. ~ sex + motion)
+  noEFGam<-gam(varofint~Sex+Motion+s(Age,k=3),data=scaledf)
+  noEFSum<-summary(noEFGam)
+  # EF-included model for measuring difference
+  EFGam<-gam(varofint~EF+Sex+Motion+s(Age,k=3),data=scaledf)
+  EFSum<-summary(EFGam)
+  
+  dif<-EFSum$r.sq-noEFSum$r.sq
+  
+  # partial spearmans to extract age relation (for direction)
+  pspear=pcor(scaledf,method='spearman')$estimate
+  corest<-pspear[5]
+  if(corest<0){
+    dif=dif*-1
+  }
+  
+  return(dif)
+  
+}
+
+### ### ### ### ### ###
+### Memory scores, F3
+### ### ### ### ### ### 
+
+EFDeltaR2EstVec_Mem<-function(x){
+  
+  # relevant df
+  scaledf<-data.frame(cbind(as.numeric(masteref$F3_Memory_Accuracy),as.numeric(masteref$Age),as.numeric(masteref$Sex),masteref$Motion,x))
+  colnames(scaledf)<-c('EF','Age','Sex','Motion','varofint')
+  
+  # no-EF model (b.w. ~ sex + motion)
+  noEFGam<-gam(varofint~Sex+Motion+s(Age,k=3),data=scaledf)
+  noEFSum<-summary(noEFGam)
+  # EF-included model for measuring difference
+  EFGam<-gam(varofint~EF+Sex+Motion+s(Age,k=3),data=scaledf)
+  EFSum<-summary(EFGam)
+  
+  dif<-EFSum$r.sq-noEFSum$r.sq
+  
+  # partial spearmans to extract EF relation (for direction)
+  pspear=pcor(scaledf,method='spearman')$estimate
+  corest<-pspear[5]
+  if(corest<0){
+    dif=dif*-1
+  }
+  
+  return(dif)
+  
+}
+
+# same thing but returning chisq test sig. output for FDR correction instead of hard difference
+EFDeltaPEstVec_Mem<-function(x){
+  
+  # relevant df
+  scaledf<-data.frame(cbind(as.numeric(masteref$F3_Memory_Accuracy),as.numeric(masteref$Age),as.numeric(masteref$Sex),masteref$Motion,x))
+  colnames(scaledf)<-c('EF','Age','Sex','Motion','varofint')
+  
+  # no-EF model (segreg ~ sex + motion)
+  noEFGam<-gam(varofint~Sex+Motion+s(Age,k=3),data=scaledf)
+  # EF-included model for measuring difference
+  EFGam<-gam(varofint~EF+Sex+Motion+s(Age,k=3),data=scaledf)
+  
+  # test of dif with anova.gam
+  anovaRes<-anova.gam(noEFGam,EFGam,test='Chisq')
+  anovaP<-anovaRes$`Pr(>Chi)`
+  anovaP2<-unlist(anovaP)
+  return(anovaP2[2])
+  
+}
+
+# bootstrap version: resampled df instead of master df
+EFDeltaR2EstVec_RS_Mem<-function(x){
+  
+  # relevant df
+  scaledf<-data.frame(cbind(as.numeric(resampDF$F3_Memory_Accuracy),as.numeric(resampDF$Age),as.numeric(resampDF$Sex),resampDF$Motion,x))
+  colnames(scaledf)<-c('EF','Age','Sex','Motion','varofint')
+  
+  
+  # no-EF model (b.w. ~ sex + motion)
+  noEFGam<-gam(varofint~Sex+Motion+s(Age,k=3),data=scaledf)
+  noEFSum<-summary(noEFGam)
+  # EF-included model for measuring difference
+  EFGam<-gam(varofint~EF+Sex+Motion+s(Age,k=3),data=scaledf)
+  EFSum<-summary(EFGam)
+  
+  dif<-EFSum$r.sq-noEFSum$r.sq
+  
+  # partial spearmans to extract age relation (for direction)
+  pspear=pcor(scaledf,method='spearman')$estimate
+  corest<-pspear[5]
+  if(corest<0){
+    dif=dif*-1
+  }
+  
+  return(dif)
+  
+}
+
+
 # load 'erry thang
 ### load in demograhics
 demo<-read.csv('/home/pinesa/ms_data/pnc_demo.csv')
@@ -128,7 +282,16 @@ masterdf<-merge(fc,df,by='bblid')
 # get EF in here
 subjbehav<-read.csv("/home/pinesa/ms_data/n9498_cnb_factor_scores_fr_20170202.csv")
 ef<-data.frame(subjbehav$NAR_F1_Exec_Comp_Cog_Accuracy,subjbehav$bblid)
+Soc<-data.frame(subjbehav$NAR_F2_Social_Cog_Accuracy,subjbehav$bblid)
+Mem<-data.frame(subjbehav$NAR_F3_Memory_Accuracy,subjbehav$bblid)
 colnames(ef)<-c('F1_Exec_Comp_Cog_Accuracy','bblid')
+colnames(Soc)<-c('F2_Social_Cog_Accuracy','bblid')
+colnames(Mem)<-c('F3_Memory_Accuracy','bblid')
+# merge in
+masteref<-merge(masterdf,ef,by='bblid')
+masteref<-merge(masteref,Soc,by='bblid')
+masteref<-merge(masteref,Mem,by='bblid')
+
 # merge in
 masteref<-merge(masterdf,ef,by='bblid')
 
@@ -358,11 +521,19 @@ DMB_testStatQuadr<-rep(0,b)
 DMB_testStatLin<-rep(0,b)
 DM_testStatQuadr<-rep(0,b)
 DM_testStatLin<-rep(0,b)
+# Social
+lm_testStatLIN_Soc<-rep(0,b)
+lm_testStatQUADR_Soc<-rep(0,b)
+# Memory
+lm_testStatLIN_Mem<-rep(0,b)
+lm_testStatQUADR_Mem<-rep(0,b)
 # now bootstrap "b" times
 for (x in 1:b){
   # initialize network-level output vector for each bootstrap
   avg_bw_deltaR2<-rep(0,464)
   avg_bw_deltaP<-rep(0,464)
+  avg_bw_deltaR2_Soc<-rep(0,464)
+  avg_bw_deltaR2_Mem<-rep(0,464)
   # now bootstrapping 693 subjects rather than 464 networks
   sampIndices<-sample(1:693,replace=T)
   # bwAvgCondf is a leaner version of the master dataframe with all variables needed here.
@@ -372,10 +543,12 @@ for (x in 1:b){
     # first 464 columns are network-level connectivity values. test each.
     # this is a function that return full vs. reduced model comparisons (Age included vs. age excluded, controls for sex + motion).
     avg_bw_deltaR2[n]<-EFDeltaR2EstVec_RS(resampDF[n])
+    avg_bw_deltaR2_Soc[n]<-EFDeltaR2EstVec_RS_Soc(resampDF[n])
+    avg_bw_deltaR2_Mem[n]<-EFDeltaR2EstVec_RS_Mem(resampDF[n])
   }
   #### end of inner loop 
   # create network-level dataframe from subject-level results: tmvec is just a vector of transmodality values for each network
-  NL_bwdf<-data.frame(tmvec,avg_bw_deltaR2)
+  NL_bwdf<-data.frame(tmvec,avg_bw_deltaR2,avg_bw_deltaR2_Soc,avg_bw_deltaR2_Mem)
   # Now, test relationship between age effect and transmodality for this bootstrap with likelihood ratio test between nested models
   # fit full model
   EFEff_by_transmodality_model<-lm(avg_bw_deltaR2~poly(tmvec,2),data=NL_bwdf)
@@ -397,9 +570,17 @@ for (x in 1:b){
   DM_testStatQuadr[x]<-DM_lm$coefficients['poly(scalesvec, 2)2']
   DM_testStatLin[x]<-DM_lm$coefficients['poly(scalesvec, 2)1']
   
+  # fit full models
+  EFEff_by_transmodality_model_Soc<-lm(avg_bw_deltaR2_Soc~poly(tmvec,2),data=NL_bwdf)
+  EFEff_by_transmodality_model_Mem<-lm(avg_bw_deltaR2_Mem~poly(tmvec,2),data=NL_bwdf)
+  # save fits of transmodality
+  lm_testStatLIN_Soc[x]<-EFEff_by_transmodality_model_Soc$coefficients['poly(tmvec, 2)1']
+  lm_testStatQUADR_Soc[x]<-EFEff_by_transmodality_model_Soc$coefficients['poly(tmvec, 2)2']
+  lm_testStatLIN_Mem[x]<-EFEff_by_transmodality_model_Mem$coefficients['poly(tmvec, 2)1']
+  lm_testStatQUADR_Mem[x]<-EFEff_by_transmodality_model_Mem$coefficients['poly(tmvec, 2)2']  
 }
 #### end of outer loop
 
-savedBOOTinfo<-data.frame(lm_testStatLIN,lm_testPvecLIN,lm_testStatQUADR,SMA_testStatLin,SMA_testStatQuadr,SM_testStatLin,SM_testStatQuadr,DMB_testStatLin,DMB_testStatQuadr,DM_testStatLin,DM_testStatQuadr)
+savedBOOTinfo<-data.frame(lm_testStatLIN,lm_testPvecLIN,lm_testStatQUADR,SMA_testStatLin,SMA_testStatQuadr,SM_testStatLin,SM_testStatQuadr,DMB_testStatLin,DMB_testStatQuadr,DM_testStatLin,DM_testStatQuadr,lm_testStatLIN_Soc,lm_testStatQUADR_Soc,lm_testStatLIN_Mem,lm_testStatQUADR_Mem)
 saveRDS(savedBOOTinfo,'~/EF_NetLevel_bootInfo.rds')
   
