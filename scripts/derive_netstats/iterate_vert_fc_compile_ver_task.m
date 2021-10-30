@@ -16,7 +16,7 @@ group_parts=group_parts.affils;
 % load in SNR masks
 l_l = read_label([],'/cbica/projects/pinesParcels/data/H_SNR_masks/lh.Mask_SNR.label');
 l_r = read_label([],'/cbica/projects/pinesParcels/data/H_SNR_masks/rh.Mask_SNR.label');
-% assuming +1 is because matlab starts on 1, not 0. can double-check with zc
+% +1 is because matlab starts on 1, not 0
 l_l_ind = l_l(:,1) + 1;
 l_r_ind = l_r(:,1) + 1;
 % check to make sure that mask indices match 0s in group consensus to ensure consistent masking throughout
@@ -42,18 +42,18 @@ group_parts=load([ProjectFolder '/SingleAtlas_Analysis/group_all_Ks.mat']);
 group_parts=group_parts.affils;
 group_parts_masked=group_parts(any(group_parts,2),:);
 
-% test on one subj
+% only 1 to test it out
 for s=1
-%for s=2:length(subjs)
-	outdir = ['/cbica/projects/pinesParcels/data/CombinedData/' num2str(subjs(s)) '/fc_metrics.mat']; 
-	outdirp = ['/cbica/projects/pinesParcels/data/CombinedData/' num2str(subjs(s)) '/pc_metrics.mat'];
+%for s=2:length(subjs);
+	outdir = ['/cbica/projects/pinesParcels/data/CombinedData/' num2str(subjs(s)) '/fc_metrics_task.mat']; 
+	outdirp = ['/cbica/projects/pinesParcels/data/CombinedData/' num2str(subjs(s)) '/pc_metrics_task.mat'];
 	% commented out for overwriting
 	%if ~exist(outdir, 'file')
-		configfp=['/cbica/projects/pinesParcels/data/CombinedData/' num2str(subjs(s)) '/fc_config.mat'];
+		configfp=['/cbica/projects/pinesParcels/data/CombinedData/' num2str(subjs(s)) '/fc_config_task.mat'];
 		% save needed arguments
 		save(configfp, 's', 'surfMask', 'Krange', 'subjs', 'group_parts_masked', 'outdir', 'outdirp');
 		% turn this into a qsub command
-		cmd = ['/cbica/projects/pinesParcels/multiscale/scripts/derive_netstats/run_subj_vert_fc_matlab_compile.sh $MATLAB_DIR ' configfp ];
+		cmd = ['/cbica/projects/pinesParcels/multiscale/scripts/derive_netstats/run_subj_vert_fc_matlab_compile_task.sh $MATLAB_DIR ' configfp ];
 	
 		fid=fopen(['/cbica/projects/pinesParcels/data/CombinedData/' num2str(subjs(s)) '/tmp.sh'], 'w');
 		fprintf(fid,cmd);

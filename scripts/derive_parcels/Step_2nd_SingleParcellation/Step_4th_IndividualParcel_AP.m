@@ -35,7 +35,9 @@ LeftCell = g_ls([RawDataFolder '/*/lh.fs5.sm6.residualised.mgh']);
 RightCell = g_ls([RawDataFolder '/*/rh.fs5.sm6.residualised.mgh']);
 
 % Parcellate for each subject separately
-for i = 1:length(LeftCell)
+% for i = 1:length(LeftCell)
+% tmp
+for i=1
     i
     [Fold, ~, ~] = fileparts(LeftCell{i});
     [~, ID_Str, ~] = fileparts(Fold);

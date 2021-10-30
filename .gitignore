@@ -11,6 +11,8 @@ scripts/derive_parcels/Toolbox/
 mccExcludedFiles.log
 readme.txt
 requiredMCRProducts.txt
+scripts/derive_netstats/iterate_vert_fc_compile_ver_pcor.m
+scripts/derive_netstats/iterate_vert_fc_compile_ver_noneg.m
 subj_vert_fc_vertexwise_output_matlab_compile
 *subj_vert_fc_matlab_compile_pcor*
 *.sh.e*
@@ -44,9 +46,6 @@ scripts/analyses/NetPatch_SpatialProps.Rmd
 *calc_net_grad3_vals.m
 *derive_NetWise_PartCoefs.m
 *fc_to_csv_*
-*iterate_vert_fc_compile_ver_*
-*run_subj_vert_fc_matlab_compile_*
-*subj_vert_fc_matlab_compile_rs*
 *synth_data_create*
 scripts/derive_parcels/Step_2nd_SingleParcellation/Step_11th_SingleParcellation_7Networks/*
 *concatenate_scalefigs_LabelVar.sh
