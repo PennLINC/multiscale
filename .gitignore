@@ -60,3 +60,8 @@ scripts/derive_parcels/Step_2nd_SingleParcellation/Step_11th_SingleParcellation_
 *concatenate_scalefigs_winAge.sh
 *matrix_compare.m
 *subj_vert_fc_matlab_compile_noneg*
+scripts/analyses/archive/BwRsqCentricOverview_pcor.Rmd
+scripts/derive_netstats/merge_ind_fc_noneg.m
+scripts/derive_netstats/merge_ind_fc_pcor.m
+scripts/derive_netstats/merge_ind_fc_rs.m
+scripts/derive_netstats/standalone_PC.m
