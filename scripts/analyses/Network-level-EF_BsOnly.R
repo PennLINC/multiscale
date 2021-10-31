@@ -292,9 +292,6 @@ masteref<-merge(masterdf,ef,by='bblid')
 masteref<-merge(masteref,Soc,by='bblid')
 masteref<-merge(masteref,Mem,by='bblid')
 
-# merge in
-masteref<-merge(masterdf,ef,by='bblid')
-
 ### Get in Consensus-reference atlas correspondence
 rac<-read.csv('/home/pinesa/ms_data/network_yCorrespondence_overscales.csv',stringsAsFactors = F)
 scalesvec<-as.numeric(rac[2,])
@@ -487,6 +484,8 @@ bwAvgCondf$Age<-masterdf$Age
 bwAvgCondf$Sex<-masterdf$Sex
 bwAvgCondf$Motion<-masterdf$Motion
 bwAvgCondf$F1_Exec_Comp_Cog_Accuracy<-masteref$F1_Exec_Comp_Cog_Accuracy
+bwAvgCondf$F2_Social_Cog_Accuracy<-masteref$F2_Social_Cog_Accuracy
+bwAvgCondf$F3_Memory_Accuracy<-masteref$F3_Memory_Accuracy
 #### LINEAR VERSION
 
 #OG coefs. 

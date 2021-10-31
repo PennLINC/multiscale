@@ -42,7 +42,6 @@ eIDParent='/cbica/projects/pncSingleFuncParcel/pncSingleFuncParcel_psycho/data/S
 % establish output folder
 ProjectFolder = '/cbica/projects/pinesParcels/data/SingleParcellation';
 ResultantFolder = [ProjectFolder '/SingleParcel_1by1_kequal_' num2str(K)];
-
 % extract and save extracted TSes for each subj
 % test on 1 subj
 for i=1
@@ -63,10 +62,9 @@ for i=1
 	eIDtsFP_l=[eIDParent ID_Str '/surf/lh.fs5.sm6.residualised.mgh'];
         eIDtsFP_r=[eIDParent ID_Str '/surf/rh.fs5.sm6.residualised.mgh'];
 	% output folder for this subj	
-	ResultantFolder_I = [ResultantFolder '/Sub_' ID_Str];
+	ResultantFolder_I = [ResultantFolder '/Sub_' ID_Str '/rest_only'];
+	mkdir(ResultantFolder_I)
 	% RESTING STATE JOB SUBMISSION
-		% set output FileName
-		ResultantFile = [ResultantFolder_I '/IndividualParcel_Final_sbj1_comp' num2str(K) '_alphaS21_1_alphaL10_vxInfo1_ard0_eta0/final_UV_rest.mat'];	
 		% keep subject list file fresh
 		sbjListFile = [ResultantFolder_I '/sbjListAllFile_' num2str(i) '.txt'];
         	system(['rm ' sbjListFile]);

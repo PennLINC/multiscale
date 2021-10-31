@@ -130,6 +130,11 @@ rac17<-read.csv('/cbica/projects/pinesParcels/results/aggregated_data/fc/network
 scalesvec17<-as.numeric(rac17[2,])
 domnetvec17<-as.factor(rac17[3,])
 netpropvec17<-as.numeric(rac17[4,])
+# aaand k=2 reference correspondence
+coarseKref<-read.csv('/cbica/projects/pinesParcels/results/aggregated_data/fc/network_k2Correspondence_overscales.csv',stringsAsFactors = F)
+scalesvec2<-as.numeric(coarseKref[2,])
+domnetvec2<-as.factor(coarseKref[3,])
+netpropvec2<-as.numeric(coarseKref[4,])
 
 #### read in transmodality
 tm<-read.csv('/cbica/projects/pinesParcels/results/aggregated_data/fc/network_transmodality_overscales.csv',stringsAsFactors = F)
@@ -148,6 +153,13 @@ for (i in 1:length(tmclass)){
     tmclass[i]='transmodal'
   }
 }
+
+# plot distribution of k=2 alignment by color (unimodal=purple, transmodal=yellow)
+# x = functional hierarchy, y = scale
+coarseplotdf<-data.frame(tmvec,domnetvec2,scalesvec2,netpropvec2)
+plot<-ggplot(coarseplotdf[3:464,],aes(tmvec,scalesvec2)) + geom_point(size=3,aes(color=domnetvec2,alpha=netpropvec2))+ scale_color_manual(values=c('red','blue')) + xlab("Functional Hierarchy") + ylab('Scale') +theme_classic(base_size = 40) +guides(color=guide_legend(title="K=2 Overlap"),alpha=guide_legend(title="% vertices in K=2 label"))+theme(legend.title=element_text(size=25),legend.text=element_text(size=25))
+library(ggExtra)
+ggMarginal(plot,type='histogram',margins = 'x')
 ```
 
 ```{r}
