@@ -45,8 +45,8 @@ ResultantFolder = [ProjectFolder '/SingleParcel_1by1_kequal_' num2str(K)];
 
 % extract and save extracted TSes for each subj
 % test on 1 subj
-for i=1
-% for i = 1:length(LeftCell)
+% for i=1
+for i = 2:length(LeftCell)
 	% print iteration
 	i
 	% extract subj ID

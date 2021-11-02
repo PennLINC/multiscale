@@ -33,6 +33,8 @@ subjects<-read.csv('/cbica/projects/pinesParcels/data/participants.txt',header =
 # get EF in here
 subjbehav<-read.csv("~/Downloads/n9498_cnb_factor_scores_fr_20170202.csv")
 ef<-data.frame(subjbehav$NAR_F1_Exec_Comp_Cog_Accuracy,subjbehav$bblid)
+efSoc<-data.frame(subjbehav$NAR_F2_Social_Cog_Accuracy,subjbehav$bblid)
+efMem<-data.frame(subjbehav$NAR_F3_Memory_Accuracy,subjbehav$bblid)
 
 ### Collapse Motion metric 
 # read in
@@ -52,7 +54,7 @@ colnames(ageSex)<-c("Age","Sex","scanid","bblid")
 df<-merge(subjects,ageSex,by="scanid")
 df<-merge(df,motiondf,by='bblid')
 
-### community solutions guaged in this iteration
+### community solutions gauged in this iteration
 community_vec<-seq(2,30)
 
 # big load - output of fc_to_csv.m (all coupling/FC data, pre-organized)
@@ -67,8 +69,12 @@ masterdf<-merge(fc,df,by='bblid')
 subjbehav<-read.csv("~/Downloads/n9498_cnb_factor_scores_fr_20170202.csv")
 ef<-data.frame(subjbehav$NAR_F1_Exec_Comp_Cog_Accuracy,subjbehav$bblid)
 colnames(ef)<-c('F1_Exec_Comp_Cog_Accuracy','bblid')
+colnames(efSoc)<-c('F2_Social_Cog_Accuracy','bblid')
+colnames(efMem)<-c('F3_Memory_Accuracy','bblid')
 # merge in
 masteref<-merge(masterdf,ef,by='bblid')
+masterefSoc<-merge(masterdf,efSoc,by='bblid')
+masterefMem<-merge(masterdf,efMem,by='bblid')
 
 ```
 
@@ -110,6 +116,29 @@ write.table(AgeMotEF,'/cbica/projects/pinesParcels/results/EffectVecs/AgeMotEF',
 # use source activate mv_preds to load in required python libraries
 # run penal_regresFC_AgeEFIndep.py
 ```
+
+```{r}
+# SOCIAL EF
+# combine age, motion, and EF scores with edges
+AgeMotEFSoc<-cbind(masterefSoc[,indiv_bwcols_ind],masterefSoc$Age,masterefSoc$Motion,masterefSoc$F2_Social_Cog_Accuracy)
+# write out for scikit learn
+write.table(AgeMotEFSoc,'/cbica/projects/pinesParcels/results/EffectVecs/AgeMotEFSoc',sep=',', col.names = F,quote = F,row.names=F)
+
+# use source activate mv_preds to load in required python libraries
+# run penal_regresFC_AgeEFIndep.py
+```
+
+```{r}
+# MEMORY EF
+# combine age, motion, and EF scores with edges
+AgeMotEFMem<-cbind(masterefMem[,indiv_bwcols_ind],masterefMem$Age,masterefMem$Motion,masterefMem$F3_Memory_Accuracy)
+# write out for scikit learn
+write.table(AgeMotEFMem,'/cbica/projects/pinesParcels/results/EffectVecs/AgeMotEFMem',sep=',', col.names = F,quote = F,row.names=F)
+
+# use source activate mv_preds to load in required python libraries
+# run penal_regresFC_AgeEFIndep.py
+```
+
 
 ```{r}
 ###########
@@ -160,4 +189,101 @@ ggplot(predEF_AIpermutCors,aes(x=V1))+geom_density(size=1.5)+geom_vline(xinterce
 
 ```{r, fig.width=12,fig.height=10}
 ggplot(plotdf,aes(x=obsEF_AI,y=predEF_AI)) +geom_point(size=2,alpha=.6)+geom_smooth(method='lm',color='black',size=2)+theme_classic(base_size=25) + xlab("Observed") + ylab("Predicted")+ggtitle('Executive Function')
+```
+
+```{r}
+#### SOCIAL EF
+
+
+# load in subject predictions. First column is sum of predicted EF from every instance in which this subject was randomly allocated to the testing 1/3rd. Second column is the number of times the subject was allocated to the testing 1.3rd.
+predEF_AIcsv_Soc<-read.csv('/cbica/projects/pinesParcels/data/aggregated_data/SubjPreds_AI_Soc.csv',header=F)
+
+# convert to average predicted EF over all folds
+predEF_AI_Soc<-predEF_AIcsv_Soc[,1]/predEF_AIcsv_Soc[,2]
+# average "observed", AKA, average EF after regressing out motion and age over folds
+obsEF_AI_Soc<-predEF_AIcsv_Soc[,3]/predEF_AIcsv_Soc[,2]
+
+# pred ef vs. age. There should be no relationship if regressing Age out of EF scores worked.
+plot(masterefSoc$Age,predEF_AI_Soc)
+cor.test(masterefSoc$Age,predEF_AI_Soc)
+
+# pred ef vs. ef. There should be a relationship if our model was able to predict EF in unseen subjects.
+plot(obsEF_AI_Soc,predEF_AI_Soc)
+
+# save the real predicted vs. observed correlation for plotting relative to null distribution
+predObsCor_Soc<-cor.test(obsEF_AI_Soc,predEF_AI_Soc)$estimate
+
+# median absolute error also of interest.
+mae(obsEF_AI_Soc,predEF_AI_Soc)
+
+# get permutation prediction vs. observed correlations from permutation writeout
+predEF_AIpermutCors_Soc<-read.csv('/cbica/projects/pinesParcels/data/aggregated_data/PermutPreds_AI_Soc.csv',header=F)
+
+# get predicted vs observed over iterations to confirm average prediction (correlation)
+predEF_allIters_Soc<-read.csv('/cbica/projects/pinesParcels/data/aggregated_data/Predicted_Obs_Cors_Soc.csv',header=F)
+# average correlation of predicted vs. observed, slightly lower than correlation of average predicted vs. average observed
+mean(predEF_allIters_Soc$V1)
+
+# Figure 6 flag
+plotdf_Soc<-data.frame(obsEF_AI_Soc,predEF_AI_Soc)
+```
+
+```{r, fig.width=4,fig.height=3}
+# edge-EF pred. permutation vs. observed
+ggplot(predEF_AIpermutCors_Soc,aes(x=V1))+geom_density(size=1.5)+geom_vline(xintercept = predObsCor_Soc,size=2,color='#BC3754')+theme_classic(base_size=18)+ylab('')+xlab('')+guides(y="none")+scale_x_continuous(breaks=c(-.3,0,.3,.6),limits=c(-.35,.6))
+
+```
+
+
+```{r, fig.width=12,fig.height=10}
+ggplot(plotdf_Soc,aes(x=obsEF_AI_Soc,y=predEF_AI_Soc)) +geom_point(size=2,alpha=.6)+geom_smooth(method='lm',color='black',size=2)+theme_classic(base_size=25) + xlab("Observed") + ylab("Predicted")+ggtitle('Executive Function (Social)')
+```
+
+
+```{r}
+
+#### MEMORY EF
+
+# load in subject predictions. First column is sum of predicted EF from every instance in which this subject was randomly allocated to the testing 1/3rd. Second column is the number of times the subject was allocated to the testing 1.3rd.
+predEF_AIcsv_Mem<-read.csv('/cbica/projects/pinesParcels/data/aggregated_data/SubjPreds_AI_Mem.csv',header=F)
+
+# convert to average predicted EF over all folds
+predEF_AI_Mem<-predEF_AIcsv_Mem[,1]/predEF_AIcsv_Mem[,2]
+# average "observed", AKA, average EF after regressing out motion and age over folds
+obsEF_AI_Mem<-predEF_AIcsv_Mem[,3]/predEF_AIcsv_Mem[,2]
+
+# pred ef vs. age. There should be no relationship if regressing Age out of EF scores worked.
+plot(masterefMem$Age,predEF_AI_Mem)
+cor.test(masterefMem$Age,predEF_AI_Mem)
+
+# pred ef vs. ef. There should be a relationship if our model was able to predict EF in unseen subjects.
+plot(obsEF_AI_Mem,predEF_AI_Mem)
+
+# save the real predicted vs. observed correlation for plotting relative to null distribution
+predObsCor_Mem<-cor.test(obsEF_AI_Mem,predEF_AI_Mem)$estimate
+
+# median absolute error also of interest.
+mae(obsEF_AI_Mem,predEF_AI_Mem)
+
+# get permutation prediction vs. observed correlations from permutation writeout
+predEF_AIpermutCors_Mem<-read.csv('/cbica/projects/pinesParcels/data/aggregated_data/PermutPreds_AI_Mem.csv',header=F)
+
+# get predicted vs observed over iterations to confirm average prediction (correlation)
+predEF_allIters_Mem<-read.csv('/cbica/projects/pinesParcels/data/aggregated_data/Predicted_Obs_Cors_Mem.csv',header=F)
+# average correlation of predicted vs. observed, slightly lower than correlation of average predicted vs. average observed
+mean(predEF_allIters_Mem$V1)
+
+# Figure 6 flag
+plotdf_Mem<-data.frame(obsEF_AI_Mem,predEF_AI_Mem)
+```
+
+```{r, fig.width=4,fig.height=3}
+# edge-EF pred. permutation vs. observed
+ggplot(predEF_AIpermutCors_Mem,aes(x=V1))+geom_density(size=1.5)+geom_vline(xintercept = predObsCor_Mem,size=2,color='#BC3754')+theme_classic(base_size=18)+ylab('')+xlab('')+guides(y="none")+scale_x_continuous(breaks=c(-.3,0,.3,.6),limits=c(-.35,.6))
+
+```
+
+
+```{r, fig.width=12,fig.height=10}
+ggplot(plotdf_Mem,aes(x=obsEF_AI_Mem,y=predEF_AI_Mem)) +geom_point(size=2,alpha=.6)+geom_smooth(method='lm',color='black',size=2)+theme_classic(base_size=25) + xlab("Observed") + ylab("Predicted")+ggtitle('Executive Function (Memory)')
 ```

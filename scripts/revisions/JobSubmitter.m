@@ -1,0 +1,6 @@
+K=2
+Step_4th_IndividualParcel_emoID
+pause(2000)
+Step_4th_IndividualParcel_Nback
+pause(2000)
+Step_4th_IndividualParcel_Rest

@@ -27,8 +27,8 @@ function subj_vert_fc_task(fc_configfp)
 	partcoefpos=zeros(17734,length(Krange));
 	partcoefneg=zeros(17734,length(Krange));
 	
-        vw_ts_l_p=['/cbica/projects/pinesParcels/data/Rs/' num2str(subjs(s)) '/surf/lh.fs5.sm6.residualised.mgh'];
-	vw_ts_r_p=['/cbica/projects/pinesParcels/data/Rs/' num2str(subjs(s)) '/surf/rh.fs5.sm6.residualised.mgh'];
+        vw_ts_l_p=['/cbica/projects/pinesParcels/data/' num2str(subjs(s)) '/surf/lh.fs5.sm6.residualised.mgh'];
+	vw_ts_r_p=['/cbica/projects/pinesParcels/data/' num2str(subjs(s)) '/surf/rh.fs5.sm6.residualised.mgh'];
 	vw_ts_l=MRIread(vw_ts_l_p);
 	vw_ts_r=MRIread(vw_ts_r_p);
 	vw_ts_l=vw_ts_l.vol;
@@ -38,10 +38,12 @@ function subj_vert_fc_task(fc_configfp)
 	vw_ts_r_masked=vw_ts_r(1,(logical(surfMaskr)),1,:);
 	% stacking matrices so vertex number is doubled (not timepoints obvi)
 	vw_ts_both=[vw_ts_l_masked vw_ts_r_masked];
+	% extract just task portion : volumes 121-555
+	vw_ts_both=vw_ts_both(:,:,:,121:555);
 	% get rid of odd extra 2 dimensions in .mgh file. Should be 17,734 high SNR vertices with this mask.
 	vw_ts_bothrw=zeros(435,17734);
 	% needs to be the last 435 rather than the first 120 for task
-	for x=121:length(vw_ts_bothrw)
+	for x=1:length(vw_ts_bothrw)
 		vw_ts_bothrw(:,x)=vw_ts_both(1,x,1,:);
 	end
 	% bigass connectivity matrix, takes 5 seconds or so to calc
