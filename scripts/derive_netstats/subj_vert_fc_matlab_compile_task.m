@@ -27,8 +27,8 @@ function subj_vert_fc_task(fc_configfp)
 	partcoefpos=zeros(17734,length(Krange));
 	partcoefneg=zeros(17734,length(Krange));
 	
-        vw_ts_l_p=['/cbica/projects/pinesParcels/data/' num2str(subjs(s)) '/surf/lh.fs5.sm6.residualised.mgh'];
-	vw_ts_r_p=['/cbica/projects/pinesParcels/data/' num2str(subjs(s)) '/surf/rh.fs5.sm6.residualised.mgh'];
+        vw_ts_l_p=['/cbica/projects/pinesParcels/data/CombinedData/' num2str(subjs(s)) '/lh.fs5.sm6.residualised.mgh'];
+	vw_ts_r_p=['/cbica/projects/pinesParcels/data/CombinedData/' num2str(subjs(s)) '/rh.fs5.sm6.residualised.mgh'];
 	vw_ts_l=MRIread(vw_ts_l_p);
 	vw_ts_r=MRIread(vw_ts_r_p);
 	vw_ts_l=vw_ts_l.vol;
