@@ -45,7 +45,9 @@ ResultantFolder = [ProjectFolder '/SingleParcel_1by1_kequal_' num2str(K)];
 % extract and save extracted TSes for each subj
 % test on 1 subj
 % for i=1
-for i = 2:length(LeftCell)
+for i = 1:length(LeftCell)
+% for all remaining scales
+for K=3:30
 	% print iteration
 	i
 	% extract subj ID
@@ -92,4 +94,5 @@ for i = 2:length(LeftCell)
 		system(['qsub -l h_vmem=9G,s_vmem=8G /cbica/projects/pinesParcels/multiscale/scripts/derive_parcels/qsub_matlab.sh ' ScriptPath]);
 		% space it out
         	pause(30);
+end
 end

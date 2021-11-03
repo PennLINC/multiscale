@@ -43,8 +43,8 @@ group_parts=group_parts.affils;
 group_parts_masked=group_parts(any(group_parts,2),:);
 
 % only 1 to test it out
-for s=1
-%for s=2:length(subjs);
+%for s=1
+for s=2:length(subjs);
 	outdir = ['/cbica/projects/pinesParcels/data/CombinedData/' num2str(subjs(s)) '/fc_metrics_task.mat']; 
 	outdirp = ['/cbica/projects/pinesParcels/data/CombinedData/' num2str(subjs(s)) '/pc_metrics_task.mat'];
 	% commented out for overwriting
@@ -60,4 +60,5 @@ for s=1
 		system(['qsub -l h_vmem=20G ' '/cbica/projects/pinesParcels/data/CombinedData/' num2str(subjs(s)) '/tmp.sh']);
 	% commented out for overwriting
 	%end
+	pause(100)
 end

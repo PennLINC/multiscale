@@ -42,6 +42,8 @@ group_parts=load([ProjectFolder '/SingleAtlas_Analysis/group_all_Ks.mat']);
 group_parts=group_parts.affils;
 group_parts_masked=group_parts(any(group_parts,2),:);
 
+pause(1000)
+
 % only 1 to test it out
 %for s=1
 for s=2:length(subjs);
@@ -60,4 +62,5 @@ for s=2:length(subjs);
 		system(['qsub -l h_vmem=20G ' '/cbica/projects/pinesParcels/data/CombinedData/' num2str(subjs(s)) '/tmp.sh']);
 	% commented out for overwriting
 	%end
+	pause(100)
 end

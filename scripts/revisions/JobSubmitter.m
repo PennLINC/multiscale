@@ -1,6 +1,5 @@
-K=2
 Step_4th_IndividualParcel_emoID
-pause(2000)
+pause(20000)
 Step_4th_IndividualParcel_Nback
-pause(2000)
+pause(20000)
 Step_4th_IndividualParcel_Rest

@@ -46,7 +46,9 @@ ResultantFolder = [ProjectFolder '/SingleParcel_1by1_kequal_' num2str(K)];
 % extract and save extracted TSes for each subj
 % test on 1 subj
 % for i=1
-for i = 2:length(LeftCell)
+for i = 1:length(LeftCell)
+% for all remaining scales
+for K=3:30
 	% print iteration
 	i
 	% extract subj ID
@@ -94,4 +96,5 @@ for i = 2:length(LeftCell)
                 % space it out
                 pause(20);
 	
+end
 end
