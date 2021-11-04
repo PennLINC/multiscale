@@ -47,10 +47,6 @@ ResultantFolder = [ProjectFolder '/SingleParcel_1by1_kequal_' num2str(K)];
 % test on 1 subj
 % for i=1
 for i = 1:length(LeftCell)
-% for all remaining scales
-for K=3:30
-	% print iteration
-	i
 	% extract subj ID
 	[Fold, ~, ~] = fileparts(LeftCell{i});
 	[~, ID_Str, ~] = fileparts(Fold);	
@@ -66,8 +62,12 @@ for K=3:30
         eIDtsFP_r=[eIDParent ID_Str '/surf/rh.fs5.sm6.residualised.mgh'];
 	% output folder for this subj	
 	ResultantFolder_I = [ResultantFolder '/Sub_' ID_Str '/nback_only'];
-	mkdir(ResultantFolder_I)
-	% NBACK JOB SUBMISSION
+	ResultantFile = [ResultantFolder_I '/IndividualParcel_Final_sbj1_comp' num2str(K) '_alphaS21_1_alphaL10_vxInfo1_ard0_eta0/final_UV.mat'];
+	if ~exist(ResultantFile, 'file');
+		% print iteration
+		i
+		mkdir(ResultantFolder_I)
+		% NBACK JOB SUBMISSION
                 % keep subject list file fresh
                 sbjListFile = [ResultantFolder_I '/sbjListAllFile_' num2str(i) '.txt'];
                 system(['rm ' sbjListFile]);
@@ -94,7 +94,7 @@ for K=3:30
                 % sge command
                 system(['qsub -l h_vmem=9G,s_vmem=8G /cbica/projects/pinesParcels/multiscale/scripts/derive_parcels/qsub_matlab.sh ' ScriptPath]);
                 % space it out
-                pause(20);
+                pause(120);
 	
-end
+	end
 end

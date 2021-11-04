@@ -18,6 +18,7 @@ pcoefneg=zeros(17734,max(Krange),length(subjs));
 
 % fill in with each subj, note K=1 is empty for each
 for s=1:length(subjs)
+	s
 	% load in data
 	fp=['/cbica/projects/pinesParcels/data/CombinedData/' num2str(subjs(s)) '/fc_metrics_task.mat']
 	fcmets=load(fp);	

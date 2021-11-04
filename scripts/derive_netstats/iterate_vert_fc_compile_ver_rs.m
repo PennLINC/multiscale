@@ -42,11 +42,9 @@ group_parts=load([ProjectFolder '/SingleAtlas_Analysis/group_all_Ks.mat']);
 group_parts=group_parts.affils;
 group_parts_masked=group_parts(any(group_parts,2),:);
 
-pause(1000)
-
 % only 1 to test it out
-%for s=1
-for s=2:length(subjs);
+for s=1
+%for s=2:length(subjs);
 	outdir = ['/cbica/projects/pinesParcels/data/CombinedData/' num2str(subjs(s)) '/fc_metrics_rs.mat']; 
 	outdirp = ['/cbica/projects/pinesParcels/data/CombinedData/' num2str(subjs(s)) '/pc_metrics_rs.mat'];
 	% commented out for overwriting

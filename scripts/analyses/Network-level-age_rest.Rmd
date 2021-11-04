@@ -112,7 +112,7 @@ df<-merge(df,motiondf,by='bblid')
 community_vec<-seq(2,30)
 
 # big load - output of fc_to_csv.m (all coupling/FC data, pre-organized)
-fc<-vroom('/cbica/projects/pinesParcels/results/aggregated_data/fc/master_fcfeats_rounded.csv')
+fc<-vroom('/cbica/projects/pinesParcels/results/aggregated_data/fc/master_fcfeats_rs_rounded.csv')
 # First row gotta go
 fc<-fc[-c(1)]
 # isolate shams
@@ -154,12 +154,6 @@ for (i in 1:length(tmclass)){
   }
 }
 
-# plot distribution of k=2 alignment by color (unimodal=purple, transmodal=yellow)
-# x = functional hierarchy, y = scale
-coarseplotdf<-data.frame(tmvec,domnetvec2,scalesvec2,netpropvec2)
-plot<-ggplot(coarseplotdf[3:464,],aes(tmvec,scalesvec2)) + geom_point(size=3,aes(color=domnetvec2,alpha=netpropvec2))+ scale_color_manual(values=c('red','blue')) + xlab("Functional Hierarchy") + ylab('Scale') +theme_classic(base_size = 40) +guides(color=guide_legend(title="K=2 Overlap"),alpha=guide_legend(title="% vertices in K=2 label"))+theme(legend.title=element_text(size=25),legend.text=element_text(size=25))
-library(ggExtra)
-ggMarginal(plot,type='histogram',margins = 'x')
 ```
 
 ```{r}
@@ -448,7 +442,7 @@ cor.test(bwdf$tmvec,bwdf$avg_bw_deltaR2,method='spearman')
 
 ```{r, fig.width=11,fig.height=11}
 # Figure 3C
-ggplot(bwdf,aes(tmvec,avg_bw_deltaR2)) + geom_point(size=6,alpha=.8,aes(color=domnetvecSig))+ scale_color_manual(values=c('#3281ab','#670068','#007500','#b61ad0','#b8cf86','#d77d00','#c1253c','gray80')) + xlab("Functional Hierarchy") + ylab(expression(paste('Age Effect (',Delta,R^2[adj],')',sep=''))) +theme_classic(base_size = 40) +guides(color=guide_legend(title="Yeo 7 Overlap"))+theme(plot.margin=margin(b=3,t=.1,l=.1,r=.1, unit='cm'), legend.position=c(.42,-.24),legend.direction = "horizontal",legend.title=element_text(size=30),legend.text=element_text(size=30))+geom_smooth(method='lm',color='black',size=3)
+ggplot(bwdf,aes(tmvec,avg_bw_deltaR2)) + geom_point(size=6,alpha=.8,aes(color=domnetvecSig))+ scale_color_manual(values=c('#3281ab','#670068','#007500','#b61ad0','#b8cf86','#d77d00','#c1253c','gray80')) + xlab("Functional Hierarchy") + ylab(expression(paste('Age Effect (R.S.,',Delta,R^2[adj],')',sep=''))) +theme_classic(base_size = 40) +guides(color=guide_legend(title="Yeo 7 Overlap"))+theme(plot.margin=margin(b=3,t=.15,l=.1,r=.1, unit='cm'), legend.position=c(.42,-.22),legend.direction = "horizontal",legend.title=element_text(size=30),legend.text=element_text(size=30))+geom_smooth(method='lm',color='black',size=3)
 ```
 
 ```{r}
@@ -536,7 +530,7 @@ LongAgeSpan_plotdf3$Age<-NetSplinesAgeSideCar693464/12
 ```
 
 ```{r, fig.width=11,fig.height=11}
-ggplot(LongAgeSpan_plotdf3,aes(Age,Splines,color=Transmodality,group=Grouping)) +geom_line(size=3,alpha=.4) +labs(x = 'Age', y = 'Between-Network Coupling') +theme_classic(base_size = 40)+ scale_colour_viridis(option="inferno",guide=guide_colorbar(barwidth = 22,ticks.colour = "gray",ticks.linewidth = 8))+theme(legend.text=element_text(size=30),legend.title = element_text(size=30),legend.position="bottom",legend.key.width = unit(3, "cm"))+theme(legend.position="bottom")+ theme(legend.margin=margin(b=-.5,t = -.5, l=-10,unit='cm'))+geom_vline(xintercept = c(10,21),linetype='dashed',size=1.5) + scale_x_continuous(
+ggplot(LongAgeSpan_plotdf3,aes(Age,Splines,color=Transmodality,group=Grouping)) +geom_line(size=3,alpha=.4) +labs(x = 'Age', y = 'Between-Network Coupling (R.S.)') +theme_classic(base_size = 40)+ scale_colour_viridis(option="inferno",guide=guide_colorbar(barwidth = 22,ticks.colour = "gray",ticks.linewidth = 8))+theme(legend.text=element_text(size=30),legend.title = element_text(size=30),legend.position="bottom",legend.key.width = unit(3, "cm"))+theme(legend.position="bottom")+ theme(legend.margin=margin(b=-.5,t = -.5, l=-10,unit='cm'))+geom_vline(xintercept = c(10,21),linetype='dashed',size=1.5) + scale_x_continuous(
     limits = c(8, 23),
     expand = c(0, 0),
     breaks = seq(8,23,by=3)
