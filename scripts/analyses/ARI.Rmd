@@ -1,0 +1,64 @@
+---
+title: "Untitled"
+author: "Adam"
+date: "11/5/2021"
+output: html_document
+---
+
+```{r}
+restEmo=read.csv('/cbica/projects/pinesParcels/results/aggregated_data/BwSubj_restEmoARI.csv')
+# convert to matrix
+restEmoMat=data.matrix(restEmo)
+# extract same-subject values
+wInsubj=diag(restEmoMat)
+# get index of upper triangle
+UTI=upper.tri(restEmoMat)
+UT=restEmoMat[UTI]
+# index of lower
+LTI=lower.tri(restEmoMat)
+LT=restEmoMat[LTI]
+# both together makes b/w subj. comaprisons here
+BwSubj=c(UT,LT)
+
+hist(wInsubj)
+hist(BwSubj)
+```
+
+```{r}
+restNback=read.csv('/cbica/projects/pinesParcels/results/aggregated_data/BwSubj_restNbackARI.csv')
+# convert to matrix
+restNbackMat=data.matrix(restNback)
+# extract same-subject values
+wInsubj=diag(restNbackMat)
+# get index of upper triangle
+UTI=upper.tri(restNbackMat)
+UT=restNbackMat[UTI]
+# index of lower
+LTI=lower.tri(restNbackMat)
+LT=restNbackMat[LTI]
+# both together makes b/w subj. comaprisons here
+BwSubj=c(UT,LT)
+
+hist(wInsubj)
+hist(BwSubj)
+
+```
+
+```{r}
+EmoNback=read.csv('/cbica/projects/pinesParcels/results/aggregated_data/BwSubj_EmoNbackARI.csv')
+# convert to matrix
+EmoNbackMat=data.matrix(EmoNback)
+# extract same-subject values
+wInsubj=diag(EmoNbackMat)
+# get index of upper triangle
+UTI=upper.tri(EmoNbackMat)
+UT=EmoNbackMat[UTI]
+# index of lower
+LTI=lower.tri(EmoNbackMat)
+LT=EmoNbackMat[LTI]
+# both together makes b/w subj. comaprisons here
+BwSubj=c(UT,LT)
+
+hist(wInsubj)
+hist(BwSubj)
+```

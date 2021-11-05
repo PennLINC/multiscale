@@ -128,7 +128,7 @@ end
 
 % diagonal is within subject, off-diagonal is between subjects for each matrix
 
-% save aggregated vectors
-writetable(table(restEmoVec),strcat(outdir,'/BwSubj_restEmoARI.csv'));
-writetable(table(restNbackVec),strcat(outdir,'/BwSubj_restNbackARI.csv'));
-writetable(table(EmoNbackVec),strcat(outdir,'/BwSubj_EmoNbackARI.csv'));
+% save aggregated matrices
+writetable(table(restEmoMat),strcat(outdir,'/BwSubj_restEmoARI.csv'));
+writetable(table(restNbackMat),strcat(outdir,'/BwSubj_restNbackARI.csv'));
+writetable(table(EmoNbackMat),strcat(outdir,'/BwSubj_EmoNbackARI.csv'));
