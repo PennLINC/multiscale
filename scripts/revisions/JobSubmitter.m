@@ -1,13 +1,13 @@
 K=4
 Step_4th_IndividualParcel_emoID
-pause(20000)
+pause(200)
 Step_4th_IndividualParcel_Nback
-pause(20000)
+pause(200)
 Step_4th_IndividualParcel_Rest
-pause(20000)
+pause(200)
 K=7
 Step_4th_IndividualParcel_emoID
-pause(20000)
+pause(2000)
 Step_4th_IndividualParcel_Nback
 pause(20000)
 Step_4th_IndividualParcel_Rest

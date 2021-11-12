@@ -94,7 +94,7 @@ for i = 1:length(LeftCell)
                 % sge command
                 system(['qsub -l h_vmem=9G,s_vmem=8G /cbica/projects/pinesParcels/multiscale/scripts/derive_parcels/qsub_matlab.sh ' ScriptPath]);
                 % space it out
-                pause(220);
+                pause(20);
 	
 	end
 end
