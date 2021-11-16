@@ -381,7 +381,7 @@ OG_AgeEff_by_transmodalityDif_model_LIN<-summary(OG_ageEdgeLm)$coefficients['tmd
 OG_AgeEff_by_transmodalityDif_model_LIN_beta<-OG_AgeEff_by_transmodalityDif_model_LIN['Estimate']
 
 # pull bootstrap results from PMACS output
-bootResEdgeAge<-readRDS('~/multiscale/Age_EdgeLevel_bootInfo.rds')
+bootResEdgeAge<-readRDS('/cbica/projects/pinesParcels/data/Age_EdgeLevel_RS_bootInfo_1.rds')
 
 # for linear - significance
 CI_LIN=quantile(bootResEdgeAge$lm_testStatLIN,c(0.025,0.975)) 
