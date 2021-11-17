@@ -4,12 +4,14 @@
 % For the toolbox of single brain parcellation, see: 
 %
 
-clear
+% add in all supporter functions
+addpath(genpath('/cbica/projects/pinesParcels/multiscale/scripts/derive_parcels/Toolbox'));
+addpath('/cbica/projects/pinesParcels/multiscale/scripts/derive_parcels/Step_2nd_SingleParcellation');
 
 % set scales to sweep
 scales=[4,20];
 for s=1:2
-K=scales(a);
+K=scales(s);
 %%%%%%%%%%%%
 
 ProjectFolder = '/cbica/projects/pinesParcels/data/SingleParcellation';
@@ -46,13 +48,13 @@ LeftCell = g_ls([RawDataFolder '/*/lh.fs5.sm6.residualised.mgh']);
 RightCell = g_ls([RawDataFolder '/*/rh.fs5.sm6.residualised.mgh']);
 
 % Parcellate for each subject separately
- for i = 1:length(LeftCell)
+for i = 1:length(LeftCell)
     i
     [Fold, ~, ~] = fileparts(LeftCell{i});
     [~, ID_Str, ~] = fileparts(Fold);
     ID = str2num(ID_Str);
     ResultantFolder_I = [ResultantFolder '/Sub_' ID_Str];
-    ResultantFile = [ResultantFolder_I '/IndividualParcel_Final_sbj1_comp' num2str(K) '_alphaS21_1_alphaL10_vxInfo1_ard0_eta0/final_UV.mat'];
+    ResultantFile = [ResultantFolder_I '/IndividualParcel_Final_sbj1_comp' num2str(K) '_alphaS21_' num2str(alphaS21) '_alphaL' num2str(alphaL) '_vxInfo1_ard0_eta0/final_UV.mat'];
     if ~exist(ResultantFile, 'file');
         mkdir(ResultantFolder_I);
         IDMatFile = [ResultantFolder_I '/ID.mat'];
@@ -77,8 +79,8 @@ RightCell = g_ls([RawDataFolder '/*/rh.fs5.sm6.residualised.mgh']);
         fid = fopen(strcat(ScriptPath, '.m'), 'w');
         fprintf(fid, cmd);
         system(['qsub -l h_vmem=10G /cbica/projects/pinesParcels/multiscale/scripts/derive_parcels/qsub_matlab.sh ' ScriptPath]);
-    	pause(40)
-	%end
+    	pause(45)
+	end
 end
 
 % end alpha sweep

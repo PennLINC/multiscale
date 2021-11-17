@@ -18,10 +18,10 @@ pause(100)
 Step_4th_IndividualParcel_Nback
 pause(100)
 Step_4th_IndividualParcel_Rest
-pause(1000)
+pause(100)
 K=20
 Step_4th_IndividualParcel_emoID
-pause(1000)
+pause(100)
 Step_4th_IndividualParcel_Nback
 pause(1000)
 Step_4th_IndividualParcel_Rest

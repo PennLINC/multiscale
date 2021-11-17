@@ -182,13 +182,13 @@ plotdf<-data.frame(obsEF_AI,predEF_AI)
 
 ```{r, fig.width=4,fig.height=3}
 # edge-EF pred. permutation vs. observed
-ggplot(predEF_AIpermutCors,aes(x=V1))+geom_density(size=1.5)+geom_vline(xintercept = predObsCor,size=2,color='#BC3754')+theme_classic(base_size=18)+ylab('')+xlab('')+guides(y="none")+scale_x_continuous(breaks=c(-.3,0,.3,.6),limits=c(-.35,.6))
+ggplot(predEF_AIpermutCors,aes(x=V1))+geom_density(size=1.5)+geom_vline(xintercept = predObsCor,size=2,color='#BC3754')+theme_classic(base_size=30)+ylab('')+xlab('')+guides(y="none")+scale_x_continuous(breaks=c(-.3,0,.3,.6),limits=c(-.35,.6))
 
 ```
 
 
 ```{r, fig.width=12,fig.height=10}
-ggplot(plotdf,aes(x=obsEF_AI,y=predEF_AI)) +geom_point(size=2,alpha=.6)+geom_smooth(method='lm',color='black',size=2)+theme_classic(base_size=25) + xlab("Observed") + ylab("Predicted")+ggtitle('Executive Function')
+ggplot(plotdf,aes(x=obsEF_AI,y=predEF_AI)) +geom_point(size=5,alpha=.6)+geom_smooth(method='lm',color='black',size=2)+theme_classic(base_size=40) + xlab("Observed") + ylab("Predicted")+ggtitle('Executive Function')
 ```
 
 ```{r}

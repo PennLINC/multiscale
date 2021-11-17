@@ -230,13 +230,13 @@ plotdf_Soc<-data.frame(obsEF_AI_Soc,predEF_AI_Soc)
 
 ```{r, fig.width=4,fig.height=3}
 # edge-EF pred. permutation vs. observed
-ggplot(predEF_AIpermutCors_Soc,aes(x=V1))+geom_density(size=1.5)+geom_vline(xintercept = predObsCor_Soc,size=2,color='#BC3754')+theme_classic(base_size=18)+ylab('')+xlab('')+guides(y="none")+scale_x_continuous(breaks=c(-.3,0,.3,.6),limits=c(-.35,.6))
+ggplot(predEF_AIpermutCors_Soc,aes(x=V1))+geom_density(size=1.5)+geom_vline(xintercept = predObsCor_Soc,size=2,color='#BC3754')+theme_classic(base_size=24)+ylab('')+xlab('')+guides(y="none")+scale_x_continuous(breaks=c(-.3,0,.3,.6),limits=c(-.35,.6))
 
 ```
 
 
 ```{r, fig.width=12,fig.height=10}
-ggplot(plotdf_Soc,aes(x=obsEF_AI_Soc,y=predEF_AI_Soc)) +geom_point(size=2,alpha=.6)+geom_smooth(method='lm',color='black',size=2)+theme_classic(base_size=25) + xlab("Observed") + ylab("Predicted")+ggtitle('Executive Function (Social)')
+ggplot(plotdf_Soc,aes(x=obsEF_AI_Soc,y=predEF_AI_Soc)) +geom_point(size=2,alpha=.6)+geom_smooth(method='lm',color='black',size=2)+theme_classic(base_size=25) + xlab("Observed") + ylab("Predicted")+ggtitle('Social Cognition')
 ```
 
 
@@ -279,11 +279,11 @@ plotdf_Mem<-data.frame(obsEF_AI_Mem,predEF_AI_Mem)
 
 ```{r, fig.width=4,fig.height=3}
 # edge-EF pred. permutation vs. observed
-ggplot(predEF_AIpermutCors_Mem,aes(x=V1))+geom_density(size=1.5)+geom_vline(xintercept = predObsCor_Mem,size=2,color='#BC3754')+theme_classic(base_size=18)+ylab('')+xlab('')+guides(y="none")+scale_x_continuous(breaks=c(-.3,0,.3,.6),limits=c(-.35,.6))
+ggplot(predEF_AIpermutCors_Mem,aes(x=V1))+geom_density(size=1.5)+geom_vline(xintercept = predObsCor_Mem,size=2,color='#BC3754')+theme_classic(base_size=24)+ylab('')+xlab('')+guides(y="none")+scale_x_continuous(breaks=c(-.3,0,.3,.6),limits=c(-.35,.6))
 
 ```
 
 
 ```{r, fig.width=12,fig.height=10}
-ggplot(plotdf_Mem,aes(x=obsEF_AI_Mem,y=predEF_AI_Mem)) +geom_point(size=2,alpha=.6)+geom_smooth(method='lm',color='black',size=2)+theme_classic(base_size=25) + xlab("Observed") + ylab("Predicted")+ggtitle('Executive Function (Memory)')
+ggplot(plotdf_Mem,aes(x=obsEF_AI_Mem,y=predEF_AI_Mem)) +geom_point(size=2,alpha=.6)+geom_smooth(method='lm',color='black',size=2)+theme_classic(base_size=25) + xlab("Observed") + ylab("Predicted")+ggtitle('Memory')
 ```
