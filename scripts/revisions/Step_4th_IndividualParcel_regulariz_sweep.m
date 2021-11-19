@@ -25,7 +25,8 @@ initName = [ProjectFolder '/RobustInitialization_' num2str(K) '/init.mat'];
 
 % set alphaS21 and alphaL's to sweep
 alphaVals=[{.5,.5,.5,1,1,2,2,2,;5,10,20,5,20,5,10,20}];
-
+% make a string version for writeout : script was getting confused with decimals
+alphaValStrings=[{'point5','point5','point5','one','one','two','two','two';'five','ten','twenty','five','twenty','five','ten','twenty'}];
 % sweep over 8 alpha combos
 for a=1:8
 alphaS21 = alphaVals{1,a};
@@ -53,8 +54,8 @@ for i = 1:length(LeftCell)
     [Fold, ~, ~] = fileparts(LeftCell{i});
     [~, ID_Str, ~] = fileparts(Fold);
     ID = str2num(ID_Str);
-    ResultantFolder_I = [ResultantFolder '/Sub_' ID_Str];
-    ResultantFile = [ResultantFolder_I '/IndividualParcel_Final_sbj1_comp' num2str(K) '_alphaS21_' num2str(alphaS21) '_alphaL' num2str(alphaL) '_vxInfo1_ard0_eta0/final_UV.mat'];
+    ResultantFolder_I = [ResultantFolder '/Sub_' ID_Str '/IndividualParcel_Final_sbj1_comp' num2str(K) '_alphaS21_' alphaValStrings{1,a} '_alphaL' alphaValStrings{2,a} '_vxInfo1_ard0_eta0/'];
+    ResultantFile = [ResultantFolder_I '/final_UV.mat'];
     if ~exist(ResultantFile, 'file');
         mkdir(ResultantFolder_I);
         IDMatFile = [ResultantFolder_I '/ID.mat'];
@@ -79,7 +80,7 @@ for i = 1:length(LeftCell)
         fid = fopen(strcat(ScriptPath, '.m'), 'w');
         fprintf(fid, cmd);
         system(['qsub -l h_vmem=10G /cbica/projects/pinesParcels/multiscale/scripts/derive_parcels/qsub_matlab.sh ' ScriptPath]);
-    	pause(45)
+    	pause(20)
 	end
 end
 

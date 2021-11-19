@@ -4,61 +4,341 @@ author: "Adam"
 date: "11/5/2021"
 output: html_document
 ---
-
 ```{r}
-restEmo=read.csv('/cbica/projects/pinesParcels/results/aggregated_data/BwSubj_restEmoARI.csv')
+library(ggplot2)
+library(forcats)
+```
+```{r}
+### K=2
+# rest + emoID
+restEmo=read.csv('/cbica/projects/pinesParcels/results/aggregated_data/BwSubj_restEmoARI_K2.csv')
 # convert to matrix
 restEmoMat=data.matrix(restEmo)
 # extract same-subject values
-wInsubj=diag(restEmoMat)
+wInsubj_2_re=diag(restEmoMat)
 # get index of upper triangle
 UTI=upper.tri(restEmoMat)
 UT=restEmoMat[UTI]
 # index of lower
 LTI=lower.tri(restEmoMat)
 LT=restEmoMat[LTI]
-# both together makes b/w subj. comaprisons here
-BwSubj=c(UT,LT)
+# both together makes b/w subj. comparisons here
+BwSubj_2_re=c(UT,LT)
 
-hist(wInsubj)
-hist(BwSubj)
-```
+hist(wInsubj_2_re)
+hist(BwSubj_2_re)
 
-```{r}
-restNback=read.csv('/cbica/projects/pinesParcels/results/aggregated_data/BwSubj_restNbackARI.csv')
+# add factor vector for plotting
+wInsubj_2_re<-data.frame(wInsubj_2_re,rep('2-within',length(wInsubj_2_re)))
+BwSubj_2_re<-data.frame(BwSubj_2_re,rep('2-between',length(BwSubj_2_re)))
+colnames(wInsubj_2_re)<-c('ARI','Label')
+colnames(BwSubj_2_re)<-c('ARI','Label')
+
+# rest + nback
+restNback=read.csv('/cbica/projects/pinesParcels/results/aggregated_data/BwSubj_restNbackARI_K2.csv')
 # convert to matrix
 restNbackMat=data.matrix(restNback)
 # extract same-subject values
-wInsubj=diag(restNbackMat)
+wInsubj_2_rn=diag(restNbackMat)
 # get index of upper triangle
 UTI=upper.tri(restNbackMat)
 UT=restNbackMat[UTI]
 # index of lower
 LTI=lower.tri(restNbackMat)
 LT=restNbackMat[LTI]
-# both together makes b/w subj. comaprisons here
-BwSubj=c(UT,LT)
+# both together makes b/w subj. comparisons here
+BwSubj_2_rn=c(UT,LT)
 
-hist(wInsubj)
-hist(BwSubj)
+hist(wInsubj_2_rn)
+hist(BwSubj_2_rn)
 
-```
+# add factor vector for plotting
+wInsubj_2_rn<-data.frame(wInsubj_2_rn,rep('2-within',length(wInsubj_2_rn)))
+BwSubj_2_rn<-data.frame(BwSubj_2_rn,rep('2-between',length(BwSubj_2_rn)))
+colnames(wInsubj_2_rn)<-c('ARI','Label')
+colnames(BwSubj_2_rn)<-c('ARI','Label')
 
-```{r}
-EmoNback=read.csv('/cbica/projects/pinesParcels/results/aggregated_data/BwSubj_EmoNbackARI.csv')
+# emoID + nback
+EmoNback=read.csv('/cbica/projects/pinesParcels/results/aggregated_data/BwSubj_EmoNbackARI_K2.csv')
 # convert to matrix
 EmoNbackMat=data.matrix(EmoNback)
 # extract same-subject values
-wInsubj=diag(EmoNbackMat)
+wInsubj_2_en=diag(EmoNbackMat)
 # get index of upper triangle
 UTI=upper.tri(EmoNbackMat)
 UT=EmoNbackMat[UTI]
 # index of lower
 LTI=lower.tri(EmoNbackMat)
 LT=EmoNbackMat[LTI]
-# both together makes b/w subj. comaprisons here
-BwSubj=c(UT,LT)
+# both together makes b/w subj. comparisons here
+BwSubj_2_en=c(UT,LT)
 
-hist(wInsubj)
-hist(BwSubj)
+hist(wInsubj_2_en)
+hist(BwSubj_2_en)
+
+# add factor vector for plotting
+wInsubj_2_en<-data.frame(wInsubj_2_en,rep('2-within',length(wInsubj_2_en)))
+BwSubj_2_en<-data.frame(BwSubj_2_en,rep('2-between',length(BwSubj_2_en)))
+colnames(wInsubj_2_en)<-c('ARI','Label')
+colnames(BwSubj_2_en)<-c('ARI','Label')
+```
+
+```{r}
+### K=4
+# rest + emoID
+restEmo=read.csv('/cbica/projects/pinesParcels/results/aggregated_data/BwSubj_restEmoARI_K4.csv')
+# convert to matrix
+restEmoMat=data.matrix(restEmo)
+# extract same-subject values
+wInsubj_4_re=diag(restEmoMat)
+# get index of upper triangle
+UTI=upper.tri(restEmoMat)
+UT=restEmoMat[UTI]
+# index of lower
+LTI=lower.tri(restEmoMat)
+LT=restEmoMat[LTI]
+# both together makes b/w subj. comparisons here
+BwSubj_4_re=c(UT,LT)
+
+hist(wInsubj_4_re)
+hist(BwSubj_4_re)
+
+# add factor vector for plotting
+wInsubj_4_re<-data.frame(wInsubj_4_re,rep('4-within',length(wInsubj_4_re)))
+BwSubj_4_re<-data.frame(BwSubj_4_re,rep('4-between',length(BwSubj_4_re)))
+colnames(wInsubj_4_re)<-c('ARI','Label')
+colnames(BwSubj_4_re)<-c('ARI','Label')
+
+# rest + nback
+restNback=read.csv('/cbica/projects/pinesParcels/results/aggregated_data/BwSubj_restNbackARI_K4.csv')
+# convert to matrix
+restNbackMat=data.matrix(restNback)
+# extract same-subject values
+wInsubj_4_rn=diag(restNbackMat)
+# get index of upper triangle
+UTI=upper.tri(restNbackMat)
+UT=restNbackMat[UTI]
+# index of lower
+LTI=lower.tri(restNbackMat)
+LT=restNbackMat[LTI]
+# both together makes b/w subj. comparisons here
+BwSubj_4_rn=c(UT,LT)
+
+hist(wInsubj_4_rn)
+hist(BwSubj_4_rn)
+
+# add factor vector for plotting
+wInsubj_4_rn<-data.frame(wInsubj_4_rn,rep('4-within',length(wInsubj_4_rn)))
+BwSubj_4_rn<-data.frame(BwSubj_4_rn,rep('4-between',length(BwSubj_4_rn)))
+colnames(wInsubj_4_rn)<-c('ARI','Label')
+colnames(BwSubj_4_rn)<-c('ARI','Label')
+
+# emoID + nback
+EmoNback=read.csv('/cbica/projects/pinesParcels/results/aggregated_data/BwSubj_EmoNbackARI_K4.csv')
+# convert to matrix
+EmoNbackMat=data.matrix(EmoNback)
+# extract same-subject values
+wInsubj_4_en=diag(EmoNbackMat)
+# get index of upper triangle
+UTI=upper.tri(EmoNbackMat)
+UT=EmoNbackMat[UTI]
+# index of lower
+LTI=lower.tri(EmoNbackMat)
+LT=EmoNbackMat[LTI]
+# both together makes b/w subj. comparisons here
+BwSubj_4_en=c(UT,LT)
+
+hist(wInsubj_4_en)
+hist(BwSubj_4_en)
+
+# add factor vector for plotting
+wInsubj_4_en<-data.frame(wInsubj_4_en,rep('4-within',length(wInsubj_4_en)))
+BwSubj_4_en<-data.frame(BwSubj_4_en,rep('4-between',length(BwSubj_4_en)))
+colnames(wInsubj_4_en)<-c('ARI','Label')
+colnames(BwSubj_4_en)<-c('ARI','Label')
+```
+
+```{r}
+### K=7
+# rest + emoID
+restEmo=read.csv('/cbica/projects/pinesParcels/results/aggregated_data/BwSubj_restEmoARI_K7.csv')
+# convert to matrix
+restEmoMat=data.matrix(restEmo)
+# extract same-subject values
+wInsubj_7_re=diag(restEmoMat)
+# get index of upper triangle
+UTI=upper.tri(restEmoMat)
+UT=restEmoMat[UTI]
+# index of lower
+LTI=lower.tri(restEmoMat)
+LT=restEmoMat[LTI]
+# both together makes b/w subj. comparisons here
+BwSubj_7_re=c(UT,LT)
+
+hist(wInsubj_7_re)
+hist(BwSubj_7_re)
+
+# add factor vector for plotting
+wInsubj_7_re<-data.frame(wInsubj_7_re,rep('7-within',length(wInsubj_7_re)))
+BwSubj_7_re<-data.frame(BwSubj_7_re,rep('7-between',length(BwSubj_7_re)))
+colnames(wInsubj_7_re)<-c('ARI','Label')
+colnames(BwSubj_7_re)<-c('ARI','Label')
+
+# rest + nback
+restNback=read.csv('/cbica/projects/pinesParcels/results/aggregated_data/BwSubj_restNbackARI_K7.csv')
+# convert to matrix
+restNbackMat=data.matrix(restNback)
+# extract same-subject values
+wInsubj_7_rn=diag(restNbackMat)
+# get index of upper triangle
+UTI=upper.tri(restNbackMat)
+UT=restNbackMat[UTI]
+# index of lower
+LTI=lower.tri(restNbackMat)
+LT=restNbackMat[LTI]
+# both together makes b/w subj. comparisons here
+BwSubj_7_rn=c(UT,LT)
+
+hist(wInsubj_7_rn)
+hist(BwSubj_7_rn)
+
+# add factor vector for plotting
+wInsubj_7_rn<-data.frame(wInsubj_7_rn,rep('7-within',length(wInsubj_7_rn)))
+BwSubj_7_rn<-data.frame(BwSubj_7_rn,rep('7-between',length(BwSubj_7_rn)))
+colnames(wInsubj_7_rn)<-c('ARI','Label')
+colnames(BwSubj_7_rn)<-c('ARI','Label')
+
+# emoID + nback
+EmoNback=read.csv('/cbica/projects/pinesParcels/results/aggregated_data/BwSubj_EmoNbackARI_K7.csv')
+# convert to matrix
+EmoNbackMat=data.matrix(EmoNback)
+# extract same-subject values
+wInsubj_7_en=diag(EmoNbackMat)
+# get index of upper triangle
+UTI=upper.tri(EmoNbackMat)
+UT=EmoNbackMat[UTI]
+# index of lower
+LTI=lower.tri(EmoNbackMat)
+LT=EmoNbackMat[LTI]
+# both together makes b/w subj. comparisons here
+BwSubj_7_en=c(UT,LT)
+
+hist(wInsubj_7_en)
+hist(BwSubj_7_en)
+
+# add factor vector for plotting
+wInsubj_7_en<-data.frame(wInsubj_7_en,rep('7-within',length(wInsubj_7_en)))
+BwSubj_7_en<-data.frame(BwSubj_7_en,rep('7-between',length(BwSubj_7_en)))
+colnames(wInsubj_7_en)<-c('ARI','Label')
+colnames(BwSubj_7_en)<-c('ARI','Label')
+```
+
+```{r}
+### K=13
+# rest + emoID
+restEmo=read.csv('/cbica/projects/pinesParcels/results/aggregated_data/BwSubj_restEmoARI_K13.csv')
+# convert to matrix
+restEmoMat=data.matrix(restEmo)
+# extract same-subject values
+wInsubj_13_re=diag(restEmoMat)
+# get index of upper triangle
+UTI=upper.tri(restEmoMat)
+UT=restEmoMat[UTI]
+# index of lower
+LTI=lower.tri(restEmoMat)
+LT=restEmoMat[LTI]
+# both together makes b/w subj. comparisons here
+BwSubj_13_re=c(UT,LT)
+
+hist(wInsubj_13_re)
+hist(BwSubj_13_re)
+
+# add factor vector for plotting
+wInsubj_13_re<-data.frame(wInsubj_13_re,rep('13-within',length(wInsubj_13_re)))
+BwSubj_13_re<-data.frame(BwSubj_13_re,rep('13-between',length(BwSubj_13_re)))
+colnames(wInsubj_13_re)<-c('ARI','Label')
+colnames(BwSubj_13_re)<-c('ARI','Label')
+
+# rest + nback
+restNback=read.csv('/cbica/projects/pinesParcels/results/aggregated_data/BwSubj_restNbackARI_K13.csv')
+# convert to matrix
+restNbackMat=data.matrix(restNback)
+# extract same-subject values
+wInsubj_13_rn=diag(restNbackMat)
+# get index of upper triangle
+UTI=upper.tri(restNbackMat)
+UT=restNbackMat[UTI]
+# index of lower
+LTI=lower.tri(restNbackMat)
+LT=restNbackMat[LTI]
+# both together makes b/w subj. comparisons here
+BwSubj_13_rn=c(UT,LT)
+
+hist(wInsubj_13_rn)
+hist(BwSubj_13_rn)
+
+# add factor vector for plotting
+wInsubj_13_rn<-data.frame(wInsubj_13_rn,rep('13-within',length(wInsubj_13_rn)))
+BwSubj_13_rn<-data.frame(BwSubj_13_rn,rep('13-between',length(BwSubj_13_rn)))
+colnames(wInsubj_13_rn)<-c('ARI','Label')
+colnames(BwSubj_13_rn)<-c('ARI','Label')
+
+# emoID + nback
+EmoNback=read.csv('/cbica/projects/pinesParcels/results/aggregated_data/BwSubj_EmoNbackARI_K13.csv')
+# convert to matrix
+EmoNbackMat=data.matrix(EmoNback)
+# extract same-subject values
+wInsubj_13_en=diag(EmoNbackMat)
+# get index of upper triangle
+UTI=upper.tri(EmoNbackMat)
+UT=EmoNbackMat[UTI]
+# index of lower
+LTI=lower.tri(EmoNbackMat)
+LT=EmoNbackMat[LTI]
+# both together makes b/w subj. comparisons here
+BwSubj_13_en=c(UT,LT)
+
+hist(wInsubj_13_en)
+hist(BwSubj_13_en)
+
+# add factor vector for plotting
+wInsubj_13_en<-data.frame(wInsubj_13_en,rep('13-within',length(wInsubj_13_en)))
+BwSubj_13_en<-data.frame(BwSubj_13_en,rep('13-between',length(BwSubj_13_en)))
+colnames(wInsubj_13_en)<-c('ARI','Label')
+colnames(BwSubj_13_en)<-c('ARI','Label')
+```
+
+
+```{r}
+# add a factor vector for plotting
+
+# combine em
+masterARI_re<-rbind(wInsubj_2_re,BwSubj_2_re,wInsubj_4_re,BwSubj_4_re,wInsubj_7_re,BwSubj_7_re,wInsubj_13_re,BwSubj_13_re)
+
+#make an equiv. median point
+medians_re<-c(median(wInsubj_2_re$ARI),median(BwSubj_2_re$ARI),median(wInsubj_4_re$ARI),median(BwSubj_4_re$ARI),median(wInsubj_7_re$ARI),median(BwSubj_7_re$ARI),median(wInsubj_13_re$ARI),median(BwSubj_13_re$ARI))
+
+# set labels for median point df
+labels_re<-unique(masterARI_re$Label)
+
+# dataframe it
+masterARI_re_med<-data.frame(medians_re,labels_re)
+
+# set colnames
+colnames(masterARI_re_med)<-c('ARI','Label')
+
+# plot (violin)
+ggplot(data = masterARI_re, aes(x = fct_inorder(Label), y = ARI)) +
+  geom_violin()+ylab('ARI')+xlab("# of Networks") +theme_classic(base_size=40)+geom_point(data=masterARI_re_med,aes(x=fct_inorder(Label),y=ARI),shape=95,size=4)
+
+# plot (boxplot)
+ggplot(data = masterARI_re, aes(x = fct_inorder(Label), y = ARI)) +
+  geom_boxplot()+ylab('ARI')+xlab("# of Networks") +theme_classic(base_size=40)
+
+#+geom_point(data=masterARI_re,aes(x=factor(Label),y=ARI),size=.5)
+
+
+masterARI_rn<-rbind(wInsubj_2_rn,BwSubj_2_rn,wInsubj_4_rn,BwSubj_4_rn,wInsubj_7_rn,BwSubj_7_rn)
+masterARI_en<-rbind(wInsubj_2_en,BwSubj_2_en,wInsubj_4_en,BwSubj_4_en,wInsubj_7_en,BwSubj_7_en)
+  
 ```
