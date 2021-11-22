@@ -10,8 +10,8 @@ addpath('/cbica/projects/pinesParcels/multiscale/scripts/derive_parcels/Step_2nd
 
 % set scales to sweep
 scales=[4,20];
-% tmp just to finish 4
-K=4
+% tmp just to do 20
+K=20
 %for s=1:2
 %K=scales(s);
 %%%%%%%%%%%%
@@ -24,13 +24,12 @@ PrepDataFile = [ProjectFolder '/CreatePrepData.mat'];
 resId = 'IndividualParcel_Final';
 initName = [ProjectFolder '/RobustInitialization_' num2str(K) '/init.mat'];
 
-% tmp to finish 4
-alphaVals=[{1,1,2,2,2,;5,20,5,10,20}];
-alphaValStrings=[{'one','one','two','two','two';'five','twenty','five','ten','twenty'}];
+%alphaVals=[{1,1,2,2,2,;5,20,5,10,20}];
+%alphaValStrings=[{'one','one','two','two','two';'five','twenty','five','ten','twenty'}];
 % set alphaS21 and alphaL's to sweep
-%alphaVals=[{.5,.5,.5,1,1,2,2,2,;5,10,20,5,20,5,10,20}];
+alphaVals=[{.5,.5,.5,1,1,2,2,2,;5,10,20,5,20,5,10,20}];
 % make a string version for writeout : script was getting confused with decimals
-%alphaValStrings=[{'point5','point5','point5','one','one','two','two','two';'five','ten','twenty','five','twenty','five','ten','twenty'}];
+alphaValStrings=[{'point5','point5','point5','one','one','two','two','two';'five','ten','twenty','five','twenty','five','ten','twenty'}];
 % sweep over 8 alpha combos
 for a=1:8
 alphaS21 = alphaVals{1,a};
