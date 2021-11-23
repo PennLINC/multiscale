@@ -27,9 +27,9 @@ initName = [ProjectFolder '/RobustInitialization_' num2str(K) '/init.mat'];
 %alphaVals=[{1,1,2,2,2,;5,20,5,10,20}];
 %alphaValStrings=[{'one','one','two','two','two';'five','twenty','five','ten','twenty'}];
 % set alphaS21 and alphaL's to sweep
-alphaVals=[{.5,.5,.5,1,1,2,2,2,;5,10,20,5,20,5,10,20}];
+alphaVals=[{1,1,2,2,2,;5,20,5,10,20}];
 % make a string version for writeout : script was getting confused with decimals
-alphaValStrings=[{'point5','point5','point5','one','one','two','two','two';'five','ten','twenty','five','twenty','five','ten','twenty'}];
+alphaValStrings=[{'one','one','two','two','two';'five','twenty','five','ten','twenty'}];
 % sweep over 8 alpha combos
 for a=1:8
 alphaS21 = alphaVals{1,a};

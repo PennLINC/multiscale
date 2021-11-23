@@ -44,7 +44,7 @@ permMedianDiff_EN=rep(0,1000)
 # initialize permutation vectors for w/in subject selection (w/o replacement)
 permutVecs=array(data=NA,dim=c(1000,693))
 for (p in 1:1000){
-  permutVecs[p,]=sample(1:693,replace=F)
+  permutVecs[p,]=sample(1:480249,693,replace=F)
 }
 # calculate actual medians for each task
 medRE_win=median(diag(restEmoMat))
@@ -61,9 +61,9 @@ for (p in 1:1000){
   # pull out permutation vector for this iteration
   permutVec=permutVecs[p,]
   # get permuted within subject ARI for each task-rest pair
-  pmedRE_win=median(restEmoMat[c(1:693),permutVec])
-  pmedRN_win=median(diag(restNbackMat[c(1:693),permutVec]))
-  pmedEN_win=median(diag(EmoNbackMat[c(1:693),permutVec]))
+  pmedRE_win=median(restEmoMat[permutVec])
+  pmedRN_win=median(restNbackMat[permutVec])
+  pmedEN_win=median(EmoNbackMat[permutVec])
   # 479556 is number of off-diagonals in a 693*693 matrix, get two vectors to sample that many in the matrix (w/o replacement)
   bwPermut=sample(1:480249,479556)
   # sample equiv number to off-diagonals for permuted bw
@@ -107,11 +107,6 @@ permMedianDiff_RE=rep(0,1000)
 permMedianDiff_RN=rep(0,1000)
 permMedianDiff_EN=rep(0,1000)
 
-# initialize permutation vectors for w/in subject selection (w/o replacement)
-permutVecs=array(data=NA,dim=c(1000,693))
-for (p in 1:1000){
-  permutVecs[p,]=sample(1:693,replace=F)
-}
 # calculate actual medians for each task
 medRE_win=median(diag(restEmoMat))
 medRN_win=median(diag(restNbackMat))
@@ -127,9 +122,9 @@ for (p in 1:1000){
   # pull out permutation vector for this iteration
   permutVec=permutVecs[p,]
   # get permuted within subject ARI for each task-rest pair
-  pmedRE_win=median(restEmoMat[c(1:693),permutVec])
-  pmedRN_win=median(diag(restNbackMat[c(1:693),permutVec]))
-  pmedEN_win=median(diag(EmoNbackMat[c(1:693),permutVec]))
+  pmedRE_win=median(restEmoMat[permutVec])
+  pmedRN_win=median(restNbackMat[permutVec])
+  pmedEN_win=median(EmoNbackMat[permutVec])
   # 479556 is number of off-diagonals in a 693*693 matrix, get two vectors to sample that many in the matrix (w/o replacement)
   bwPermut=sample(1:480249,479556)
   # sample equiv number to off-diagonals for permuted bw
@@ -173,11 +168,6 @@ permMedianDiff_RE=rep(0,1000)
 permMedianDiff_RN=rep(0,1000)
 permMedianDiff_EN=rep(0,1000)
 
-# initialize permutation vectors for w/in subject selection (w/o replacement)
-permutVecs=array(data=NA,dim=c(1000,693))
-for (p in 1:1000){
-  permutVecs[p,]=sample(1:693,replace=F)
-}
 # calculate actual medians for each task
 medRE_win=median(diag(restEmoMat))
 medRN_win=median(diag(restNbackMat))
@@ -193,9 +183,9 @@ for (p in 1:1000){
   # pull out permutation vector for this iteration
   permutVec=permutVecs[p,]
   # get permuted within subject ARI for each task-rest pair
-  pmedRE_win=median(restEmoMat[c(1:693),permutVec])
-  pmedRN_win=median(diag(restNbackMat[c(1:693),permutVec]))
-  pmedEN_win=median(diag(EmoNbackMat[c(1:693),permutVec]))
+  pmedRE_win=median(restEmoMat[permutVec])
+  pmedRN_win=median(restNbackMat[permutVec])
+  pmedEN_win=median(EmoNbackMat[permutVec])
   # 479556 is number of off-diagonals in a 693*693 matrix, get two vectors to sample that many in the matrix (w/o replacement)
   bwPermut=sample(1:480249,479556)
   # sample equiv number to off-diagonals for permuted bw
@@ -239,11 +229,6 @@ permMedianDiff_RE=rep(0,1000)
 permMedianDiff_RN=rep(0,1000)
 permMedianDiff_EN=rep(0,1000)
 
-# initialize permutation vectors for w/in subject selection (w/o replacement)
-permutVecs=array(data=NA,dim=c(1000,693))
-for (p in 1:1000){
-  permutVecs[p,]=sample(1:693,replace=F)
-}
 # calculate actual medians for each task
 medRE_win=median(diag(restEmoMat))
 medRN_win=median(diag(restNbackMat))
@@ -259,9 +244,9 @@ for (p in 1:1000){
   # pull out permutation vector for this iteration
   permutVec=permutVecs[p,]
   # get permuted within subject ARI for each task-rest pair
-  pmedRE_win=median(restEmoMat[c(1:693),permutVec])
-  pmedRN_win=median(diag(restNbackMat[c(1:693),permutVec]))
-  pmedEN_win=median(diag(EmoNbackMat[c(1:693),permutVec]))
+  pmedRE_win=median(restEmoMat[permutVec])
+  pmedRN_win=median(restNbackMat[permutVec])
+  pmedEN_win=median(EmoNbackMat[permutVec])
   # 479556 is number of off-diagonals in a 693*693 matrix, get two vectors to sample that many in the matrix (w/o replacement)
   bwPermut=sample(1:480249,479556)
   # sample equiv number to off-diagonals for permuted bw
@@ -283,44 +268,16 @@ difReal_min_difPermut_EN_20=EN_dif-permMedianDiff_EN
 
 
 ```{r}
+library(reshape2)
 # combine
 masterPlotDf<-data.frame(difReal_min_difPermut_RE_4,difReal_min_difPermut_RN_4,difReal_min_difPermut_EN_4,difReal_min_difPermut_RE_7,difReal_min_difPermut_RN_7,difReal_min_difPermut_EN_7,difReal_min_difPermut_RE_13,difReal_min_difPermut_RN_13,difReal_min_difPermut_EN_13,difReal_min_difPermut_RE_20,difReal_min_difPermut_RN_20,difReal_min_difPermut_EN_20)
-##################################
-# add a factor vector for plotting
 
-# combine em
-masterARI_re<-rbind(wInsubj_2_re,BwSubj_2_re,wInsubj_4_re,BwSubj_4_re,wInsubj_7_re,BwSubj_7_re,wInsubj_13_re,BwSubj_13_re,wInsubj_20_re,BwSubj_20_re,wInsubj_30_re,BwSubj_30_re)
+# set column names
+colnames(masterPlotDf)<-c('Sc. 4, Rest-Emo','Sc. 4, Rest-nB','Sc. 4, Emo-Nb','Sc. 7, Rest-Emo','Sc. 7, Rest-nB','Sc. 7, Emo-nB','Sc. 13, Rest-Emo','Sc. 13, Rest-nB','Sc. 13, Emo-nB','Sc. 20, Rest-Emo','Sc. 20, Rest-nB','Sc. 20, Emo-nB')
 
-#make an equiv. median point
-#medians_re<-c(median(wInsubj_2_re$ARI),median(BwSubj_2_re$ARI),median(wInsubj_4_re$ARI),median(BwSubj_4_re$ARI),median(wInsubj_7_re$ARI),median(BwSubj_7_re$ARI),median(wInsubj_13_re$ARI),median(BwSubj_13_re$ARI))
+# make into long df
+mPdfmelt<-melt(masterPlotDf)
 
-# set labels for median point df
-#labels_re<-unique(masterARI_re$Label)
+ggplot(data = mPdfmelt, aes(x = fct_inorder(variable), y = value)) + geom_violin()+ylab('Median w/in - b/w ARI difference over Permuted')+xlab("# of Networks") +theme_classic(base_size=20)+geom_point(data=mPdfmelt,aes(x=fct_inorder(variable),y=value),size=1,alpha=.3)+scale_y_continuous(limits=c(0,.18))
 
-# dataframe it
-#masterARI_re_med<-data.frame(medians_re,labels_re)
-
-# set colnames
-#colnames(masterARI_re_med)<-c('ARI','Label')
-
-# plot (violin)
-#ggplot(data = masterARI_re, aes(x = fct_inorder(Label), y = ARI)) + geom_violin()+ylab('ARI')+xlab("# of Networks") +theme_classic(base_size=40)+geom_point(data=masterARI_re_med,aes(x=fct_inorder(Label),y=ARI),shape=95,size=4)
-
-# plot (boxplot)
-ggplot(data = masterARI_re, aes(x = fct_inorder(Label), y = ARI)) +
-  geom_boxplot()+ylab('ARI')+xlab("# of Networks") +theme_classic(base_size=40)+ggtitle('R.S. vs. EmoID ARI')
-
-# combine em
-masterARI_rn<-rbind(wInsubj_2_rn,BwSubj_2_rn,wInsubj_4_rn,BwSubj_4_rn,wInsubj_7_rn,BwSubj_7_rn,wInsubj_13_rn,BwSubj_13_rn,wInsubj_20_rn,BwSubj_20_rn,wInsubj_30_rn,BwSubj_30_rn)
-
-# plot (boxplot)
-ggplot(data = masterARI_rn, aes(x = fct_inorder(Label), y = ARI)) +
-  geom_boxplot()+ylab('ARI')+xlab("# of Networks") +theme_classic(base_size=40)+ggtitle('R.S. vs. nBack ARI')
-
-# combine em
-masterARI_en<-rbind(wInsubj_2_en,BwSubj_2_en,wInsubj_4_en,BwSubj_4_en,wInsubj_7_en,BwSubj_7_en,wInsubj_13_en,BwSubj_13_en,wInsubj_20_en,BwSubj_20_en,wInsubj_30_en,BwSubj_30_en)
-
-# plot (boxplot)
-ggplot(data = masterARI_en, aes(x = fct_inorder(Label), y = ARI)) +
-  geom_boxplot()+ylab('ARI')+xlab("# of Networks") +theme_classic(base_size=40)+ggtitle('emoID vs. nBack ARI')
 ```
