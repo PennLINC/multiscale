@@ -395,13 +395,13 @@ permutPlotDf<-data.frame(permMedianDiff_RE_4,permMedianDiff_RN_4,permMedianDiff_
 obsPlotDf<-data.frame(obsMedianDiff_RE_4,obsMedianDiff_RN_4,obsMedianDiff_EN_4,obsMedianDiff_RE_7,obsMedianDiff_RN_7,obsMedianDiff_EN_7,obsMedianDiff_RE_13,obsMedianDiff_RN_13,obsMedianDiff_EN_13,obsMedianDiff_RE_20,obsMedianDiff_RN_20,obsMedianDiff_EN_20)
 
 # set column names
-colnames(permutPlotDf)<-c('Sc. 4, Rest-Emo','Sc. 4, Rest-nB','Sc. 4, Emo-Nb','Sc. 7, Rest-Emo','Sc. 7, Rest-nB','Sc. 7, Emo-nB','Sc. 13, Rest-Emo','Sc. 13, Rest-nB','Sc. 13, Emo-nB','Sc. 20, Rest-Emo','Sc. 20, Rest-nB','Sc. 20, Emo-nB')
-colnames(obsPlotDf)<-c('Sc. 4, Rest-Emo','Sc. 4, Rest-nB','Sc. 4, Emo-Nb','Sc. 7, Rest-Emo','Sc. 7, Rest-nB','Sc. 7, Emo-nB','Sc. 13, Rest-Emo','Sc. 13, Rest-nB','Sc. 13, Emo-nB','Sc. 20, Rest-Emo','Sc. 20, Rest-nB','Sc. 20, Emo-nB')
+colnames(permutPlotDf)<-c('Sc. 4, Rest-Emo','Sc. 4, Rest-Nb','Sc. 4, Emo-Nb','Sc. 7, Rest-Emo','Sc. 7, Rest-Nb','Sc. 7, Emo-Nb','Sc. 13, Rest-Emo','Sc. 13, Rest-Nb','Sc. 13, Emo-Nb','Sc. 20, Rest-Emo','Sc. 20, Rest-Nb','Sc. 20, Emo-Nb')
+colnames(obsPlotDf)<-c('Sc. 4, Rest-Emo','Sc. 4, Rest-Nb','Sc. 4, Emo-Nb','Sc. 7, Rest-Emo','Sc. 7, Rest-Nb','Sc. 7, Emo-Nb','Sc. 13, Rest-Emo','Sc. 13, Rest-Nb','Sc. 13, Emo-Nb','Sc. 20, Rest-Emo','Sc. 20, Rest-Nb','Sc. 20, Emo-Nb')
 
 # make into long df
 mPdfmelt<-melt(permutPlotDf)
 mOdfmelt<-melt(obsPlotDf)
 
-ggplot(data = mPdfmelt, aes(x = fct_inorder(variable), y = value))+geom_jitter(aes(x=fct_inorder(variable),y=value),size=1,alpha=.3)+ylab('Median w/in - b/w ARI vs. Permuted')+xlab("Scales and rest-task pairs") +theme_classic(base_size=20)+geom_point(data=mOdfmelt,aes(x=fct_inorder(variable),y=value),size=3,alpha=1)+scale_y_continuous(limits=c(-.1,.2))
+ggplot(data = mPdfmelt, aes(x = fct_inorder(variable), y = value))+geom_jitter(aes(x=fct_inorder(variable),y=value),size=1,alpha=.3)+ylab('Within-Between ARI Difference vs. Null')+xlab("Scales and Rest-Task Pairs") +theme_classic(base_size=30)+geom_point(data=mOdfmelt,aes(x=fct_inorder(variable),y=value),size=4,alpha=1)+scale_y_continuous(limits=c(-.1,.2))+theme(axis.text.x=element_text(angle=45,hjust = 1))
 
 ```
