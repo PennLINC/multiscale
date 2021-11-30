@@ -34,7 +34,7 @@ ID_Str=num2str(subjs(s));
 
 % p5_5 FP
 p5_5FP = [ResultantFolder '/Sub_' ID_Str '/IndividualParcel_Final_sbj1_comp' num2str(K) '_alphaS21_point5_alphaLfive_vxInfo1_ard0_eta0'];
-p5_5=load([p5_5FP '/IndividualParcel_Final_sbj1_comp4_alphaS21_1_alphaL5_vxInfo1_ard0_eta0/final_UV.mat']);
+p5_5=load([p5_5FP '/IndividualParcel_Final_sbj1_comp20_alphaS21_1_alphaL5_vxInfo1_ard0_eta0/final_UV.mat']);
 % convert to hard parcels
 initV=[p5_5.V{:}];
 % trim tiny values 
@@ -46,7 +46,7 @@ sbj_AtlasLoading_NoMedialWall = initV;
 
 % p5_10 FP
 p5_10FP = [ResultantFolder '/Sub_' ID_Str '/IndividualParcel_Final_sbj1_comp' num2str(K) '_alphaS21_point5_alphaLten_vxInfo1_ard0_eta0'];
-p5_10=load([p5_10FP '/IndividualParcel_Final_sbj1_comp4_alphaS21_1_alphaL10_vxInfo1_ard0_eta0/final_UV.mat']);
+p5_10=load([p5_10FP '/IndividualParcel_Final_sbj1_comp20_alphaS21_1_alphaL10_vxInfo1_ard0_eta0/final_UV.mat']);
 % convert to hard parcels
 initV=[p5_10.V{:}];
 % trim tiny values 
@@ -58,7 +58,7 @@ sbj_AtlasLoading_NoMedialWall = initV;
 
 % p5_20 FP
 p5_20FP = [ResultantFolder '/Sub_' ID_Str '/IndividualParcel_Final_sbj1_comp' num2str(K) '_alphaS21_point5_alphaLtwenty_vxInfo1_ard0_eta0'];
-p5_20=load([p5_20FP '/IndividualParcel_Final_sbj1_comp4_alphaS21_1_alphaL20_vxInfo1_ard0_eta0/final_UV.mat']);
+p5_20=load([p5_20FP '/IndividualParcel_Final_sbj1_comp20_alphaS21_1_alphaL20_vxInfo1_ard0_eta0/final_UV.mat']);
 % convert to hard parcels
 initV=[p5_20.V{:}];
 % trim tiny values 
@@ -70,7 +70,7 @@ sbj_AtlasLoading_NoMedialWall = initV;
 
 % 1_5 FP
 o1_5FP = [ResultantFolder '/Sub_' ID_Str '/IndividualParcel_Final_sbj1_comp' num2str(K) '_alphaS21_one_alphaLfive_vxInfo1_ard0_eta0'];
-o1_5=load([o1_5FP '/IndividualParcel_Final_sbj1_comp4_alphaS21_1_alphaL5_vxInfo1_ard0_eta0/final_UV.mat']);
+o1_5=load([o1_5FP '/IndividualParcel_Final_sbj1_comp20_alphaS21_1_alphaL5_vxInfo1_ard0_eta0/final_UV.mat']);
 % convert to hard parcels
 initV=[o1_5.V{:}];
 % trim tiny values 
@@ -82,7 +82,7 @@ sbj_AtlasLoading_NoMedialWall = initV;
 
 % 1_20 FP
 o1_20FP = [ResultantFolder '/Sub_' ID_Str '/IndividualParcel_Final_sbj1_comp' num2str(K) '_alphaS21_one_alphaLtwenty_vxInfo1_ard0_eta0'];
-o1_20=load([o1_20FP '/IndividualParcel_Final_sbj1_comp4_alphaS21_1_alphaL20_vxInfo1_ard0_eta0/final_UV.mat']);
+o1_20=load([o1_20FP '/IndividualParcel_Final_sbj1_comp20_alphaS21_1_alphaL20_vxInfo1_ard0_eta0/final_UV.mat']);
 % convert to hard parcels
 initV=[o1_20.V{:}];
 % trim tiny values 
@@ -94,7 +94,7 @@ sbj_AtlasLoading_NoMedialWall = initV;
 
 % 2_5 FP
 o2_5FP = [ResultantFolder '/Sub_' ID_Str '/IndividualParcel_Final_sbj1_comp' num2str(K) '_alphaS21_two_alphaLfive_vxInfo1_ard0_eta0'];
-o2_5=load([o2_5FP '/IndividualParcel_Final_sbj1_comp4_alphaS21_2_alphaL5_vxInfo1_ard0_eta0/final_UV.mat']);
+o2_5=load([o2_5FP '/IndividualParcel_Final_sbj1_comp20_alphaS21_2_alphaL5_vxInfo1_ard0_eta0/final_UV.mat']);
 % convert to hard parcels
 initV=[o2_5.V{:}];
 % trim tiny values 
@@ -106,7 +106,7 @@ sbj_AtlasLoading_NoMedialWall = initV;
 
 % 2_10 FP
 o2_10FP = [ResultantFolder '/Sub_' ID_Str '/IndividualParcel_Final_sbj1_comp' num2str(K) '_alphaS21_two_alphaLten_vxInfo1_ard0_eta0'];
-o2_10=load([o2_10FP '/IndividualParcel_Final_sbj1_comp4_alphaS21_2_alphaL10_vxInfo1_ard0_eta0/final_UV.mat']);
+o2_10=load([o2_10FP '/IndividualParcel_Final_sbj1_comp20_alphaS21_2_alphaL10_vxInfo1_ard0_eta0/final_UV.mat']);
 % convert to hard parcels
 initV=[o2_10.V{:}];
 % trim tiny values 
@@ -118,7 +118,7 @@ sbj_AtlasLoading_NoMedialWall = initV;
 
 % 2_20 FP
 o2_20FP = [ResultantFolder '/Sub_' ID_Str '/IndividualParcel_Final_sbj1_comp' num2str(K) '_alphaS21_two_alphaLtwenty_vxInfo1_ard0_eta0'];
-o2_20=load([o2_20FP '/IndividualParcel_Final_sbj1_comp4_alphaS21_2_alphaL20_vxInfo1_ard0_eta0/final_UV.mat']);
+o2_20=load([o2_20FP '/IndividualParcel_Final_sbj1_comp20_alphaS21_2_alphaL20_vxInfo1_ard0_eta0/final_UV.mat']);
 % convert to hard parcels
 initV=[o2_20.V{:}];
 % trim tiny values 
