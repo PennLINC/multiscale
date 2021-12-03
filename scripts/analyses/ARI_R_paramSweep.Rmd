@@ -25,13 +25,11 @@ UTI=upper.tri(p5_5Mat)
 # index of lower
 LTI=lower.tri(p5_5Mat)
 
-# rest + nback
 #p5_10
 p5_10=read.csv('/cbica/projects/pinesParcels/results/aggregated_data/BwSubj_p5_10_K4.csv')
 # convert to matrix
 p5_10Mat=data.matrix(p5_10)
 
-# emoID + nback
 #p5_20
 p5_20=read.csv('/cbica/projects/pinesParcels/results/aggregated_data/BwSubj_p5_20_K4.csv')
 # convert to matrix
@@ -64,22 +62,6 @@ o2_20Mat=data.matrix(o2_20)
 ```
 
 ```{r}
-# initialize difference in median vectors
-permMedianDiff_p5_5=rep(0,1000)
-permMedianDiff_p5_10=rep(0,1000)
-permMedianDiff_p5_20=rep(0,1000)
-permMedianDiff_1_5=rep(0,1000)
-permMedianDiff_1_20=rep(0,1000)
-permMedianDiff_2_5=rep(0,1000)
-permMedianDiff_2_10=rep(0,1000)
-permMedianDiff_2_20=rep(0,1000)
-
-# initialize permutation vectors for w/in subject selection (w/o replacement)
-permutVecs=array(data=NA,dim=c(1000,693))
-for (p in 1:1000){
-  permutVecs[p,]=sample(1:479556,693,replace=F)
-}
-
 # extract within-subject values
 p5_5win=diag(p5_5Mat)
 p5_10win=diag(p5_10Mat)
@@ -100,6 +82,39 @@ o2_5bw=c(o2_5Mat[UTI],o2_5Mat[LTI])
 o2_10bw=c(o2_10Mat[UTI],o2_10Mat[LTI])
 o2_20bw=c(o2_20Mat[UTI],o2_20Mat[LTI])
 
+
+### plot within vs. b/w distributions, dual-axis pdf?
+
+# combine all withins, repeat 800 times to match distribution
+Wins=data.frame(rep(c(p5_5win,p5_10win,p5_20win,o1_5win,o1_20win,o2_5win,o2_10win,o2_20win),400))
+
+# combine all betweens
+Bws=data.frame(c(p5_5bw,p5_5bw,p5_10bw,p5_20bw,o1_5bw,o1_20bw,o2_5bw,o2_10bw,o2_20bw))
+
+colnames(Wins)<-'Frequency'
+colnames(Bws)<-'Frequency'
+
+# plot it
+ggplot(Bws,aes(Frequency))+geom_histogram(bins=35,fill='orange')+geom_histogram(data=Wins,aes(Frequency),bins=35,fill='blue')+scale_y_continuous(sec.axis=sec_axis(trans=~.*(1/400),name="Within-Subject Comparisons"))+theme_classic(base_size=40)+xlab('ARI')+ylab("Between-Subject Comparisons")+theme(axis.text.y.right = element_text(color="blue"),axis.text.y.left = element_text(color="orange"))
+```
+
+```{r}
+# use median win - between vs. median permWin - permBw as null
+# initialize difference in median vectors
+permMedianDiff_p5_5=rep(0,1000)
+permMedianDiff_p5_10=rep(0,1000)
+permMedianDiff_p5_20=rep(0,1000)
+permMedianDiff_1_5=rep(0,1000)
+permMedianDiff_1_20=rep(0,1000)
+permMedianDiff_2_5=rep(0,1000)
+permMedianDiff_2_10=rep(0,1000)
+permMedianDiff_2_20=rep(0,1000)
+
+# initialize permutation vectors for w/in subject selection (w/o replacement)
+permutVecs=array(data=NA,dim=c(1000,693))
+for (p in 1:1000){
+  permutVecs[p,]=sample(1:479556,693,replace=F)
+}
 # calculate actual medians for each parameter setting
 med_p5_5win=median(p5_5win)
 med_p5_10win=median(p5_10win)
