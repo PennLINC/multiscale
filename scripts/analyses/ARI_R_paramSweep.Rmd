@@ -95,7 +95,7 @@ colnames(Wins)<-'Frequency'
 colnames(Bws)<-'Frequency'
 
 # plot it
-ggplot(Bws,aes(Frequency))+geom_histogram(bins=35,fill='orange')+geom_histogram(data=Wins,aes(Frequency),bins=35,fill='blue')+scale_y_continuous(sec.axis=sec_axis(trans=~.*(1/400),name="Within-Subject Comparisons"))+theme_classic(base_size=40)+xlab('ARI')+ylab("Between-Subject Comparisons")+theme(axis.text.y.right = element_text(color="blue"),axis.text.y.left = element_text(color="orange"))
+ggplot(Bws,aes(Frequency))+geom_histogram(bins=35,fill='#7fcdbb')+geom_histogram(data=Wins,aes(Frequency),bins=35,fill='#2c7fb8')+scale_y_continuous(sec.axis=sec_axis(trans=~.*(1/400),name="Within-Subject Comparisons"))+theme_classic(base_size=40)+xlab('ARI')+ylab("Between-Subject Comparisons")+theme(axis.text.y.right = element_text(color="#2c7fb8"),axis.text.y.left = element_text(color="#7fcdbb"))
 ```
 
 ```{r}

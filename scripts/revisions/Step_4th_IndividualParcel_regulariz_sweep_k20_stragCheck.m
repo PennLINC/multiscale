@@ -27,9 +27,9 @@ initName = [ProjectFolder '/RobustInitialization_' num2str(K) '/init.mat'];
 %alphaVals=[{1,1,2,2,2,;5,20,5,10,20}];
 %alphaValStrings=[{'one','one','two','two','two';'five','twenty','five','ten','twenty'}];
 % set alphaS21 and alphaL's to sweep
-alphaVals=[{.5;10}];
+alphaVals=[{.5;5}];
 % make a string version for writeout : script was getting confused with decimals
-alphaValStrings=[{'point5';'ten'}];
+alphaValStrings=[{'point5';'five'}];
 % sweep over 1 alpha combo
 for a=1
 alphaS21 = alphaVals{1,a};
@@ -84,7 +84,7 @@ for i = 1:length(LeftCell)
         fid = fopen(strcat(ScriptPath, '.m'), 'w');
         fprintf(fid, cmd);
         system(['qsub -l h_vmem=10G /cbica/projects/pinesParcels/multiscale/scripts/derive_parcels/qsub_matlab.sh ' ScriptPath]);
-    	pause(20)
+    	pause(10)
 	end
 end
 
