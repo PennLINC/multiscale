@@ -95,170 +95,59 @@ colnames(Wins)<-'Frequency'
 colnames(Bws)<-'Frequency'
 
 # plot it
-ggplot(Bws,aes(Frequency))+geom_histogram(bins=35,fill='#7fcdbb')+geom_histogram(data=Wins,aes(Frequency),bins=35,fill='#2c7fb8')+scale_y_continuous(sec.axis=sec_axis(trans=~.*(1/400),name="Within-Subject Comparisons"))+theme_classic(base_size=40)+xlab('ARI')+ylab("Between-Subject Comparisons")+theme(axis.text.y.right = element_text(color="#2c7fb8"),axis.text.y.left = element_text(color="#7fcdbb"))
+options(scipen = 999)
+ggplot(Bws,aes(Frequency))+geom_histogram(fill='#7fcdbb')+geom_histogram(data=Wins,aes(Frequency),fill='#2c7fb8')+scale_y_continuous(sec.axis=sec_axis(trans=~.*(1/400),name="Within-Subject Comparisons"))+theme_classic(base_size=40)+xlab('ARI')+ylab("Between-Subject Comparisons")+theme(axis.text.y.right = element_text(color="#2c7fb8"),axis.text.y.left = element_text(color="#7fcdbb"))
 ```
 
 ```{r}
-# use median win - between vs. median permWin - permBw as null
-# initialize difference in median vectors
-permMedianDiff_p5_5=rep(0,1000)
-permMedianDiff_p5_10=rep(0,1000)
-permMedianDiff_p5_20=rep(0,1000)
-permMedianDiff_1_5=rep(0,1000)
-permMedianDiff_1_20=rep(0,1000)
-permMedianDiff_2_5=rep(0,1000)
-permMedianDiff_2_10=rep(0,1000)
-permMedianDiff_2_20=rep(0,1000)
+### K=20
 
-# initialize permutation vectors for w/in subject selection (w/o replacement)
-permutVecs=array(data=NA,dim=c(1000,693))
-for (p in 1:1000){
-  permutVecs[p,]=sample(1:479556,693,replace=F)
-}
-# calculate actual medians for each parameter setting
-med_p5_5win=median(p5_5win)
-med_p5_10win=median(p5_10win)
-med_p5_20win=median(p5_20win)
-med_1_5win=median(o1_5win)
-med_1_20win=median(o1_20win)
-med_2_5win=median(o2_5win)
-med_2_10win=median(o2_10win)
-med_2_20win=median(o2_20win)
+#p5_5 - p is for "point" (.5)
+p5_5=read.csv('/cbica/projects/pinesParcels/results/aggregated_data/BwSubj_p5_5_K20.csv')
+# convert to matrix
+p5_5Mat=data.matrix(p5_5)
+# get index of upper triangle
+UTI=upper.tri(p5_5Mat)
+# index of lower
+LTI=lower.tri(p5_5Mat)
 
-med_p5_5bw=median(p5_5bw)
-med_p5_10bw=median(p5_10bw)
-med_p5_20bw=median(p5_20bw)
-med_1_5bw=median(o1_5bw)
-med_1_20bw=median(o1_20bw)
-med_2_5bw=median(o2_5bw)
-med_2_10bw=median(o2_10bw)
-med_2_20bw=median(o2_20bw)
+#p5_10
+p5_10=read.csv('/cbica/projects/pinesParcels/results/aggregated_data/BwSubj_p5_10_K20.csv')
+# convert to matrix
+p5_10Mat=data.matrix(p5_10)
 
-# get actual diff
-p5_5dif=med_p5_5win-med_p5_5bw
-p5_10dif=med_p5_10win-med_p5_10bw
-p5_20dif=med_p5_20win-med_p5_20bw
-o1_5dif=med_1_5win-med_1_5bw
-o1_20dif=med_1_20win-med_1_20bw
-o2_5dif=med_2_5win-med_2_5bw
-o2_10dif=med_2_10win-med_2_10bw
-o2_20dif=med_2_20win-med_2_20bw
+#p5_20
+p5_20=read.csv('/cbica/projects/pinesParcels/results/aggregated_data/BwSubj_p5_20_K20.csv')
+# convert to matrix
+p5_20Mat=data.matrix(p5_20)
 
-for (p in 1:1000){
-  # pull out permutation vector for this iteration
-  permutVec=permutVecs[p,]
-  
-  # sample 693 from between-subject ARI
-  randBw_5_5=p5_5bw[permutVec]
-  randBw_5_10=p5_10bw[permutVec]
-  randBw_5_20=p5_20bw[permutVec]
-  randBw_1_5=o1_5bw[permutVec]
-  randBw_1_20=o1_20bw[permutVec]
-  randBw_2_5=o2_5bw[permutVec]
-  randBw_2_10=o2_10bw[permutVec]
-  randBw_2_20=o2_20bw[permutVec]
-  
-  # combine vectors
-  p5_5_comb=c(p5_5win,randBw_5_5)
-  p5_10_comb=c(p5_10win,randBw_5_10)
-  p5_20_comb=c(p5_20win,randBw_5_20)
-  o1_5_comb=c(o1_5win,randBw_1_5)
-  o1_20_comb=c(o1_20win,randBw_1_20)
-  o2_5_comb=c(o2_5win,randBw_2_5)
-  o2_10_comb=c(o2_10win,randBw_2_10)
-  o2_20_comb=c(o2_20win,randBw_2_20)
-  
-  # shuffle
-  p5_5_comb_s=sample(p5_5_comb,length(p5_5_comb),replace=F)
-  p5_10_comb_s=sample(p5_10_comb,length(p5_10_comb),replace=F)
-  p5_20_comb_s=sample(p5_20_comb,length(p5_20_comb),replace=F)
-  o1_5_comb_s=sample(o1_5_comb,length(o1_5_comb),replace=F)
-  o1_20_comb_s=sample(o1_20_comb,length(o1_20_comb),replace=F)
-  o2_5_comb_s=sample(o2_5_comb,length(o2_5_comb),replace=F)
-  o2_10_comb_s=sample(o2_10_comb,length(o2_10_comb),replace=F)
-  o2_20_comb_s=sample(o2_20_comb,length(o2_20_comb),replace=F)
-  
-  # sample of 693 from vector is permWin
-  perm_5_5_win=p5_5_comb_s[1:693]
-  perm_5_10_win=p5_10_comb_s[1:693]
-  perm_5_20_win=p5_20_comb_s[1:693]
-  perm_1_5_win=o1_5_comb_s[1:693]
-  perm_1_20_win=o1_20_comb_s[1:693]
-  perm_2_5_win=o2_5_comb_s[1:693]
-  perm_2_10_win=o2_10_comb_s[1:693]
-  perm_2_20_win=o2_20_comb_s[1:693]
+# o is placeholder because starting variables with numbers is not accepted
+o1_5=read.csv('/cbica/projects/pinesParcels/results/aggregated_data/BwSubj_1_5_K20.csv')
+# convert to matrix
+o1_5Mat=data.matrix(o1_5)
 
-  # remaining 693 from vector is permBw
-  perm_5_5_Bw=p5_5_comb_s[-(1:693)]
-  perm_5_10_Bw=p5_10_comb_s[-(1:693)]
-  perm_5_20_Bw=p5_20_comb_s[-(1:693)]
-  perm_1_5_Bw=o1_5_comb_s[-(1:693)]
-  perm_1_20_Bw=o1_20_comb_s[-(1:693)]
-  perm_2_5_Bw=o2_5_comb_s[-(1:693)]
-  perm_2_10_Bw=o2_10_comb_s[-(1:693)]
-  perm_2_20_Bw=o2_20_comb_s[-(1:693)]
-  
-  # get permuted within subject ARI for each task-rest pair
-  pmed_5_5_win=median(perm_5_5_win)
-  pmed_5_10_win=median(perm_5_10_win)
-  pmed_5_20_win=median(perm_5_20_win)
-  pmed_1_5_win=median(perm_1_5_win)
-  pmed_1_20_win=median(perm_1_20_win)
-  pmed_2_5_win=median(perm_2_5_win)
-  pmed_2_10_win=median(perm_2_10_win)
-  pmed_2_20_win=median(perm_2_20_win)
-  
-  # sample equiv number to off-diagonals for permuted Bw
-  pmed_5_5_Bw=median(perm_5_5_Bw)
-  pmed_5_10_Bw=median(perm_5_10_Bw)
-  pmed_5_20_Bw=median(perm_5_20_Bw)
-  pmed_1_5_Bw=median(perm_1_5_Bw)
-  pmed_1_20_Bw=median(perm_1_20_Bw)
-  pmed_2_5_Bw=median(perm_2_5_Bw)
-  pmed_2_10_Bw=median(perm_2_10_Bw)
-  pmed_2_20_Bw=median(perm_2_20_Bw)
-  
-  # get permuted between-subject ARI for each task-rest pair
-  permMedianDiff_p5_5[p]=pmed_5_5_win-pmed_5_5_Bw
-  permMedianDiff_p5_10[p]=pmed_5_10_win-pmed_5_10_Bw
-  permMedianDiff_p5_20[p]=pmed_5_20_win-pmed_5_20_Bw
-  permMedianDiff_1_5[p]=pmed_1_5_win-pmed_1_5_Bw
-  permMedianDiff_1_20[p]=pmed_1_20_win-pmed_1_20_Bw
-  permMedianDiff_2_5[p]=pmed_2_5_win-pmed_2_5_Bw
-  permMedianDiff_2_10[p]=pmed_2_10_win-pmed_2_10_Bw
-  permMedianDiff_2_20[p]=pmed_2_20_win-pmed_2_20_Bw
-}
+#1_20
+o1_20=read.csv('/cbica/projects/pinesParcels/results/aggregated_data/BwSubj_1_20_K20.csv')
+# convert to matrix
+o1_20Mat=data.matrix(o1_20)
 
-# set outcome variables as unique names
-permMedianDiff_p5_5_4=permMedianDiff_p5_5
-permMedianDiff_p5_10_4=permMedianDiff_p5_10
-permMedianDiff_p5_20_4=permMedianDiff_p5_20
-permMedianDiff_1_5_4=permMedianDiff_1_5
-permMedianDiff_1_20_4=permMedianDiff_1_20
-permMedianDiff_2_5_4=permMedianDiff_2_5
-permMedianDiff_2_10_4=permMedianDiff_2_10
-permMedianDiff_2_20_4=permMedianDiff_2_20
+#2_5
+o2_5=read.csv('/cbica/projects/pinesParcels/results/aggregated_data/BwSubj_2_5_K20.csv')
+# convert to matrix
+o2_5Mat=data.matrix(o2_5)
 
+#2_10
+o2_10=read.csv('/cbica/projects/pinesParcels/results/aggregated_data/BwSubj_2_10_K20.csv')
+# convert to matrix
+o2_10Mat=data.matrix(o2_10)
+
+#2_20
+o2_20=read.csv('/cbica/projects/pinesParcels/results/aggregated_data/BwSubj_2_20_K20.csv')
+# convert to matrix
+o2_20Mat=data.matrix(o2_20)
 ```
 
 ```{r}
-# for means
-# initialize difference in median vectors
-permMedianDiff_p5_5=rep(0,1000)
-permMedianDiff_p5_10=rep(0,1000)
-permMedianDiff_p5_20=rep(0,1000)
-permMedianDiff_1_5=rep(0,1000)
-permMedianDiff_1_20=rep(0,1000)
-permMedianDiff_2_5=rep(0,1000)
-permMedianDiff_2_10=rep(0,1000)
-permMedianDiff_2_20=rep(0,1000)
-
-# initialize permutation vectors for w/in subject selection (w/o replacement)
-permutVecs=array(data=NA,dim=c(1000,693))
-for (p in 1:1000){
-  permutVecs[p,]=sample(1:479556,693,replace=F)
-}
-
 # extract within-subject values
 p5_5win=diag(p5_5Mat)
 p5_10win=diag(p5_10Mat)
@@ -279,153 +168,19 @@ o2_5bw=c(o2_5Mat[UTI],o2_5Mat[LTI])
 o2_10bw=c(o2_10Mat[UTI],o2_10Mat[LTI])
 o2_20bw=c(o2_20Mat[UTI],o2_20Mat[LTI])
 
-# calculate actual medians for each parameter setting
-med_p5_5win=mean(p5_5win)
-med_p5_10win=mean(p5_10win)
-med_p5_20win=mean(p5_20win)
-med_1_5win=mean(o1_5win)
-med_1_20win=mean(o1_20win)
-med_2_5win=mean(o2_5win)
-med_2_10win=mean(o2_10win)
-med_2_20win=mean(o2_20win)
 
-med_p5_5bw=mean(p5_5bw)
-med_p5_10bw=mean(p5_10bw)
-med_p5_20bw=mean(p5_20bw)
-med_1_5bw=mean(o1_5bw)
-med_1_20bw=mean(o1_20bw)
-med_2_5bw=mean(o2_5bw)
-med_2_10bw=mean(o2_10bw)
-med_2_20bw=mean(o2_20bw)
+### plot within vs. b/w distributions, dual-axis pdf?
 
-# get actual diff
-p5_5dif=med_p5_5win-med_p5_5bw
-p5_10dif=med_p5_10win-med_p5_10bw
-p5_20dif=med_p5_20win-med_p5_20bw
-o1_5dif=med_1_5win-med_1_5bw
-o1_20dif=med_1_20win-med_1_20bw
-o2_5dif=med_2_5win-med_2_5bw
-o2_10dif=med_2_10win-med_2_10bw
-o2_20dif=med_2_20win-med_2_20bw
+# combine all withins, repeat 800 times to match distribution
+Wins=data.frame(rep(c(p5_5win,p5_10win,p5_20win,o1_5win,o1_20win,o2_5win,o2_10win,o2_20win),400))
 
-for (p in 1:1000){
-  # pull out permutation vector for this iteration
-  permutVec=permutVecs[p,]
-  
-  # sample 693 from between-subject ARI
-  randBw_5_5=p5_5bw[permutVec]
-  randBw_5_10=p5_10bw[permutVec]
-  randBw_5_20=p5_20bw[permutVec]
-  randBw_1_5=o1_5bw[permutVec]
-  randBw_1_20=o1_20bw[permutVec]
-  randBw_2_5=o2_5bw[permutVec]
-  randBw_2_10=o2_10bw[permutVec]
-  randBw_2_20=o2_20bw[permutVec]
-  
-  # combine vectors
-  p5_5_comb=c(p5_5win,randBw_5_5)
-  p5_10_comb=c(p5_10win,randBw_5_10)
-  p5_20_comb=c(p5_20win,randBw_5_20)
-  o1_5_comb=c(o1_5win,randBw_1_5)
-  o1_20_comb=c(o1_20win,randBw_1_20)
-  o2_5_comb=c(o2_5win,randBw_2_5)
-  o2_10_comb=c(o2_10win,randBw_2_10)
-  o2_20_comb=c(o2_20win,randBw_2_20)
-  
-  # shuffle
-  p5_5_comb_s=sample(p5_5_comb,length(p5_5_comb),replace=F)
-  p5_10_comb_s=sample(p5_10_comb,length(p5_10_comb),replace=F)
-  p5_20_comb_s=sample(p5_20_comb,length(p5_20_comb),replace=F)
-  o1_5_comb_s=sample(o1_5_comb,length(o1_5_comb),replace=F)
-  o1_20_comb_s=sample(o1_20_comb,length(o1_20_comb),replace=F)
-  o2_5_comb_s=sample(o2_5_comb,length(o2_5_comb),replace=F)
-  o2_10_comb_s=sample(o2_10_comb,length(o2_10_comb),replace=F)
-  o2_20_comb_s=sample(o2_20_comb,length(o2_20_comb),replace=F)
-  
-  # sample of 693 from vector is permWin
-  perm_5_5_win=p5_5_comb_s[1:693]
-  perm_5_10_win=p5_10_comb_s[1:693]
-  perm_5_20_win=p5_20_comb_s[1:693]
-  perm_1_5_win=o1_5_comb_s[1:693]
-  perm_1_20_win=o1_20_comb_s[1:693]
-  perm_2_5_win=o2_5_comb_s[1:693]
-  perm_2_10_win=o2_10_comb_s[1:693]
-  perm_2_20_win=o2_20_comb_s[1:693]
+# combine all betweens
+Bws=data.frame(c(p5_5bw,p5_5bw,p5_10bw,p5_20bw,o1_5bw,o1_20bw,o2_5bw,o2_10bw,o2_20bw))
 
-  # remaining 693 from vector is permBw
-  perm_5_5_Bw=p5_5_comb_s[-(1:693)]
-  perm_5_10_Bw=p5_10_comb_s[-(1:693)]
-  perm_5_20_Bw=p5_20_comb_s[-(1:693)]
-  perm_1_5_Bw=o1_5_comb_s[-(1:693)]
-  perm_1_20_Bw=o1_20_comb_s[-(1:693)]
-  perm_2_5_Bw=o2_5_comb_s[-(1:693)]
-  perm_2_10_Bw=o2_10_comb_s[-(1:693)]
-  perm_2_20_Bw=o2_20_comb_s[-(1:693)]
-  
-  # get permuted within subject ARI for each task-rest pair
-  pmed_5_5_win=mean(perm_5_5_win)
-  pmed_5_10_win=mean(perm_5_10_win)
-  pmed_5_20_win=mean(perm_5_20_win)
-  pmed_1_5_win=mean(perm_1_5_win)
-  pmed_1_20_win=mean(perm_1_20_win)
-  pmed_2_5_win=mean(perm_2_5_win)
-  pmed_2_10_win=mean(perm_2_10_win)
-  pmed_2_20_win=mean(perm_2_20_win)
-  
-  # sample equiv number to off-diagonals for permuted Bw
-  pmed_5_5_Bw=mean(perm_5_5_Bw)
-  pmed_5_10_Bw=mean(perm_5_10_Bw)
-  pmed_5_20_Bw=mean(perm_5_20_Bw)
-  pmed_1_5_Bw=mean(perm_1_5_Bw)
-  pmed_1_20_Bw=mean(perm_1_20_Bw)
-  pmed_2_5_Bw=mean(perm_2_5_Bw)
-  pmed_2_10_Bw=mean(perm_2_10_Bw)
-  pmed_2_20_Bw=mean(perm_2_20_Bw)
-  
-  # get permuted between-subject ARI for each task-rest pair
-  permMedianDiff_p5_5[p]=pmed_5_5_win-pmed_5_5_Bw
-  permMedianDiff_p5_10[p]=pmed_5_10_win-pmed_5_10_Bw
-  permMedianDiff_p5_20[p]=pmed_5_20_win-pmed_5_20_Bw
-  permMedianDiff_1_5[p]=pmed_1_5_win-pmed_1_5_Bw
-  permMedianDiff_1_20[p]=pmed_1_20_win-pmed_1_20_Bw
-  permMedianDiff_2_5[p]=pmed_2_5_win-pmed_2_5_Bw
-  permMedianDiff_2_10[p]=pmed_2_10_win-pmed_2_10_Bw
-  permMedianDiff_2_20[p]=pmed_2_20_win-pmed_2_20_Bw
-}
+colnames(Wins)<-'Frequency'
+colnames(Bws)<-'Frequency'
 
-# set outcome variables as unique names
-permMedianDiff_p5_5_4=permMedianDiff_p5_5
-permMedianDiff_p5_10_4=permMedianDiff_p5_10
-permMedianDiff_p5_20_4=permMedianDiff_p5_20
-permMedianDiff_1_5_4=permMedianDiff_1_5
-permMedianDiff_1_20_4=permMedianDiff_1_20
-permMedianDiff_2_5_4=permMedianDiff_2_5
-permMedianDiff_2_10_4=permMedianDiff_2_10
-permMedianDiff_2_20_4=permMedianDiff_2_20
-
+# plot it
+ggplot(Bws,aes(Frequency))+geom_histogram(bins=35,fill='#7fcdbb')+geom_histogram(data=Wins,aes(Frequency),bins=35,fill='#2c7fb8')+scale_y_continuous(sec.axis=sec_axis(trans=~.*(1/400),name="Within-Subject Comparisons"))+theme_classic(base_size=40)+xlab('ARI')+ylab("Between-Subject Comparisons")+theme(axis.text.y.right = element_text(color="#2c7fb8"),axis.text.y.left = element_text(color="#7fcdbb"))
 ```
 
-
-```{r}
-# copy over for K20
-```
-
-```{r}
-# plotting chunk
-library(reshape2)
-# combine
-permutPlotDf<-data.frame(permMedianDiff_p5_5_4,permMedianDiff_p5_10_4,permMedianDiff_p5_20_4,permMedianDiff_1_5_4,permMedianDiff_1_20_4,permMedianDiff_2_5_4,permMedianDiff_2_10_4,permMedianDiff_2_20_4)
-
-obsPlotDf<-data.frame(p5_5dif,p5_10dif,p5_20dif,o1_5dif,o1_20dif,o2_5dif,o2_10dif,o2_20dif)
-
-colnames(permutPlotDf)<-c('Alpha 5 Beta .5','Alpha 10 Beta .5','Alpha 20 Beta .5','Alpha 5 Beta 1','Alpha 20 Beta 1','Alpha 5 Beta 2','Alpha 10 Beta 2','Alpha 20 Beta 2')
-
-colnames(obsPlotDf)<-c('Alpha 5 Beta .5','Alpha 10 Beta .5','Alpha 20 Beta .5','Alpha 5 Beta 1','Alpha 20 Beta 1','Alpha 5 Beta 2','Alpha 10 Beta 2','Alpha 20 Beta 2')
-
-# make into long df
-mPdfmelt<-melt(permutPlotDf)
-mOdfmelt<-melt(obsPlotDf)
-
-ggplot(data = mPdfmelt, aes(x = fct_inorder(variable), y = value))+geom_jitter(aes(x=fct_inorder(variable),y=value),size=1,alpha=.3)+ylab('Within-Between ARI Difference vs. Null')+xlab("Alternative Hyperparameters") +theme_classic(base_size=30)+geom_point(data=mOdfmelt,aes(x=fct_inorder(variable),y=value),size=4,alpha=1)+scale_y_continuous(limits=c(-.1,.2))+theme(axis.text.x=element_text(angle=45,hjust = 1))
-
-```
