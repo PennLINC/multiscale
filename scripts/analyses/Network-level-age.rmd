@@ -86,15 +86,16 @@ DeltaPEstVec<-function(x){
 # load 'erry thang
 
 ### load in demograhics
-demo<-read.csv('/cbica/projects/pinesParcels/data/pnc_demo.csv')
+#demo<-read.csv('/cbica/projects/pinesParcels/data/pnc_demo.csv')
+demo<-read.csv('Y:/data/pnc_demo.csv')
 ageSex<-data.frame(demo$ageAtScan1,as.factor(demo$sex),demo$scanid,demo$bblid)
-subjects<-read.csv('/cbica/projects/pinesParcels/data/participants.txt',header = F)
+subjects<-read.csv('Y:/data/participants.txt',header = F)
 
 ### Collapse Motion metric 
 # read in
-Rest_Motion_Data <- read.csv("/cbica/projects/pinesParcels/data/n1601_RestQAData_20170714.csv")
-NBack_Motion_Data <- read.csv("/cbica/projects/pinesParcels/data/n1601_NBACKQAData_20181001.csv")
-Idemo_Motion_Data <- read.csv("/cbica/projects/pinesParcels/data/n1601_idemo_FinalQA_092817.csv")
+Rest_Motion_Data <- read.csv("Y:/data/n1601_RestQAData_20170714.csv")
+NBack_Motion_Data <- read.csv("Y:/data/n1601_NBACKQAData_20181001.csv")
+Idemo_Motion_Data <- read.csv("Y:/data/n1601_idemo_FinalQA_092817.csv")
 # combine
 motmerge<-merge(Rest_Motion_Data,NBack_Motion_Data,by='bblid')
 motmerge<-merge(motmerge,Idemo_Motion_Data,by='bblid')
@@ -112,7 +113,7 @@ df<-merge(df,motiondf,by='bblid')
 community_vec<-seq(2,30)
 
 # big load - output of fc_to_csv.m (all coupling/FC data, pre-organized)
-fc<-vroom('/cbica/projects/pinesParcels/results/aggregated_data/fc/master_fcfeats_rounded.csv')
+fc<-vroom('Y:/results/aggregated_data/fc/master_fcfeats_rounded.csv')
 # First row gotta go
 fc<-fc[-c(1)]
 # isolate shams
@@ -121,23 +122,23 @@ shams<-fc[694:695,]
 masterdf<-merge(fc,df,by='bblid')
 
 ### Get in Consensus-reference atlas correspondence
-rac<-read.csv('/cbica/projects/pinesParcels/results/aggregated_data/fc/network_yCorrespondence_overscales.csv',stringsAsFactors = F)
+rac<-read.csv('Y:/results/aggregated_data/fc/network_yCorrespondence_overscales.csv',stringsAsFactors = F)
 scalesvec<-as.numeric(rac[2,])
 domnetvec<-as.factor(rac[3,])
 netpropvec<-as.numeric(rac[4,])
 # 17 network version
-rac17<-read.csv('/cbica/projects/pinesParcels/results/aggregated_data/fc/network_y17Correspondence_overscales.csv',stringsAsFactors = F)
+rac17<-read.csv('Y:/results/aggregated_data/fc/network_y17Correspondence_overscales.csv',stringsAsFactors = F)
 scalesvec17<-as.numeric(rac17[2,])
 domnetvec17<-as.factor(rac17[3,])
 netpropvec17<-as.numeric(rac17[4,])
 # aaand k=2 reference correspondence
-coarseKref<-read.csv('/cbica/projects/pinesParcels/results/aggregated_data/fc/network_k2Correspondence_overscales.csv',stringsAsFactors = F)
+coarseKref<-read.csv('Y:/results/aggregated_data/fc/network_k2Correspondence_overscales.csv',stringsAsFactors = F)
 scalesvec2<-as.numeric(coarseKref[2,])
 domnetvec2<-as.factor(coarseKref[3,])
 netpropvec2<-as.numeric(coarseKref[4,])
 
 #### read in transmodality
-tm<-read.csv('/cbica/projects/pinesParcels/results/aggregated_data/fc/network_transmodality_overscales.csv',stringsAsFactors = F)
+tm<-read.csv('Y:/results/aggregated_data/fc/network_transmodality_overscales.csv',stringsAsFactors = F)
 colnames(tm)<-tm[1,]
 # aaaand remove it so we got everything in its right place
 tm<-tm[-c(1),]
@@ -413,7 +414,7 @@ OG_AgeEff_by_transmodality_model_LIN<-summary(OG_AgeEff_by_transmodality_model)$
 OG_AgeEff_by_transmodality_model_LIN_beta<-OG_AgeEff_by_transmodality_model_LIN['Estimate']
 
 # read in bootstrapped values (calculated on PMACS)
-bootstrapRDS<-readRDS('/cbica/projects/pinesParcels/data/Age_NetLevel_bootInfo.rds')
+bootstrapRDS<-readRDS('Y:/data/Age_NetLevel_bootInfo.rds')
 
 
 # for linear Age Effect ~ Transmodality - significance
@@ -449,6 +450,23 @@ cor.test(bwdf$tmvec,bwdf$avg_bw_deltaR2,method='spearman')
 ```{r, fig.width=11,fig.height=11}
 # Figure 3C
 ggplot(bwdf,aes(tmvec,avg_bw_deltaR2)) + geom_point(size=6,alpha=.8,aes(color=domnetvecSig))+ scale_color_manual(values=c('#3281ab','#670068','#007500','#b61ad0','#b8cf86','#d77d00','#c1253c','gray80')) + xlab("Functional Hierarchy") + ylab(expression(paste('Age Effect (',Delta,R^2[adj],')',sep=''))) +theme_classic(base_size = 40) +guides(color=guide_legend(title="Yeo 7 Overlap"))+theme(plot.margin=margin(b=3,t=.1,l=.1,r=.1, unit='cm'), legend.position=c(.42,-.24),legend.direction = "horizontal",legend.title=element_text(size=30),legend.text=element_text(size=30))+geom_smooth(method='lm',color='black',size=3)
+```
+```{r}
+# primaries dist
+pdist=read.csv('Y:/results/aggregated_data/NetworkPrimariesDist.csv')
+y17colors=c('#dc8303','#8d2049','#596a85','#2d9a3d','#007938','#d9e200','#bc0943','#2b1f67','#48593a','#91a967','#4183a8','#00bb89','#3245a3','#9e3ca2','#eb75b3','#68126f','#d1001c')
+# remove '_' from domnetvec17
+bwdfPD<-bwdf
+bwdfPD$CSulcDist<-pdist$nwise_eucs_1
+bwdfPD$CalcDist<-pdist$nwise_eucs_2
+bwdfPD$ttDist<-pdist$nwise_eucs_3
+
+
+ggplot(bwdfPD,aes(CSulcDist,CalcDist)) + geom_point(size=6,alpha=.8,aes(color=tmvec)) + xlab("C sulc Dist") + ylab('Calc Dist') +theme_classic(base_size = 40) +guides(color=guide_legend(title="Order"))+theme(legend.title=element_text(size=10),legend.text=element_text(size=10))
+
+
+plot3d(bwdfPD$CSulcDist,bwdfPD$CalcDist,bwdfPD$ttDist,col=bwdfPD$tmvec+10)
+scatter3D(bwdfPD$CSulcDist,bwdfPD$CalcDist,bwdfPD$ttDist,colvar = as.numeric(bwdfPD$tmvec))
 ```
 
 ```{r}
@@ -756,12 +774,12 @@ geom_smooth(data=subset(bwdf,domnetvec17=='Somatomotor A'),method='gam',formula 
 #      at16=BW_deriv16vec[Kind]
 #      at21=BW_deriv21vec[Kind]
 #      # write em out to cubic
-#      write.table(Intercept10,paste('/cbica/projects/pinesParcels/results/EffectVecs/BW_InterceptAt10_k',K,sep=''),sep=',', col.names = F,quote = F,row.names=F)
-#      write.table(Intercept21,paste('/cbica/projects/pinesParcels/results/EffectVecs/BW_InterceptAt21_k',K,sep=''),sep=',', col.names = F,quote = F,row.names=F)
-#      write.table(Avg,paste('/cbica/projects/pinesParcels/results/EffectVecs/Avg_k',K,sep=''),sep=',', col.names = F,quote = F,row.names=F)
-#      write.table(at10,paste('/cbica/projects/pinesParcels/results/EffectVecs/Deriv10yoAt',K,sep=''),sep=',', col.names = F,quote = F,row.names=F)
-#      write.table(at16,paste('/cbica/projects/pinesParcels/results/EffectVecs/Deriv16yoAt',K,sep=''),sep=',', col.names = F,quote = F,row.names=F)
-#      write.table(at21,paste('/cbica/projects/pinesParcels/results/EffectVecs/Deriv21yoAt',K,sep=''),sep=',', col.names = F,quote = F,row.names=F)
+#      write.table(Intercept10,paste('Y:/results/EffectVecs/BW_InterceptAt10_k',K,sep=''),sep=',', col.names = F,quote = F,row.names=F)
+#      write.table(Intercept21,paste('Y:/results/EffectVecs/BW_InterceptAt21_k',K,sep=''),sep=',', col.names = F,quote = F,row.names=F)
+#      write.table(Avg,paste('Y:/results/EffectVecs/Avg_k',K,sep=''),sep=',', col.names = F,quote = F,row.names=F)
+#      write.table(at10,paste('Y:/results/EffectVecs/Deriv10yoAt',K,sep=''),sep=',', col.names = F,quote = F,row.names=F)
+#      write.table(at16,paste('Y:/results/EffectVecs/Deriv16yoAt',K,sep=''),sep=',', col.names = F,quote = F,row.names=F)
+#      write.table(at21,paste('Y:/results/EffectVecs/Deriv21yoAt',K,sep=''),sep=',', col.names = F,quote = F,row.names=F)
 #}
 
 ```

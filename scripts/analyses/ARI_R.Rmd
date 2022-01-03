@@ -36,16 +36,6 @@ EmoNbackMat=data.matrix(EmoNback)
 ```
 
 ```{r}
-# intitialize difference in median vectors
-permMedianDiff_RE=rep(0,1000)
-permMedianDiff_RN=rep(0,1000)
-permMedianDiff_EN=rep(0,1000)
-
-# initialize permutation vectors for w/in subject selection (w/o replacement)
-permutVecs=array(data=NA,dim=c(1000,693))
-for (p in 1:1000){
-  permutVecs[p,]=sample(1:479556,693,replace=F)
-}
 # extract within-subject values
 RE_win=diag(restEmoMat)
 RN_win=diag(restNbackMat)
@@ -54,63 +44,88 @@ EN_win=diag(EmoNbackMat)
 RE_bw=c(restEmoMat[UTI],restEmoMat[LTI])
 RN_bw=c(restNbackMat[UTI],restNbackMat[LTI])
 EN_bw=c(EmoNbackMat[UTI],EmoNbackMat[LTI])
-# calculate actual medians for each task
-medRE_win=median(RE_win)
-medRN_win=median(RN_win)
-medEN_win=median(EN_win)
-medRE_bw=median(RE_bw)
-medRN_bw=median(RN_bw)
-medEN_bw=median(EN_bw)
-# get actual diff
-RE_dif=medRE_win-medRE_bw
-RN_dif=medRN_win-medRN_bw
-EN_dif=medEN_win-medEN_bw
-for (p in 1:1000){
-  # pull out permutation vector for this iteration
-  permutVec=permutVecs[p,]
-  # sample 693 from between-subject ARI
-  randBw_RE=RE_bw[permutVec]
-  randBw_RN=RN_bw[permutVec]
-  randBw_EN=EN_bw[permutVec]
-  # combine vectors
-  pRE_comb=c(RE_win,randBw_RE)
-  pRN_comb=c(RN_win,randBw_RN)
-  pEN_comb=c(EN_win,randBw_EN)
-  # shuffle
-  pRE_comb_s=sample(pRE_comb,length(pRE_comb),replace=F)
-  pRN_comb_s=sample(pRN_comb,length(pRN_comb),replace=F)
-  pEN_comb_s=sample(pEN_comb,length(pEN_comb),replace=F)
-  # sample of 693 from vector is permWin
-  pRE_win=pRE_comb_s[1:693]
-  pRN_win=pRN_comb_s[1:693]
-  pEN_win=pEN_comb_s[1:693]
-  # remaining 693 from vector is permBw
-  pRE_bw=pRE_comb_s[-(1:693)]
-  pRN_bw=pRN_comb_s[-(1:693)]
-  pEN_bw=pEN_comb_s[-(1:693)]
-  # get permuted within subject ARI for each task-rest pair
-  pmedRE_win=median(pRE_win)
-  pmedRN_win=median(pRN_win)
-  pmedEN_win=median(pEN_win)
-  # sample equiv number to off-diagonals for permuted bw
-  pmedRE_bw=median(pRE_bw)
-  pmedRN_bw=median(pRN_bw)
-  pmedEN_bw=median(pEN_bw)
-  # get permuted between-subject ARI for each task-rest pair
-  permMedianDiff_RE[p]=pmedRE_win-pmedRE_bw
-  permMedianDiff_RN[p]=pmedRN_win-pmedRN_bw
-  permMedianDiff_EN[p]=pmedEN_win-pmedEN_bw
-}
 
-# set outcome variables as unqiue names
-permMedianDiff_RE_4=permMedianDiff_RE
-obsMedianDiff_RE_4=RE_dif
-# RN
-permMedianDiff_RN_4=permMedianDiff_RN
-obsMedianDiff_RN_4=RN_dif
-# EN
-permMedianDiff_EN_4=permMedianDiff_EN
-obsMedianDiff_EN_4=EN_dif
+t.test(RE_win,RE_bw)
+t.test(RN_win,RN_bw)
+t.test(EN_win,EN_bw)
+```
+
+```{r}
+# intitialize difference in median vectors
+#permMedianDiff_RE=rep(0,1000)
+#permMedianDiff_RN=rep(0,1000)
+#permMedianDiff_EN=rep(0,1000)
+#
+## initialize permutation vectors for w/in subject selection (w/o replacement)
+#permutVecs=array(data=NA,dim=c(1000,693))
+#for (p in 1:1000){
+#  permutVecs[p,]=sample(1:479556,693,replace=F)
+#}
+## extract within-subject values
+#RE_win=diag(restEmoMat)
+#RN_win=diag(restNbackMat)
+#EN_win=diag(EmoNbackMat)
+## extract between-subject values
+#RE_bw=c(restEmoMat[UTI],restEmoMat[LTI])
+#RN_bw=c(restNbackMat[UTI],restNbackMat[LTI])
+#EN_bw=c(EmoNbackMat[UTI],EmoNbackMat[LTI])
+## calculate actual medians for each task
+#medRE_win=median(RE_win)
+#medRN_win=median(RN_win)
+#medEN_win=median(EN_win)
+#medRE_bw=median(RE_bw)
+#medRN_bw=median(RN_bw)
+#medEN_bw=median(EN_bw)
+## get actual diff
+#RE_dif=medRE_win-medRE_bw
+#RN_dif=medRN_win-medRN_bw
+#EN_dif=medEN_win-medEN_bw
+#for (p in 1:1000){
+#  # pull out permutation vector for this iteration
+#  permutVec=permutVecs[p,]
+#  # sample 693 from between-subject ARI
+#  randBw_RE=RE_bw[permutVec]
+#  randBw_RN=RN_bw[permutVec]
+#  randBw_EN=EN_bw[permutVec]
+#  # combine vectors
+#  pRE_comb=c(RE_win,randBw_RE)
+#  pRN_comb=c(RN_win,randBw_RN)
+#  pEN_comb=c(EN_win,randBw_EN)
+#  # shuffle
+#  pRE_comb_s=sample(pRE_comb,length(pRE_comb),replace=F)
+#  pRN_comb_s=sample(pRN_comb,length(pRN_comb),replace=F)
+#  pEN_comb_s=sample(pEN_comb,length(pEN_comb),replace=F)
+#  # sample of 693 from vector is permWin
+#  pRE_win=pRE_comb_s[1:693]
+#  pRN_win=pRN_comb_s[1:693]
+#  pEN_win=pEN_comb_s[1:693]
+#  # remaining 693 from vector is permBw
+#  pRE_bw=pRE_comb_s[-(1:693)]
+#  pRN_bw=pRN_comb_s[-(1:693)]
+#  pEN_bw=pEN_comb_s[-(1:693)]
+#  # get permuted within subject ARI for each task-rest pair
+#  pmedRE_win=median(pRE_win)
+#  pmedRN_win=median(pRN_win)
+#  pmedEN_win=median(pEN_win)
+#  # sample equiv number to off-diagonals for permuted bw
+#  pmedRE_bw=median(pRE_bw)
+#  pmedRN_bw=median(pRN_bw)
+#  pmedEN_bw=median(pEN_bw)
+#  # get permuted between-subject ARI for each task-rest pair
+#  permMedianDiff_RE[p]=pmedRE_win-pmedRE_bw
+#  permMedianDiff_RN[p]=pmedRN_win-pmedRN_bw
+#  permMedianDiff_EN[p]=pmedEN_win-pmedEN_bw
+#}
+#
+## set outcome variables as unqiue names
+#permMedianDiff_RE_4=permMedianDiff_RE
+#obsMedianDiff_RE_4=RE_dif
+## RN
+#permMedianDiff_RN_4=permMedianDiff_RN
+#obsMedianDiff_RN_4=RN_dif
+## EN
+#permMedianDiff_EN_4=permMedianDiff_EN
+#obsMedianDiff_EN_4=EN_dif
 ```
 
 ```{r}
@@ -132,11 +147,6 @@ EmoNbackMat=data.matrix(EmoNback)
 ```
 
 ```{r}
-# intitialize difference in median vectors
-permMedianDiff_RE=rep(0,1000)
-permMedianDiff_RN=rep(0,1000)
-permMedianDiff_EN=rep(0,1000)
-
 # extract within-subject values
 RE_win=diag(restEmoMat)
 RN_win=diag(restNbackMat)
@@ -145,63 +155,83 @@ EN_win=diag(EmoNbackMat)
 RE_bw=c(restEmoMat[UTI],restEmoMat[LTI])
 RN_bw=c(restNbackMat[UTI],restNbackMat[LTI])
 EN_bw=c(EmoNbackMat[UTI],EmoNbackMat[LTI])
-# calculate actual medians for each task
-medRE_win=median(RE_win)
-medRN_win=median(RN_win)
-medEN_win=median(EN_win)
-medRE_bw=median(RE_bw)
-medRN_bw=median(RN_bw)
-medEN_bw=median(EN_bw)
-# get actual diff
-RE_dif=medRE_win-medRE_bw
-RN_dif=medRN_win-medRN_bw
-EN_dif=medEN_win-medEN_bw
-for (p in 1:1000){
-  # pull out permutation vector for this iteration
-  permutVec=permutVecs[p,]
-  # sample 693 from between-subject ARI
-  randBw_RE=RE_bw[permutVec]
-  randBw_RN=RN_bw[permutVec]
-  randBw_EN=EN_bw[permutVec]
-  # combine vectors
-  pRE_comb=c(RE_win,randBw_RE)
-  pRN_comb=c(RN_win,randBw_RN)
-  pEN_comb=c(EN_win,randBw_EN)
-  # shuffle
-  pRE_comb_s=sample(pRE_comb,length(pRE_comb),replace=F)
-  pRN_comb_s=sample(pRN_comb,length(pRN_comb),replace=F)
-  pEN_comb_s=sample(pEN_comb,length(pEN_comb),replace=F)
-  # sample of 693 from vector is permWin
-  pRE_win=pRE_comb_s[1:693]
-  pRN_win=pRN_comb_s[1:693]
-  pEN_win=pEN_comb_s[1:693]
-  # remaining 693 from vector is permBw
-  pRE_bw=pRE_comb_s[-(1:693)]
-  pRN_bw=pRN_comb_s[-(1:693)]
-  pEN_bw=pEN_comb_s[-(1:693)]
-  # get permuted within subject ARI for each task-rest pair
-  pmedRE_win=median(pRE_win)
-  pmedRN_win=median(pRN_win)
-  pmedEN_win=median(pEN_win)
-  # sample equiv number to off-diagonals for permuted bw
-  pmedRE_bw=median(pRE_bw)
-  pmedRN_bw=median(pRN_bw)
-  pmedEN_bw=median(pEN_bw)
-  # get permuted between-subject ARI for each task-rest pair
-  permMedianDiff_RE[p]=pmedRE_win-pmedRE_bw
-  permMedianDiff_RN[p]=pmedRN_win-pmedRN_bw
-  permMedianDiff_EN[p]=pmedEN_win-pmedEN_bw
-}
 
-# set outcome variables as unqiue names
-permMedianDiff_RE_7=permMedianDiff_RE
-obsMedianDiff_RE_7=RE_dif
-# RN
-permMedianDiff_RN_7=permMedianDiff_RN
-obsMedianDiff_RN_7=RN_dif
-# EN
-permMedianDiff_EN_7=permMedianDiff_EN
-obsMedianDiff_EN_7=EN_dif
+t.test(RE_win,RE_bw)
+t.test(RN_win,RN_bw)
+t.test(EN_win,EN_bw)
+```
+
+```{r}
+# intitialize difference in median vectors
+#permMedianDiff_RE=rep(0,1000)
+#permMedianDiff_RN=rep(0,1000)
+#permMedianDiff_EN=rep(0,1000)
+#
+## extract within-subject values
+#RE_win=diag(restEmoMat)
+#RN_win=diag(restNbackMat)
+#EN_win=diag(EmoNbackMat)
+## extract between-subject values
+#RE_bw=c(restEmoMat[UTI],restEmoMat[LTI])
+#RN_bw=c(restNbackMat[UTI],restNbackMat[LTI])
+#EN_bw=c(EmoNbackMat[UTI],EmoNbackMat[LTI])
+## calculate actual medians for each task
+#medRE_win=median(RE_win)
+#medRN_win=median(RN_win)
+#medEN_win=median(EN_win)
+#medRE_bw=median(RE_bw)
+#medRN_bw=median(RN_bw)
+#medEN_bw=median(EN_bw)
+## get actual diff
+#RE_dif=medRE_win-medRE_bw
+#RN_dif=medRN_win-medRN_bw
+#EN_dif=medEN_win-medEN_bw
+#for (p in 1:1000){
+#  # pull out permutation vector for this iteration
+#  permutVec=permutVecs[p,]
+#  # sample 693 from between-subject ARI
+#  randBw_RE=RE_bw[permutVec]
+#  randBw_RN=RN_bw[permutVec]
+#  randBw_EN=EN_bw[permutVec]
+#  # combine vectors
+#  pRE_comb=c(RE_win,randBw_RE)
+#  pRN_comb=c(RN_win,randBw_RN)
+#  pEN_comb=c(EN_win,randBw_EN)
+#  # shuffle
+#  pRE_comb_s=sample(pRE_comb,length(pRE_comb),replace=F)
+#  pRN_comb_s=sample(pRN_comb,length(pRN_comb),replace=F)
+#  pEN_comb_s=sample(pEN_comb,length(pEN_comb),replace=F)
+#  # sample of 693 from vector is permWin
+#  pRE_win=pRE_comb_s[1:693]
+#  pRN_win=pRN_comb_s[1:693]
+#  pEN_win=pEN_comb_s[1:693]
+#  # remaining 693 from vector is permBw
+#  pRE_bw=pRE_comb_s[-(1:693)]
+#  pRN_bw=pRN_comb_s[-(1:693)]
+#  pEN_bw=pEN_comb_s[-(1:693)]
+#  # get permuted within subject ARI for each task-rest pair
+#  pmedRE_win=median(pRE_win)
+#  pmedRN_win=median(pRN_win)
+#  pmedEN_win=median(pEN_win)
+#  # sample equiv number to off-diagonals for permuted bw
+#  pmedRE_bw=median(pRE_bw)
+#  pmedRN_bw=median(pRN_bw)
+#  pmedEN_bw=median(pEN_bw)
+#  # get permuted between-subject ARI for each task-rest pair
+#  permMedianDiff_RE[p]=pmedRE_win-pmedRE_bw
+#  permMedianDiff_RN[p]=pmedRN_win-pmedRN_bw
+#  permMedianDiff_EN[p]=pmedEN_win-pmedEN_bw
+#}
+#
+## set outcome variables as unqiue names
+#permMedianDiff_RE_7=permMedianDiff_RE
+#obsMedianDiff_RE_7=RE_dif
+## RN
+#permMedianDiff_RN_7=permMedianDiff_RN
+#obsMedianDiff_RN_7=RN_dif
+## EN
+#permMedianDiff_EN_7=permMedianDiff_EN
+#obsMedianDiff_EN_7=EN_dif
 ```
 
 ```{r}
@@ -223,11 +253,6 @@ EmoNbackMat=data.matrix(EmoNback)
 ```
 
 ```{r}
-# intitialize difference in median vectors
-permMedianDiff_RE=rep(0,1000)
-permMedianDiff_RN=rep(0,1000)
-permMedianDiff_EN=rep(0,1000)
-
 # extract within-subject values
 RE_win=diag(restEmoMat)
 RN_win=diag(restNbackMat)
@@ -236,63 +261,84 @@ EN_win=diag(EmoNbackMat)
 RE_bw=c(restEmoMat[UTI],restEmoMat[LTI])
 RN_bw=c(restNbackMat[UTI],restNbackMat[LTI])
 EN_bw=c(EmoNbackMat[UTI],EmoNbackMat[LTI])
-# calculate actual medians for each task
-medRE_win=median(RE_win)
-medRN_win=median(RN_win)
-medEN_win=median(EN_win)
-medRE_bw=median(RE_bw)
-medRN_bw=median(RN_bw)
-medEN_bw=median(EN_bw)
-# get actual diff
-RE_dif=medRE_win-medRE_bw
-RN_dif=medRN_win-medRN_bw
-EN_dif=medEN_win-medEN_bw
-for (p in 1:1000){
-  # pull out permutation vector for this iteration
-  permutVec=permutVecs[p,]
-  # sample 693 from between-subject ARI
-  randBw_RE=RE_bw[permutVec]
-  randBw_RN=RN_bw[permutVec]
-  randBw_EN=EN_bw[permutVec]
-  # combine vectors
-  pRE_comb=c(RE_win,randBw_RE)
-  pRN_comb=c(RN_win,randBw_RN)
-  pEN_comb=c(EN_win,randBw_EN)
-  # shuffle
-  pRE_comb_s=sample(pRE_comb,length(pRE_comb),replace=F)
-  pRN_comb_s=sample(pRN_comb,length(pRN_comb),replace=F)
-  pEN_comb_s=sample(pEN_comb,length(pEN_comb),replace=F)
-  # sample of 693 from vector is permWin
-  pRE_win=pRE_comb_s[1:693]
-  pRN_win=pRN_comb_s[1:693]
-  pEN_win=pEN_comb_s[1:693]
-  # remaining 693 from vector is permBw
-  pRE_bw=pRE_comb_s[-(1:693)]
-  pRN_bw=pRN_comb_s[-(1:693)]
-  pEN_bw=pEN_comb_s[-(1:693)]
-  # get permuted within subject ARI for each task-rest pair
-  pmedRE_win=median(pRE_win)
-  pmedRN_win=median(pRN_win)
-  pmedEN_win=median(pEN_win)
-  # sample equiv number to off-diagonals for permuted bw
-  pmedRE_bw=median(pRE_bw)
-  pmedRN_bw=median(pRN_bw)
-  pmedEN_bw=median(pEN_bw)
-  # get permuted between-subject ARI for each task-rest pair
-  permMedianDiff_RE[p]=pmedRE_win-pmedRE_bw
-  permMedianDiff_RN[p]=pmedRN_win-pmedRN_bw
-  permMedianDiff_EN[p]=pmedEN_win-pmedEN_bw
-}
 
-# set outcome variables as unqiue names
-permMedianDiff_RE_13=permMedianDiff_RE
-obsMedianDiff_RE_13=RE_dif
-# RN
-permMedianDiff_RN_13=permMedianDiff_RN
-obsMedianDiff_RN_13=RN_dif
-# EN
-permMedianDiff_EN_13=permMedianDiff_EN
-obsMedianDiff_EN_13=EN_dif
+t.test(RE_win,RE_bw)
+t.test(RN_win,RN_bw)
+t.test(EN_win,EN_bw)
+```
+
+
+```{r}
+# intitialize difference in median vectors
+#permMedianDiff_RE=rep(0,1000)
+#permMedianDiff_RN=rep(0,1000)
+#permMedianDiff_EN=rep(0,1000)
+#
+## extract within-subject values
+#RE_win=diag(restEmoMat)
+#RN_win=diag(restNbackMat)
+#EN_win=diag(EmoNbackMat)
+## extract between-subject values
+#RE_bw=c(restEmoMat[UTI],restEmoMat[LTI])
+#RN_bw=c(restNbackMat[UTI],restNbackMat[LTI])
+#EN_bw=c(EmoNbackMat[UTI],EmoNbackMat[LTI])
+## calculate actual medians for each task
+#medRE_win=median(RE_win)
+#medRN_win=median(RN_win)
+#medEN_win=median(EN_win)
+#medRE_bw=median(RE_bw)
+#medRN_bw=median(RN_bw)
+#medEN_bw=median(EN_bw)
+## get actual diff
+#RE_dif=medRE_win-medRE_bw
+#RN_dif=medRN_win-medRN_bw
+#EN_dif=medEN_win-medEN_bw
+#for (p in 1:1000){
+#  # pull out permutation vector for this iteration
+#  permutVec=permutVecs[p,]
+#  # sample 693 from between-subject ARI
+#  randBw_RE=RE_bw[permutVec]
+#  randBw_RN=RN_bw[permutVec]
+#  randBw_EN=EN_bw[permutVec]
+#  # combine vectors
+#  pRE_comb=c(RE_win,randBw_RE)
+#  pRN_comb=c(RN_win,randBw_RN)
+#  pEN_comb=c(EN_win,randBw_EN)
+#  # shuffle
+#  pRE_comb_s=sample(pRE_comb,length(pRE_comb),replace=F)
+#  pRN_comb_s=sample(pRN_comb,length(pRN_comb),replace=F)
+#  pEN_comb_s=sample(pEN_comb,length(pEN_comb),replace=F)
+#  # sample of 693 from vector is permWin
+#  pRE_win=pRE_comb_s[1:693]
+#  pRN_win=pRN_comb_s[1:693]
+#  pEN_win=pEN_comb_s[1:693]
+#  # remaining 693 from vector is permBw
+#  pRE_bw=pRE_comb_s[-(1:693)]
+#  pRN_bw=pRN_comb_s[-(1:693)]
+#  pEN_bw=pEN_comb_s[-(1:693)]
+#  # get permuted within subject ARI for each task-rest pair
+#  pmedRE_win=median(pRE_win)
+#  pmedRN_win=median(pRN_win)
+#  pmedEN_win=median(pEN_win)
+#  # sample equiv number to off-diagonals for permuted bw
+#  pmedRE_bw=median(pRE_bw)
+#  pmedRN_bw=median(pRN_bw)
+#  pmedEN_bw=median(pEN_bw)
+#  # get permuted between-subject ARI for each task-rest pair
+#  permMedianDiff_RE[p]=pmedRE_win-pmedRE_bw
+#  permMedianDiff_RN[p]=pmedRN_win-pmedRN_bw
+#  permMedianDiff_EN[p]=pmedEN_win-pmedEN_bw
+#}
+#
+## set outcome variables as unqiue names
+#permMedianDiff_RE_13=permMedianDiff_RE
+#obsMedianDiff_RE_13=RE_dif
+## RN
+#permMedianDiff_RN_13=permMedianDiff_RN
+#obsMedianDiff_RN_13=RN_dif
+## EN
+#permMedianDiff_EN_13=permMedianDiff_EN
+#obsMedianDiff_EN_13=EN_dif
 ```
 
 ```{r}
@@ -314,11 +360,6 @@ EmoNbackMat=data.matrix(EmoNback)
 ```
 
 ```{r}
-# intitialize difference in median vectors
-permMedianDiff_RE=rep(0,1000)
-permMedianDiff_RN=rep(0,1000)
-permMedianDiff_EN=rep(0,1000)
-
 # extract within-subject values
 RE_win=diag(restEmoMat)
 RN_win=diag(restNbackMat)
@@ -327,63 +368,83 @@ EN_win=diag(EmoNbackMat)
 RE_bw=c(restEmoMat[UTI],restEmoMat[LTI])
 RN_bw=c(restNbackMat[UTI],restNbackMat[LTI])
 EN_bw=c(EmoNbackMat[UTI],EmoNbackMat[LTI])
-# calculate actual medians for each task
-medRE_win=median(RE_win)
-medRN_win=median(RN_win)
-medEN_win=median(EN_win)
-medRE_bw=median(RE_bw)
-medRN_bw=median(RN_bw)
-medEN_bw=median(EN_bw)
-# get actual diff
-RE_dif=medRE_win-medRE_bw
-RN_dif=medRN_win-medRN_bw
-EN_dif=medEN_win-medEN_bw
-for (p in 1:1000){
-  # pull out permutation vector for this iteration
-  permutVec=permutVecs[p,]
-  # sample 693 from between-subject ARI
-  randBw_RE=RE_bw[permutVec]
-  randBw_RN=RN_bw[permutVec]
-  randBw_EN=EN_bw[permutVec]
-  # combine vectors
-  pRE_comb=c(RE_win,randBw_RE)
-  pRN_comb=c(RN_win,randBw_RN)
-  pEN_comb=c(EN_win,randBw_EN)
-  # shuffle
-  pRE_comb_s=sample(pRE_comb,length(pRE_comb),replace=F)
-  pRN_comb_s=sample(pRN_comb,length(pRN_comb),replace=F)
-  pEN_comb_s=sample(pEN_comb,length(pEN_comb),replace=F)
-  # sample of 693 from vector is permWin
-  pRE_win=pRE_comb_s[1:693]
-  pRN_win=pRN_comb_s[1:693]
-  pEN_win=pEN_comb_s[1:693]
-  # remaining 693 from vector is permBw
-  pRE_bw=pRE_comb_s[-(1:693)]
-  pRN_bw=pRN_comb_s[-(1:693)]
-  pEN_bw=pEN_comb_s[-(1:693)]
-  # get permuted within subject ARI for each task-rest pair
-  pmedRE_win=median(pRE_win)
-  pmedRN_win=median(pRN_win)
-  pmedEN_win=median(pEN_win)
-  # sample equiv number to off-diagonals for permuted bw
-  pmedRE_bw=median(pRE_bw)
-  pmedRN_bw=median(pRN_bw)
-  pmedEN_bw=median(pEN_bw)
-  # get permuted between-subject ARI for each task-rest pair
-  permMedianDiff_RE[p]=pmedRE_win-pmedRE_bw
-  permMedianDiff_RN[p]=pmedRN_win-pmedRN_bw
-  permMedianDiff_EN[p]=pmedEN_win-pmedEN_bw
-}
 
-# set outcome variables as unqiue names
-permMedianDiff_RE_20=permMedianDiff_RE
-obsMedianDiff_RE_20=RE_dif
-# RN
-permMedianDiff_RN_20=permMedianDiff_RN
-obsMedianDiff_RN_20=RN_dif
-# EN
-permMedianDiff_EN_20=permMedianDiff_EN
-obsMedianDiff_EN_20=EN_dif
+t.test(RE_win,RE_bw)
+t.test(RN_win,RN_bw)
+t.test(EN_win,EN_bw)
+```
+
+```{r}
+# intitialize difference in median vectors
+#permMedianDiff_RE=rep(0,1000)
+#permMedianDiff_RN=rep(0,1000)
+#permMedianDiff_EN=rep(0,1000)
+#
+## extract within-subject values
+#RE_win=diag(restEmoMat)
+#RN_win=diag(restNbackMat)
+#EN_win=diag(EmoNbackMat)
+## extract between-subject values
+#RE_bw=c(restEmoMat[UTI],restEmoMat[LTI])
+#RN_bw=c(restNbackMat[UTI],restNbackMat[LTI])
+#EN_bw=c(EmoNbackMat[UTI],EmoNbackMat[LTI])
+## calculate actual medians for each task
+#medRE_win=median(RE_win)
+#medRN_win=median(RN_win)
+#medEN_win=median(EN_win)
+#medRE_bw=median(RE_bw)
+#medRN_bw=median(RN_bw)
+#medEN_bw=median(EN_bw)
+## get actual diff
+#RE_dif=medRE_win-medRE_bw
+#RN_dif=medRN_win-medRN_bw
+#EN_dif=medEN_win-medEN_bw
+#for (p in 1:1000){
+#  # pull out permutation vector for this iteration
+#  permutVec=permutVecs[p,]
+#  # sample 693 from between-subject ARI
+#  randBw_RE=RE_bw[permutVec]
+#  randBw_RN=RN_bw[permutVec]
+#  randBw_EN=EN_bw[permutVec]
+#  # combine vectors
+#  pRE_comb=c(RE_win,randBw_RE)
+#  pRN_comb=c(RN_win,randBw_RN)
+#  pEN_comb=c(EN_win,randBw_EN)
+#  # shuffle
+#  pRE_comb_s=sample(pRE_comb,length(pRE_comb),replace=F)
+#  pRN_comb_s=sample(pRN_comb,length(pRN_comb),replace=F)
+#  pEN_comb_s=sample(pEN_comb,length(pEN_comb),replace=F)
+#  # sample of 693 from vector is permWin
+#  pRE_win=pRE_comb_s[1:693]
+#  pRN_win=pRN_comb_s[1:693]
+#  pEN_win=pEN_comb_s[1:693]
+#  # remaining 693 from vector is permBw
+#  pRE_bw=pRE_comb_s[-(1:693)]
+#  pRN_bw=pRN_comb_s[-(1:693)]
+#  pEN_bw=pEN_comb_s[-(1:693)]
+#  # get permuted within subject ARI for each task-rest pair
+#  pmedRE_win=median(pRE_win)
+#  pmedRN_win=median(pRN_win)
+#  pmedEN_win=median(pEN_win)
+#  # sample equiv number to off-diagonals for permuted bw
+#  pmedRE_bw=median(pRE_bw)
+#  pmedRN_bw=median(pRN_bw)
+#  pmedEN_bw=median(pEN_bw)
+#  # get permuted between-subject ARI for each task-rest pair
+#  permMedianDiff_RE[p]=pmedRE_win-pmedRE_bw
+#  permMedianDiff_RN[p]=pmedRN_win-pmedRN_bw
+#  permMedianDiff_EN[p]=pmedEN_win-pmedEN_bw
+#}
+#
+## set outcome variables as unqiue names
+#permMedianDiff_RE_20=permMedianDiff_RE
+#obsMedianDiff_RE_20=RE_dif
+## RN
+#permMedianDiff_RN_20=permMedianDiff_RN
+#obsMedianDiff_RN_20=RN_dif
+## EN
+#permMedianDiff_EN_20=permMedianDiff_EN
+#obsMedianDiff_EN_20=EN_dif
 ```
 
 

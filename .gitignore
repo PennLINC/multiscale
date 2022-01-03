@@ -5,6 +5,7 @@ scripts/derive_parcels/tmp*
 scripts/derive_parcels/Toolbox
 qsub_matlab.sh.*
 scripts/analyses/._*
+scripts/analyses/*.png
 tmp.sh.*
 scripts/derive_parcels/Toolbox/
 .gif
