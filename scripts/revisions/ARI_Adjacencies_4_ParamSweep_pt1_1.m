@@ -1,5 +1,5 @@
 %%% set scale with K
-K=20
+K=4
 %%% to find ARI between parcels derived from different subjects, across tasks + rest
 % add path
 addpath('/cbica/projects/pinesParcels/multiscale/scripts/revisions/');

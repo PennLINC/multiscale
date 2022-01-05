@@ -11,6 +11,7 @@ scripts/derive_parcels/Toolbox/
 .gif
 mccExcludedFiles.log
 readme.txt
+*.Rhistory
 requiredMCRProducts.txt
 scripts/derive_netstats/iterate_vert_fc_compile_ver_pcor.m
 scripts/derive_netstats/iterate_vert_fc_compile_ver_noneg.m

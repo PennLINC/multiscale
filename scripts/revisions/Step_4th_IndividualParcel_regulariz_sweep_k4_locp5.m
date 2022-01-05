@@ -9,9 +9,8 @@ addpath(genpath('/cbica/projects/pinesParcels/multiscale/scripts/derive_parcels/
 addpath('/cbica/projects/pinesParcels/multiscale/scripts/derive_parcels/Step_2nd_SingleParcellation');
 
 % set scales to sweep
-scales=[4,20];
-% tmp just to do 20
-K=20
+% tmp just to finish 4
+K=4
 %for s=1:2
 %K=scales(s);
 %%%%%%%%%%%%
@@ -24,16 +23,16 @@ PrepDataFile = [ProjectFolder '/CreatePrepData.mat'];
 resId = 'IndividualParcel_Final';
 initName = [ProjectFolder '/RobustInitialization_' num2str(K) '/init.mat'];
 
-%alphaVals=[{1,1,2,2,2,;5,20,5,10,20}];
-%alphaValStrings=[{'one','one','two','two','two';'five','twenty','five','ten','twenty'}];
+% tmp to finish 4
+alphaVals=[5,10,20];
 % set alphaS21 and alphaL's to sweep
-alphaVals=[{1,1,2,2,2,;5,20,5,10,20}];
+%alphaVals=[{.5,.5,.5,1,1,2,2,2,;5,10,20,5,20,5,10,20}];
 % make a string version for writeout : script was getting confused with decimals
-alphaValStrings=[{'one','one','two','two','two';'five','twenty','five','ten','twenty'}];
+%alphaValStrings=[{'point5','point5','point5','one','one','two','two','two';'five','ten','twenty','five','twenty','five','ten','twenty'}];
 % sweep over 8 alpha combos
-for a=1:8
-alphaS21 = alphaVals{1,a};
-alphaL = alphaVals{2,a};
+for a=1:3
+alphaS21 = .5;
+alphaL = alphaVals(a);
 vxI = 1;
 spaR = 1;
 ard = 0;
@@ -51,15 +50,17 @@ RawDataFolder = '/cbica/projects/pinesParcels/data/CombinedData';
 LeftCell = g_ls([RawDataFolder '/*/lh.fs5.sm6.residualised.mgh']);
 RightCell = g_ls([RawDataFolder '/*/rh.fs5.sm6.residualised.mgh']);
 
+% tmp to let some jobs run
+
 % Parcellate for each subject separately
 for i = 1:length(LeftCell)
     i
     [Fold, ~, ~] = fileparts(LeftCell{i});
     [~, ID_Str, ~] = fileparts(Fold);
     ID = str2num(ID_Str);
-    ResultantFolder_I = [ResultantFolder '/Sub_' ID_Str '/IndividualParcel_Final_sbj1_comp' num2str(K) '_alphaS21_' alphaValStrings{1,a} '_alphaL' alphaValStrings{2,a} '_vxInfo1_ard0_eta0/'];
+    ResultantFolder_I = [ResultantFolder '/Sub_' ID_Str '/IndividualParcel_Final_sbj1_comp' num2str(K) '_alphaS21_point5_redo_alphaL' num2str(alphaL) '_vxInfo1_ard0_eta0/'];
 	% does not work on .5 params (testing to see if complete already, .5 converted to 1 as string downstream in pipeline)
-    ResultantFile = [ResultantFolder_I 'IndividualParcel_Final_sbj1_comp' num2str(K) '_alphaS21_' num2str(alphaS21) '_alphaL' num2str(alphaL) '_vxInfo1_ard0_eta0/final_UV.mat'];
+    ResultantFile = [ResultantFolder_I 'IndividualParcel_Final_sbj1_comp' num2str(K) '_alphaS21_point5_redo_alphaL' num2str(alphaL) '_vxInfo1_ard0_eta0/final_UV.mat'];
     if ~exist(ResultantFile, 'file');
         mkdir(ResultantFolder_I);
         IDMatFile = [ResultantFolder_I '/ID.mat'];
@@ -84,7 +85,7 @@ for i = 1:length(LeftCell)
         fid = fopen(strcat(ScriptPath, '.m'), 'w');
         fprintf(fid, cmd);
         system(['qsub -l h_vmem=10G /cbica/projects/pinesParcels/multiscale/scripts/derive_parcels/qsub_matlab.sh ' ScriptPath]);
-    	pause(3)
+    	pause(1)
 	end
 end
 

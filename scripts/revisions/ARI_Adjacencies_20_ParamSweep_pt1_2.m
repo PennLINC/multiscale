@@ -45,8 +45,8 @@ ID_Str=num2str(subjs(s));
 %[~, sbj_AtlasLabel_NoMedialWall_p5_5] = max(sbj_AtlasLoading_NoMedialWall, [], 2);
 
 % p5_10 FP
-p5_10FP = [ResultantFolder '/Sub_' ID_Str '/IndividualParcel_Final_sbj1_comp' num2str(K) '_alphaS21_point5_alphaLten_vxInfo1_ard0_eta0'];
-p5_10=load([p5_10FP '/IndividualParcel_Final_sbj1_comp20_alphaS21_1_alphaL10_vxInfo1_ard0_eta0/final_UV.mat']);
+p5_10FP = [ResultantFolder '/Sub_' ID_Str '/IndividualParcel_Final_sbj1_comp' num2str(K) '_alphaS21_point5_redo_alphaL10_vxInfo1_ard0_eta0'];
+p5_10=load([p5_10FP '/IndividualParcel_Final_sbj1_comp20_alphaS21_point5_redo_alphaL10_vxInfo1_ard0_eta0/final_UV.mat']);
 % convert to hard parcels
 initV=[p5_10.V{:}];
 % trim tiny values 
@@ -161,7 +161,7 @@ end
 
 % save aggregated matrices
 %writetable(table(p5_5Mat),strcat(outdir,'/BwSubj_p5_5_K',num2str(K),'.csv'));
-writetable(table(p5_10Mat),strcat(outdir,'/BwSubj_p5_10_K',num2str(K),'.csv'));
+writetable(table(p5_10Mat),strcat(outdir,'/BwSubj_p5_10_K',num2str(K),'_r.csv'));
 %writetable(table(p5_20Mat),strcat(outdir,'/BwSubj_p5_20_K',num2str(K),'.csv'));
 %writetable(table(o1_5Mat),strcat(outdir,'/BwSubj_1_5_K',num2str(K),'.csv'));
 %writetable(table(o1_20Mat),strcat(outdir,'/BwSubj_1_20_K',num2str(K),'.csv'));
