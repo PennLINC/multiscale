@@ -58,7 +58,7 @@ ID_Str=num2str(subjs(s));
 
 % p5_20 FP
 p5_20FP = [ResultantFolder '/Sub_' ID_Str '/IndividualParcel_Final_sbj1_comp' num2str(K) '_alphaS21_point5_redo_alphaL20_vxInfo1_ard0_eta0'];
-p5_20=load([p5_20FP '/IndividualParcel_Final_sbj1_comp20_alphaS21_point5_redo_alphaL20_vxInfo1_ard0_eta0/final_UV.mat']);
+p5_20=load([p5_20FP '/IndividualParcel_Final_sbj1_comp20_alphaS21_point5_redo_alphaL4_vxInfo1_ard0_eta0/final_UV.mat']);
 % convert to hard parcels
 initV=[p5_20.V{:}];
 % trim tiny values 
