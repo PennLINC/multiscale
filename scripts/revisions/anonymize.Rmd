@@ -1,0 +1,150 @@
+---
+title: "Anonymize subject IDs"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+# Thank you MC!
+
+# needed libs
+library(openssl)
+library(vroom)
+
+# data to be uploaded - no subject identifiers
+/cbica/projects/pinesParcels/results/aggregated_data/SpinTestDistrs_MAD_PG1.csv
+/cbica/projects/pinesParcels/multiscale/scripts/derive_spatialprops/PGMAD_Boot_ScaleBetas1.csv
+/cbica/projects/pinesParcels/multiscale/scripts/derive_spatialprops/PGMAD_Boot_ScaleBetas2.csv
+/cbica/projects/pinesParcels/multiscale/scripts/derive_spatialprops/PGMAD_Boot_ScaleBetas3.csv
+/cbica/projects/pinesParcels/multiscale/scripts/derive_spatialprops/PGMAD_Boot_ScaleBetas4.csv
+/cbica/projects/pinesParcels/multiscale/scripts/derive_spatialprops/PGMAD_Boot_ScaleBetas5.csv
+/cbica/projects/pinesParcels/multiscale/scripts/derive_spatialprops/PGMAD_Boot_ScaleBetas6.csv
+/cbica/projects/pinesParcels/multiscale/scripts/derive_spatialprops/PGMAD_Boot_ScaleBetas7.csv
+/cbica/projects/pinesParcels/multiscale/scripts/derive_spatialprops/PGMAD_Boot_ScaleBetas8.csv
+/cbica/projects/pinesParcels/multiscale/scripts/derive_spatialprops/PGMAD_Boot_ScaleBetas9.csv
+/cbica/projects/pinesParcels/multiscale/scripts/derive_spatialprops/PGMAD_Boot_ScaleBetas10.csv
+/cbica/projects/pinesParcels/multiscale/scripts/derive_spatialprops/PGMAD_Boot_ScaleBetas11.csv
+/cbica/projects/pinesParcels/multiscale/scripts/derive_spatialprops/PGMAD_Boot_ScaleBetas12.csv
+/cbica/projects/pinesParcels/multiscale/scripts/derive_spatialprops/PGMAD_Boot_ScaleBetas13.csv
+/cbica/projects/pinesParcels/multiscale/scripts/derive_spatialprops/PGMAD_Boot_ScaleBetas14.csv
+/cbica/projects/pinesParcels/multiscale/scripts/derive_spatialprops/PGMAD_Boot_ScaleBetas15.csv
+/cbica/projects/pinesParcels/multiscale/scripts/derive_spatialprops/PGMAD_Boot_ScaleBetas16.csv
+/cbica/projects/pinesParcels/multiscale/scripts/derive_spatialprops/PGMAD_Boot_ScaleBetas17.csv
+/cbica/projects/pinesParcels/multiscale/scripts/derive_spatialprops/PGMAD_Boot_ScaleBetas18.csv
+/cbica/projects/pinesParcels/multiscale/scripts/derive_spatialprops/PGMAD_Boot_ScaleBetas19.csv
+/cbica/projects/pinesParcels/multiscale/scripts/derive_spatialprops/PGMAD_Boot_ScaleBetas20.csv
+/cbica/projects/pinesParcels/results/aggregated_data/fc/network_yCorrespondence_overscales.csv
+/cbica/projects/pinesParcels/results/aggregated_data/fc/network_y17Correspondence_overscales.csv
+/cbica/projects/pinesParcels/results/aggregated_data/fc/network_transmodality_overscales.csv
+/cbica/projects/pinesParcels/data/Age_NetLevel_bootInfo.rds
+##~/multiscale/EF_NetLevel_bootInfo.rds
+##~/multiscale/Age_EdgeLevel_bootInfo.rds
+##~/multiscale/Age_EdgeLevel_bootInfo_1.rds
+##~/multiscale/Age_EdgeLevel_bootInfo_2.rds
+##~/multiscale/Age_EdgeLevel_bootInfo_3.rds
+##~/multiscale/Age_EdgeLevel_bootInfo_4.rds
+##~/multiscale/Age_EdgeLevel_bootInfo_5.rds
+/cbica/projects/pinesParcels/results/aggregated_data/Scale2_Ind_bwColnames_andDist.csv
+/cbica/projects/pinesParcels/results/aggregated_data/Scale3_Ind_bwColnames_andDist.csv
+/cbica/projects/pinesParcels/results/aggregated_data/Scale4_Ind_bwColnames_andDist.csv
+/cbica/projects/pinesParcels/results/aggregated_data/Scale5_Ind_bwColnames_andDist.csv
+/cbica/projects/pinesParcels/results/aggregated_data/Scale6_Ind_bwColnames_andDist.csv
+/cbica/projects/pinesParcels/results/aggregated_data/Scale7_Ind_bwColnames_andDist.csv
+/cbica/projects/pinesParcels/results/aggregated_data/Scale8_Ind_bwColnames_andDist.csv
+/cbica/projects/pinesParcels/results/aggregated_data/Scale9_Ind_bwColnames_andDist.csv
+/cbica/projects/pinesParcels/results/aggregated_data/Scale10_Ind_bwColnames_andDist.csv
+/cbica/projects/pinesParcels/results/aggregated_data/Scale11_Ind_bwColnames_andDist.csv
+/cbica/projects/pinesParcels/results/aggregated_data/Scale12_Ind_bwColnames_andDist.csv
+/cbica/projects/pinesParcels/results/aggregated_data/Scale13_Ind_bwColnames_andDist.csv
+/cbica/projects/pinesParcels/results/aggregated_data/Scale14_Ind_bwColnames_andDist.csv
+/cbica/projects/pinesParcels/results/aggregated_data/Scale15_Ind_bwColnames_andDist.csv
+/cbica/projects/pinesParcels/results/aggregated_data/Scale16_Ind_bwColnames_andDist.csv
+/cbica/projects/pinesParcels/results/aggregated_data/Scale17_Ind_bwColnames_andDist.csv
+/cbica/projects/pinesParcels/results/aggregated_data/Scale18_Ind_bwColnames_andDist.csv
+/cbica/projects/pinesParcels/results/aggregated_data/Scale19_Ind_bwColnames_andDist.csv
+/cbica/projects/pinesParcels/results/aggregated_data/Scale20_Ind_bwColnames_andDist.csv
+/cbica/projects/pinesParcels/results/aggregated_data/Scale21_Ind_bwColnames_andDist.csv
+/cbica/projects/pinesParcels/results/aggregated_data/Scale22_Ind_bwColnames_andDist.csv
+/cbica/projects/pinesParcels/results/aggregated_data/Scale23_Ind_bwColnames_andDist.csv
+/cbica/projects/pinesParcels/results/aggregated_data/Scale24_Ind_bwColnames_andDist.csv
+/cbica/projects/pinesParcels/results/aggregated_data/Scale25_Ind_bwColnames_andDist.csv
+/cbica/projects/pinesParcels/results/aggregated_data/Scale26_Ind_bwColnames_andDist.csv
+/cbica/projects/pinesParcels/results/aggregated_data/Scale27_Ind_bwColnames_andDist.csv
+/cbica/projects/pinesParcels/results/aggregated_data/Scale28_Ind_bwColnames_andDist.csv
+/cbica/projects/pinesParcels/results/aggregated_data/Scale29_Ind_bwColnames_andDist.csv
+/cbica/projects/pinesParcels/results/aggregated_data/Scale30_Ind_bwColnames_andDist.csv
+/cbica/projects/pinesParcels/data/aggregated_data/SubjPreds_AI.csv
+/cbica/projects/pinesParcels/data/aggregated_data/PermutPreds_AI.csv
+/cbica/projects/pinesParcels/data/aggregated_data/Predicted_Obs_Cors.csv
+
+```
+
+```{r}
+# to be uploaded: needs anonymization
+demo <- read.csv('Y:/data/pnc_demo.csv')
+subjects <- read.csv('Y:/data/participants.txt',header = F)
+colnames(subjects)<-c("scanid")
+Rest_Motion_Data <- read.csv('Y:/data/n1601_RestQAData_20170714.csv')
+NBack_Motion_Data <- read.csv('Y:/data/n1601_NBACKQAData_20181001.csv')
+Idemo_Motion_Data <- read.csv('Y:/data/n1601_idemo_FinalQA_092817.csv')
+fc<-vroom('Y:/results/aggregated_data/fc/master_fcfeats_rounded.csv')
+
+##subjbehav<-read.csv('~/Downloads/n9498_cnb_factor_scores_fr_20170202.csv')
+
+# load in salt
+fileName <- '~/../Desktop/multiscale/salt1.txt'
+salt <- readChar(fileName, file.info(fileName)$size)
+
+# generate coded bblids and scanids - replace 
+bblid_s <- sha256(as.character(demo$bblid), key=salt)
+scanid_s <- sha256(as.character(demo$scanid), key=salt)
+
+# make tmp df of sha256-id correspondence to apply to other csvs
+tmpdf<-data.frame(demo$bblid,demo$scanid,as.character(bblid_s),as.character(scanid_s))
+colnames(tmpdf)<-c('bblid','scanid','bblid_s','scanid_s')
+
+# merge it with dfs that need anonymization
+demo_m=merge(demo,tmpdf,by='bblid')
+subjects_m=merge(subjects,tmpdf,by='scanid')
+Rest_Motion_Data_m=merge(Rest_Motion_Data,tmpdf,by='bblid')
+NBack_Motion_Data_m=merge(NBack_Motion_Data,tmpdf,by='bblid')
+Idemo_Motion_Data_m=merge(Idemo_Motion_Data,tmpdf,by='bblid')
+fc_m=merge(fc,tmpdf,by='bblid')
+  
+# remove real subj ids (bblid and scanid)
+demo_m$bblid<-NULL
+demo_m$scanid.x<-NULL
+demo_m$scanid.y<-NULL
+
+subjects_m$bblid<-NULL
+subjects_m$scanid<-NULL
+
+Rest_Motion_Data_m$bblid<-NULL
+Rest_Motion_Data_m$scanid.x<-NULL
+Rest_Motion_Data_m$scanid.y<-NULL
+
+NBack_Motion_Data_m$bblid<-NULL
+NBack_Motion_Data_m$scanid.x<-NULL
+NBack_Motion_Data_m$scanid.y<-NULL
+
+Idemo_Motion_Data_m$bblid<-NULL
+Idemo_Motion_Data_m$scanid.x<-NULL
+Idemo_Motion_Data_m$scanid.y<-NULL
+
+fc_m$bblid<-NULL
+fc_m$scanid<-NULL
+
+# save em out
+write.csv(demo_m, file="pnc_demo_s.csv")
+write.table(subjects_m, file="participants_s.txt")
+write.csv(Rest_Motion_Data_m, file="Rest_Motion_Data_s.csv")
+write.csv(NBack_Motion_Data_m, file="NBack_Motion_Data_s.csv")
+write.csv(Idemo_Motion_Data_m, file="Idemo_Motion_Data_s.csv")
+write.csv(fc_m, file="master_fcfeats_rounded_s.csv")
+
+# add in subj behave
+
+```
