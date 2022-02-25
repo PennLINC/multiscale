@@ -1,16 +1,15 @@
----
-title: "Untitled"
-author: "Adam"
-date: "11/5/2021"
-output: github_document
----
-```{r}
+Untitled
+================
+Adam
+11/5/2021
+
+``` r
 library(ggplot2)
 library(forcats)
 knitr::opts_chunk$set(warning = FALSE, message = FALSE) 
 ```
 
-```{r}
+``` r
 ### K=4
 
 #p5_5 - p is for "point" (.5)
@@ -58,7 +57,7 @@ o2_20=read.csv('Y:/results/aggregated_data/BwSubj_2_20_K4.csv')
 o2_20Mat=data.matrix(o2_20)
 ```
 
-```{r}
+``` r
 # extract within-subject values
 p5_5win=diag(p5_5Mat)
 p5_10win=diag(p5_10Mat)
@@ -96,7 +95,9 @@ options(scipen = 999)
 ggplot(Bws,aes(Frequency))+geom_histogram(fill='#7fcdbb')+geom_histogram(data=Wins,aes(Frequency),fill='#2c7fb8')+scale_y_continuous(sec.axis=sec_axis(trans=~.*(1/450)))+theme_classic(base_size=40)+xlab('ARI')+ylab(NULL)+theme(axis.text.y.right = element_text(color="#2c7fb8"),axis.text.y.left = element_text(color="#7fcdbb"))
 ```
 
-```{r}
+![](ARI_R_paramSweep_files/figure-gfm/unnamed-chunk-3-1.png)<!-- -->
+
+``` r
 ###### Sep. Plots - p5_5
 windf<-data.frame(rep(c(p5_5win),450))
 bwdf<-data.frame(c(p5_5bw))
@@ -104,7 +105,11 @@ colnames(windf)<-'Frequency'
 colnames(bwdf)<-'Frequency'
 
 ggplot(bwdf,aes(Frequency))+geom_histogram(fill='#7fcdbb')+geom_histogram(data=windf,aes(Frequency),fill='#2c7fb8')+scale_y_continuous(labels=scales::scientific,breaks = c(0,100000,200000,300000),limits = c(0,330000),sec.axis=sec_axis(trans=~.*(1/450)))+theme_classic(base_size=40)+xlab('ARI: Spar = .5, Loc = 5')+ylab(NULL)+theme(axis.text.y.right = element_text(color="#2c7fb8"),axis.text.y.left = element_text(color="#7fcdbb"))+scale_x_continuous(breaks=c(0,.2,.4,.6,.8,1), lim = c(0,1.1))
+```
 
+![](ARI_R_paramSweep_files/figure-gfm/unnamed-chunk-4-1.png)<!-- -->
+
+``` r
 ### Sep. Plots - p5_10
 windf<-data.frame(rep(c(p5_10win),450))
 bwdf<-data.frame(c(p5_10bw))
@@ -112,7 +117,11 @@ colnames(windf)<-'Frequency'
 colnames(bwdf)<-'Frequency'
 
 ggplot(bwdf,aes(Frequency))+geom_histogram(fill='#7fcdbb')+geom_histogram(data=windf,aes(Frequency),fill='#2c7fb8')+scale_y_continuous(labels=scales::scientific,breaks = c(0,100000,200000,300000),limits = c(0,330000),sec.axis=sec_axis(trans=~.*(1/450)))+theme_classic(base_size=40)+xlab('ARI: Spar = .5, Loc = 10')+ylab(NULL)+theme(axis.text.y.right = element_text(color="#2c7fb8"),axis.text.y.left = element_text(color="#7fcdbb"))+scale_x_continuous(breaks=c(0,.2,.4,.6,.8,1), lim = c(0,1.1))
+```
 
+![](ARI_R_paramSweep_files/figure-gfm/unnamed-chunk-4-2.png)<!-- -->
+
+``` r
 ### Sep. Plots - p5_20
 windf<-data.frame(rep(c(p5_20win),450))
 bwdf<-data.frame(c(p5_20bw))
@@ -120,7 +129,11 @@ colnames(windf)<-'Frequency'
 colnames(bwdf)<-'Frequency'
 
 ggplot(bwdf,aes(Frequency))+geom_histogram(fill='#7fcdbb')+geom_histogram(data=windf,aes(Frequency),fill='#2c7fb8')+scale_y_continuous(labels=scales::scientific,breaks = c(0,100000,200000,300000),limits = c(0,330000),sec.axis=sec_axis(trans=~.*(1/450)))+theme_classic(base_size=40)+xlab('ARI: Spar = .5, Loc = 20')+ylab(NULL)+theme(axis.text.y.right = element_text(color="#2c7fb8"),axis.text.y.left = element_text(color="#7fcdbb"))+scale_x_continuous(breaks=c(0,.2,.4,.6,.8,1), lim = c(0,1.1))
+```
 
+![](ARI_R_paramSweep_files/figure-gfm/unnamed-chunk-4-3.png)<!-- -->
+
+``` r
 ### Sep. Plots - 1_5
 windf<-data.frame(rep(c(o1_5win),450))
 bwdf<-data.frame(c(o1_5bw))
@@ -128,7 +141,11 @@ colnames(windf)<-'Frequency'
 colnames(bwdf)<-'Frequency'
 
 ggplot(bwdf,aes(Frequency))+geom_histogram(fill='#7fcdbb')+geom_histogram(data=windf,aes(Frequency),fill='#2c7fb8')+scale_y_continuous(labels=scales::scientific,breaks = c(0,100000,200000,300000),limits = c(0,330000),sec.axis=sec_axis(trans=~.*(1/450)))+theme_classic(base_size=40)+xlab('ARI: Spar = 1, Loc = 5')+ylab(NULL)+theme(axis.text.y.right = element_text(color="#2c7fb8"),axis.text.y.left = element_text(color="#7fcdbb"))+scale_x_continuous(breaks=c(0,.2,.4,.6,.8,1), lim = c(0,1.1))
+```
 
+![](ARI_R_paramSweep_files/figure-gfm/unnamed-chunk-4-4.png)<!-- -->
+
+``` r
 ### Sep. Plots - 1_20
 windf<-data.frame(rep(c(o1_20win),450))
 bwdf<-data.frame(c(o1_20bw))
@@ -136,7 +153,11 @@ colnames(windf)<-'Frequency'
 colnames(bwdf)<-'Frequency'
 
 ggplot(bwdf,aes(Frequency))+geom_histogram(fill='#7fcdbb')+geom_histogram(data=windf,aes(Frequency),fill='#2c7fb8')+scale_y_continuous(labels=scales::scientific,breaks = c(0,100000,200000,300000),limits = c(0,330000),sec.axis=sec_axis(trans=~.*(1/450)))+theme_classic(base_size=40)+xlab('ARI: Spar = 1, Loc = 20')+ylab(NULL)+theme(axis.text.y.right = element_text(color="#2c7fb8"),axis.text.y.left = element_text(color="#7fcdbb"))+scale_x_continuous(breaks=c(0,.2,.4,.6,.8,1), lim = c(0,1.1))
+```
 
+![](ARI_R_paramSweep_files/figure-gfm/unnamed-chunk-4-5.png)<!-- -->
+
+``` r
 ### Sep. Plots - o2_5
 windf<-data.frame(rep(c(o2_5win),450))
 bwdf<-data.frame(c(o2_5bw))
@@ -144,7 +165,11 @@ colnames(windf)<-'Frequency'
 colnames(bwdf)<-'Frequency'
 
 ggplot(bwdf,aes(Frequency))+geom_histogram(fill='#7fcdbb')+geom_histogram(data=windf,aes(Frequency),fill='#2c7fb8')+scale_y_continuous(labels=scales::scientific,breaks = c(0,100000,200000,300000),limits = c(0,330000),sec.axis=sec_axis(trans=~.*(1/450)))+theme_classic(base_size=40)+xlab('ARI: Spar = 2, Loc = 5')+ylab(NULL)+theme(axis.text.y.right = element_text(color="#2c7fb8"),axis.text.y.left = element_text(color="#7fcdbb"))+scale_x_continuous(breaks=c(0,.2,.4,.6,.8,1), lim = c(0,1.1))
+```
 
+![](ARI_R_paramSweep_files/figure-gfm/unnamed-chunk-4-6.png)<!-- -->
+
+``` r
 ### Sep. Plots - o2_10
 windf<-data.frame(rep(c(o2_10win),450))
 bwdf<-data.frame(c(o2_10bw))
@@ -152,7 +177,11 @@ colnames(windf)<-'Frequency'
 colnames(bwdf)<-'Frequency'
 
 ggplot(bwdf,aes(Frequency))+geom_histogram(fill='#7fcdbb')+geom_histogram(data=windf,aes(Frequency),fill='#2c7fb8')+scale_y_continuous(labels=scales::scientific,breaks = c(0,100000,200000,300000),limits = c(0,330000),sec.axis=sec_axis(trans=~.*(1/450)))+theme_classic(base_size=40)+xlab('ARI: Spar = 2, Loc = 10')+ylab(NULL)+theme(axis.text.y.right = element_text(color="#2c7fb8"),axis.text.y.left = element_text(color="#7fcdbb"))+scale_x_continuous(breaks=c(0,.2,.4,.6,.8,1), lim = c(0,1.1))
+```
 
+![](ARI_R_paramSweep_files/figure-gfm/unnamed-chunk-4-7.png)<!-- -->
+
+``` r
 ### Sep. Plots - 2_20
 windf<-data.frame(rep(c(o2_20win),450))
 bwdf<-data.frame(c(o2_20bw))
@@ -160,11 +189,11 @@ colnames(windf)<-'Frequency'
 colnames(bwdf)<-'Frequency'
 
 ggplot(bwdf,aes(Frequency))+geom_histogram(fill='#7fcdbb')+geom_histogram(data=windf,aes(Frequency),fill='#2c7fb8')+scale_y_continuous(labels=scales::scientific,breaks = c(0,100000,200000,300000),limits = c(0,330000),sec.axis=sec_axis(trans=~.*(1/450)))+theme_classic(base_size=40)+xlab('ARI: Spar = 2, Loc = 20')+ylab(NULL)+theme(axis.text.y.right = element_text(color="#2c7fb8"),axis.text.y.left = element_text(color="#7fcdbb"))+scale_x_continuous(breaks=c(0,.2,.4,.6,.8,1), lim = c(0,1.1))
-
-
 ```
 
-```{r}
+![](ARI_R_paramSweep_files/figure-gfm/unnamed-chunk-4-8.png)<!-- -->
+
+``` r
 ### K=20
 
 #p5_5 - p is for "point" (.5)
@@ -212,7 +241,7 @@ o2_20=read.csv('Y:/results/aggregated_data/BwSubj_2_20_K20.csv')
 o2_20Mat=data.matrix(o2_20)
 ```
 
-```{r}
+``` r
 # extract within-subject values
 p5_5win=diag(p5_5Mat)
 p5_10win=diag(p5_10Mat)
@@ -249,7 +278,9 @@ colnames(Bws)<-'Frequency'
 ggplot(Bws,aes(Frequency))+geom_histogram(fill='#7fcdbb')+geom_histogram(data=Wins,aes(Frequency),bins=35,fill='#2c7fb8')+scale_y_continuous(labels=scales::scientific,sec.axis=sec_axis(trans=~.*(1/450)))+theme_classic(base_size=40)+xlab('ARI')+ylab(NULL)+theme(axis.text.y.right = element_text(color="#2c7fb8"),axis.text.y.left = element_text(color="#7fcdbb"))
 ```
 
-```{r}
+![](ARI_R_paramSweep_files/figure-gfm/unnamed-chunk-6-1.png)<!-- -->
+
+``` r
 ###### Sep. Plots - p5_5
 windf<-data.frame(rep(c(p5_5win),450))
 bwdf<-data.frame(c(p5_5bw))
@@ -257,7 +288,11 @@ colnames(windf)<-'Frequency'
 colnames(bwdf)<-'Frequency'
 
 ggplot(bwdf,aes(Frequency))+geom_histogram(fill='#7fcdbb')+geom_histogram(data=windf,aes(Frequency),fill='#2c7fb8')+scale_y_continuous(labels=scales::scientific,breaks = c(0,100000,200000,300000),limits = c(0,330000),sec.axis=sec_axis(trans=~.*(1/450)))+theme_classic(base_size=40)+xlab('ARI: Spar = .5, Loc = 5')+ylab(NULL)+theme(axis.text.y.right = element_text(color="#2c7fb8"),axis.text.y.left = element_text(color="#7fcdbb"))+scale_x_continuous(breaks=c(0,.2,.4,.6,.8,1), lim = c(0,1.1))
+```
 
+![](ARI_R_paramSweep_files/figure-gfm/unnamed-chunk-7-1.png)<!-- -->
+
+``` r
 ### Sep. Plots - p5_10
 windf<-data.frame(rep(c(p5_10win),450))
 bwdf<-data.frame(c(p5_10bw))
@@ -265,7 +300,11 @@ colnames(windf)<-'Frequency'
 colnames(bwdf)<-'Frequency'
 
 ggplot(bwdf,aes(Frequency))+geom_histogram(fill='#7fcdbb')+geom_histogram(data=windf,aes(Frequency),fill='#2c7fb8')+scale_y_continuous(labels=scales::scientific,breaks = c(0,100000,200000,300000),limits = c(0,330000),sec.axis=sec_axis(trans=~.*(1/450)))+theme_classic(base_size=40)+xlab('ARI: Spar = .5, Loc = 10')+ylab(NULL)+theme(axis.text.y.right = element_text(color="#2c7fb8"),axis.text.y.left = element_text(color="#7fcdbb"))+scale_x_continuous(breaks=c(0,.2,.4,.6,.8,1), lim = c(0,1.1))
+```
 
+![](ARI_R_paramSweep_files/figure-gfm/unnamed-chunk-7-2.png)<!-- -->
+
+``` r
 ### Sep. Plots - p5_20
 windf<-data.frame(rep(c(p5_20win),450))
 bwdf<-data.frame(c(p5_20bw))
@@ -273,7 +312,11 @@ colnames(windf)<-'Frequency'
 colnames(bwdf)<-'Frequency'
 
 ggplot(bwdf,aes(Frequency))+geom_histogram(fill='#7fcdbb')+geom_histogram(data=windf,aes(Frequency),fill='#2c7fb8')+scale_y_continuous(labels=scales::scientific,breaks = c(0,100000,200000,300000),limits = c(0,330000),sec.axis=sec_axis(trans=~.*(1/450)))+theme_classic(base_size=40)+xlab('ARI: Spar = .5, Loc = 20')+ylab(NULL)+theme(axis.text.y.right = element_text(color="#2c7fb8"),axis.text.y.left = element_text(color="#7fcdbb"))+scale_x_continuous(breaks=c(0,.2,.4,.6,.8,1), lim = c(0,1.1))
+```
 
+![](ARI_R_paramSweep_files/figure-gfm/unnamed-chunk-7-3.png)<!-- -->
+
+``` r
 ### Sep. Plots - 1_5
 windf<-data.frame(rep(c(o1_5win),450))
 bwdf<-data.frame(c(o1_5bw))
@@ -281,7 +324,11 @@ colnames(windf)<-'Frequency'
 colnames(bwdf)<-'Frequency'
 
 ggplot(bwdf,aes(Frequency))+geom_histogram(fill='#7fcdbb')+geom_histogram(data=windf,aes(Frequency),fill='#2c7fb8')+scale_y_continuous(labels=scales::scientific,breaks = c(0,100000,200000,300000),limits = c(0,330000),sec.axis=sec_axis(trans=~.*(1/450)))+theme_classic(base_size=40)+xlab('ARI: Spar = 1, Loc = 5')+ylab(NULL)+theme(axis.text.y.right = element_text(color="#2c7fb8"),axis.text.y.left = element_text(color="#7fcdbb"))+scale_x_continuous(breaks=c(0,.2,.4,.6,.8,1), lim = c(0,1.1))
+```
 
+![](ARI_R_paramSweep_files/figure-gfm/unnamed-chunk-7-4.png)<!-- -->
+
+``` r
 ### Sep. Plots - 1_20
 windf<-data.frame(rep(c(o1_20win),450))
 bwdf<-data.frame(c(o1_20bw))
@@ -289,7 +336,11 @@ colnames(windf)<-'Frequency'
 colnames(bwdf)<-'Frequency'
 
 ggplot(bwdf,aes(Frequency))+geom_histogram(fill='#7fcdbb')+geom_histogram(data=windf,aes(Frequency),fill='#2c7fb8')+scale_y_continuous(labels=scales::scientific,breaks = c(0,100000,200000,300000),limits = c(0,330000),sec.axis=sec_axis(trans=~.*(1/450)))+theme_classic(base_size=40)+xlab('ARI: Spar = 1, Loc = 20')+ylab(NULL)+theme(axis.text.y.right = element_text(color="#2c7fb8"),axis.text.y.left = element_text(color="#7fcdbb"))+scale_x_continuous(breaks=c(0,.2,.4,.6,.8,1), lim = c(0,1.1))
+```
 
+![](ARI_R_paramSweep_files/figure-gfm/unnamed-chunk-7-5.png)<!-- -->
+
+``` r
 ### Sep. Plots - o2_5
 windf<-data.frame(rep(c(o2_5win),450))
 bwdf<-data.frame(c(o2_5bw))
@@ -297,7 +348,11 @@ colnames(windf)<-'Frequency'
 colnames(bwdf)<-'Frequency'
 
 ggplot(bwdf,aes(Frequency))+geom_histogram(fill='#7fcdbb')+geom_histogram(data=windf,aes(Frequency),fill='#2c7fb8')+scale_y_continuous(labels=scales::scientific,breaks = c(0,100000,200000,300000),limits = c(0,330000),sec.axis=sec_axis(trans=~.*(1/450)))+theme_classic(base_size=40)+xlab('ARI: Spar = 2, Loc = 5')+ylab(NULL)+theme(axis.text.y.right = element_text(color="#2c7fb8"),axis.text.y.left = element_text(color="#7fcdbb"))+scale_x_continuous(breaks=c(0,.2,.4,.6,.8,1), lim = c(0,1.1))
+```
 
+![](ARI_R_paramSweep_files/figure-gfm/unnamed-chunk-7-6.png)<!-- -->
+
+``` r
 ### Sep. Plots - o2_10
 windf<-data.frame(rep(c(o2_10win),450))
 bwdf<-data.frame(c(o2_10bw))
@@ -305,7 +360,11 @@ colnames(windf)<-'Frequency'
 colnames(bwdf)<-'Frequency'
 
 ggplot(bwdf,aes(Frequency))+geom_histogram(fill='#7fcdbb')+geom_histogram(data=windf,aes(Frequency),fill='#2c7fb8')+scale_y_continuous(labels=scales::scientific,breaks = c(0,100000,200000,300000),limits = c(0,330000),sec.axis=sec_axis(trans=~.*(1/450)))+theme_classic(base_size=40)+xlab('ARI: Spar = 2, Loc = 10')+ylab(NULL)+theme(axis.text.y.right = element_text(color="#2c7fb8"),axis.text.y.left = element_text(color="#7fcdbb"))+scale_x_continuous(breaks=c(0,.2,.4,.6,.8,1), lim = c(0,1.1))
+```
 
+![](ARI_R_paramSweep_files/figure-gfm/unnamed-chunk-7-7.png)<!-- -->
+
+``` r
 ### Sep. Plots - 2_20
 windf<-data.frame(rep(c(o2_20win),450))
 bwdf<-data.frame(c(o2_20bw))
@@ -313,7 +372,6 @@ colnames(windf)<-'Frequency'
 colnames(bwdf)<-'Frequency'
 
 ggplot(bwdf,aes(Frequency))+geom_histogram(fill='#7fcdbb')+geom_histogram(data=windf,aes(Frequency),fill='#2c7fb8',bins=)+scale_y_continuous(labels=scales::scientific,breaks = c(0,100000,200000,300000),limits = c(0,330000),sec.axis=sec_axis(trans=~.*(1/450)))+theme_classic(base_size=40)+xlab('ARI: Spar = 2, Loc = 20')+ylab(NULL)+theme(axis.text.y.right = element_text(color="#2c7fb8"),axis.text.y.left = element_text(color="#7fcdbb"))+scale_x_continuous(breaks=c(0,.2,.4,.6,.8,1), lim = c(0,1.1))
-
-
 ```
 
+![](ARI_R_paramSweep_files/figure-gfm/unnamed-chunk-7-8.png)<!-- -->
