@@ -91,8 +91,7 @@ Rest_Motion_Data <- read.csv('Y:/data/n1601_RestQAData_20170714.csv')
 NBack_Motion_Data <- read.csv('Y:/data/n1601_NBACKQAData_20181001.csv')
 Idemo_Motion_Data <- read.csv('Y:/data/n1601_idemo_FinalQA_092817.csv')
 fc<-vroom('Y:/results/aggregated_data/fc/master_fcfeats_rounded.csv')
-
-##subjbehav<-read.csv('~/Downloads/n9498_cnb_factor_scores_fr_20170202.csv')
+subjbehav<-read.csv('~/../Downloads/n9498_cnb_factor_scores_fr_20170202.csv')
 
 # load in salt
 fileName <- '~/../Desktop/multiscale/salt1.txt'
@@ -113,7 +112,8 @@ Rest_Motion_Data_m=merge(Rest_Motion_Data,tmpdf,by='bblid')
 NBack_Motion_Data_m=merge(NBack_Motion_Data,tmpdf,by='bblid')
 Idemo_Motion_Data_m=merge(Idemo_Motion_Data,tmpdf,by='bblid')
 fc_m=merge(fc,tmpdf,by='bblid')
-  
+subjbehav_m=merge(subjbehav,tmpdf,by='bblid')
+
 # remove real subj ids (bblid and scanid)
 demo_m$bblid<-NULL
 demo_m$scanid.x<-NULL
@@ -137,6 +137,9 @@ Idemo_Motion_Data_m$scanid.y<-NULL
 fc_m$bblid<-NULL
 fc_m$scanid<-NULL
 
+subjbehav_m$bblid<-NULL
+subjbehav_m$scanid<-NULL
+
 # save em out
 write.csv(demo_m, file="pnc_demo_s.csv")
 write.table(subjects_m, file="participants_s.txt")
@@ -144,7 +147,7 @@ write.csv(Rest_Motion_Data_m, file="Rest_Motion_Data_s.csv")
 write.csv(NBack_Motion_Data_m, file="NBack_Motion_Data_s.csv")
 write.csv(Idemo_Motion_Data_m, file="Idemo_Motion_Data_s.csv")
 write.csv(fc_m, file="master_fcfeats_rounded_s.csv")
+write.csv(subjbehav_m,file="n9498_cnb_factor_scores_fr_20170202_s.csv")
 
-# add in subj behave
 
 ```
